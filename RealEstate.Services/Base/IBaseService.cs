@@ -1,4 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Database;
@@ -7,14 +13,8 @@ using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Extensions;
 using RealEstate.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace RealEstate.Services.Connector
+namespace RealEstate.Services.Base
 {
     public interface IBaseService
     {

@@ -4,7 +4,7 @@ using RealEstate.Extensions;
 using System.Threading.Tasks;
 using RealEstate.Base.Enums;
 using RealEstate.Services;
-using RealEstate.Services.Connector;
+using RealEstate.Services.Base;
 using RealEstate.ViewModels.Input;
 
 namespace RealEstate.Web.Pages

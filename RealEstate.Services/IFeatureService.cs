@@ -1,5 +1,5 @@
 ﻿using RealEstate.Domain;
-using RealEstate.Services.Connector;
+using RealEstate.Services.Base;
 
 namespace RealEstate.Services
 {

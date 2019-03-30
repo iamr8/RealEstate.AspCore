@@ -2,11 +2,11 @@
 using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
-using RealEstate.Services.Connector;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
+using RealEstate.Services.Base;
 
 namespace RealEstate.Services
 {

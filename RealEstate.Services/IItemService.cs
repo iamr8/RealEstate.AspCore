@@ -1,5 +1,5 @@
 ﻿using RealEstate.Domain;
-using RealEstate.Services.Connector;
+using RealEstate.Services.Base;
 
 namespace RealEstate.Services
 {
@@ -10,24 +10,15 @@ namespace RealEstate.Services
     public class ItemService : IItemService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IFeatureService _featureService;
-        private readonly IPropertyService _propertyService;
-        private readonly IContactService _contactService;
         private readonly IBaseService _baseService;
 
         public ItemService(
             IBaseService baseService,
-            IUnitOfWork unitOfWork,
-            IFeatureService featureService,
-            IPropertyService propertyService,
-            IContactService contactService
+            IUnitOfWork unitOfWork
             )
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
-            _contactService = contactService;
-            _propertyService = propertyService;
-            _featureService = featureService;
         }
     }
 }

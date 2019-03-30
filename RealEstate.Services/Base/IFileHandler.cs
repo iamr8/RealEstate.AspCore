@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using System;
 using System.IO;
 
-namespace RealEstate.Services
+namespace RealEstate.Services.Base
 {
     public interface IFileHandler
     {

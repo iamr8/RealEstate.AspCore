@@ -6,7 +6,7 @@ using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Extensions;
-using RealEstate.Services.Connector;
+using RealEstate.Services.Base;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using RealEstate.ViewModels.Json;
@@ -42,34 +42,28 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IPropertyService _propertyService;
         private readonly IMapService _mapService;
-        private readonly IItemService _itemService;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
 
-        private readonly IHttpContextAccessor _accessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IItemService itemService,
             IMapService mapService,
-            IHttpContextAccessor accessor,
-            IPropertyService propertyService
+            IHttpContextAccessor httpContextAccessor
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _itemService = itemService;
             _mapService = mapService;
-            _accessor = accessor;
-            _propertyService = propertyService;
+            _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.PlugIn<User>();
             _logs = _unitOfWork.PlugIn<Log>();
         }
 
-        private HttpContext HttpContext => _accessor.HttpContext;
+        private HttpContext HttpContext => _httpContextAccessor.HttpContext;
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
         {

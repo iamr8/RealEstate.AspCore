@@ -2,7 +2,7 @@
 using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
-using RealEstate.Services.Connector;
+using RealEstate.Services.Base;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
@@ -22,35 +22,20 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly IContactService _contactService;
-        private readonly ILocationService _locationService;
-        private readonly IFeatureService _featureService;
-        private readonly IPictureService _pictureService;
-        private readonly IItemService _itemService;
         private readonly DbSet<Property> _properties;
         private readonly DbSet<PropertyOwnership> _propertyOwnerships;
         private readonly DbSet<Log> _logs;
 
         public PropertyService(
             IUnitOfWork unitOfWork,
-            IMapService mapService,
             IBaseService baseService,
-            IContactService contactService,
-            ILocationService locationService,
-            IFeatureService featureService,
-            IPictureService pictureService,
-            IItemService itemService
+            IContactService contactService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _contactService = contactService;
-            _mapService = mapService;
-            _locationService = locationService;
-            _featureService = featureService;
-            _pictureService = pictureService;
-            _itemService = itemService;
             _logs = _unitOfWork.PlugIn<Log>();
             _properties = _unitOfWork.PlugIn<Property>();
             _propertyOwnerships = _unitOfWork.PlugIn<PropertyOwnership>();

@@ -1,10 +1,10 @@
-﻿using GeoAPI.Geometries;
+﻿using System.Collections.Generic;
+using System.Linq;
+using GeoAPI.Geometries;
 using RealEstate.Domain.Tables;
 using RealEstate.ViewModels;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace RealEstate.Services.Connector
+namespace RealEstate.Services.Base
 {
     public interface IMapService
     {
