@@ -1,0 +1,44 @@
+{
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "font-awesome@5.7.2",
+      "destination": "wwwroot/lib/font-awesome"
+    },
+    {
+      "library": "Chart.js@2.7.3",
+      "files": [ "Chart.js", "Chart.min.js" ],
+      "destination": "wwwroot/lib/Chart.js"
+    },
+    {
+      "library": "jquery-validate@1.19.0",
+      "files": [ "localization/messages_fa.js", "localization/messages_fa.min.js", "jquery.validate.js", "jquery.validate.min.js" ],
+      "destination": "wwwroot/lib/jquery-validate"
+    },
+    {
+      "library": "jquery-validation-unobtrusive@3.2.11",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive"
+    },
+    {
+      "library": "jquery@3.3.1",
+      "files": [ "jquery.js", "jquery.min.js", "jquery.min.map" ],
+      "destination": "wwwroot/lib/jquery"
+    },
+    {
+      "library": "jquery.lazy@1.7.10",
+      "files": [ "jquery.lazy.js", "jquery.lazy.min.js" ],
+      "destination": "wwwroot/lib/jquery.lazy"
+    },
+    {
+      "library": "twitter-bootstrap@4.3.1",
+      "files": [ "js/bootstrap.bundle.js", "js/bootstrap.bundle.js.map", "js/bootstrap.bundle.min.js", "js/bootstrap.bundle.min.js.map", "css/bootstrap.css", "css/bootstrap.css.map", "css/bootstrap.min.css", "css/bootstrap.min.css.map" ],
+      "destination": "wwwroot/lib/bootstrap"
+    },
+    {
+      "library": "angular.js@2.0.0-beta.17",
+      "files": [ "angular2.js", "angular2.min.js" ],
+      "destination": "wwwroot/lib/angular"
+    }
+  ],
+  "version": "1.0"
+}

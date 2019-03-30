@@ -1,0 +1,25 @@
+@namespace RealEstate.Web.Pages
+
+@using RealEstate.Extensions
+@using RealEstate.ViewModels
+@using RealEstate.ViewModels.Json
+@using RealEstate.ViewModels.Search
+@using RealEstate.ViewModels.Input
+@using RealEstate.Base.Enums
+@using RealEstate.Services
+@using RealEstate.Services.Connector
+@using RealEstate.Resources
+@using RealEstate.Base
+
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizer<SharedResource> SharedLocalizer
+@inject IBaseService BaseService
+@inject IContactService ContactService
+@inject IUserService UserService
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, RealEstate.Extensions.TagHelpers
+@addTagHelper *, RealEstate.Extensions
+@addTagHelper *, RealEstate
+@addTagHelper *, RealEstate.Web

@@ -1,0 +1,31 @@
+﻿@import "_variables";
+
+/*.bg-dark {
+    background-color: #605ca8 !important;
+}*/
+
+/*.btn-success {
+    background-color: mix(black,$color5,30);
+
+    &:focus, &:hover {
+        background-color: mix(black,saturate($color5,80),50);
+    }
+
+    &:not(:disabled):not(.disabled):active {
+        background-color: mix(black,saturate($color5,80),60);
+        border-color: mix(black,saturate($color5,80),70);
+    }
+}*/
+.navbar {
+    .navbar-brand {
+        img {
+            max-height: 40px;
+            width: auto;
+            display: inline-block;
+        }
+    }
+
+    .navbar-toggler {
+        display: block;
+    }
+}

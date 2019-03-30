@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="fa">
+<head>
+
+    <partial name="Config/_Head" />
+    <title>@SharedLocalizer["AppName"] :: @ViewData["PageTitle"]</title>
+    <partial name="Config/_Styles" />
+    @RenderSection("Styles", false)
+    <environment include="Development">
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+    </environment>
+</head>
+<body>
+    <partial name="Config/_NavBar" />
+
+    <main class="container-fluid in" role="main">
+        <div class="row justify-content-center">
+            @RenderBody()
+        </div>
+    </main>
+    @* <partial name="Config/_BottomNavBar" /> *@
+    <partial name="Config/_Scripts" />
+
+    @RenderSection("Scripts", required: false)
+    <script asp-paste-key="notification"></script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Account" xml:space="preserve">
+    <value>حساب کاربری</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>آدرس</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>مدیر</value>
+  </data>
+  <data name="AlreadyExists" xml:space="preserve">
+    <value>این مورد از قبل موجود است.</value>
+  </data>
+  <data name="AppName" xml:space="preserve">
+    <value>مشاورین املاک موسی زاده</value>
+  </data>
+  <data name="AppNameEng" xml:space="preserve">
+    <value>MoosaZadeh RealEstates Agency</value>
+  </data>
+  <data name="Buy" xml:space="preserve">
+    <value>خرید</value>
+  </data>
+  <data name="Store" xml:space="preserve">
+    <value>مغازه</value>
+  </data>
+  <data name="Completed" xml:space="preserve">
+    <value>تکمیل شده</value>
+  </data>
+  <data name="ConstructionCompleteDateTime" xml:space="preserve">
+    <value>تاریخ تحویل</value>
+  </data>
+  <data name="ConstructionParticipatory" xml:space="preserve">
+    <value>مشارکت در ساخت</value>
+  </data>
+  <data name="ConstructionYear" xml:space="preserve">
+    <value>سال ساخت</value>
+  </data>
+  <data name="CreatedDateTime" xml:space="preserve">
+    <value>تاریخ ثبت در سامانه</value>
+  </data>
+  <data name="CurrentUserIsUnreachable" xml:space="preserve">
+    <value>کاربری فعلی قابل شناسایی نیست.</value>
+  </data>
+  <data name="Deactivated" xml:space="preserve">
+    <value>این حساب کاربری غیرفعال شده است</value>
+  </data>
+  <data name="DealCategory" xml:space="preserve">
+    <value>دسته بندی معامله</value>
+  </data>
+  <data name="DealStatus" xml:space="preserve">
+    <value>وضعیت معامله</value>
+  </data>
+  <data name="Deposit" xml:space="preserve">
+    <value>پیش پرداخت</value>
+  </data>
+  <data name="DepositPrice" xml:space="preserve">
+    <value>مبلغ پیش پرداخت</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>توضیحات</value>
+  </data>
+  <data name="District" xml:space="preserve">
+    <value>منطقه</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>خطا در انجام درخواست</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>{0} را پر کنید.</value>
+  </data>
+  <data name="FileRequired" xml:space="preserve">
+    <value>{0} را آپلود کنید.</value>
+  </data>
+  <data name="FinalPrice" xml:space="preserve">
+    <value>قیمت نهایی</value>
+  </data>
+  <data name="FirstName" xml:space="preserve">
+    <value>نام</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>شناسه</value>
+  </data>
+  <data name="LastName" xml:space="preserve">
+    <value>نام خانوادگی</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>طول جغرافیایی</value>
+  </data>
+  <data name="LoanPrice" xml:space="preserve">
+    <value>مبلغ وام</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>ورود</value>
+  </data>
+  <data name="LoginToAccount" xml:space="preserve">
+    <value>ورود به حساب کاربری</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>عرض جغرافیایی</value>
+  </data>
+  <data name="Measurement" xml:space="preserve">
+    <value>مساحت</value>
+  </data>
+  <data name="Mobile" xml:space="preserve">
+    <value>شماره همراه</value>
+  </data>
+  <data name="ModelNotFound" xml:space="preserve">
+    <value>مدل پیدا نشد.</value>
+  </data>
+  <data name="NullParam" xml:space="preserve">
+    <value>پارامتر خالی است</value>
+  </data>
+  <data name="Owner" xml:space="preserve">
+    <value>مالک</value>
+  </data>
+  <data name="OwnerNotSelected" xml:space="preserve">
+    <value>مالک انتخاب نشده است.</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>رمز عبور</value>
+  </data>
+  <data name="PendingRequest" xml:space="preserve">
+    <value>در انتظار درخواست</value>
+  </data>
+  <data name="PendingResponse" xml:space="preserve">
+    <value>در انتظار پاسخ</value>
+  </data>
+  <data name="PhoneNumber" xml:space="preserve">
+    <value>شماره تماس</value>
+  </data>
+  <data name="Pledge" xml:space="preserve">
+    <value>رهن</value>
+  </data>
+  <data name="PostalCode" xml:space="preserve">
+    <value>کد پستی</value>
+  </data>
+  <data name="Presale" xml:space="preserve">
+    <value>پیش فروش</value>
+  </data>
+  <data name="PricePerMeter" xml:space="preserve">
+    <value>قیمت هر متر</value>
+  </data>
+  <data name="PropertyCategory" xml:space="preserve">
+    <value>دسته بندی ملک</value>
+  </data>
+  <data name="PropertyNotSelected" xml:space="preserve">
+    <value>ملک انتخاب نشده است.</value>
+  </data>
+  <data name="Rent" xml:space="preserve">
+    <value>اجاره</value>
+  </data>
+  <data name="RentPrice" xml:space="preserve">
+    <value>مبلغ اجاره</value>
+  </data>
+  <data name="Flat" xml:space="preserve">
+    <value>آپارتمان</value>
+  </data>
+  <data name="RetryAfterReview" xml:space="preserve">
+    <value>.پس از بررسی دوباره امتحان کنید</value>
+  </data>
+  <data name="Sale" xml:space="preserve">
+    <value>فروش</value>
+  </data>
+  <data name="Subject" xml:space="preserve">
+    <value>عنوان</value>
+  </data>
+  <data name="Substructure" xml:space="preserve">
+    <value>زیربنا</value>
+  </data>
+  <data name="SuccessfullyDone" xml:space="preserve">
+    <value>با موفقیت انجام شد.</value>
+  </data>
+  <data name="UnableToSave" xml:space="preserve">
+    <value>ذخیره در بانک داده انجام نشد.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>نامشخص</value>
+  </data>
+  <data name="User" xml:space="preserve">
+    <value>کاربر</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>شناسه کاربری</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>کاربر پیدا نشد</value>
+  </data>
+  <data name="WrongPassword" xml:space="preserve">
+    <value>رمز عبور اشتباه است</value>
+  </data>
+  <data name="Deals" xml:space="preserve">
+    <value>موارد</value>
+  </data>
+  <data name="NewDeal" xml:space="preserve">
+    <value>مورد جدید</value>
+  </data>
+  <data name="HomePage" xml:space="preserve">
+    <value>صفحه اصلی</value>
+  </data>
+  <data name="LogOut" xml:space="preserve">
+    <value>خروج از حساب کاربری</value>
+  </data>
+  <data name="Districts" xml:space="preserve">
+    <value>مناطق</value>
+  </data>
+  <data name="Features" xml:space="preserve">
+    <value>مشخصات</value>
+  </data>
+  <data name="Owners" xml:space="preserve">
+    <value>مالکین</value>
+  </data>
+  <data name="Facilities" xml:space="preserve">
+    <value>امکانات</value>
+  </data>
+  <data name="Properties" xml:space="preserve">
+    <value>املاک</value>
+  </data>
+  <data name="NewOwner" xml:space="preserve">
+    <value>مالک جدید</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>عدم نمایش</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>ویرایش</value>
+  </data>
+  <data name="AlreadyDeleted" xml:space="preserve">
+    <value>حذف شده</value>
+  </data>
+  <data name="AreYouSureToDoThisRequest" xml:space="preserve">
+    <value>آیا اطمینان به انجام این درخواست دارید؟</value>
+  </data>
+  <data name="Property" xml:space="preserve">
+    <value>ملک</value>
+  </data>
+  <data name="Undelete" xml:space="preserve">
+    <value>نمایش</value>
+  </data>
+  <data name="NewFeature" xml:space="preserve">
+    <value>مشخصه جدید</value>
+  </data>
+  <data name="NewFacility" xml:space="preserve">
+    <value>امکان جدید</value>
+  </data>
+  <data name="NewDistrict" xml:space="preserve">
+    <value>منطقه جدید</value>
+  </data>
+  <data name="Submit" xml:space="preserve">
+    <value>ثبت</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>کاربران</value>
+  </data>
+  <data name="By" xml:space="preserve">
+    <value>توسط</value>
+  </data>
+  <data name="Create" xml:space="preserve">
+    <value>ایجاد</value>
+  </data>
+  <data name="Role" xml:space="preserve">
+    <value>سطح دسترسی</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>غیرفعالسازی</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>فعالسازی</value>
+  </data>
+  <data name="NewUser" xml:space="preserve">
+    <value>کاربر جدید</value>
+  </data>
+  <data name="SuperAdmin" xml:space="preserve">
+    <value>مدیر اصلی</value>
+  </data>
+  <data name="NewPerson" xml:space="preserve">
+    <value>فرد جدید</value>
+  </data>
+  <data name="Persons" xml:space="preserve">
+    <value>افراد</value>
+  </data>
+  <data name="NewProperty" xml:space="preserve">
+    <value>ملک جدید</value>
+  </data>
+  <data name="NoItemToShow" xml:space="preserve">
+    <value>موردی برای نمایش وجود ندارد.</value>
+  </data>
+  <data name="EditUser" xml:space="preserve">
+    <value>ویرایش کاربر</value>
+  </data>
+  <data name="EditDistrict" xml:space="preserve">
+    <value>ویرایش منطقه</value>
+  </data>
+  <data name="EditFeature" xml:space="preserve">
+    <value>ویرایش مشخصه</value>
+  </data>
+  <data name="EditPerson" xml:space="preserve">
+    <value>ویرایش فرد</value>
+  </data>
+  <data name="EditFacility" xml:space="preserve">
+    <value>ویرایش امکان</value>
+  </data>
+  <data name="EditProperty" xml:space="preserve">
+    <value>ویرایش ملک</value>
+  </data>
+  <data name="Ground" xml:space="preserve">
+    <value>زمین</value>
+  </data>
+  <data name="Villa" xml:space="preserve">
+    <value>ویلایی</value>
+  </data>
+  <data name="Financial" xml:space="preserve">
+    <value>مالی</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>آمار</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>وضعیت</value>
+  </data>
+  <data name="AddThisFeature" xml:space="preserve">
+    <value>ثبت این مشخصه</value>
+  </data>
+  <data name="AddThisFacility" xml:space="preserve">
+    <value>ثبت این امکان</value>
+  </data>
+  <data name="EditDeal" xml:space="preserve">
+    <value>ویرایش مورد</value>
+  </data>
+  <data name="Specifications" xml:space="preserve">
+    <value>مشخصات</value>
+  </data>
+  <data name="SecondPerson" xml:space="preserve">
+    <value>طرف دوم</value>
+  </data>
+  <data name="PartialSuccess" xml:space="preserve">
+    <value>با موفقیت کامل انجام نشد.</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>جستجو</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>مقدار</value>
+  </data>
+  <data name="UserState" xml:space="preserve">
+    <value>وضعیت فعلی کاربر</value>
+  </data>
+  <data name="AlreadySignedIn" xml:space="preserve">
+    <value>این کاربر پیش از شما وارد سامانه شده است</value>
+  </data>
+  <data name="StateAddingDeal" xml:space="preserve">
+    <value>در حال افزودن مورد</value>
+  </data>
+  <data name="StateAddingDistrict" xml:space="preserve">
+    <value>در حال افزودن منطقه</value>
+  </data>
+  <data name="StateAddingFeature" xml:space="preserve">
+    <value>در حال افزودن مشخصه ملک</value>
+  </data>
+  <data name="StateAddingPerson" xml:space="preserve">
+    <value>در حال افزودن فرد</value>
+  </data>
+  <data name="StateAddingFacility" xml:space="preserve">
+    <value>در حال افزودن امکان ملک</value>
+  </data>
+  <data name="StateAddingProperty" xml:space="preserve">
+    <value>در حال افزودن ملک</value>
+  </data>
+  <data name="StateAddingSpecification" xml:space="preserve">
+    <value>در حال افزودن مشخصه مورد</value>
+  </data>
+  <data name="StateAddingUser" xml:space="preserve">
+    <value>در حال افزودن کاربر</value>
+  </data>
+  <data name="StateConnected" xml:space="preserve">
+    <value>متصل به سامانه</value>
+  </data>
+  <data name="StateEditingDeal" xml:space="preserve">
+    <value>در حال ویرایش مورد</value>
+  </data>
+  <data name="StateEditingDistrict" xml:space="preserve">
+    <value>در حال ویرایش منطقه</value>
+  </data>
+  <data name="StateEditingFeature" xml:space="preserve">
+    <value>در حال ویرایش مشخصه ملک</value>
+  </data>
+  <data name="StateEditingPerson" xml:space="preserve">
+    <value>در حال ویرایش فرد</value>
+  </data>
+  <data name="StateEditingFacility" xml:space="preserve">
+    <value>در حال ویرایش امکان ملک</value>
+  </data>
+  <data name="StateEditingProperty" xml:space="preserve">
+    <value>در حال ویرایش ملک</value>
+  </data>
+  <data name="StateEditingSpecification" xml:space="preserve">
+    <value>در حال ویرایش مشخصه مورد</value>
+  </data>
+  <data name="StateEditingUser" xml:space="preserve">
+    <value>در حال ویرایش کاربر</value>
+  </data>
+  <data name="StateWatchingDeals" xml:space="preserve">
+    <value>در حال مشاهده صفحه موارد</value>
+  </data>
+  <data name="StateWatchingDistricts" xml:space="preserve">
+    <value>در حال مشاهده صفحه مناطق</value>
+  </data>
+  <data name="StateWatchingFeatures" xml:space="preserve">
+    <value>در حال مشاهده صفحه مشخصات املاک</value>
+  </data>
+  <data name="StateWatchingPersons" xml:space="preserve">
+    <value>در حال مشاهده صفحه افراد</value>
+  </data>
+  <data name="StateWatchingFacilities" xml:space="preserve">
+    <value>در حال مشاهده صفحه امکانات املاک</value>
+  </data>
+  <data name="StateWatchingProperties" xml:space="preserve">
+    <value>در حال مشاهده صفحه املاک</value>
+  </data>
+  <data name="StateWatchingStatistics" xml:space="preserve">
+    <value>در حال مشاهده صفحه آمار</value>
+  </data>
+  <data name="StateWatchingUsers" xml:space="preserve">
+    <value>در حال مشاهده صفحه کاربران</value>
+  </data>
+  <data name="UpdateDealStatus" xml:space="preserve">
+    <value>تعیین وضعیت</value>
+  </data>
+  <data name="IfYouAlreadyCreateProperty" xml:space="preserve">
+    <value>در صورتی که قبلا ملک مورد نظر را به سامانه اضافه کرده اید، انتخاب کنید:</value>
+  </data>
+  <data name="IfYouWantToCreateProperty" xml:space="preserve">
+    <value>در صورتی که مایلید ملک جدید به سامانه اضافه کنید:</value>
+  </data>
+  <data name="SelectProperty" xml:space="preserve">
+    <value>انتخاب ملک</value>
+  </data>
+  <data name="PropertySelectorPlaceholder" xml:space="preserve">
+    <value>مثلا: نام مالک، آدرس مالک، آدرس ملک، منطقه و ...</value>
+  </data>
+  <data name="OwnerSelectorPlaceholder" xml:space="preserve">
+    <value>مثلا: نام فرد، شماره موبایل فرد یا ...</value>
+  </data>
+  <data name="SearchPerson" xml:space="preserve">
+    <value>جستجوی افراد</value>
+  </data>
+  <data name="ResetSelection" xml:space="preserve">
+    <value>انتخاب مجدد</value>
+  </data>
+  <data name="SelectPerson" xml:space="preserve">
+    <value>انتخاب فرد</value>
+  </data>
+  <data name="IfYouAlreadyCreatePerson" xml:space="preserve">
+    <value>در صورتی که قبلا فرد مورد نظر را به سامانه اضافه کرده اید، انتخاب کنید:</value>
+  </data>
+  <data name="IfYouWantToCreatePerson" xml:space="preserve">
+    <value>در صورتی که مایلید فرد جدید به سامانه اضافه کنید:</value>
+  </data>
+  <data name="UpdatedDealStatus" xml:space="preserve">
+    <value>درخواست شده</value>
+  </data>
+  <data name="StateWatchingDealStatuses" xml:space="preserve">
+    <value>در حال مشاهده صفحه تعیین وضعیت موارد</value>
+  </data>
+  <data name="Accept" xml:space="preserve">
+    <value>تائید</value>
+  </data>
+  <data name="Reject" xml:space="preserve">
+    <value>رد</value>
+  </data>
+  <data name="ChangeDealBeforeAccept" xml:space="preserve">
+    <value>پیش از تکمیل این فرم، در صورت نیاز به ایجاد تغییرات، روی دکمه زیر کلید/تپ کنید</value>
+  </data>
+  <data name="CommissionPrice" xml:space="preserve">
+    <value>مبلغ کمیسیون</value>
+  </data>
+  <data name="MonthLength" xml:space="preserve">
+    <value>مدت قرارداد (ماه)</value>
+  </data>
+  <data name="TipPrice" xml:space="preserve">
+    <value>مبلغ شیرینی</value>
+  </data>
+  <data name="AddThisOperator" xml:space="preserve">
+    <value>ثبت این اپراتور</value>
+  </data>
+  <data name="Operators" xml:space="preserve">
+    <value>اپراتورها</value>
+  </data>
+  <data name="CommissionPercent" xml:space="preserve">
+    <value>درصد کمیسیون</value>
+  </data>
+  <data name="TipPercent" xml:space="preserve">
+    <value>درصد شیرینی</value>
+  </data>
+  <data name="DealFirstPerson" xml:space="preserve">
+    <value>طرف اول معامله</value>
+  </data>
+  <data name="DealSecondPerson" xml:space="preserve">
+    <value>طرف دوم معامله</value>
+  </data>
+  <data name="NewSecondPerson" xml:space="preserve">
+    <value>طرف دوم معامله جدید</value>
+  </data>
+  <data name="SelectOwner" xml:space="preserve">
+    <value>انتخاب مالک</value>
+  </data>
+  <data name="SelectSecondPerson" xml:space="preserve">
+    <value>انتخاب طرف دوم معامله</value>
+  </data>
+  <data name="Deal" xml:space="preserve">
+    <value>مورد</value>
+  </data>
+  <data name="Rejected" xml:space="preserve">
+    <value>رد شده</value>
+  </data>
+  <data name="FeatureType" xml:space="preserve">
+    <value>نوع مشخصه</value>
+  </data>
+  <data name="Modify" xml:space="preserve">
+    <value>ویرایش</value>
+  </data>
+  <data name="Forbidden" xml:space="preserve">
+    <value>شما اجازه دسترسی به این درخواست را ندارید</value>
+  </data>
+  <data name="ForbiddenAndUnableToUpdateOrShow" xml:space="preserve">
+    <value>این مورد پیش از این به سامانه افزوده گردیده، اما شما اجازه بروز رسانی یا بازنمایش آن را ندارید.</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>ایست!</value>
+  </data>
+  <data name="SameAsOwner" xml:space="preserve">
+    <value>طرف اول و دوم یکی هستند</value>
+  </data>
+  <data name="Notifications" xml:space="preserve">
+    <value>اعلانات</value>
+  </data>
+  <data name="ViewAllNotifications" xml:space="preserve">
+    <value>مشاهده همه اعلانات</value>
+  </data>
+  <data name="Photos" xml:space="preserve">
+    <value>تصاویر</value>
+  </data>
+  <data name="UploadPhotos" xml:space="preserve">
+    <value>آپلود تصویر</value>
+  </data>
+</root>

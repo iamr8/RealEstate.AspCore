@@ -1,0 +1,18 @@
+﻿<nav class="navbar navbar-expand navbar-dark bg-dark in">
+	<button class="navbar-toggler" type="button">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<a class="navbar-brand" asp-page="/Index">
+		@SharedLocalizer["AppName"]
+	</a>
+
+	<vc:notification />
+</nav>
+<div id="navbarNavDropdown" class="sidenav in">
+	<partial name="Shared/Config/_MenuHeader" />
+	<div class="nav-items">
+		<partial name="Shared/Config/_MenuItems" />
+	</div>
+	<partial name="Shared/Config/_MenuVersion" />
+</div>
+<div class="backdrop in"></div>
