@@ -6,7 +6,6 @@ using RealEstate.Services.Connector;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,17 +15,14 @@ namespace RealEstate.Services
     {
         Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user);
 
-        Task<List<OwnershipViewModel>> PropertyOwnershipFindAsync(string id);
-
         Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save, UserViewModel currentUser);
-
-        Task<PropertyOwnership> PropertyOwnershipFindEntityAsync(string id);
     }
 
     public class PropertyService : IPropertyService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IMapService _mapService;
         private readonly IContactService _contactService;
         private readonly ILocationService _locationService;
         private readonly IFeatureService _featureService;
@@ -38,6 +34,7 @@ namespace RealEstate.Services
 
         public PropertyService(
             IUnitOfWork unitOfWork,
+            IMapService mapService,
             IBaseService baseService,
             IContactService contactService,
             ILocationService locationService,
@@ -49,6 +46,7 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _contactService = contactService;
+            _mapService = mapService;
             _locationService = locationService;
             _featureService = featureService;
             _pictureService = pictureService;
@@ -130,27 +128,6 @@ namespace RealEstate.Services
                 return new ValueTuple<StatusEnum, PropertyOwnership>(StatusEnum.PropertyOwnershipIsNull, null);
 
             return await _baseService.SaveChangesAsync(newPropertyOwnership, save).ConfigureAwait(false);
-        }
-
-        public async Task<PropertyOwnership> PropertyOwnershipFindEntityAsync(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return default;
-
-            var entity = await _propertyOwnerships.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            return entity;
-        }
-
-        public async Task<List<OwnershipViewModel>> PropertyOwnershipFindAsync(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return default;
-
-            var entity = await PropertyOwnershipFindEntityAsync(id).ConfigureAwait(false);
-            if (entity == null)
-                return default;
-
-            return _contactService.Map(entity.Ownerships);
         }
     }
 }

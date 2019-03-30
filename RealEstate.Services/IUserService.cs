@@ -43,6 +43,7 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IPropertyService _propertyService;
+        private readonly IMapService _mapService;
         private readonly IItemService _itemService;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
@@ -53,6 +54,7 @@ namespace RealEstate.Services
             IUnitOfWork unitOfWork,
             IBaseService baseService,
             IItemService itemService,
+            IMapService mapService,
             IHttpContextAccessor accessor,
             IPropertyService propertyService
             )
@@ -60,6 +62,7 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _itemService = itemService;
+            _mapService = mapService;
             _accessor = accessor;
             _propertyService = propertyService;
             _users = _unitOfWork.PlugIn<User>();
@@ -128,7 +131,7 @@ namespace RealEstate.Services
             if (!string.IsNullOrEmpty(userId))
                 models = models.Where(x => x.Id == userId);
 
-            var result = await _baseService.PaginateAsync(models, page, Map,
+            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
                 new[]
                 {
                     Role.SuperAdmin

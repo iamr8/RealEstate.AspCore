@@ -601,5 +601,6 @@ namespace RealEstate.Services.Connector
                 });
             return result;
         }
+
     }
 }
