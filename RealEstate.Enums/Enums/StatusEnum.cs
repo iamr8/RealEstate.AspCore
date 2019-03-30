@@ -71,9 +71,9 @@ namespace RealEstate.Base.Enums
         ApplicantsEmpty,
         ApplicantIsNull,
         FileIsNull,
+        PropertyOwnershipIsNull,
         OwnershipIsNull,
-        OwnerIsNull,
-        OwnershipNotUpdated,
+        PropertyOwnershipNotUpdated,
         BasedOnModelNullability
     }
 }

@@ -13,7 +13,7 @@ namespace RealEstate.Domain.Tables
             PropertyFacilities = new HashSet<PropertyFacility>();
             Items = new HashSet<Item>();
             PropertyFeatures = new HashSet<PropertyFeature>();
-            Ownerships = new HashSet<Ownership>();
+            PropertyOwnerships = new HashSet<PropertyOwnership>();
         }
 
         [Required]
@@ -33,7 +33,7 @@ namespace RealEstate.Domain.Tables
         public virtual PropertyCategory PropertyCategory { get; set; }
 
         public virtual District District { get; set; }
-        public virtual ICollection<Ownership> Ownerships { get; set; }
+        public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }
         public virtual ICollection<Item> Items { get; set; }
 
         public virtual ICollection<Picture> Pictures { get; set; }

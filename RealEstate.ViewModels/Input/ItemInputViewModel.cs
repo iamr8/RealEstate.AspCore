@@ -22,10 +22,10 @@ namespace RealEstate.ViewModels.Input
         [HiddenInput]
         public string ItemFeaturesJson { get; set; }
 
-        public List<FeatureValueJsonViewModel> ItemFeatures =>
+        public List<FeatureJsonValueViewModel> ItemFeatures =>
             string.IsNullOrEmpty(ItemFeaturesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<FeatureValueJsonViewModel>>(ItemFeaturesJson);
+                : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(ItemFeaturesJson);
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
         public string Description { get; set; }

@@ -32,7 +32,6 @@ namespace RealEstate.Domain
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<NotificationRecipient> NotificationRecipient { get; set; }
         public virtual DbSet<NotificationSeener> NotificationSeener { get; set; }
-        public virtual DbSet<Owner> Owner { get; set; }
         public virtual DbSet<Ownership> Ownership { get; set; }
         public virtual DbSet<Payment> Payment { get; set; }
         public virtual DbSet<Picture> Picture { get; set; }
@@ -40,6 +39,7 @@ namespace RealEstate.Domain
         public virtual DbSet<PropertyCategory> PropertyCategory { get; set; }
         public virtual DbSet<PropertyFacility> PropertyFacility { get; set; }
         public virtual DbSet<PropertyFeature> PropertyFeature { get; set; }
+        public virtual DbSet<PropertyOwnership> PropertyOwnership { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserItemCategory> UserItemCategory { get; set; }
         public virtual DbSet<UserPropertyCategory> UserPropertyCategory { get; set; }

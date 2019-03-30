@@ -32,30 +32,30 @@ namespace RealEstate.ViewModels.Input
         public string DistrictId { get; set; }
 
         [HiddenInput]
-        public string OwnersJson { get; set; }
+        public string OwnershipsJson { get; set; }
 
         [Required]
-        public List<OwnerJsonViewModel> Owners =>
-            string.IsNullOrEmpty(OwnersJson)
+        public List<OwnershipJsonViewModel> Ownerships =>
+            string.IsNullOrEmpty(OwnershipsJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<OwnerJsonViewModel>>(OwnersJson);
+                : JsonConvert.DeserializeObject<List<OwnershipJsonViewModel>>(OwnershipsJson);
 
         [HiddenInput]
         public string PropertyFeaturesJson { get; set; }
 
         [Required]
-        public List<FeatureValueJsonViewModel> PropertyFeatures =>
+        public List<FeatureJsonValueViewModel> PropertyFeatures =>
             string.IsNullOrEmpty(PropertyFeaturesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<FeatureValueJsonViewModel>>(PropertyFeaturesJson);
+                : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(PropertyFeaturesJson);
 
         [HiddenInput]
         public string PropertyFacilitiesJson { get; set; }
 
         [Required]
-        public List<FacilityValueJsonViewModel> PropertyFacilities =>
+        public List<Json.FacilityJsonViewModel> PropertyFacilities =>
             string.IsNullOrEmpty(PropertyFacilitiesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<FacilityValueJsonViewModel>>(PropertyFacilitiesJson);
+                : JsonConvert.DeserializeObject<List<Json.FacilityJsonViewModel>>(PropertyFacilitiesJson);
     }
 }

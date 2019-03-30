@@ -9,7 +9,7 @@ namespace RealEstate.Domain.Tables
         public Contact()
         {
             Applicants = new HashSet<Applicant>();
-            Owners = new HashSet<Owner>();
+            Ownerships = new HashSet<Ownership>();
         }
 
         public string Description { get; set; }
@@ -24,6 +24,6 @@ namespace RealEstate.Domain.Tables
 
         public string Address { get; set; }
         public virtual ICollection<Applicant> Applicants { get; set; }
-        public virtual ICollection<Owner> Owners { get; set; }
+        public virtual ICollection<Ownership> Ownerships { get; set; }
     }
 }

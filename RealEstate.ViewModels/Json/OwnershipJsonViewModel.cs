@@ -2,12 +2,12 @@
 
 namespace RealEstate.ViewModels.Json
 {
-    public class OwnerJsonViewModel
+    public class OwnershipJsonViewModel
     {
         [JsonProperty("id")]
-        public string OwnerId { get; set; }
+        public string OwnershipId { get; set; }
 
         [JsonProperty("own")]
-        public string OwnerName { get; set; }
+        public string ContactName { get; set; }
     }
 }

@@ -24,10 +24,6 @@ namespace RealEstate.Services
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
-        List<UserViewModel> List(ICollection<User> users);
-
-        UserViewModel Find(User user);
-
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(int page, string userName, string userFirst,
@@ -46,6 +42,8 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IPropertyService _propertyService;
+        private readonly IItemService _itemService;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
 
@@ -54,45 +52,21 @@ namespace RealEstate.Services
         public UserService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IHttpContextAccessor accessor
+            IItemService itemService,
+            IHttpContextAccessor accessor,
+            IPropertyService propertyService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _itemService = itemService;
             _accessor = accessor;
+            _propertyService = propertyService;
             _users = _unitOfWork.PlugIn<User>();
             _logs = _unitOfWork.PlugIn<Log>();
         }
 
         private HttpContext HttpContext => _accessor.HttpContext;
-
-        public List<UserViewModel> List(ICollection<User> users)
-        {
-            var result = _baseService.Map(users.ToList(), Find);
-            return result;
-        }
-
-        public UserViewModel Find(User user)
-        {
-            if (user == null) return null;
-
-            var result = _baseService.Map(user,
-                new UserViewModel
-                {
-                    Role = user.Role,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Mobile = user.Mobile,
-                    EncryptedPassword = user.Password,
-                    Username = user.Username,
-                    Address = user.Address,
-                    Phone = user.Phone,
-                    CreationDateTime = user.DateTime,
-                    //                    ItemCategories = _itemService.UserItemCategoryList(user.UserItemCategories),
-                    //                    PropertyCategories = _itemService.UserPropertyCategoryList(user.UserPropertyCategories)
-                });
-            return result;
-        }
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
         {
@@ -154,7 +128,7 @@ namespace RealEstate.Services
             if (!string.IsNullOrEmpty(userId))
                 models = models.Where(x => x.Id == userId);
 
-            var result = await _baseService.PaginateAsync(models, page, Find,
+            var result = await _baseService.PaginateAsync(models, page, Map,
                 new[]
                 {
                     Role.SuperAdmin

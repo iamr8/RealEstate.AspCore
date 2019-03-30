@@ -6,6 +6,7 @@ using RealEstate.Services.Connector;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,6 +15,12 @@ namespace RealEstate.Services
     public interface IPropertyService
     {
         Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user);
+
+        Task<List<OwnershipViewModel>> PropertyOwnershipFindAsync(string id);
+
+        Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save, UserViewModel currentUser);
+
+        Task<PropertyOwnership> PropertyOwnershipFindEntityAsync(string id);
     }
 
     public class PropertyService : IPropertyService
@@ -21,20 +28,34 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IContactService _contactService;
+        private readonly ILocationService _locationService;
+        private readonly IFeatureService _featureService;
+        private readonly IPictureService _pictureService;
+        private readonly IItemService _itemService;
         private readonly DbSet<Property> _properties;
+        private readonly DbSet<PropertyOwnership> _propertyOwnerships;
         private readonly DbSet<Log> _logs;
 
         public PropertyService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IContactService contactService
+            IContactService contactService,
+            ILocationService locationService,
+            IFeatureService featureService,
+            IPictureService pictureService,
+            IItemService itemService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _contactService = contactService;
+            _locationService = locationService;
+            _featureService = featureService;
+            _pictureService = pictureService;
+            _itemService = itemService;
             _logs = _unitOfWork.PlugIn<Log>();
             _properties = _unitOfWork.PlugIn<Property>();
+            _propertyOwnerships = _unitOfWork.PlugIn<PropertyOwnership>();
         }
 
         public async Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user)
@@ -42,8 +63,8 @@ namespace RealEstate.Services
             if (model == null)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.ModelIsNull, null);
 
-            if (model.Owners?.Any() != true)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnerIsNull, null);
+            if (model.Ownerships?.Any() != true)
+                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
 
             user = _baseService.CurrentUser(user);
             if (user == null)
@@ -62,12 +83,12 @@ namespace RealEstate.Services
                 Street = model.Street,
             }, user.Id);
 
-            var (ownershipAddStatus, ownership) = await _contactService.OwnershipAddAsync(newProperty.Id, false, user).ConfigureAwait(false);
-            if (ownershipAddStatus != StatusEnum.Success)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
+            var (propertyOwnershipAddStatus, propertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false, user).ConfigureAwait(false);
+            if (propertyOwnershipAddStatus != StatusEnum.Success)
+                return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
 
-            foreach (var owner in model.Owners)
-                await _contactService.OwnerUpdateAsync(owner.OwnerId, ownership.Id, false, user).ConfigureAwait(false);
+            foreach (var owner in model.Ownerships)
+                await _contactService.OwnershipUpdateAsync(owner.OwnershipId, propertyOwnership.Id, false, user).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
                 newProperty.PropertyFeatures,
@@ -93,6 +114,43 @@ namespace RealEstate.Services
                 false, user).ConfigureAwait(false);
 
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save, UserViewModel currentUser)
+        {
+            currentUser = _baseService.CurrentUser(currentUser);
+            if (currentUser == null)
+                return new ValueTuple<StatusEnum, PropertyOwnership>(StatusEnum.UserIsNull, null);
+
+            var newPropertyOwnership = _unitOfWork.Add(new PropertyOwnership
+            {
+                PropertyId = propertyId
+            }, currentUser.Id);
+            if (newPropertyOwnership == null)
+                return new ValueTuple<StatusEnum, PropertyOwnership>(StatusEnum.PropertyOwnershipIsNull, null);
+
+            return await _baseService.SaveChangesAsync(newPropertyOwnership, save).ConfigureAwait(false);
+        }
+
+        public async Task<PropertyOwnership> PropertyOwnershipFindEntityAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var entity = await _propertyOwnerships.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            return entity;
+        }
+
+        public async Task<List<OwnershipViewModel>> PropertyOwnershipFindAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var entity = await PropertyOwnershipFindEntityAsync(id).ConfigureAwait(false);
+            if (entity == null)
+                return default;
+
+            return _contactService.Map(entity.Ownerships);
         }
     }
 }

@@ -39,9 +39,9 @@ namespace RealEstate.ViewModels.Input
 
         public string ApplicantFeaturesJson { get; set; }
 
-        public List<FeatureValueJsonViewModel> ApplicantFeatures =>
+        public List<FeatureJsonValueViewModel> ApplicantFeatures =>
             string.IsNullOrEmpty(ApplicantFeaturesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<FeatureValueJsonViewModel>>(ApplicantFeaturesJson);
+                : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(ApplicantFeaturesJson);
     }
 }

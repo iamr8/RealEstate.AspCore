@@ -9,7 +9,7 @@ namespace RealEstate.Services.Connector
             service.AddScoped<IBaseService, BaseService>();
             service.AddScoped<IUserService, UserService>();
             //            service.AddScoped<ILocationService, LocationService>();
-            //            service.AddScoped<IItemService, ItemService>();
+            service.AddScoped<IItemService, ItemService>();
             service.AddScoped<IContactService, ContactService>();
             //            service.AddScoped<IPaymentService, PaymentService>();
             //            service.AddScoped<IDealService, DealService>();

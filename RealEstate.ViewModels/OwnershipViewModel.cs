@@ -1,11 +1,11 @@
 ﻿using RealEstate.Base;
-using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class OwnershipViewModel : BaseViewModel
+    public class OwnershipViewModel : BaseTrackViewModel
     {
-        public List<OwnerViewModel> Owners { get; set; }
-        public string PropertyId { get; set; }
+        public int Dong { get; set; }
+        public ContactViewModel Contact { get; set; }
+        public string PropertyOwnershipId { get; set; }
     }
 }
