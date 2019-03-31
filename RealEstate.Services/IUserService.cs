@@ -59,8 +59,8 @@ namespace RealEstate.Services
             _baseService = baseService;
             _mapService = mapService;
             _httpContextAccessor = httpContextAccessor;
-            _users = _unitOfWork.PlugIn<User>();
-            _logs = _unitOfWork.PlugIn<Log>();
+            _users = _unitOfWork.Set<User>();
+            _logs = _unitOfWork.Set<Log>();
         }
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
@@ -90,7 +90,7 @@ namespace RealEstate.Services
 
         public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
         {
-            var users = await _users.Filtered(_logs).ToListAsync().ConfigureAwait(false);
+            var users = await _users.Filtered().ToListAsync().ConfigureAwait(false);
             var result = _baseService.Map(users, x => new BeneficiaryJsonViewModel
             {
                 UserId = x.Id,
@@ -220,7 +220,7 @@ namespace RealEstate.Services
         {
             var currentUser = _baseService.CurrentUser(claims);
 
-            var models = _users.Filtered(_logs);
+            var models = _users.Filtered();
             var foundUser = await (from user in models
                                    where user.Id == currentUser.Id
                                    where user.Username == currentUser.Username
@@ -275,7 +275,7 @@ namespace RealEstate.Services
                 return StatusEnum.WrongPassword;
             }
 
-            var lastTrack = _logs.CurrentState(userDb.Id);
+            var lastTrack = userDb.LastLog();
             if (lastTrack?.Type == TrackTypeEnum.Delete)
                 return StatusEnum.Deactivated;
 

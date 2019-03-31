@@ -30,8 +30,6 @@ namespace RealEstate.Domain
         public virtual DbSet<ItemFeature> ItemFeature { get; set; }
         public virtual DbSet<ItemRequest> ItemRequest { get; set; }
         public virtual DbSet<Log> Log { get; set; }
-        public virtual DbSet<NotificationRecipient> NotificationRecipient { get; set; }
-        public virtual DbSet<NotificationSeener> NotificationSeener { get; set; }
         public virtual DbSet<Ownership> Ownership { get; set; }
         public virtual DbSet<Payment> Payment { get; set; }
         public virtual DbSet<Picture> Picture { get; set; }
@@ -48,12 +46,12 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            //            modelBuilder.SeedDatabase();
+            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }
 
-        public DbSet<TEntity> PlugIn<TEntity>() where TEntity : class
+        public new DbSet<TEntity> Set<TEntity>() where TEntity : class
         {
             return base.Set<TEntity>();
         }

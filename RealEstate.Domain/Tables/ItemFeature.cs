@@ -1,10 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
-using RealEstate.Base.Database;
+﻿using RealEstate.Domain.Base;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Domain.Tables
 {
     public class ItemFeature : BaseEntity
     {
+        public ItemFeature()
+        {
+            Logs = new HashSet<Log>();
+        }
+
         [Required]
         public string Value { get; set; }
 

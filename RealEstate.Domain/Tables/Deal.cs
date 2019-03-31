@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using RealEstate.Base.Database;
+﻿using RealEstate.Domain.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Domain.Tables
 {
-    /// <summary>
-    /// Not to be tracked, because it's kind of TRACKER
-    /// </summary>
     public class Deal : BaseEntity
     {
         public Deal()
@@ -13,6 +10,7 @@ namespace RealEstate.Domain.Tables
             Pictures = new HashSet<Picture>();
             DealPayments = new HashSet<DealPayment>();
             Beneficiaries = new HashSet<Beneficiary>();
+            Logs = new HashSet<Log>();
         }
 
         public string Description { get; set; }

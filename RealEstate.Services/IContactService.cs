@@ -38,9 +38,9 @@ namespace RealEstate.Services
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _contacts = _unitOfWork.PlugIn<Contact>();
-            _applicants = _unitOfWork.PlugIn<Applicant>();
-            _ownerships = _unitOfWork.PlugIn<Ownership>();
+            _contacts = _unitOfWork.Set<Contact>();
+            _applicants = _unitOfWork.Set<Applicant>();
+            _ownerships = _unitOfWork.Set<Ownership>();
         }
 
         public async Task<Ownership> OwnershipFindEntityAsync(string id)

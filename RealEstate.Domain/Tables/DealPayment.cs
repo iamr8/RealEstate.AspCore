@@ -1,6 +1,6 @@
-﻿using System;
+﻿using RealEstate.Domain.Base;
+using System;
 using System.Collections.Generic;
-using RealEstate.Base.Database;
 
 namespace RealEstate.Domain.Tables
 {
@@ -9,6 +9,7 @@ namespace RealEstate.Domain.Tables
         public DealPayment()
         {
             Pictures = new HashSet<Picture>();
+            Logs = new HashSet<Log>();
         }
 
         public decimal CommissionPrice { get; set; } // مبلغ کمیسیون

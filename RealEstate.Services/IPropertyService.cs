@@ -36,9 +36,9 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _contactService = contactService;
-            _logs = _unitOfWork.PlugIn<Log>();
-            _properties = _unitOfWork.PlugIn<Property>();
-            _propertyOwnerships = _unitOfWork.PlugIn<PropertyOwnership>();
+            _logs = _unitOfWork.Set<Log>();
+            _properties = _unitOfWork.Set<Property>();
+            _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
         }
 
         public async Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user)

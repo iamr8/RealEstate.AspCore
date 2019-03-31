@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RealEstate.Base.Database;
+using RealEstate.Domain.Base;
 using RealEstate.Domain.Tables;
 
 namespace RealEstate.Domain.Configuration

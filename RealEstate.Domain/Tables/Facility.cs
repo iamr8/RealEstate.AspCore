@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using RealEstate.Domain.Base;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using RealEstate.Base.Database;
 
 namespace RealEstate.Domain.Tables
 {
@@ -9,6 +9,7 @@ namespace RealEstate.Domain.Tables
         public Facility()
         {
             PropertyFacilities = new HashSet<PropertyFacility>();
+            Logs = new HashSet<Log>();
         }
 
         [Required]

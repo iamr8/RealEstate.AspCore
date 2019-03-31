@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using RealEstate.Base.Enums;
+using RealEstate.Domain.Base;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using RealEstate.Base;
-using RealEstate.Base.Database;
-using RealEstate.Base.Enums;
 
 namespace RealEstate.Domain.Tables
 {
@@ -13,6 +12,7 @@ namespace RealEstate.Domain.Tables
             PropertyFeatures = new HashSet<PropertyFeature>();
             ItemFeatures = new HashSet<ItemFeature>();
             ApplicantFeatures = new HashSet<ApplicantFeature>();
+            Logs = new HashSet<Log>();
         }
 
         [Required]

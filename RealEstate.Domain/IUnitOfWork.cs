@@ -8,7 +8,7 @@ namespace RealEstate.Domain
     {
         int SaveChanges();
 
-        DbSet<TEntity> PlugIn<TEntity>() where TEntity : class;
+        DbSet<TEntity> Set<TEntity>() where TEntity : class;
 
         Task<int> SaveChangesAsync();
 

@@ -1,5 +1,5 @@
-﻿using RealEstate.Base.Database;
-using RealEstate.Base.Enums;
+﻿using RealEstate.Base.Enums;
+using RealEstate.Domain.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -15,8 +15,7 @@ namespace RealEstate.Domain.Tables
             UserItemCategories = new HashSet<UserItemCategory>();
             UserPropertyCategories = new HashSet<UserPropertyCategory>();
             Payments = new HashSet<Payment>();
-            NotificationRecipients = new HashSet<NotificationRecipient>();
-            NotificationSeeners = new HashSet<NotificationSeener>();
+            Logs = new HashSet<Log>();
         }
 
         [Required]
@@ -50,7 +49,5 @@ namespace RealEstate.Domain.Tables
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
-        public virtual ICollection<NotificationSeener> NotificationSeeners { get; set; }
-        public virtual ICollection<NotificationRecipient> NotificationRecipients { get; set; }
     }
 }

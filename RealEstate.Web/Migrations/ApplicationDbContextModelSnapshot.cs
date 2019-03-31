@@ -331,6 +331,14 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("ApplicantFeatureId");
+
+                    b.Property<string>("ApplicantId");
+
+                    b.Property<string>("BeneficiaryId");
+
+                    b.Property<string>("ContactId");
+
                     b.Property<string>("CreatorId")
                         .IsRequired();
 
@@ -338,63 +346,103 @@ namespace RealEstate.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("getdate()");
 
-                    b.Property<string>("EntityId");
+                    b.Property<string>("DealId");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("DealPaymentId");
+
+                    b.Property<string>("DistrictId");
+
+                    b.Property<string>("FacilityId");
+
+                    b.Property<string>("FeatureId");
+
+                    b.Property<string>("ItemCategoryId");
+
+                    b.Property<string>("ItemFeatureId");
+
+                    b.Property<string>("ItemId");
+
+                    b.Property<string>("ItemRequestId");
+
+                    b.Property<string>("LogId");
+
+                    b.Property<string>("OwnershipId");
+
+                    b.Property<string>("PaymentId");
+
+                    b.Property<string>("PictureId");
+
+                    b.Property<string>("PropertyCategoryId");
+
+                    b.Property<string>("PropertyFacilityId");
+
+                    b.Property<string>("PropertyFeatureId");
+
+                    b.Property<string>("PropertyId");
+
+                    b.Property<string>("PropertyOwnershipId");
 
                     b.Property<int>("Type");
 
+                    b.Property<string>("UserId");
+
+                    b.Property<string>("UserItemCategoryId");
+
+                    b.Property<string>("UserPropertyCategoryId");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicantFeatureId");
+
+                    b.HasIndex("ApplicantId");
+
+                    b.HasIndex("BeneficiaryId");
+
+                    b.HasIndex("ContactId");
+
+                    b.HasIndex("DealId");
+
+                    b.HasIndex("DealPaymentId");
+
+                    b.HasIndex("DistrictId");
+
+                    b.HasIndex("FacilityId");
+
+                    b.HasIndex("FeatureId");
+
+                    b.HasIndex("ItemCategoryId");
+
+                    b.HasIndex("ItemFeatureId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ItemRequestId");
+
+                    b.HasIndex("LogId");
+
+                    b.HasIndex("OwnershipId");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("PictureId");
+
+                    b.HasIndex("PropertyCategoryId");
+
+                    b.HasIndex("PropertyFacilityId");
+
+                    b.HasIndex("PropertyFeatureId");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("PropertyOwnershipId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserItemCategoryId");
+
+                    b.HasIndex("UserPropertyCategoryId");
 
                     b.ToTable("Log");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Tables.NotificationRecipient", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("LogId")
-                        .IsRequired();
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LogId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("NotificationRecipient");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Tables.NotificationSeener", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("LogId")
-                        .IsRequired();
-
-                    b.Property<string>("UserId")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LogId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("NotificationSeener");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Tables.Ownership", b =>
@@ -655,6 +703,23 @@ namespace RealEstate.Web.Migrations
                         .IsUnique();
 
                     b.ToTable("User");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "ed50fdad-ad1e-4db3-bd27-3eeb2aed20ec",
+                            Address = "باهنر",
+                            DateOfPay = new DateTime(2019, 3, 31, 20, 59, 59, 138, DateTimeKind.Local).AddTicks(3552),
+                            DateTime = new DateTime(2019, 3, 31, 20, 59, 59, 109, DateTimeKind.Local).AddTicks(7395),
+                            FirstName = "هانی",
+                            FixedSalary = 3600000.0,
+                            LastName = "موسی زاده",
+                            Mobile = "09166000341",
+                            Password = "YmAdyc6Ph9PNcJOLeira6w==",
+                            Phone = "33379367",
+                            Role = 2,
+                            Username = "admin"
+                        });
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Tables.UserItemCategory", b =>
@@ -794,30 +859,107 @@ namespace RealEstate.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.NotificationRecipient", b =>
+            modelBuilder.Entity("RealEstate.Domain.Tables.Log", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Log", "Log")
-                        .WithMany("NotificationRecipients")
-                        .HasForeignKey("LogId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("RealEstate.Domain.Tables.ApplicantFeature", "ApplicantFeature")
+                        .WithMany("Logs")
+                        .HasForeignKey("ApplicantFeatureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Applicant", "Applicant")
+                        .WithMany("Logs")
+                        .HasForeignKey("ApplicantId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Beneficiary", "Beneficiary")
+                        .WithMany("Logs")
+                        .HasForeignKey("BeneficiaryId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
+                        .WithMany("Logs")
+                        .HasForeignKey("ContactId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Deal", "Deal")
+                        .WithMany("Logs")
+                        .HasForeignKey("DealId");
+
+                    b.HasOne("RealEstate.Domain.Tables.DealPayment", "DealPayment")
+                        .WithMany("Logs")
+                        .HasForeignKey("DealPaymentId");
+
+                    b.HasOne("RealEstate.Domain.Tables.District", "District")
+                        .WithMany("Logs")
+                        .HasForeignKey("DistrictId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Facility", "Facility")
+                        .WithMany("Logs")
+                        .HasForeignKey("FacilityId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
+                        .WithMany("Logs")
+                        .HasForeignKey("FeatureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.ItemCategory", "ItemCategory")
+                        .WithMany("Logs")
+                        .HasForeignKey("ItemCategoryId");
+
+                    b.HasOne("RealEstate.Domain.Tables.ItemFeature", "ItemFeature")
+                        .WithMany("Logs")
+                        .HasForeignKey("ItemFeatureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Item", "Item")
+                        .WithMany("Logs")
+                        .HasForeignKey("ItemId");
+
+                    b.HasOne("RealEstate.Domain.Tables.ItemRequest", "ItemRequest")
+                        .WithMany("Logs")
+                        .HasForeignKey("ItemRequestId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Log")
+                        .WithMany("Logs")
+                        .HasForeignKey("LogId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Ownership", "Ownership")
+                        .WithMany("Logs")
+                        .HasForeignKey("OwnershipId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Payment", "Payment")
+                        .WithMany("Logs")
+                        .HasForeignKey("PaymentId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Picture", "Picture")
+                        .WithMany("Logs")
+                        .HasForeignKey("PictureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.PropertyCategory", "PropertyCategory")
+                        .WithMany("Logs")
+                        .HasForeignKey("PropertyCategoryId");
+
+                    b.HasOne("RealEstate.Domain.Tables.PropertyFacility", "PropertyFacility")
+                        .WithMany("Logs")
+                        .HasForeignKey("PropertyFacilityId");
+
+                    b.HasOne("RealEstate.Domain.Tables.PropertyFeature", "PropertyFeature")
+                        .WithMany("Logs")
+                        .HasForeignKey("PropertyFeatureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                        .WithMany("Logs")
+                        .HasForeignKey("PropertyId");
+
+                    b.HasOne("RealEstate.Domain.Tables.PropertyOwnership", "PropertyOwnership")
+                        .WithMany("Logs")
+                        .HasForeignKey("PropertyOwnershipId");
 
                     b.HasOne("RealEstate.Domain.Tables.User", "User")
-                        .WithMany("NotificationRecipients")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
+                        .WithMany("Logs")
+                        .HasForeignKey("UserId");
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.NotificationSeener", b =>
-                {
-                    b.HasOne("RealEstate.Domain.Tables.Log", "Log")
-                        .WithMany("NotificationSeeners")
-                        .HasForeignKey("LogId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("RealEstate.Domain.Tables.UserItemCategory", "UserItemCategory")
+                        .WithMany("Logs")
+                        .HasForeignKey("UserItemCategoryId");
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
-                        .WithMany("NotificationSeeners")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                    b.HasOne("RealEstate.Domain.Tables.UserPropertyCategory", "UserPropertyCategory")
+                        .WithMany("Logs")
+                        .HasForeignKey("UserPropertyCategoryId");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Tables.Ownership", b =>

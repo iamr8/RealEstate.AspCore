@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using RealEstate.Base;
-using RealEstate.Base.Database;
-using RealEstate.Base.Enums;
+﻿using RealEstate.Base.Enums;
+using RealEstate.Domain.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Domain.Tables
 {
@@ -10,6 +9,7 @@ namespace RealEstate.Domain.Tables
         public Applicant()
         {
             ApplicantFeatures = new HashSet<ApplicantFeature>();
+            Logs = new HashSet<Log>();
         }
 
         public ApplicantTypeEnum Type { get; set; }

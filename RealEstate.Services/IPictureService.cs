@@ -31,7 +31,7 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _fileHandler = fileHandler;
             _baseService = baseService;
-            _pictures = _unitOfWork.PlugIn<Picture>();
+            _pictures = _unitOfWork.Set<Picture>();
         }
 
         public async Task<(StatusEnum, Picture)> PropertyPictureAddAsync(PropertyPhotoInputViewModel model, bool save, UserViewModel currentUser)

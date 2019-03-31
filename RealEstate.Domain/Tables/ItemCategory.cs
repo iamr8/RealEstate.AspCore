@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using RealEstate.Domain.Base;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using RealEstate.Base.Database;
 
 namespace RealEstate.Domain.Tables
 {
@@ -10,6 +10,7 @@ namespace RealEstate.Domain.Tables
         {
             Items = new HashSet<Item>();
             UserItemCategories = new HashSet<UserItemCategory>();
+            Logs = new HashSet<Log>();
         }
 
         [Required]

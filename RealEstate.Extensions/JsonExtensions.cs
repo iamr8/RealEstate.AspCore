@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using RealEstate.Base.Database;
+using RealEstate.Domain.Base;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace RealEstate.Base
+namespace RealEstate.Extensions
 {
     public static class JsonExtensions
     {

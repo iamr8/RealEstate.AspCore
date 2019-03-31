@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using RealEstate.Base.Database;
+﻿using RealEstate.Domain.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Domain.Tables
 {
@@ -8,6 +8,7 @@ namespace RealEstate.Domain.Tables
         public ItemRequest()
         {
             Applicants = new HashSet<Applicant>();
+            Logs = new HashSet<Log>();
         }
 
         public string Description { get; set; }

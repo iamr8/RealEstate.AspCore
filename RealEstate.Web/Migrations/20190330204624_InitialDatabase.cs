@@ -99,8 +99,7 @@ namespace RealEstate.Web.Migrations
                     DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
                     Type = table.Column<int>(nullable: false),
                     CreatorId = table.Column<string>(nullable: false),
-                    Text = table.Column<string>(nullable: true),
-                    EntityId = table.Column<string>(nullable: true)
+                    EntityId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -228,58 +227,6 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NotificationRecipient",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
-                    LogId = table.Column<string>(nullable: false),
-                    UserId = table.Column<string>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NotificationRecipient", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_NotificationRecipient_Log_LogId",
-                        column: x => x.LogId,
-                        principalTable: "Log",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_NotificationRecipient_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "NotificationSeener",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
-                    LogId = table.Column<string>(nullable: false),
-                    UserId = table.Column<string>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_NotificationSeener", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_NotificationSeener_Log_LogId",
-                        column: x => x.LogId,
-                        principalTable: "Log",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_NotificationSeener_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Payment",
                 columns: table => new
                 {
@@ -381,25 +328,6 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Ownership",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
-                    PropertyId = table.Column<string>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ownership", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ownership_Property_PropertyId",
-                        column: x => x.PropertyId,
-                        principalTable: "Property",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "PropertyFacility",
                 columns: table => new
                 {
@@ -446,6 +374,25 @@ namespace RealEstate.Web.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_PropertyFeature_Property_PropertyId",
+                        column: x => x.PropertyId,
+                        principalTable: "Property",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PropertyOwnership",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
+                    PropertyId = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PropertyOwnership", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PropertyOwnership_Property_PropertyId",
                         column: x => x.PropertyId,
                         principalTable: "Property",
                         principalColumn: "Id",
@@ -550,28 +497,28 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Owner",
+                name: "Ownership",
                 columns: table => new
                 {
                     Id = table.Column<string>(nullable: false),
                     DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
                     Dong = table.Column<int>(nullable: false),
-                    OwnershipId = table.Column<string>(nullable: true),
+                    PropertyOwnershipId = table.Column<string>(nullable: true),
                     ContactId = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Owner", x => x.Id);
+                    table.PrimaryKey("PK_Ownership", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Owner_Contact_ContactId",
+                        name: "FK_Ownership_Contact_ContactId",
                         column: x => x.ContactId,
                         principalTable: "Contact",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Owner_Ownership_OwnershipId",
-                        column: x => x.OwnershipId,
-                        principalTable: "Ownership",
+                        name: "FK_Ownership_PropertyOwnership_PropertyOwnershipId",
+                        column: x => x.PropertyOwnershipId,
+                        principalTable: "PropertyOwnership",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -636,6 +583,11 @@ namespace RealEstate.Web.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.InsertData(
+                table: "User",
+                columns: new[] { "Id", "Address", "DateOfPay", "DateTime", "FirstName", "FixedSalary", "LastName", "Mobile", "Password", "Phone", "Role", "Username" },
+                values: new object[] { "21e5c28f-0221-4669-b535-8bca88ee647e", "باهنر", new DateTime(2019, 3, 31, 1, 16, 23, 762, DateTimeKind.Local).AddTicks(6163), new DateTime(2019, 3, 31, 1, 16, 23, 735, DateTimeKind.Local).AddTicks(8935), "هانی", 3600000.0, "موسی زاده", "09166000341", "YmAdyc6Ph9PNcJOLeira6w==", "33379367", 2, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applicant_ContactId",
@@ -710,39 +662,14 @@ namespace RealEstate.Web.Migrations
                 column: "ItemId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_NotificationRecipient_LogId",
-                table: "NotificationRecipient",
-                column: "LogId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_NotificationRecipient_UserId",
-                table: "NotificationRecipient",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_NotificationSeener_LogId",
-                table: "NotificationSeener",
-                column: "LogId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_NotificationSeener_UserId",
-                table: "NotificationSeener",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Owner_ContactId",
-                table: "Owner",
+                name: "IX_Ownership_ContactId",
+                table: "Ownership",
                 column: "ContactId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Owner_OwnershipId",
-                table: "Owner",
-                column: "OwnershipId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Ownership_PropertyId",
+                name: "IX_Ownership_PropertyOwnershipId",
                 table: "Ownership",
-                column: "PropertyId");
+                column: "PropertyOwnershipId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payment_UserId",
@@ -800,6 +727,11 @@ namespace RealEstate.Web.Migrations
                 column: "PropertyId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PropertyOwnership_PropertyId",
+                table: "PropertyOwnership",
+                column: "PropertyId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_User_Mobile",
                 table: "User",
                 column: "Mobile",
@@ -844,13 +776,10 @@ namespace RealEstate.Web.Migrations
                 name: "ItemFeature");
 
             migrationBuilder.DropTable(
-                name: "NotificationRecipient");
+                name: "Log");
 
             migrationBuilder.DropTable(
-                name: "NotificationSeener");
-
-            migrationBuilder.DropTable(
-                name: "Owner");
+                name: "Ownership");
 
             migrationBuilder.DropTable(
                 name: "Picture");
@@ -871,10 +800,7 @@ namespace RealEstate.Web.Migrations
                 name: "Applicant");
 
             migrationBuilder.DropTable(
-                name: "Log");
-
-            migrationBuilder.DropTable(
-                name: "Ownership");
+                name: "PropertyOwnership");
 
             migrationBuilder.DropTable(
                 name: "DealPayment");

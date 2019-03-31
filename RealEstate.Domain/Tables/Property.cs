@@ -1,5 +1,5 @@
 ﻿using GeoAPI.Geometries;
-using RealEstate.Base.Database;
+using RealEstate.Domain.Base;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -14,6 +14,7 @@ namespace RealEstate.Domain.Tables
             Items = new HashSet<Item>();
             PropertyFeatures = new HashSet<PropertyFeature>();
             PropertyOwnerships = new HashSet<PropertyOwnership>();
+            Logs = new HashSet<Log>();
         }
 
         [Required]

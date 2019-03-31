@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
+using RealEstate.Base.Enums;
+using RealEstate.Domain;
+using RealEstate.Domain.Base;
+using RealEstate.Domain.Tables;
+using RealEstate.Extensions;
+using RealEstate.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
-using RealEstate.Base;
-using RealEstate.Base.Database;
-using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
-using RealEstate.Extensions;
-using RealEstate.ViewModels;
 
 namespace RealEstate.Services.Base
 {
@@ -61,8 +61,6 @@ namespace RealEstate.Services.Base
         private readonly IHttpContextAccessor _accessor;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
-        private readonly DbSet<NotificationRecipient> _recipients;
-        private readonly DbSet<NotificationSeener> _seeners;
 
         public BaseService(
             IUnitOfWork unitOfWork,
@@ -71,10 +69,8 @@ namespace RealEstate.Services.Base
         {
             _unitOfWork = unitOfWork;
             _accessor = accessor;
-            _users = _unitOfWork.PlugIn<User>();
-            _recipients = _unitOfWork.PlugIn<NotificationRecipient>();
-            _seeners = _unitOfWork.PlugIn<NotificationSeener>();
-            _logs = _unitOfWork.PlugIn<Log>();
+            _users = _unitOfWork.Set<User>();
+            _logs = _unitOfWork.Set<Log>();
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
@@ -232,7 +228,7 @@ namespace RealEstate.Services.Base
             if (currentUser == null)
                 return StatusEnum.UserIsNull;
 
-            var lastLog = _logs.CurrentState(entity.Id);
+            var lastLog = entity.LastLog();
             if (lastLog?.Type == TrackTypeEnum.Delete)
             {
                 if (undeleteAllowed)
@@ -290,7 +286,7 @@ namespace RealEstate.Services.Base
                     }
                     else
                     {
-                        var lastLog = _logs.CurrentState(_model.Id);
+                        var lastLog = _model.LastLog();
                         if (lastLog?.Type != TrackTypeEnum.Delete)
                             continue;
 
