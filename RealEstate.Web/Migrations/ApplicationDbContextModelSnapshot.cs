@@ -105,6 +105,25 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Beneficiary");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Tables.Category", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Name")
+                        .IsRequired();
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Category");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Tables.Contact", b =>
                 {
                     b.Property<string>("Id")
@@ -259,23 +278,6 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Item");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ItemCategory", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ItemCategory");
-                });
-
             modelBuilder.Entity("RealEstate.Domain.Tables.ItemFeature", b =>
                 {
                     b.Property<string>("Id")
@@ -337,6 +339,8 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("BeneficiaryId");
 
+                    b.Property<string>("CategoryId");
+
                     b.Property<string>("ContactId");
 
                     b.Property<string>("CreatorId")
@@ -356,8 +360,6 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("FeatureId");
 
-                    b.Property<string>("ItemCategoryId");
-
                     b.Property<string>("ItemFeatureId");
 
                     b.Property<string>("ItemId");
@@ -371,8 +373,6 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("PaymentId");
 
                     b.Property<string>("PictureId");
-
-                    b.Property<string>("PropertyCategoryId");
 
                     b.Property<string>("PropertyFacilityId");
 
@@ -402,6 +402,8 @@ namespace RealEstate.Web.Migrations
 
                     b.HasIndex("BeneficiaryId");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("ContactId");
 
                     b.HasIndex("DealId");
@@ -413,8 +415,6 @@ namespace RealEstate.Web.Migrations
                     b.HasIndex("FacilityId");
 
                     b.HasIndex("FeatureId");
-
-                    b.HasIndex("ItemCategoryId");
 
                     b.HasIndex("ItemFeatureId");
 
@@ -429,8 +429,6 @@ namespace RealEstate.Web.Migrations
                     b.HasIndex("PaymentId");
 
                     b.HasIndex("PictureId");
-
-                    b.HasIndex("PropertyCategoryId");
 
                     b.HasIndex("PropertyFacilityId");
 
@@ -547,6 +545,8 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("BuildingName");
 
+                    b.Property<string>("CategoryId");
+
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("getdate()");
@@ -564,36 +564,16 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("Number");
 
-                    b.Property<string>("PropertyCategoryId")
-                        .IsRequired();
-
                     b.Property<string>("Street")
                         .IsRequired();
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("DistrictId");
 
-                    b.HasIndex("PropertyCategoryId");
-
                     b.ToTable("Property");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyCategory", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<DateTime>("DateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("Name")
-                        .IsRequired();
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PropertyCategory");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Tables.PropertyFacility", b =>
@@ -769,10 +749,10 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "1c4f31ce-b765-4a36-acba-722db789112e",
+                            Id = "fbc6e313-98c0-4fe3-b234-6eabe2763f86",
                             Address = "باهنر",
-                            DateOfPay = new DateTime(2019, 4, 2, 2, 23, 57, 794, DateTimeKind.Local).AddTicks(3590),
-                            DateTime = new DateTime(2019, 4, 2, 2, 23, 57, 756, DateTimeKind.Local).AddTicks(9340),
+                            DateOfPay = new DateTime(2019, 4, 2, 20, 33, 22, 766, DateTimeKind.Local).AddTicks(9302),
+                            DateTime = new DateTime(2019, 4, 2, 20, 33, 22, 733, DateTimeKind.Local).AddTicks(9666),
                             FirstName = "هانی",
                             FixedSalary = 3600000.0,
                             LastName = "موسی زاده",
@@ -789,19 +769,19 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("CategoryId")
+                        .IsRequired();
+
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("ItemCategoryId")
-                        .IsRequired();
 
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ItemCategoryId");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
@@ -813,19 +793,19 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<string>("CategoryId")
+                        .IsRequired();
+
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("PropertyCategoryId")
-                        .IsRequired();
 
                     b.Property<string>("UserId")
                         .IsRequired();
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyCategoryId");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
@@ -892,7 +872,7 @@ namespace RealEstate.Web.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Tables.Item", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.ItemCategory", "Category")
+                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
                         .WithMany("Items")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -938,6 +918,10 @@ namespace RealEstate.Web.Migrations
                         .WithMany("Logs")
                         .HasForeignKey("BeneficiaryId");
 
+                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                        .WithMany("Logs")
+                        .HasForeignKey("CategoryId");
+
                     b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
                         .WithMany("Logs")
                         .HasForeignKey("ContactId");
@@ -961,10 +945,6 @@ namespace RealEstate.Web.Migrations
                     b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
                         .WithMany("Logs")
                         .HasForeignKey("FeatureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.ItemCategory", "ItemCategory")
-                        .WithMany("Logs")
-                        .HasForeignKey("ItemCategoryId");
 
                     b.HasOne("RealEstate.Domain.Tables.ItemFeature", "ItemFeature")
                         .WithMany("Logs")
@@ -993,10 +973,6 @@ namespace RealEstate.Web.Migrations
                     b.HasOne("RealEstate.Domain.Tables.Picture", "Picture")
                         .WithMany("Logs")
                         .HasForeignKey("PictureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.PropertyCategory", "PropertyCategory")
-                        .WithMany("Logs")
-                        .HasForeignKey("PropertyCategoryId");
 
                     b.HasOne("RealEstate.Domain.Tables.PropertyFacility", "PropertyFacility")
                         .WithMany("Logs")
@@ -1076,14 +1052,13 @@ namespace RealEstate.Web.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Tables.Property", b =>
                 {
+                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                        .WithMany("Properties")
+                        .HasForeignKey("CategoryId");
+
                     b.HasOne("RealEstate.Domain.Tables.District", "District")
                         .WithMany("Properties")
                         .HasForeignKey("DistrictId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("RealEstate.Domain.Tables.PropertyCategory", "PropertyCategory")
-                        .WithMany("Properties")
-                        .HasForeignKey("PropertyCategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
@@ -1138,9 +1113,9 @@ namespace RealEstate.Web.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Tables.UserItemCategory", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.ItemCategory", "ItemCategory")
+                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
                         .WithMany("UserItemCategories")
-                        .HasForeignKey("ItemCategoryId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("RealEstate.Domain.Tables.User", "User")
@@ -1151,9 +1126,9 @@ namespace RealEstate.Web.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Tables.UserPropertyCategory", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.PropertyCategory", "PropertyCategory")
+                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
                         .WithMany("UserPropertyCategories")
-                        .HasForeignKey("PropertyCategoryId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("RealEstate.Domain.Tables.User", "User")

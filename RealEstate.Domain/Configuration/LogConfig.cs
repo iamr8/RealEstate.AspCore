@@ -54,9 +54,9 @@ namespace RealEstate.Domain.Configuration
                 .WithMany(x => x.Logs)
                 .HasForeignKey(x => x.ItemId);
 
-            builder.HasOne(x => x.ItemCategory)
+            builder.HasOne(x => x.Category)
                 .WithMany(x => x.Logs)
-                .HasForeignKey(x => x.ItemCategoryId);
+                .HasForeignKey(x => x.CategoryId);
 
             builder.HasOne(x => x.ItemFeature)
                 .WithMany(x => x.Logs)
@@ -77,10 +77,6 @@ namespace RealEstate.Domain.Configuration
             builder.HasOne(x => x.Property)
                 .WithMany(x => x.Logs)
                 .HasForeignKey(x => x.PropertyId);
-
-            builder.HasOne(x => x.PropertyCategory)
-                .WithMany(x => x.Logs)
-                .HasForeignKey(x => x.PropertyCategoryId);
 
             builder.HasOne(x => x.PropertyFacility)
                 .WithMany(x => x.Logs)
