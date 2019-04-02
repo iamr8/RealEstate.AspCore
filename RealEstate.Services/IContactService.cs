@@ -3,7 +3,6 @@ using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
@@ -12,13 +11,17 @@ namespace RealEstate.Services
 {
     public interface IContactService
     {
-        Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save, UserViewModel currentUser);
+        Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save);
 
-        Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save, UserViewModel currentUser);
+        Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, bool save);
 
-        Task<(StatusEnum, Ownership)> OwnershipUpdateAsync(string ownerId, string ownershipId, bool save, UserViewModel currentUser);
+        Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
-        Task<(StatusEnum, Ownership)> OwnershipUpdateAsync(Ownership owner, string ownershipId, bool save, UserViewModel currentUser);
+        Task<Applicant> ApplicantFindEntityAsync(string id);
+
+        Task<(StatusEnum, Ownership)> OwnershipUpdatePropertyAsync(string ownerId, string propertyOwnershipId, bool save);
+
+        Task<(StatusEnum, Applicant)> ApplicantUpdateItemRequestAsync(string applicantId, string itemRequestId, bool save);
 
         Task<Ownership> OwnershipFindEntityAsync(string id);
     }
@@ -43,6 +46,15 @@ namespace RealEstate.Services
             _ownerships = _unitOfWork.Set<Ownership>();
         }
 
+        public async Task<Applicant> ApplicantFindEntityAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var entity = await _applicants.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            return entity;
+        }
+
         public async Task<Ownership> OwnershipFindEntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -52,77 +64,107 @@ namespace RealEstate.Services
             return entity;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipUpdateAsync(Ownership owner, string ownershipId, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, Applicant)> ApplicantUpdateItemRequestAsync(string applicantId, string itemRequestId, bool save)
         {
-            if (owner == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.OwnershipIsNull, null);
+            if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(itemRequestId))
+                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ParamIsNull, null);
 
-            currentUser = _baseService.CurrentUser(currentUser);
-            if (currentUser == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.UserIsNull, null);
-
-            owner.PropertyOwnershipId = ownershipId;
-            _unitOfWork.Update(owner, currentUser.Id);
-
-            return await _baseService.SaveChangesAsync(owner, save).ConfigureAwait(false);
+            var applicant = await ApplicantFindEntityAsync(applicantId).ConfigureAwait(false);
+            var updateStatus = await _baseService.UpdateAsync(applicant,
+                () => applicant.ItemRequestId = itemRequestId,
+                null, save, StatusEnum.ApplicantIsNull
+            ).ConfigureAwait(false);
+            return updateStatus;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipUpdateAsync(string ownerId, string ownershipId, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, Ownership)> OwnershipUpdatePropertyAsync(string ownerId, string propertyOwnershipId, bool save)
         {
-            var owner = await OwnershipFindEntityAsync(ownerId).ConfigureAwait(false);
-            return await OwnershipUpdateAsync(owner, ownershipId, save, currentUser).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(propertyOwnershipId))
+                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ParamIsNull, null);
+
+            var ownership = await OwnershipFindEntityAsync(ownerId).ConfigureAwait(false);
+            var updateStatus = await _baseService.UpdateAsync(ownership,
+                () => ownership.PropertyOwnershipId = propertyOwnershipId,
+                null, save, StatusEnum.OwnershipIsNull
+            ).ConfigureAwait(false);
+            return updateStatus;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
+                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ModelIsNull, null);
 
-            currentUser = _baseService.CurrentUser(currentUser);
-            if (currentUser == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.UserIsNull, null);
-
-            var (contactAddStatus, contact) = await ContactAddAsync(new ContactInputViewModel
+            var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
             {
                 Address = model.Address,
                 Description = model.Description,
                 Mobile = model.Mobile,
                 Name = model.Name,
                 Phone = model.Phone
-            }, save, currentUser).ConfigureAwait(false);
+            }, false).ConfigureAwait(false);
+            if (contactAddStatus != StatusEnum.Success)
+                return new ValueTuple<StatusEnum, Applicant>(contactAddStatus, null);
+
+            var (addStatus, newApplicant) = await _baseService.AddAsync(currentUser => new Applicant
+            {
+                ContactId = newContact.Id,
+                UserId = currentUser.Id,
+                Type = model.Type,
+            }, null, false).ConfigureAwait(false);
+
+            var syncFeaturesStatus = await _baseService.SyncAsync(
+                newApplicant.ApplicantFeatures,
+                model.ApplicantFeatures,
+                (feature, currentUser) => new ApplicantFeature
+                {
+                    ApplicantId = newApplicant.Id,
+                    FeatureId = feature.Id,
+                    Value = feature.Value,
+                }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
+                null,
+                false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newApplicant, save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
+
+            var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
+            {
+                Address = model.Address,
+                Description = model.Description,
+                Mobile = model.Mobile,
+                Name = model.Name,
+                Phone = model.Phone
+            }, true).ConfigureAwait(false);
             if (contactAddStatus != StatusEnum.Success)
                 return new ValueTuple<StatusEnum, Ownership>(contactAddStatus, null);
 
-            var newOwner = _unitOfWork.Add(new Ownership
+            var addStatus = await _baseService.AddAsync(new Ownership
             {
-                ContactId = contact.Id,
+                ContactId = newContact.Id,
                 Dong = model.Dong,
-            }, currentUser.Id);
-            if (newOwner == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.OwnershipIsNull, null);
-
-            return await _baseService.SaveChangesAsync(newOwner, save).ConfigureAwait(false);
+            }, null, save).ConfigureAwait(false);
+            return addStatus;
         }
 
-        public async Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Contact>(StatusEnum.ModelIsNull, null);
 
-            currentUser = _baseService.CurrentUser(currentUser);
-            if (currentUser == null)
-                return new ValueTuple<StatusEnum, Contact>(StatusEnum.UserIsNull, null);
-
-            var newContact = _unitOfWork.Add(new Contact
+            var addStatus = await _baseService.AddAsync(new Contact
             {
                 Address = model.Address,
                 Description = model.Description,
                 MobileNumber = model.Mobile,
                 Name = model.Name,
                 PhoneNumber = model.Phone
-            }, currentUser.Id);
-
-            return await _baseService.SaveChangesAsync(newContact, save).ConfigureAwait(false);
+            }, null, save).ConfigureAwait(false);
+            return addStatus;
         }
     }
 }

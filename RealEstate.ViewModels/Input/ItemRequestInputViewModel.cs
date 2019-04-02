@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
+using RealEstate.ViewModels.Json;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,9 +19,9 @@ namespace RealEstate.ViewModels.Input
 
         public string ApplicantsJson { get; set; }
 
-        public List<string> Applicants =>
+        public List<ApplicantJsonViewModel> Applicants =>
             string.IsNullOrEmpty(ApplicantsJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<string>>(ApplicantsJson);
+                : JsonConvert.DeserializeObject<List<ApplicantJsonViewModel>>(ApplicantsJson);
     }
 }

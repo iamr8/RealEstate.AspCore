@@ -6,7 +6,7 @@ namespace RealEstate.Domain.Tables
 {
     public class Log : BaseEntity
     {
-        public TrackTypeEnum Type { get; set; }
+        public LogTypeEnum Type { get; set; }
 
         [Required]
         public string CreatorId { get; set; }
@@ -33,7 +33,7 @@ namespace RealEstate.Domain.Tables
         public string ItemId { get; set; }
         public virtual Item Item { get; set; }
         public string ItemCategoryId { get; set; }
-        public virtual ItemCategory ItemCategory { get; set; }
+        public virtual Category ItemCategory { get; set; }
         public string ItemFeatureId { get; set; }
         public virtual ItemFeature ItemFeature { get; set; }
         public string OwnershipId { get; set; }
@@ -43,7 +43,7 @@ namespace RealEstate.Domain.Tables
         public string PropertyId { get; set; }
         public virtual Property Property { get; set; }
         public string PropertyCategoryId { get; set; }
-        public virtual PropertyCategory PropertyCategory { get; set; }
+        public virtual Category PropertyCategory { get; set; }
         public string PropertyFacilityId { get; set; }
         public virtual PropertyFacility PropertyFacility { get; set; }
         public string PropertyFeatureId { get; set; }
@@ -60,5 +60,7 @@ namespace RealEstate.Domain.Tables
         public virtual Payment Payment { get; set; }
         public string ItemRequestId { get; set; }
         public virtual ItemRequest ItemRequest { get; set; }
+        public string SmsTemplateId { get; set; }
+        public virtual SmsTemplate SmsTemplate { get; set; }
     }
 }

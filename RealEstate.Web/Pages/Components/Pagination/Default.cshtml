@@ -1,0 +1,17 @@
+﻿@model List<PaginationPassModel>
+
+@if (Model?.Any() == true && Model?.Count > 1)
+{
+    <div class="row">
+        <div class="col-12">
+            <ul class="pagination">
+                @foreach (var item in Model)
+                {
+                    <li class="page-item @(item.IsCurrent ? "active" : "")">
+                        <a class="page-link" href="@item.Link">@item.Num</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}

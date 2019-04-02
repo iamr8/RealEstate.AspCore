@@ -11,5 +11,15 @@ namespace RealEstate.Base
         [JsonProperty("id")]
         [Display(ResourceType = typeof(SharedResource), Name = "Id")]
         public string Id { get; set; }
+
+        public bool IsNew => string.IsNullOrEmpty(Id);
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is BaseViewModel baseObj))
+                return false;
+
+            return this.Id == baseObj.Id;
+        }
     }
 }

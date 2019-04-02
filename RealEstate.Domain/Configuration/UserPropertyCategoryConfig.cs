@@ -14,9 +14,9 @@ namespace RealEstate.Domain.Configuration
                 .HasForeignKey(x => x.UserId)
                 .IsRequired();
 
-            builder.HasOne(x => x.PropertyCategory)
+            builder.HasOne(x => x.Category)
                 .WithMany(x => x.UserPropertyCategories)
-                .HasForeignKey(x => x.PropertyCategoryId)
+                .HasForeignKey(x => x.CategoryId)
                 .IsRequired();
         }
     }

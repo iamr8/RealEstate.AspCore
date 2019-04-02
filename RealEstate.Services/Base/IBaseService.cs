@@ -23,15 +23,28 @@ namespace RealEstate.Services.Base
         TModel Map<TSource, TModel>(TSource query,
             TModel entity) where TSource : class where TModel : class;
 
-        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save,
-            UserViewModel currentUser)
+        Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<UserViewModel, TSource> entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity;
+
+        Task<(StatusEnum, TSource)> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity;
+
+        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity;
 
-        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
-            Role[] allowedRolesToIncludeDeleted, UserViewModel currentUser) where TQuery : BaseEntity where TOutput : class;
+        Task<(StatusEnum, TSource)> AddAsync<TSource>(TSource entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
-        (TModel, List<TrackUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
-            List<TrackUserViewModel> users) where TSource : class where TModel : class;
+        bool IsAllowed(Role[] roles);
+
+        Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
+            Action changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
+
+        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
+            Role[] allowedRolesToIncludeDeleted) where TQuery : BaseEntity where TOutput : class;
+
+        (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
+            List<LogUserViewModel> users) where TSource : class where TModel : class;
 
         Task<StatusEnum> SaveChangesAsync(bool save);
 
@@ -41,16 +54,14 @@ namespace RealEstate.Services.Base
         List<TModel> SelectAndTrack<TSource, TModel>(List<TSource> model,
             Func<TSource, TModel> expression) where TSource : class where TModel : class;
 
-        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save, UserViewModel currentUser)
+        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity;
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> entities,
-            List<TModel> syncWith, Expression<Func<TSource, TModel, bool>> indentifier, Func<TModel, TSource> newEntity, bool save, UserViewModel currentUser)
+            List<TModel> syncWith, Func<TModel, UserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save)
             where TSource : BaseEntity;
 
         Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
-
-        UserViewModel CurrentUser(UserViewModel currentUser);
 
         UserViewModel CurrentUser(List<Claim> claims);
     }
@@ -74,16 +85,16 @@ namespace RealEstate.Services.Base
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
-            Role[] allowedRolesToIncludeDeleted, UserViewModel currentUser) where TQuery : BaseEntity where TOutput : class
+            Role[] allowedRolesToIncludeDeleted) where TQuery : BaseEntity where TOutput : class
         {
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
 
-            currentUser = CurrentUser(currentUser);
+            var currentUser = CurrentUser();
             if (currentUser == null)
                 return default;
 
-            if (allowedRolesToIncludeDeleted?.Any(x => x == currentUser.Role) == true)
+            if (IsAllowed(allowedRolesToIncludeDeleted))
                 query = query.IgnoreQueryFilters();
 
             query = query.OrderByDescending(x => x.DateTime);
@@ -125,6 +136,44 @@ namespace RealEstate.Services.Base
             return CurrentUser(claims);
         }
 
+        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity
+        {
+            var duplicate = await entities.FirstOrDefaultAsync(duplicateCondition).ConfigureAwait(false);
+            if (duplicate != null)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.AlreadyExists, null);
+
+            return await AddAsync(entity, allowedRoles, save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<UserViewModel, TSource> entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+
+            if (!IsAllowed(allowedRoles))
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
+
+            _unitOfWork.Add(entity, currentUser.Id);
+            return await SaveChangesAsync(entity.Invoke(currentUser), save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(TSource entity,
+            Role[] allowedRoles, bool save) where TSource : BaseEntity
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+
+            if (!IsAllowed(allowedRoles))
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
+
+            _unitOfWork.Add(entity, currentUser.Id);
+            return await SaveChangesAsync(entity, save).ConfigureAwait(false);
+        }
+
         public List<TOutput> Map<TSource, TOutput>(List<TSource> models, Func<TSource, TOutput> map)
             where TSource : class where TOutput : class
         {
@@ -138,7 +187,7 @@ namespace RealEstate.Services.Base
         public List<TModel> SelectAndTrack<TSource, TModel>(List<TSource> model,
             Func<TSource, TModel> expression) where TSource : class where TModel : class
         {
-            var users = new List<TrackUserViewModel>();
+            var users = new List<LogUserViewModel>();
             var finalList = new List<TModel>();
             if (model?.Any() != true) return default;
 
@@ -152,33 +201,33 @@ namespace RealEstate.Services.Base
             return finalList;
         }
 
-        public (TModel, List<TrackUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
-                   List<TrackUserViewModel> users) where TSource : class where TModel : class
+        public (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
+                   List<LogUserViewModel> users) where TSource : class where TModel : class
         {
             if (model == null) return default;
             var viewModel = expression.Invoke(model);
 
             var trackProperty = model.GetType().GetProperty("Tracks");
             if (trackProperty == null || !(trackProperty.GetValue(model) is ICollection<Log> entityTracks))
-                return new ValueTuple<TModel, List<TrackUserViewModel>>(viewModel, users);
+                return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
-            var templateViewModel = new BaseTrackViewModel();
-            var entityTracksInfo = viewModel.GetType().GetProperty(nameof(templateViewModel.Tracks));
-            if (entityTracksInfo == null || entityTracksInfo.PropertyType != typeof(List<TrackViewModel>))
-                return new ValueTuple<TModel, List<TrackUserViewModel>>(viewModel, users);
+            var templateViewModel = new BaseLogViewModel();
+            var entityTracksInfo = viewModel.GetType().GetProperty(nameof(templateViewModel.Logs));
+            if (entityTracksInfo == null || entityTracksInfo.PropertyType != typeof(List<LogViewModel>))
+                return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
-            var viewTracks = new List<TrackViewModel>();
+            var viewTracks = new List<LogViewModel>();
             if (entityTracks.Count == 0)
-                return new ValueTuple<TModel, List<TrackUserViewModel>>(viewModel, users);
+                return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
             if (users == null)
-                users = new List<TrackUserViewModel>();
+                users = new List<LogUserViewModel>();
 
             var lastTracks = new List<Log>
             {
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == TrackTypeEnum.Create),
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == TrackTypeEnum.Modify || x.Type == TrackTypeEnum.Undelete),
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == TrackTypeEnum.Delete)
+                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Create),
+                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Modify || x.Type == LogTypeEnum.Undelete),
+                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Delete)
             }.Where(x => x != null).ToList();
 
             var packedTracks = from trc in lastTracks
@@ -197,7 +246,7 @@ namespace RealEstate.Services.Base
                 var alreadyAddedUser = users.Find(x => x.Id == packedTrack.Creator.Id);
                 if (alreadyAddedUser == null)
                 {
-                    users.Add(new TrackUserViewModel
+                    users.Add(new LogUserViewModel
                     {
                         FirstName = thisUser.FirstName,
                         LastName = thisUser.LastName,
@@ -208,7 +257,7 @@ namespace RealEstate.Services.Base
                     });
                 }
 
-                viewTracks.Add(new TrackViewModel
+                viewTracks.Add(new LogViewModel
                 {
                     Type = thisTrack.Type,
                     DateTime = thisTrack.DateTime,
@@ -218,18 +267,18 @@ namespace RealEstate.Services.Base
             }
 
             entityTracksInfo.SetValue(viewModel, viewTracks);
-            return new ValueTuple<TModel, List<TrackUserViewModel>>(viewModel, users);
+            return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
         }
 
-        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save, UserViewModel currentUser)
+        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity
         {
-            currentUser = CurrentUser(currentUser);
+            var currentUser = CurrentUser();
             if (currentUser == null)
                 return StatusEnum.UserIsNull;
 
             var lastLog = entity.LastLog();
-            if (lastLog?.Type == TrackTypeEnum.Delete)
+            if (lastLog?.Type == LogTypeEnum.Delete)
             {
                 if (undeleteAllowed)
                     _unitOfWork.UnDelete(entity, currentUser.Id);
@@ -263,16 +312,16 @@ namespace RealEstate.Services.Base
         }
 
         public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> entities,
-            List<TModel> syncWith, Expression<Func<TSource, TModel, bool>> indentifier, Func<TModel, TSource> newEntity, bool save, UserViewModel currentUser) where TSource : BaseEntity
+            List<TModel> syncWith, Func<TModel, UserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
-            currentUser = CurrentUser(currentUser);
+            var currentUser = CurrentUser();
             if (currentUser == null) return StatusEnum.UserIsNull;
 
             var mustBePresent = entities.Where(entity => syncWith.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
             var mustBeRemoved = entities.Where(x => !mustBePresent.Contains(x)).ToList();
             if (mustBeRemoved.Count > 0)
                 foreach (var redundant in mustBeRemoved)
-                    await RemoveAsync(redundant, false, false, currentUser).ConfigureAwait(false);
+                    await RemoveAsync(redundant, false, false).ConfigureAwait(false);
 
             if (syncWith?.Any() == true)
             {
@@ -281,13 +330,13 @@ namespace RealEstate.Services.Base
                     var _model = mustBePresent.Find(entity => indentifier.Compile().Invoke(entity, model));
                     if (_model == null)
                     {
-                        var newItem = newEntity.Invoke(model);
-                        _unitOfWork.Add(newItem, currentUser.Id);
+                        var newItem = newEntity.Invoke(model, currentUser);
+                        await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
                     }
                     else
                     {
                         var lastLog = _model.LastLog();
-                        if (lastLog?.Type != TrackTypeEnum.Delete)
+                        if (lastLog?.Type != LogTypeEnum.Delete)
                             continue;
 
                         _unitOfWork.UnDelete(_model, currentUser.Id);
@@ -295,13 +344,7 @@ namespace RealEstate.Services.Base
                 }
             }
 
-            return await SaveChangesAsync(StatusEnum.Success, StatusEnum.UnableToSave).ConfigureAwait(false);
-        }
-
-        private async Task<StatusEnum> SaveChangesAsync(StatusEnum onSuccess, StatusEnum onFailure)
-        {
-            var status = await _unitOfWork.SaveChangesAsync().ConfigureAwait(false) > 0;
-            return status ? onSuccess : onFailure;
+            return await SaveChangesAsync(save).ConfigureAwait(false);
         }
 
         public UserViewModel CurrentUser(List<Claim> claims)
@@ -319,31 +362,50 @@ namespace RealEstate.Services.Base
                 Address = claims.Find(x => x.Type == ClaimTypes.StreetAddress)?.Value,
                 Phone = claims.Find(x => x.Type == ClaimTypes.HomePhone)?.Value,
                 CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
-                PropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<PropertyCategoryViewModel>>(),
-                ItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<ItemCategoryViewModel>>(),
+                PropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
+                ItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
             };
             return result;
         }
 
-        public UserViewModel CurrentUser(UserViewModel currentUser)
-        {
-            return currentUser ?? CurrentUser();
-        }
-
-        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save, UserViewModel currentUser)
+        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity
         {
-            currentUser = CurrentUser(currentUser);
-            if (currentUser == null)
-                return StatusEnum.UserIsNull;
-
-            if (allowedRoles?.Any(x => x == currentUser.Role) != true)
+            if (!IsAllowed(allowedRoles))
                 return StatusEnum.Forbidden;
 
             if (entity == null)
                 return StatusEnum.ModelIsNull;
 
-            return await RemoveAsync(entity, undeleteAllowed, save, currentUser).ConfigureAwait(false);
+            return await RemoveAsync(entity, undeleteAllowed, save).ConfigureAwait(false);
+        }
+
+        public bool IsAllowed(Role[] roles)
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null)
+                return false;
+
+            return roles?.Any() != true || roles.Any(x => x == currentUser.Role);
+        }
+
+        public async Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
+         Action changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+
+            if (!IsAllowed(allowedRoles))
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.Forbidden, null);
+
+            if (entity == null)
+                return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
+
+            changes.Invoke();
+            _unitOfWork.Update(entity, currentUser.Id);
+
+            return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 
         public async Task<StatusEnum> SaveChangesAsync(bool save)

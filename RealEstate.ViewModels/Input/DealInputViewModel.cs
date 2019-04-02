@@ -10,20 +10,18 @@ namespace RealEstate.ViewModels.Input
 {
     public class DealInputViewModel : BaseViewModel
     {
-        [HiddenInput]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        public string DealId { get; set; }
-
-        [Display(ResourceType = typeof(SharedResource), Name = "TipPrice")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        public decimal TipPrice { get; set; }
-
-        [Display(ResourceType = typeof(SharedResource), Name = "CommissionPrice")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        public decimal CommissionPrice { get; set; }
-
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
         public string Description { get; set; }
+
+        [HiddenInput]
+        [Required]
+        public string DealPaymentsJson { get; set; }
+
+        [Required]
+        public List<DealPaymentJsonViewModel> DealPayments =>
+            string.IsNullOrEmpty(DealPaymentsJson)
+                ? default
+                : JsonConvert.DeserializeObject<List<DealPaymentJsonViewModel>>(DealPaymentsJson);
 
         [HiddenInput]
         [Required]

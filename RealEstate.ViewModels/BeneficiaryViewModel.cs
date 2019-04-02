@@ -2,7 +2,7 @@
 
 namespace RealEstate.ViewModels
 {
-    public class BeneficiaryViewModel : BaseTrackViewModel
+    public class BeneficiaryViewModel : BaseLogViewModel
     {
         public int TipPercent { get; set; }
 

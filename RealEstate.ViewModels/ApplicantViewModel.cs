@@ -1,13 +1,14 @@
 ﻿using RealEstate.Base;
-using System.Collections.Generic;
 using RealEstate.Base.Enums;
+using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class ApplicantViewModel : BaseTrackViewModel
+    public class ApplicantViewModel : BaseLogViewModel
     {
-        public ContactViewModel Contact { get; set; }
         public ApplicantTypeEnum Type { get; set; }
+        public ContactViewModel Contact { get; set; }
+        public UserViewModel User { get; set; }
         public List<FeatureValueViewModel> Features { get; set; }
     }
 }

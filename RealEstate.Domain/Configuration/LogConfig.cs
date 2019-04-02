@@ -105,6 +105,10 @@ namespace RealEstate.Domain.Configuration
             builder.HasOne(x => x.ItemRequest)
                 .WithMany(x => x.Logs)
                 .HasForeignKey(x => x.ItemRequestId);
+
+            builder.HasOne(x => x.SmsTemplate)
+                .WithMany(x => x.Logs)
+                .HasForeignKey(x => x.SmsTemplateId);
         }
     }
 }

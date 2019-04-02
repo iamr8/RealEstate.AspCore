@@ -1,6 +1,10 @@
-﻿using RealEstate.Base;
+﻿using Newtonsoft.Json;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.ViewModels.Json;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
@@ -38,5 +42,22 @@ namespace RealEstate.ViewModels.Input
         [Display(ResourceType = typeof(SharedResource), Name = "PhoneNumber")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Phone { get; set; }
+
+        public DateTime DateOfPay { get; set; }
+        public double FixedSalary { get; set; }
+
+        public string UserPropertyCategoriesJson { get; set; }
+
+        public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories =>
+            string.IsNullOrEmpty(UserPropertyCategoriesJson)
+                ? default
+                : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
+
+        public string UserItemCategoriesJson { get; set; }
+
+        public List<UserItemCategoryJsonViewModel> UserItemCategories =>
+            string.IsNullOrEmpty(UserItemCategoriesJson)
+                ? default
+                : JsonConvert.DeserializeObject<List<UserItemCategoryJsonViewModel>>(UserItemCategoriesJson);
     }
 }

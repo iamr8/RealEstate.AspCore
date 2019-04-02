@@ -3,7 +3,7 @@ using RealEstate.Base.Enums;
 
 namespace RealEstate.ViewModels
 {
-    public class FeatureViewModel : BaseTrackViewModel
+    public class FeatureViewModel : BaseLogViewModel
     {
         public string Name { get; set; }
 

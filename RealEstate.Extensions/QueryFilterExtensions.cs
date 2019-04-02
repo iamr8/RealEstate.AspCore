@@ -11,7 +11,7 @@ namespace RealEstate.Extensions
         public static IQueryable<TEntity> Filtered<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity
         {
             var result = entities.Where(entity => entity.Logs.Count == 0
-                                                  || entity.Logs.LastLog().Type != TrackTypeEnum.Delete);
+                                                  || entity.Logs.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
             return result;
         }
 
@@ -26,5 +26,6 @@ namespace RealEstate.Extensions
             var result = entity.Logs.LastLog();
             return result;
         }
+
     }
 }

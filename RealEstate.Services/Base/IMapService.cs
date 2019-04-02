@@ -1,68 +1,81 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using GeoAPI.Geometries;
+﻿using GeoAPI.Geometries;
 using RealEstate.Domain.Tables;
 using RealEstate.ViewModels;
+using RealEstate.ViewModels.Json;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.Base
 {
     public interface IMapService
     {
-        List<ApplicantViewModel> Map(ICollection<Applicant> model);
+        List<ApplicantViewModel> Map(List<Applicant> model);
 
-        List<UserViewModel> Map(ICollection<User> model);
+        List<UserViewModel> Map(List<User> model);
 
-        PropertyCategoryViewModel Map(UserPropertyCategory model);
+        CategoryViewModel Map(UserPropertyCategory model);
 
         UserViewModel Map(User model);
 
-        List<PropertyCategoryViewModel> Map(ICollection<UserPropertyCategory> model);
+        SmsTemplateViewModel Map(SmsTemplate model);
+
+        List<SmsViewModel> Map(List<Sms> model);
+
+        SmsViewModel Map(Sms model);
+
+        List<SmsTemplateViewModel> Map(List<SmsTemplate> model);
+
+        List<CategoryViewModel> Map(List<UserPropertyCategory> model);
 
         PropertyOwnershipViewModel Map(PropertyOwnership model);
 
         PropertyViewModel Map(Property model);
 
-        List<PropertyOwnershipViewModel> Map(ICollection<PropertyOwnership> model);
+        List<PropertyOwnershipViewModel> Map(List<PropertyOwnership> model);
 
         DealPaymentViewModel Map(DealPayment model);
 
-        List<BeneficiaryViewModel> Map(ICollection<Beneficiary> model);
+        List<BeneficiaryViewModel> Map(List<Beneficiary> model);
 
         BeneficiaryViewModel Map(Beneficiary model);
 
-        List<DealPaymentViewModel> Map(ICollection<DealPayment> model);
+        List<DealPaymentViewModel> Map(List<DealPayment> model);
 
         DealViewModel Map(Deal model);
 
-        List<ItemCategoryViewModel> Map(ICollection<UserItemCategory> model);
+        List<CategoryViewModel> Map(List<Category> model);
+
+        List<PaymentViewModel> Map(List<Payment> model);
+
+        PaymentViewModel Map(Payment model);
+
+        List<CategoryViewModel> Map(List<UserItemCategory> model);
 
         DistrictViewModel Map(District model);
 
         GeolocationViewModel Map(IPoint model);
 
-        ItemCategoryViewModel Map(UserItemCategory model);
+        CategoryViewModel Map(UserItemCategory model);
 
-        List<ItemRequestViewModel> Map(ICollection<ItemRequest> model);
+        List<ItemRequestViewModel> Map(List<ItemRequest> model);
 
-        List<ItemViewModel> Map(ICollection<Item> model);
+        List<ItemViewModel> Map(List<Item> model);
 
         ItemRequestViewModel Map(ItemRequest model);
 
-        PropertyCategoryViewModel Map(PropertyCategory model);
+        CategoryViewModel Map(Category model);
 
         ItemViewModel Map(Item model);
 
-        ItemCategoryViewModel Map(ItemCategory model);
+        List<FacilityViewModel> Map(List<PropertyFacility> model);
 
-        List<FacilityViewModel> Map(ICollection<PropertyFacility> model);
-
-        List<FeatureValueViewModel> Map(ICollection<PropertyFeature> model);
+        List<FeatureValueViewModel> Map(List<PropertyFeature> model);
 
         FeatureValueViewModel Map(ApplicantFeature model);
 
-        List<FeatureValueViewModel> Map(ICollection<ApplicantFeature> model);
+        List<FeatureValueViewModel> Map(List<ApplicantFeature> model);
 
-        List<FeatureValueViewModel> Map(ICollection<ItemFeature> model);
+        List<FeatureValueViewModel> Map(List<ItemFeature> model);
 
         FeatureValueViewModel Map(ItemFeature model);
 
@@ -72,7 +85,7 @@ namespace RealEstate.Services.Base
 
         FacilityViewModel Map(PropertyFacility model);
 
-        List<PictureViewModel> Map(ICollection<Picture> model);
+        List<PictureViewModel> Map(List<Picture> model);
 
         PictureViewModel Map(Picture model);
 
@@ -80,7 +93,7 @@ namespace RealEstate.Services.Base
 
         ApplicantViewModel Map(Applicant model);
 
-        List<OwnershipViewModel> Map(ICollection<Ownership> model);
+        List<OwnershipViewModel> Map(List<Ownership> model);
 
         ContactViewModel Map(Contact model);
     }
@@ -96,13 +109,12 @@ namespace RealEstate.Services.Base
             _baseService = baseService;
         }
 
-        public List<ApplicantViewModel> Map(ICollection<Applicant> model)
+        public List<ApplicantViewModel> Map(List<Applicant> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -120,13 +132,12 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<PictureViewModel> Map(ICollection<Picture> model)
+        public List<PictureViewModel> Map(List<Picture> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -139,8 +150,9 @@ namespace RealEstate.Services.Base
                 new DealViewModel
                 {
                     ItemRequest = Map(model.ItemRequest),
-                    DealPayments = Map(model.DealPayments),
-                    Beneficiaries = Map(model.Beneficiaries),
+                    DealPayments = Map(model.DealPayments.ToList()),
+                    Beneficiaries = Map(model.Beneficiaries.ToList()),
+                    Pictures = Map(model.Pictures.ToList())
                 });
             return result;
         }
@@ -154,8 +166,9 @@ namespace RealEstate.Services.Base
                 new ApplicantViewModel
                 {
                     Contact = Map(model.Contact),
-                    Features = Map(model.ApplicantFeatures),
-                    Type = model.Type
+                    Features = Map(model.ApplicantFeatures.ToList()),
+                    Type = model.Type,
+                    User = Map(model.User)
                 });
             return result;
         }
@@ -177,13 +190,12 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<OwnershipViewModel> Map(ICollection<Ownership> model)
+        public List<OwnershipViewModel> Map(List<Ownership> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -200,7 +212,10 @@ namespace RealEstate.Services.Base
                     Address = model.Address,
                     Mobile = model.MobileNumber,
                     Name = model.Name,
-                    Phone = model.PhoneNumber
+                    Phone = model.PhoneNumber,
+                    Smses = Map(model.Smses.ToList()),
+                    Applicants = Map(model.Applicants.ToList()),
+                    Ownerships = Map(model.Ownerships.ToList())
                 });
             return result;
         }
@@ -219,13 +234,12 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<FacilityViewModel> Map(ICollection<PropertyFacility> model)
+        public List<FacilityViewModel> Map(List<PropertyFacility> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -287,56 +301,39 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<FeatureValueViewModel> Map(ICollection<ApplicantFeature> model)
+        public List<FeatureValueViewModel> Map(List<ApplicantFeature> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
-        public List<FeatureValueViewModel> Map(ICollection<ItemFeature> model)
+        public List<FeatureValueViewModel> Map(List<ItemFeature> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
-        public List<FeatureValueViewModel> Map(ICollection<PropertyFeature> model)
+        public List<FeatureValueViewModel> Map(List<PropertyFeature> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
-        public ItemCategoryViewModel Map(ItemCategory model)
+        public CategoryViewModel Map(UserItemCategory model)
         {
             if (model == null)
                 return null;
 
-            var result = _baseService.Map(model,
-                new ItemCategoryViewModel
-                {
-                    Id = model.Id,
-                    Name = model.Name
-                });
-            return result;
-        }
-
-        public ItemCategoryViewModel Map(UserItemCategory model)
-        {
-            if (model == null)
-                return null;
-
-            var result = _baseService.Map(model, Map(model.ItemCategory));
+            var result = _baseService.Map(model, Map(model.Category));
             return result;
         }
 
@@ -348,20 +345,19 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model,
                 new ItemRequestViewModel
                 {
-                    Applicants = Map(model.Applicants),
+                    Applicants = Map(model.Applicants.ToList()),
                     Item = Map(model.Item),
                     IsReject = model.IsReject
                 });
             return result;
         }
 
-        public List<ItemRequestViewModel> Map(ICollection<ItemRequest> model)
+        public List<ItemRequestViewModel> Map(List<ItemRequest> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -375,30 +371,37 @@ namespace RealEstate.Services.Base
                 {
                     Category = Map(model.Category),
                     Description = model.Description,
-                    Features = Map(model.ItemFeatures),
+                    Features = Map(model.ItemFeatures.ToList()),
                     IsRequested = model.ItemRequests.OrderByDescending(x => x.DateTime).FirstOrDefault()?.IsReject != true,
                     Property = Map(model.Property)
                 });
             return result;
         }
 
-        public List<ItemViewModel> Map(ICollection<Item> model)
+        public List<ItemViewModel> Map(List<Item> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
-        public List<ItemCategoryViewModel> Map(ICollection<UserItemCategory> model)
+        public List<CategoryViewModel> Map(List<Category> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
+        public List<CategoryViewModel> Map(List<UserItemCategory> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -440,22 +443,24 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model,
                 new DealPaymentViewModel
                 {
-                    Commission = model.CommissionPrice,
-                    PayDate = model.PayDate,
-                    Pictures = Map(model.Pictures),
-                    Text = model.Text,
-                    Tip = model.TipPrice
+                    Pictures = Map(model.Pictures.ToList()),
+                    Detail = new DealPaymentJsonViewModel
+                    {
+                        Commission = model.CommissionPrice,
+                        PayDate = model.PayDate,
+                        Text = model.Text,
+                        Tip = model.TipPrice,
+                    }
                 });
             return result;
         }
 
-        public List<BeneficiaryViewModel> Map(ICollection<Beneficiary> model)
+        public List<BeneficiaryViewModel> Map(List<Beneficiary> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -474,13 +479,12 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<DealPaymentViewModel> Map(ICollection<DealPayment> model)
+        public List<DealPaymentViewModel> Map(List<DealPayment> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -498,46 +502,44 @@ namespace RealEstate.Services.Base
                     Alley = model.Alley,
                     Street = model.Street,
                     BuildingName = model.BuildingName,
-                    Category = Map(model.PropertyCategory),
+                    Category = Map(model.Category),
                     Description = model.Description,
                     Deals = model.Items.Sum(x => x.ItemRequests.Count(c => c.Deal != null)),
                     District = Map(model.District),
-                    Facilities = Map(model.PropertyFacilities),
-                    Features = Map(model.PropertyFeatures),
-                    Ownerships = Map(model.PropertyOwnerships),
-                    Pictures = Map(model.Pictures),
-                    Items = Map(model.Items),
+                    Facilities = Map(model.PropertyFacilities.ToList()),
+                    Features = Map(model.PropertyFeatures.ToList()),
+                    Ownerships = Map(model.PropertyOwnerships.ToList()),
+                    Pictures = Map(model.Pictures.ToList()),
+                    Items = Map(model.Items.ToList()),
                     Geolocation = Map(model.Geolocation)
                 });
             return result;
         }
 
-        public List<PropertyCategoryViewModel> Map(ICollection<UserPropertyCategory> model)
+        public List<CategoryViewModel> Map(List<UserPropertyCategory> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
-        public PropertyCategoryViewModel Map(UserPropertyCategory model)
+        public CategoryViewModel Map(UserPropertyCategory model)
         {
             if (model == null)
                 return null;
 
-            var result = _baseService.Map(model, Map(model.PropertyCategory));
+            var result = _baseService.Map(model, Map(model.Category));
             return result;
         }
 
-        public List<PropertyOwnershipViewModel> Map(ICollection<PropertyOwnership> model)
+        public List<PropertyOwnershipViewModel> Map(List<PropertyOwnership> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -549,19 +551,19 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model,
                 new PropertyOwnershipViewModel
                 {
-                    Owners = Map(model.Ownerships),
+                    Owners = Map(model.Ownerships.ToList()),
                 });
 
             return result;
         }
 
-        public PropertyCategoryViewModel Map(PropertyCategory model)
+        public CategoryViewModel Map(Category model)
         {
             if (model == null)
                 return default;
 
             var result = _baseService.Map(model,
-                new PropertyCategoryViewModel
+                new CategoryViewModel
                 {
                     Id = model.Id,
                     Name = model.Name
@@ -570,13 +572,96 @@ namespace RealEstate.Services.Base
             return result;
         }
 
-        public List<UserViewModel> Map(ICollection<User> model)
+        public SmsTemplateViewModel Map(SmsTemplate model)
+        {
+            if (model == null)
+                return default;
+
+            var result = _baseService.Map(model,
+                new SmsTemplateViewModel
+                {
+                    Id = model.Id,
+                    Text = model.Text,
+                    Smses = Map(model.Smses.ToList())
+                });
+
+            return result;
+        }
+
+        public List<SmsTemplateViewModel> Map(List<SmsTemplate> model)
         {
             if (model?.Any() != true)
                 return default;
 
-            var list = model.ToList();
-            var result = _baseService.Map(list, Map);
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
+        public SmsViewModel Map(Sms model)
+        {
+            if (model == null)
+                return default;
+
+            var result = _baseService.Map(model,
+                new SmsViewModel
+                {
+                    Id = model.Id,
+                    Text = model.Text,
+                    User = Map(model.User),
+                    SmsTemplate = Map(model.SmsTemplate),
+                    Contact = Map(model.Contact),
+                    Provider = model.Provider,
+                    Sender = model.Sender,
+                    Receiver = model.Receiver,
+                    ReferenceId = model.ReferenceId,
+                    StatusJson = model.StatusJson
+                });
+
+            return result;
+        }
+
+        public List<SmsViewModel> Map(List<Sms> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
+        public PaymentViewModel Map(Payment model)
+        {
+            if (model == null)
+                return default;
+
+            var result = _baseService.Map(model,
+                new PaymentViewModel
+                {
+                    Id = model.Id,
+                    Text = model.Text,
+                    Type = model.Type,
+                    Value = model.Value,
+                    Pictures = Map(model.Pictures.ToList())
+                });
+
+            return result;
+        }
+
+        public List<PaymentViewModel> Map(List<Payment> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
+        public List<UserViewModel> Map(List<User> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -596,11 +681,14 @@ namespace RealEstate.Services.Base
                     Address = model.Address,
                     Phone = model.Phone,
                     CreationDateTime = model.DateTime,
-                    ItemCategories = Map(model.UserItemCategories),
-                    PropertyCategories = Map(model.UserPropertyCategories)
+                    ItemCategories = Map(model.UserItemCategories.ToList()),
+                    PropertyCategories = Map(model.UserPropertyCategories.ToList()),
+                    Beneficiaries = Map(model.Beneficiaries.ToList()),
+                    Applicants = Map(model.Applicants.ToList()),
+                    Payments = Map(model.Payments.ToList()),
+                    Smses = Map(model.Smses.ToList())
                 });
             return result;
         }
-
     }
 }

@@ -1,0 +1,137 @@
+﻿@model JsonSelectorViewModel
+
+@if (Model?.SelectListItems?.Any() == true)
+{
+    <div class="row justify-content-center align-items-center">
+        <input asp-for="@Model.Json" />
+        <div class="col-12">
+            <div class="widget mini-widget">
+                <widget-header title="@Model.LocalizerName"></widget-header>
+                <section class="container-fluid">
+                    <div class="row">
+                        <div class="col-12 @Model.WrapperClass">
+                            <div class="itemShow adder">
+                                <div class="detail">
+                                    <div class="info">
+                                        <span>
+                                            <div class="row">
+                                                <div class="col-5">
+                                                    <select class="form-control d-inline-block" id="@Model.SelectId" asp-items="@Model.SelectListItems"></select>
+                                                </div>
+                                            </div>
+                                        </span>
+                                    </div>
+                                    <div class="button">
+                                        <button type="button" class="btn btn-sm btn-success btn-block" id="@Model.ButtonId">@Model.LocalizerButtonName</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="items"></div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script asp-cut-key="@Model.ScriptKey">
+        $(document).ready(function() {
+
+            const facilityJson = $("#@Model.Json");
+            const facilities = $(".@Model.WrapperClass");
+            const selectFacility = $("#@Model.SelectId");
+            const submitFacility = $("#@Model.ButtonId");
+            const facilityitemSelectorClass = "@Model.ItemSelectorClass";
+
+            $(facilityJson).change(function() {
+
+                const adder = $("> .adder", facilities);
+                const items = $("> .items", facilities);
+                $(items).empty();
+
+                if ($(facilityJson).val() === "") {
+                    $(facilityJson).val("[]");
+                }
+
+                const jsonString = $(facilityJson).val();
+                const json = $.parseJSON(jsonString);
+
+                $.each(json,
+                    (index, facility) => {
+
+                        const key = facility.@Model.IdProperty;
+                        const name = facility.@Model.NameProperty;
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", key);
+                        $(anchor).addClass("btn btn-warning");
+                        $(anchor).addClass(facilityitemSelectorClass);
+                        $(anchor).addClass("m-1");
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectFacility.children(),
+                    (index, facility) => {
+                        const name = $(facility).text();
+                        const key = $(facility).val();
+                        const i = json.findIndex(
+                            obj => obj.@Model.IdProperty === key);
+                        if (i >= 0) {
+                            $(facility).addClass("hidden");
+                        } else {
+                            $(facility).removeClass("hidden");
+                        }
+
+                    });
+
+                if ($('option:not(.hidden)', selectFacility).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectFacility).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+            });
+
+            $(submitFacility).click(function(e) {
+
+                if ($(selectFacility).children().length > 0) {
+                    let selected = $(selectFacility).find('option:selected:eq(0)')[0];
+                    if (selected === undefined || selected === null) {
+                        selected = $(selectFacility).find('option:eq(0)')[0];
+                    }
+                    console.log(selected);
+
+                    const keyId = $(selected).attr("value");
+                    const keyName = $(selected).text();
+
+                    if (keyId === undefined || keyId === null)
+                        return;
+
+                    addJson(facilityJson,
+                        {
+                            @Model.IdProperty: keyId,
+                            @Model.NameProperty: keyName
+                        });
+                }
+            });
+
+            $(document).on("click",
+                `.${facilityitemSelectorClass}`,
+                function (e) {
+                    e.preventDefault();
+                    removeButtonEvent(facilityJson, this);
+                });
+
+            $(facilityJson).trigger("change");
+
+        });
+    </script>
+}

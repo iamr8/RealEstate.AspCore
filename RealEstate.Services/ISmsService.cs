@@ -1,625 +1,168 @@
-﻿using Newtonsoft.Json;
-using RealEstate.Extensions.KavenNegarProvider.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Newtonsoft.Json;
+using RealEstate.Base.Enums;
+using RealEstate.Domain;
+using RealEstate.Domain.Tables;
+using RealEstate.Extensions.KavenNegarProvider;
 using RealEstate.Extensions.KavenNegarProvider.Response;
 using RealEstate.Extensions.KavenNegarProvider.Response.ResultModels;
-using RealEstate.Extensions.Sms.Utils;
-using RestSharp;
+using RealEstate.Services.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
     public interface ISmsService
     {
-        List<Send> Send(List<string> receptor, string message);
+        Task<(StatusEnum, Sms)> SendAsync(string recipient, string smsTemplateId, params string[] tokens);
 
-        Send Send(string receptor, string message);
+        Task<(StatusEnum, Sms)> SendAsync(string recipient, SmsTemplate smsTemplate, params string[] tokens);
 
-        Send Send(string receptor, string message, MessageType type, DateTime date);
+        Task<(StatusEnum, SmsTemplate)> SmsTemplateAddAsync(string templateText, bool save);
 
-        Send Send(string receptor, string message, MessageType type, DateTime date,
-            string localId);
-
-        Send Send(string receptor, string message, string localId);
-
-        List<Send> Send(List<string> receptors, string message, string localId);
-
-        List<Send> Send(List<string> receptor, string message, MessageType type, DateTime date,
-            List<string> localIds = null);
-
-        List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages);
-
-        List<Send> SendArray(List<string> receptors, List<string> messages, MessageType type,
-            DateTime date);
-
-        List<Send> SendArray(List<string> receptors, List<string> messages, MessageType type,
-            DateTime date, string localMessageIds);
-
-        List<Send> SendArray(List<string> receptors, List<string> messages, string localMessageId);
-
-        List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages,
-            string localMessageId);
-
-        List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages,
-            List<MessageType> types, DateTime date, List<string> localMessageIds);
-
-        List<Status> Status(List<string> messageIds);
-
-        Status Status(string messageId);
-
-        List<LocalMessageId> StatusLocalMessageId(List<string> messageIds);
-
-        LocalMessageId StatusLocalMessageId(string messageId);
-
-        List<Send> Select(List<string> messageIds);
-
-        Send Select(string messageId);
-
-        List<Send> SelectOutbox(DateTime startDate);
-
-        List<Send> SelectOutbox(DateTime startDate, DateTime endDate);
-
-        List<Send> SelectOutbox(DateTime startDate, DateTime endDate, String sender);
-
-        List<Send> LatestOutbox(long pageSize);
-
-        List<Send> LatestOutbox(long pageSize, String sender);
-
-        CountOutbox CountOutbox(DateTime startDate);
-
-        CountOutbox CountOutbox(DateTime startDate, DateTime endDate);
-
-        CountOutbox CountOutbox(DateTime startDate, DateTime endDate, int status);
-
-        List<Status> Cancel(List<string> ids);
-
-        Status Cancel(string messageId);
-
-        List<Receive> Receive(string line, int isRead);
-
-        CountInbox CountInbox(DateTime startDate, string lineNumber);
-
-        CountInbox CountInbox(DateTime startDate, DateTime endDate, string lineNumber);
-
-        CountInbox CountInbox(DateTime startDate, DateTime endDate, string lineNumber, int isRead);
-
-        List<CountPostalCode> CountPostalCode(long postalCode);
-
-        List<Send> SendByPostalCode(long postalcode, string message, long mciStartIndex,
-            long mciCount, long mtnStartIndex, long mtnCount);
-
-        List<Send> SendByPostalCode(long postalcode, string message, long mciStartIndex,
-            long mciCount, long mtnStartIndex, long mtnCount, DateTime date);
-
-        AccountInfo AccountInfo();
-
-        AccountConfig AccountConfig(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed);
-
-        Send VerifyLookup(string receptor, string token, string template);
-
-        Send VerifyLookup(string receptor, string token, string template, VerifyLookupType type);
-
-        Send VerifyLookup(string receptor, string token, string token2, string token3, string template);
-
-        Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string template);
-
-        Send VerifyLookup(string receptor, string token, string token2, string token3, string template,
-            VerifyLookupType type);
-
-        Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string template, VerifyLookupType type);
-
-        Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string token20, string template, VerifyLookupType type);
-
-        Send CallMakeTTS(string message, string receptor);
-
-        List<Send> CallMakeTTS(string message, List<string> receptor);
-
-        List<Send> CallMakeTTS(string message, List<string> receptor, DateTime? date, List<string> localId);
+        Task<(StatusEnum, List<Sms>)> SendAsync(string[] recipients, SmsTemplate smsTemplate, params string[] tokens);
     }
 
     public class SmsService : ISmsService
     {
-        private const string ApiPath = "https://api.kavenegar.com/v1/{0}/{1}/{2}.{3}";
-        private const string SmsNumber = "123";
-        private const string ApiKey = "";
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IBaseService _baseService;
+        private readonly IKavehNegarProvider _kavehNegarProvider;
+        private readonly DbSet<SmsTemplate> _smsTemplates;
+        private readonly DbSet<Sms> _smses;
 
-        public SmsService()
+        public SmsService(
+            IUnitOfWork unitOfWork,
+            IBaseService baseService,
+            IKavehNegarProvider kavehNegarProvider
+            )
         {
+            _unitOfWork = unitOfWork;
+            _baseService = baseService;
+            _kavehNegarProvider = kavehNegarProvider;
+            _smsTemplates = _unitOfWork.Set<SmsTemplate>();
+            _smses = _unitOfWork.Set<Sms>();
         }
 
-        private string GetApiPath(string _base, string method, string output)
+        public const string TemplateToken = "%%%";
+
+        public async Task<SmsTemplate> SmsTemplateFindEntityAsync(string smsTemplateId)
         {
-            return string.Format(ApiPath, ApiKey, _base, method, output);
+            if (string.IsNullOrEmpty(smsTemplateId))
+                return default;
+
+            var result = await _smsTemplates.FirstOrDefaultAsync(x => x.Id == smsTemplateId).ConfigureAwait(false);
+            return result;
         }
 
-        private static string Execute(string path, Dictionary<string, object> _params)
+        public async Task<(StatusEnum, SmsTemplate)> SmsTemplateAddAsync(string templateText, bool save)
         {
-            var postData = "";
-            postData = _params.Keys.Aggregate(postData,
-                (current, key) => current + $"{key}={_params[key]}&");
+            if (string.IsNullOrEmpty(templateText))
+                return new ValueTuple<StatusEnum, SmsTemplate>(StatusEnum.ParamIsNull, default);
 
-            var client = new RestClient(path);
-            var request = new RestRequest(Method.POST)
+            if (!templateText.Contains(TemplateToken))
+                return new ValueTuple<StatusEnum, SmsTemplate>(StatusEnum.TokenIsNull, default);
+
+            var addStatus = await _baseService.AddAsync(
+                new SmsTemplate
+                {
+                    Text = templateText
+                },
+                null, save).ConfigureAwait(false);
+            return addStatus;
+        }
+
+        public async Task<(StatusEnum, Sms)> SendAsync(string recipient, SmsTemplate smsTemplate, params string[] tokens)
+        {
+            if (smsTemplate == null)
+                return new ValueTuple<StatusEnum, Sms>(StatusEnum.SmsTemplateIsNull, default);
+
+            var (smsSendStatus, smses) = await SendAsync(new[]
             {
-                Timeout = -1
-            };
-            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddParameter("application/x-www-form-urlencoded", postData, ParameterType.RequestBody);
+                recipient
+            }, smsTemplate, tokens).ConfigureAwait(false);
 
-            var response = client.Execute(request);
-            return response.Content;
+            var status = new ValueTuple<StatusEnum, Sms>(smsSendStatus, smses[0]);
+            return status;
         }
 
-        public List<Send> Send(List<string> receptor, string message)
+        public async Task<(StatusEnum, Sms)> SendAsync(string recipient, string smsTemplateId, params string[] tokens)
         {
-            return Send(receptor, message, MessageType.MobileMemory, DateTime.MinValue);
+            if (string.IsNullOrEmpty(smsTemplateId))
+                return new ValueTuple<StatusEnum, Sms>(StatusEnum.SmsTemplateIdIsNull, default);
+
+            var smsTemplate = await SmsTemplateFindEntityAsync(smsTemplateId).ConfigureAwait(false);
+            if (smsTemplate == null)
+                return new ValueTuple<StatusEnum, Sms>(StatusEnum.SmsTemplateIsNull, default);
+
+            var result = await SendAsync(recipient, smsTemplate, tokens).ConfigureAwait(false);
+            return result;
         }
 
-        public Send Send(string receptor, string message)
+        public async Task<(StatusEnum, List<Sms>)> SendAsync(string[] recipients, string smsTemplateId, params string[] tokens)
         {
-            return Send(receptor, message, MessageType.MobileMemory, DateTime.MinValue);
+            if (string.IsNullOrEmpty(smsTemplateId))
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.SmsTemplateIdIsNull, default);
+
+            var smsTemplate = await SmsTemplateFindEntityAsync(smsTemplateId).ConfigureAwait(false);
+            if (smsTemplate == null)
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.SmsTemplateIsNull, default);
+
+            var result = await SendAsync(recipients, smsTemplate, tokens).ConfigureAwait(false);
+            return result;
         }
 
-        public Send Send(string receptor, string message, MessageType type, DateTime date)
+        public async Task<(StatusEnum, List<Sms>)> SendAsync(string[] recipients, SmsTemplate smsTemplate, params string[] tokens)
         {
-            var receptors = new List<string> { receptor };
-            return Send(receptors, message, type, date)[0];
-        }
+            if (recipients?.Any() != true)
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.RecipientIsNull, default);
 
-        public Send Send(string receptor, string message, MessageType type, DateTime date, string localId)
-        {
-            var receptors = new List<string> { receptor };
-            var localIds = new List<string> { localId };
-            return Send(receptors, message, type, date, localIds)[0];
-        }
+            if (smsTemplate == null)
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.SmsTemplateIsNull, default);
 
-        public Send Send(string receptor, string message, string localId)
-        {
-            return Send(receptor, message, MessageType.MobileMemory, DateTime.MinValue, localId);
-        }
+            var templateTokensCount = Regex.Matches(smsTemplate.Text, TemplateToken).Count;
+            if (tokens.Length != templateTokensCount)
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.TokensCountMismatch, default);
 
-        public List<Send> Send(List<string> receptors, string message, string localId)
-        {
-            var localIds = new List<string>();
-            for (var i = 0; i <= receptors.Count - 1; i++)
+            try
             {
-                localIds.Add(localId);
+                var status = new Response<List<Send>>();
+                foreach (var recipient in recipients)
+                    status = _kavehNegarProvider.VerifyLookup(recipient, tokens[0], tokens[1], tokens[2], smsTemplate.Text);
+
+                if (status?.Result?.Any() != true)
+                    return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.UnexpectedError, default);
+
+                var finalSmses = new List<Sms>();
+                foreach (var smsResult in status.Result)
+                {
+                    var (smsAddStatus, newSms) = await _baseService.AddAsync(
+                        new Sms
+                        {
+                            Provider = SmsProvider.KavehNegar,
+                            Receiver = smsResult.Receptor,
+                            Sender = smsResult.Sender,
+                            SmsTemplateId = smsTemplate.Id,
+                            Text = smsResult.Message,
+                            ReferenceId = smsResult.MessageId.ToString(),
+                            StatusJson = JsonConvert.SerializeObject(smsResult)
+                        }, null, false).ConfigureAwait(false);
+
+                    if (smsAddStatus == StatusEnum.Success)
+                        finalSmses.Add(newSms);
+                }
+
+                await _baseService.SaveChangesAsync(true).ConfigureAwait(false);
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.Success, finalSmses);
             }
-            return Send(receptors, message, MessageType.MobileMemory, DateTime.MinValue, localIds);
-        }
-
-        public List<Send> Send(List<string> receptor, string message, MessageType type,
-            DateTime date, List<string> localIds = null)
-        {
-            var path = GetApiPath("sms", "send", "json");
-            var param = new Dictionary<string, object>
+            catch
             {
-                {"sender", System.Web.HttpUtility.UrlEncode(SmsNumber)},
-                {"receptor", System.Web.HttpUtility.UrlEncode(string.Join(",", receptor.ToArray()))},
-                {"message", System.Web.HttpUtility.UrlEncode(message)},
-                {"type", (int) type},
-                {"date", date == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(date)}
-            };
-            if (localIds?.Count > 0)
-            {
-                param.Add("localid", string.Join(",", localIds.ToArray()));
+                return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.UnexpectedError, default);
             }
-
-            var responseBody = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(responseBody);
-            return deserialize.Result;
         }
-
-        public List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages)
-        {
-            var types = new List<MessageType>();
-            for (var i = 0; i <= senders.Count - 1; i++)
-            {
-                types.Add(MessageType.MobileMemory);
-            }
-
-            return SendArray(senders, receptors, messages, types, DateTime.MinValue, null);
-        }
-
-        public List<Send> SendArray(List<string> receptors, List<string> messages,
-            MessageType type, DateTime date)
-        {
-            var senders = new List<string>();
-            for (var i = 0; i < receptors.Count; i++)
-            {
-                senders.Add(SmsNumber);
-            }
-
-            var types = new List<MessageType>();
-            for (var i = 0; i <= senders.Count - 1; i++)
-            {
-                types.Add(MessageType.MobileMemory);
-            }
-
-            return SendArray(senders, receptors, messages, types, date, null);
-        }
-
-        public List<Send> SendArray(List<string> receptors, List<string> messages,
-            MessageType type, DateTime date, string localMessageIds)
-        {
-            var senders = new List<string>();
-            for (var i = 0; i < receptors.Count; i++)
-            {
-                senders.Add(SmsNumber);
-            }
-
-            var types = new List<MessageType>();
-            for (var i = 0; i <= senders.Count - 1; i++)
-            {
-                types.Add(MessageType.MobileMemory);
-            }
-
-            return SendArray(senders, receptors, messages, types, date, new List<string>() { localMessageIds });
-        }
-
-        public List<Send> SendArray(List<string> receptors, List<string> messages, string localMessageId)
-        {
-            var senders = new List<string>();
-            for (var i = 0; i < receptors.Count; i++)
-            {
-                senders.Add(SmsNumber);
-            }
-
-            return SendArray(senders, receptors, messages, localMessageId);
-        }
-
-        public List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages, string localMessageId)
-        {
-            var types = new List<MessageType>();
-            for (var i = 0; i <= receptors.Count - 1; i++)
-            {
-                types.Add(MessageType.MobileMemory);
-            }
-            var localMessageIds = new List<string>();
-            for (var i = 0; i <= receptors.Count - 1; i++)
-            {
-                localMessageIds.Add(localMessageId);
-            }
-            return SendArray(senders, receptors, messages, types, DateTime.MinValue, localMessageIds);
-        }
-
-        public List<Send> SendArray(List<string> senders, List<string> receptors, List<string> messages,
-            List<MessageType> types, DateTime date, List<string> localMessageIds)
-        {
-            var path = GetApiPath("sms", "sendarray", "json");
-            var jsonSenders = JsonConvert.SerializeObject(senders);
-            var jsonReceptors = JsonConvert.SerializeObject(receptors);
-            var jsonMessages = JsonConvert.SerializeObject(messages);
-            var jsonTypes = JsonConvert.SerializeObject(types);
-            var param = new Dictionary<string, object>
-            {
-                {"message", jsonMessages},
-                {"sender", jsonSenders},
-                {"receptor", jsonReceptors},
-                {"type", jsonTypes},
-                {"date", date == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(date)}
-            };
-
-            if (localMessageIds?.Count > 0)
-                param.Add("localmessageids", string.Join(",", localMessageIds.ToArray()));
-
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        public List<Status> Status(List<string> messageIds)
-        {
-            var path = GetApiPath("sms", "status", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"messageid", string.Join(",", messageIds.ToArray())}
-            };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Status>>>(response);
-            return deserialize.Result;
-        }
-
-        public Status Status(string messageId)
-        {
-            var ids = new List<string> { messageId };
-            var result = Status(ids);
-            return result.Count == 1 ? result[0] : null;
-        }
-
-        public List<LocalMessageId> StatusLocalMessageId(List<string> messageIds)
-        {
-            var path = GetApiPath("sms", "statuslocalmessageid", "json");
-            var param = new Dictionary<string, object> { { "localid", string.Join(",", messageIds.ToArray()) } };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<LocalMessageId>>>(response);
-            return deserialize.Result;
-        }
-
-        public LocalMessageId StatusLocalMessageId(string messageId)
-        {
-            var result = StatusLocalMessageId(new List<String>() { messageId });
-            return result.Count == 1 ? result[0] : null;
-        }
-
-        public List<Send> Select(List<string> messageIds)
-        {
-            var path = GetApiPath("sms", "select", "json");
-            var param = new Dictionary<string, object> { { "messageid", string.Join(",", messageIds.ToArray()) } };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        public Send Select(string messageId)
-        {
-            var ids = new List<string> { messageId };
-            var result = Select(ids);
-            return result.Count == 1 ? result[0] : null;
-        }
-
-        public List<Send> SelectOutbox(DateTime startDate)
-        {
-            return SelectOutbox(startDate, DateTime.MaxValue);
-        }
-
-        public List<Send> SelectOutbox(DateTime startDate, DateTime endDate)
-        {
-            return SelectOutbox(startDate, endDate, null);
-        }
-
-        public List<Send> SelectOutbox(DateTime startDate, DateTime endDate, String sender)
-        {
-            var path = GetApiPath("sms", "selectoutbox", "json");
-            var param = new Dictionary<string, object>
-         {
-             {"startdate", startDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(startDate)},
-             {"enddate", endDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(endDate)},
-             {"sender", sender}
-         };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        public List<Send> LatestOutbox(long pageSize)
-        {
-            return LatestOutbox(pageSize, "");
-        }
-
-        public List<Send> LatestOutbox(long pageSize, string sender)
-        {
-            var path = GetApiPath("sms", "latestoutbox", "json");
-            var param = new Dictionary<string, object> { { "pagesize", pageSize }, { "sender", sender } };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        public CountOutbox CountOutbox(DateTime startDate)
-        {
-            return CountOutbox(startDate, DateTime.MaxValue, 10);
-        }
-
-        public CountOutbox CountOutbox(DateTime startDate, DateTime endDate)
-        {
-            return CountOutbox(startDate, endDate, 0);
-        }
-
-        public CountOutbox CountOutbox(DateTime startDate, DateTime endDate, int status)
-        {
-            var path = GetApiPath("sms", "countoutbox", "json");
-            var param = new Dictionary<string, object>
-         {
-             {"startdate", startDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(startDate)},
-             {"enddate", endDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(endDate)},
-             {"status", status}
-         };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<CountOutbox>>>(response);
-            return deserialize.Result?[0] ?? new CountOutbox();
-        }
-
-        public List<Status> Cancel(List<string> ids)
-        {
-            var path = GetApiPath("sms", "cancel", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"messageid", string.Join(",", ids.ToArray())}
-            };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Status>>>(response);
-            return deserialize.Result;
-        }
-
-        public Status Cancel(string messageId)
-        {
-            var ids = new List<string> { messageId };
-            var result = Cancel(ids);
-            return result.Count == 1 ? result[0] : null;
-        }
-
-        public List<Receive> Receive(string line, int isRead)
-        {
-            var path = GetApiPath("sms", "receive", "json");
-            var param = new Dictionary<string, object> { { "linenumber", line }, { "isread", isRead } };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Receive>>>(response);
-            return deserialize.Result;
-        }
-
-        public CountInbox CountInbox(DateTime startDate, string lineNumber)
-        {
-            return CountInbox(startDate, DateTime.MaxValue, lineNumber, 0);
-        }
-
-        public CountInbox CountInbox(DateTime startDate, DateTime endDate, string lineNumber)
-        {
-            return CountInbox(startDate, endDate, lineNumber, 0);
-        }
-
-        public CountInbox CountInbox(DateTime startDate, DateTime endDate, string lineNumber, int isRead)
-        {
-            var path = GetApiPath("sms", "countoutbox", "json");
-            var param = new Dictionary<string, object>
-        {
-            {"startdate", startDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(startDate)},
-            {"enddate", endDate == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(endDate)},
-            {"linenumber", lineNumber},
-            {"isread", isRead}
-        };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<CountInbox>>>(response);
-            return deserialize?.Result[0] ?? new CountInbox();
-        }
-
-        public List<CountPostalCode> CountPostalCode(long postalCode)
-        {
-            var path = GetApiPath("sms", "countpostalcode", "json");
-            var param = new Dictionary<string, object> { { "postalcode", postalCode } };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<CountPostalCode>>>(response);
-            return deserialize.Result;
-        }
-
-        public List<Send> SendByPostalCode(long postalcode, string message, long mciStartIndex,
-            long mciCount, long mtnStartIndex, long mtnCount)
-        {
-            return SendByPostalCode(postalcode, message, mciStartIndex, mciCount, mtnStartIndex, mtnCount,
-                DateTime.MinValue);
-        }
-
-        public List<Send> SendByPostalCode(long postalcode, string message, long mciStartIndex,
-            long mciCount, long mtnStartIndex, long mtnCount, DateTime date)
-        {
-            var path = GetApiPath("sms", "sendbypostalcode", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"postalcode", postalcode},
-                {"sender", SmsNumber},
-                {"message", System.Web.HttpUtility.UrlEncode(message)},
-                {"mcistartIndex", mciStartIndex},
-                {"mcicount", mciCount},
-                {"mtnstartindex", mtnStartIndex},
-                {"mtncount", mtnCount},
-                {"date", date == DateTime.MinValue ? 0 : DateHelper.DateTimeToUnixTimestamp(date)}
-            };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        public AccountInfo AccountInfo()
-        {
-            var path = GetApiPath("account", "info", "json");
-            var response = Execute(path, null);
-            var deserialize = JsonConvert.DeserializeObject<Response<AccountInfo>>(response);
-            return deserialize.Result;
-        }
-
-        public AccountConfig AccountConfig(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed)
-        {
-            var path = GetApiPath("account", "config", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"apilogs", apiLogs},
-                {"dailyreport", dailyReport},
-                {"debugmode", debugMode},
-                {"defaultsender", SmsNumber},
-                {"mincreditalarm", minCreditAlarm},
-                {"resendfailed", resendFailed}
-            };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<AccountConfig>>(response);
-            return deserialize.Result;
-        }
-
-        public Send VerifyLookup(string receptor, string token, string template)
-        {
-            return VerifyLookup(receptor, token, null, null, template, VerifyLookupType.Sms);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string template, VerifyLookupType type)
-        {
-            return VerifyLookup(receptor, token, null, null, template, type);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string token2, string token3, string template)
-        {
-            return VerifyLookup(receptor, token, token2, token3, template, VerifyLookupType.Sms);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string template)
-        {
-            return VerifyLookup(receptor, token, token2, token3, token10, template, VerifyLookupType.Sms);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string token2, string token3, string template,
-            VerifyLookupType type)
-        {
-            return VerifyLookup(receptor, token, token2, token3, null, template, type);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string template, VerifyLookupType type)
-        {
-            return VerifyLookup(receptor, token, token2, token3, token10, null, template, type);
-        }
-
-        public Send VerifyLookup(string receptor, string token, string token2, string token3, string token10,
-            string token20, string template, VerifyLookupType type)
-        {
-            var path = GetApiPath("verify", "lookup", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"receptor", receptor},
-                {"template", template},
-                {"token", token},
-                {"token2", token2},
-                {"token3", token3},
-                {"token10", token10},
-                {"token20", token20},
-                {"type", type},
-            };
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize?.Result[0] ?? new Send();
-        }
-
-        #region << CallMakeTTS >>
-
-        public Send CallMakeTTS(string message, string receptor)
-        {
-            return CallMakeTTS(message, new List<string> { receptor }, null, null)[0];
-        }
-
-        public List<Send> CallMakeTTS(string message, List<string> receptor)
-        {
-            return CallMakeTTS(message, receptor, null, null);
-        }
-
-        public List<Send> CallMakeTTS(string message, List<string> receptor, DateTime? date, List<string> localId)
-        {
-            var path = GetApiPath("call", "maketts", "json");
-            var param = new Dictionary<string, object>
-            {
-                {"receptor", string.Join(",", receptor.ToArray())},
-                {"message", System.Web.HttpUtility.UrlEncode(message)},
-            };
-            if (date != null)
-                param.Add("date", DateHelper.DateTimeToUnixTimestamp(date.Value));
-            if (localId?.Count > 0)
-                param.Add("localid", string.Join(",", localId.ToArray()));
-            var response = Execute(path, param);
-            var deserialize = JsonConvert.DeserializeObject<Response<List<Send>>>(response);
-            return deserialize.Result;
-        }
-
-        #endregion << CallMakeTTS >>
     }
 }

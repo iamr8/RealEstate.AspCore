@@ -1,0 +1,98 @@
+﻿@page
+@using RealEstate.Web.Components
+@model AddModel
+@{
+    var roles = EnumsConverterExtension.ToList<Role>().Where(x => x != (int)Role.SuperAdmin).Select(x => new SelectListItem
+    {
+        Text = ((Role)x).Display(),
+        Value = x.ToString(),
+        Selected = (Role)x == Role.User
+    }).ToList();
+
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item).ConfigureAwait(false);
+
+    var userPropertySelector = new JsonSelectorViewModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x=>x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        ScriptKey = "userPropertyScript",
+        SelectId = "NewUser_UserPropertyCategory_Select",
+        ButtonId = "NewUser_NewUserPropertyCategory_Submit",
+        Json = "NewUser_UserPropertyCategoriesJson",
+        WrapperClass = "userPropertyCategories",
+        LocalizerName = "UserPropertyCategories",
+        ItemSelectorClass = "userPropertyCategory-item",
+        LocalizerButtonName = "Submit",
+    };
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewUser.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <label asp-for="NewUser.Username" class="control-label"></label>
+                    <input asp-for="NewUser.Username" class="form-control" />
+                    <span asp-validation-for="NewUser.Username" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <label asp-for="NewUser.Password" class="control-label"></label>
+                    <input asp-for="NewUser.Password" class="form-control" />
+                    <span asp-validation-for="NewUser.Password" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <label asp-for="NewUser.Role" class="control-label"></label>
+                    <select asp-items="@roles" asp-for="NewUser.Role" class="form-control"></select>
+                    <span asp-validation-for="NewUser.Role" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewUser.Mobile" class="control-label"></label>
+                    <input asp-for="NewUser.Mobile" class="form-control" />
+                    <span asp-validation-for="NewUser.Mobile" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewUser.FirstName" class="control-label"></label>
+                    <input asp-for="NewUser.FirstName" class="form-control" />
+                    <span asp-validation-for="NewUser.FirstName" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewUser.LastName" class="control-label"></label>
+                    <input asp-for="NewUser.LastName" class="form-control" />
+                    <span asp-validation-for="NewUser.LastName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewUser.Phone" class="control-label"></label>
+                    <input asp-for="NewUser.Phone" class="form-control" />
+                    <span asp-validation-for="NewUser.Phone" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-8 margin-bottomed">
+                    <label asp-for="NewUser.Address" class="control-label"></label>
+                    <input asp-for="NewUser.Address" class="form-control" />
+                    <span asp-validation-for="NewUser.Address" class="text-danger"></span>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <vc:json-selector model="null" />
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.UserStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

@@ -1,8 +1,9 @@
 ﻿using RealEstate.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class ContactViewModel : BaseTrackViewModel
+    public class ContactViewModel : BaseLogViewModel
     {
         public string Name { get; set; }
 
@@ -13,8 +14,8 @@ namespace RealEstate.ViewModels
         public string Address { get; set; }
 
         public string Description { get; set; }
-
-        //        public int Properties { get; set; }
-        //        public int Deals { get; set; }
+        public List<SmsViewModel> Smses { get; set; }
+        public List<ApplicantViewModel> Applicants { get; set; }
+        public List<OwnershipViewModel> Ownerships { get; set; }
     }
 }

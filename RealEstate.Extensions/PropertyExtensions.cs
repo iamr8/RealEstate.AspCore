@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Resources;
-using RealEstate.Base;
 
 namespace RealEstate.Extensions
 {
@@ -41,7 +40,7 @@ namespace RealEstate.Extensions
             }
             catch
             {
-                throw new Exception("Model type should be member of BaseAbstractModel");
+                return false;
             }
         }
 

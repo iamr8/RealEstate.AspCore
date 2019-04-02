@@ -16,7 +16,6 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AuthenticationScheme = RealEstate.Extensions.AuthenticationScheme;
-using CryptologyExtension = RealEstate.Extensions.CryptologyExtension;
 
 namespace RealEstate.Services
 {
@@ -24,7 +23,11 @@ namespace RealEstate.Services
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
+        Task<(StatusEnum, User)> UpdateAsync(UserInputViewModel model, bool save);
+
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
+
+        Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(int page, string userName, string userFirst,
             string userLast, string userMobile, string userAddress, string password, string role, string userId);
@@ -69,8 +72,7 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return null;
 
-            var query = _users.Where(x => x.Id == id);
-            var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var model = await UserFindEntityAsync(id).ConfigureAwait(false);
             if (model == null) return null;
 
             var result = _baseService.Map(model,
@@ -84,6 +86,10 @@ namespace RealEstate.Services
                     Username = model.Username,
                     Address = model.Address,
                     Phone = model.Phone,
+                    DateOfPay = model.DateOfPay,
+                    FixedSalary = model.FixedSalary,
+                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(_mapService.Map),
+                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(_mapService.Map)
                 });
             return result;
         }
@@ -129,25 +135,120 @@ namespace RealEstate.Services
                 new[]
                 {
                     Role.SuperAdmin
-                }, null).ConfigureAwait(false);
+                }).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return default;
 
             var superAdmin = result.Items.Find(x => x.Username == "admin" && x.Role == Role.SuperAdmin);
-            if (superAdmin?.Tracks?.Any() == true)
+            if (superAdmin?.Logs?.Any() == true)
             {
-                var tempTracks = superAdmin.Tracks;
-                var creationTrack = tempTracks.Find(x => x.Type == TrackTypeEnum.Create);
+                var tempTracks = superAdmin.Logs;
+                var creationTrack = tempTracks.Find(x => x.Type == LogTypeEnum.Create);
                 if (creationTrack != null)
                 {
                     var isRemoved = tempTracks.Remove(creationTrack);
                     if (isRemoved)
-                        superAdmin.Tracks = tempTracks;
+                        superAdmin.Logs = tempTracks;
                 }
             }
 
             return result;
+        }
+
+        public async Task<User> UserFindEntityAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var result = await _users.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<(StatusEnum, User)> UpdateAsync(UserInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.IdIsNull, null);
+
+            var entity = await UserFindEntityAsync(model.Id).ConfigureAwait(false);
+            var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
+                () =>
+                {
+                    entity.DateOfPay = model.DateOfPay;
+                    entity.FixedSalary = model.FixedSalary;
+                    entity.Address = model.Address;
+                    entity.FirstName = model.FirstName;
+                    entity.LastName = model.LastName;
+                    entity.Mobile = model.Mobile;
+                    entity.Password = model.Password;
+                    entity.Phone = model.Phone;
+                    entity.Role = model.Role;
+                }, new[]
+                {
+                    Role.SuperAdmin
+                }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+
+            await SyncAsync(updatedUser, model, false).ConfigureAwait(false);
+
+            return await _baseService.SaveChangesAsync(updatedUser, save).ConfigureAwait(false);
+        }
+
+        public async Task<StatusEnum> SyncAsync(User entity, UserInputViewModel model, bool save)
+        {
+            var syncItemFeature = await _baseService.SyncAsync(
+                entity.UserItemCategories,
+                model.UserItemCategories,
+                (itemCategory, currentUser) => new UserItemCategory
+                {
+                    CategoryId = itemCategory.Id,
+                    UserId = currentUser.Id,
+                },
+                (currentItemCategory, newItemCategory) => currentItemCategory.CategoryId == newItemCategory.Id,
+                null,
+                false).ConfigureAwait(false);
+
+            var syncPropertyFeature = await _baseService.SyncAsync(
+                entity.UserPropertyCategories,
+                model.UserPropertyCategories,
+                (propertyCategory, currentUser) => new UserPropertyCategory
+                {
+                    UserId = currentUser.Id,
+                    CategoryId = propertyCategory.Id
+                },
+                (currentPropertyCategory, newPropertyCategory) => currentPropertyCategory.CategoryId == newPropertyCategory.Id,
+                null,
+                false).ConfigureAwait(false);
+
+            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
+
+            var (userAddStatus, newUser) = await _baseService.AddAsync(new User
+            {
+                Role = model.Role,
+                Address = model.Address,
+                DateOfPay = model.DateOfPay,
+                FirstName = model.FirstName,
+                FixedSalary = model.FixedSalary,
+                LastName = model.LastName,
+                Username = model.Username,
+                Phone = model.Phone,
+                Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption),
+                Mobile = model.Mobile
+            }, new[]
+            {
+                Role.SuperAdmin
+            }, false).ConfigureAwait(false);
+
+            await SyncAsync(newUser, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newUser, save).ConfigureAwait(false);
         }
 
         //public async Task<(StatusEnum, string)> AddAsync(UserInputViewModel model)
@@ -239,15 +340,14 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(userId))
                 return StatusEnum.ParamIsNull;
 
-            var user = await _users.FirstOrDefaultAsync(x => x.Id == userId).ConfigureAwait(false);
+            var user = await UserFindEntityAsync(userId).ConfigureAwait(false);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
                         Role.SuperAdmin
                     },
                     true,
-                    true,
-                    null)
+                    true)
                 .ConfigureAwait(false);
 
             return result;
@@ -276,18 +376,18 @@ namespace RealEstate.Services
             }
 
             var lastTrack = userDb.LastLog();
-            if (lastTrack?.Type == TrackTypeEnum.Delete)
+            if (lastTrack?.Type == LogTypeEnum.Delete)
                 return StatusEnum.Deactivated;
 
-            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(itemCategory => new ItemCategoryViewModel
+            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryViewModel
             {
-                Id = itemCategory.Id,
-                Name = itemCategory.ItemCategory.Name
+                Id = category.Id,
+                Name = category.Category.Name
             });
-            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(itemCategory => new PropertyCategoryViewModel
+            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(category => new CategoryViewModel
             {
-                Id = itemCategory.Id,
-                Name = itemCategory.PropertyCategory.Name
+                Id = category.Id,
+                Name = category.Category.Name
             });
 
             var claims = new List<Claim>

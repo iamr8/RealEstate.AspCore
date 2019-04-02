@@ -31,6 +31,9 @@ namespace RealEstate.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string DistrictId { get; set; }
 
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
         [HiddenInput]
         public string OwnershipsJson { get; set; }
 

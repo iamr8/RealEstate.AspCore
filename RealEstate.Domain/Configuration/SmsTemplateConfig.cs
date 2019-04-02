@@ -4,9 +4,9 @@ using RealEstate.Domain.Tables;
 
 namespace RealEstate.Domain.Configuration
 {
-    internal class ItemCategoryConfig : BaseEntityConfiguration<ItemCategory>
+    public class SmsTemplateConfig : BaseEntityConfiguration<SmsTemplate>
     {
-        public override void Configure(EntityTypeBuilder<ItemCategory> builder)
+        public override void Configure(EntityTypeBuilder<SmsTemplate> builder)
         {
             base.Configure(builder);
         }

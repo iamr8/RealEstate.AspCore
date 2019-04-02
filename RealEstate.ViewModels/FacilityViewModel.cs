@@ -2,7 +2,7 @@
 
 namespace RealEstate.ViewModels
 {
-    public class FacilityViewModel : BaseTrackViewModel
+    public class FacilityViewModel : BaseLogViewModel
     {
         public string Name { get; set; }
 

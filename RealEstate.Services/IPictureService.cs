@@ -2,17 +2,16 @@
 using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
-using RealEstate.ViewModels;
+using RealEstate.Services.Base;
 using RealEstate.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
-using RealEstate.Services.Base;
 
 namespace RealEstate.Services
 {
     public interface IPictureService
     {
-        Task<(StatusEnum, Picture)> PropertyPictureAddAsync(PropertyPhotoInputViewModel model, bool save, UserViewModel currentUser);
+        Task<(StatusEnum, Picture)> PictureAddAsync(PictureInputViewModel model, PictureTypeEnum type, string targetId, bool save);
     }
 
     public class PictureService : IPictureService
@@ -34,12 +33,8 @@ namespace RealEstate.Services
             _pictures = _unitOfWork.Set<Picture>();
         }
 
-        public async Task<(StatusEnum, Picture)> PropertyPictureAddAsync(PropertyPhotoInputViewModel model, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, Picture)> PictureAddAsync(PictureInputViewModel model, PictureTypeEnum type, string targetId, bool save)
         {
-            currentUser = _baseService.CurrentUser(currentUser);
-            if (currentUser == null)
-                return new ValueTuple<StatusEnum, Picture>(StatusEnum.UserIsNull, null);
-
             if (model == null)
                 return new ValueTuple<StatusEnum, Picture>(StatusEnum.ModelIsNull, null);
 
@@ -48,14 +43,16 @@ namespace RealEstate.Services
             if (file == null)
                 return new ValueTuple<StatusEnum, Picture>(StatusEnum.FileIsNull, null);
 
-            var newPicture = _unitOfWork.Add(new Picture
+            var newPicture = await _baseService.AddAsync(new Picture
             {
-                PropertyId = model.PropertyId,
+                PropertyId = type == PictureTypeEnum.Property ? targetId : null,
+                DealPaymentId = type == PictureTypeEnum.DealPayment ? targetId : null,
+                PaymentId = type == PictureTypeEnum.PaymentId ? targetId : null,
+                DealId = type == PictureTypeEnum.Deal ? targetId : null,
                 Text = model.Text,
                 File = file.File,
-            });
-
-            return await _baseService.SaveChangesAsync(newPicture, save).ConfigureAwait(false);
+            }, null, save).ConfigureAwait(false);
+            return newPicture;
         }
     }
 }

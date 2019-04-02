@@ -11,6 +11,7 @@ namespace RealEstate.Domain.Tables
             Applicants = new HashSet<Applicant>();
             Ownerships = new HashSet<Ownership>();
             Logs = new HashSet<Log>();
+            Smses = new HashSet<Sms>();
         }
 
         public string Description { get; set; }
@@ -26,5 +27,6 @@ namespace RealEstate.Domain.Tables
         public string Address { get; set; }
         public virtual ICollection<Applicant> Applicants { get; set; }
         public virtual ICollection<Ownership> Ownerships { get; set; }
+        public virtual ICollection<Sms> Smses { get; set; }
     }
 }

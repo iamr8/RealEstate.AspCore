@@ -3,7 +3,7 @@ using RealEstate.Base;
 
 namespace RealEstate.ViewModels
 {
-    public class GeolocationViewModel : BaseTrackViewModel
+    public class GeolocationViewModel : BaseLogViewModel
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }

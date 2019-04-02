@@ -1,6 +1,6 @@
 ﻿namespace RealEstate.Base.Enums
 {
-    public enum TrackTypeEnum
+    public enum LogTypeEnum
     {
         Create,
         Delete,

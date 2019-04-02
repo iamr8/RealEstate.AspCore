@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using RealEstate.Extensions.KavenNegarProvider;
 
 namespace RealEstate.Services.Base
 {
@@ -10,6 +11,9 @@ namespace RealEstate.Services.Base
             service.AddScoped<IBaseService, BaseService>();
             service.AddScoped<IFileHandler, FileHandler>();
             service.AddScoped<IMapService, MapService>();
+
+            // Sms Provider
+            service.AddScoped<IKavehNegarProvider, KavehNegarProvider>();
 
             // Services Implementation
             service.AddScoped<IContactService, ContactService>();

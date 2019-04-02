@@ -26,7 +26,7 @@ namespace RealEstate.Domain
         public virtual DbSet<Facility> Facility { get; set; }
         public virtual DbSet<Feature> Feature { get; set; }
         public virtual DbSet<Item> Item { get; set; }
-        public virtual DbSet<ItemCategory> ItemCategory { get; set; }
+        public virtual DbSet<Category> ItemCategory { get; set; }
         public virtual DbSet<ItemFeature> ItemFeature { get; set; }
         public virtual DbSet<ItemRequest> ItemRequest { get; set; }
         public virtual DbSet<Log> Log { get; set; }
@@ -34,10 +34,13 @@ namespace RealEstate.Domain
         public virtual DbSet<Payment> Payment { get; set; }
         public virtual DbSet<Picture> Picture { get; set; }
         public virtual DbSet<Property> Property { get; set; }
-        public virtual DbSet<PropertyCategory> PropertyCategory { get; set; }
+        public virtual DbSet<Category> PropertyCategory { get; set; }
         public virtual DbSet<PropertyFacility> PropertyFacility { get; set; }
         public virtual DbSet<PropertyFeature> PropertyFeature { get; set; }
         public virtual DbSet<PropertyOwnership> PropertyOwnership { get; set; }
+        public virtual DbSet<Sms> Sms { get; set; }
+        public virtual DbSet<SmsTemplate> SmsTemplate { get; set; }
+
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserItemCategory> UserItemCategory { get; set; }
         public virtual DbSet<UserPropertyCategory> UserPropertyCategory { get; set; }
@@ -80,7 +83,7 @@ namespace RealEstate.Domain
 
         public TEntity Update<TEntity>(TEntity entity, string userId) where TEntity : class
         {
-            AddTrack(entity, userId, TrackTypeEnum.Modify);
+            AddTrack(entity, userId, LogTypeEnum.Modify);
             return entity;
         }
 
@@ -90,7 +93,7 @@ namespace RealEstate.Domain
             return entity;
         }
 
-        private void AddTrack<TEntity>(TEntity model, string userId, TrackTypeEnum type) where TEntity : class
+        private void AddTrack<TEntity>(TEntity model, string userId, LogTypeEnum type) where TEntity : class
         {
             var track = new Log
             {
@@ -111,7 +114,7 @@ namespace RealEstate.Domain
         public TEntity Add<TEntity>(TEntity entity, string userId) where TEntity : class
         {
             var model = Add(entity);
-            AddTrack(entity, userId, TrackTypeEnum.Create);
+            AddTrack(entity, userId, LogTypeEnum.Create);
             return model;
         }
 
@@ -123,13 +126,13 @@ namespace RealEstate.Domain
 
         public TEntity UnDelete<TEntity>(TEntity entity, string userId) where TEntity : class
         {
-            AddTrack(entity, userId, TrackTypeEnum.Undelete);
+            AddTrack(entity, userId, LogTypeEnum.Undelete);
             return entity;
         }
 
         public TEntity Delete<TEntity>(TEntity entity, string userId) where TEntity : class
         {
-            AddTrack(entity, userId, TrackTypeEnum.Delete);
+            AddTrack(entity, userId, LogTypeEnum.Delete);
             return entity;
         }
     }

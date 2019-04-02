@@ -16,7 +16,7 @@ namespace RealEstate.Domain.Configuration
 
             builder.HasOne(x => x.Deal)
                 .WithOne(x => x.ItemRequest)
-                .HasForeignKey<ItemRequest>(x => x.DealId);
+                .HasForeignKey<Deal>(x => x.ItemRequestId);
 
             builder.HasMany(x => x.Applicants)
                 .WithOne(x => x.ItemRequest)

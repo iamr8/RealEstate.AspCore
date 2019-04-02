@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
 using System.Linq;
@@ -13,9 +13,9 @@ namespace RealEstate.Services
 {
     public interface IPropertyService
     {
-        Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user);
+        Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save);
 
-        Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save, UserViewModel currentUser);
+        Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save);
     }
 
     public class PropertyService : IPropertyService
@@ -41,7 +41,7 @@ namespace RealEstate.Services
             _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
         }
 
-        public async Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save, UserViewModel user)
+        public async Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.ModelIsNull, null);
@@ -49,70 +49,60 @@ namespace RealEstate.Services
             if (model.Ownerships?.Any() != true)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
 
-            user = _baseService.CurrentUser(user);
-            if (user == null)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.UserIsNull, null);
-
-            var newProperty = _unitOfWork.Add(new Property
+            var (propertyAddStatus, newProperty) = await _baseService.AddAsync(new Property
             {
                 Description = model.Description,
                 DistrictId = model.DistrictId,
-                PropertyCategoryId = model.CategoryId,
+                CategoryId = model.CategoryId,
                 Alley = model.Alley,
                 BuildingName = model.BuildingName,
                 Flat = model.Flat,
                 Floor = model.Floor,
                 Number = model.Number,
                 Street = model.Street,
-            }, user.Id);
+                Geolocation = model.Latitude > 0 && model.Longitude > 0 ? new Point(model.Longitude, model.Latitude) : default
+            }, null, false).ConfigureAwait(false);
 
-            var (propertyOwnershipAddStatus, propertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false, user).ConfigureAwait(false);
+            var (propertyOwnershipAddStatus, newPropertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false).ConfigureAwait(false);
             if (propertyOwnershipAddStatus != StatusEnum.Success)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
 
             foreach (var owner in model.Ownerships)
-                await _contactService.OwnershipUpdateAsync(owner.OwnershipId, propertyOwnership.Id, false, user).ConfigureAwait(false);
+                await _contactService.OwnershipUpdatePropertyAsync(owner.OwnershipId, newPropertyOwnership.Id, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
                 newProperty.PropertyFeatures,
                 model.PropertyFeatures,
-                (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
-                feature => new PropertyFeature
+                (feature, currentUser) => new PropertyFeature
                 {
                     PropertyId = newProperty.Id,
                     FeatureId = feature.Id,
                     Value = feature.Value,
                 },
-                false, user).ConfigureAwait(false);
+                (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
+                null, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
                 newProperty.PropertyFacilities,
                 model.PropertyFacilities,
-                (currentFacility, newFacility) => currentFacility.FacilityId == newFacility.Id,
-                facility => new PropertyFacility
+                (facility, currentUser) => new PropertyFacility
                 {
                     PropertyId = newProperty.Id,
                     FacilityId = facility.Id
                 },
-                false, user).ConfigureAwait(false);
+                (currentFacility, newFacility) => currentFacility.FacilityId == newFacility.Id,
+                null, false).ConfigureAwait(false);
 
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save, UserViewModel currentUser)
+        public async Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save)
         {
-            currentUser = _baseService.CurrentUser(currentUser);
-            if (currentUser == null)
-                return new ValueTuple<StatusEnum, PropertyOwnership>(StatusEnum.UserIsNull, null);
-
-            var newPropertyOwnership = _unitOfWork.Add(new PropertyOwnership
+            var newPropertyOwnership = await _baseService.AddAsync(new PropertyOwnership
             {
                 PropertyId = propertyId
-            }, currentUser.Id);
-            if (newPropertyOwnership == null)
-                return new ValueTuple<StatusEnum, PropertyOwnership>(StatusEnum.PropertyOwnershipIsNull, null);
-
-            return await _baseService.SaveChangesAsync(newPropertyOwnership, save).ConfigureAwait(false);
+            }, null, save).ConfigureAwait(false);
+            return newPropertyOwnership;
         }
     }
 }

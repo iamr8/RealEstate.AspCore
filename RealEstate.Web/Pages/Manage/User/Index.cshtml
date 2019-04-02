@@ -1,0 +1,129 @@
+﻿@page
+@model IndexModel
+@{
+    var roles = new List<SelectListItem>
+{
+new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
+};
+    roles.AddRange(EnumsConverterExtension.ToList<Role>().Select(x => new SelectListItem
+    {
+        Text = ((Role)x).Display(),
+        Value = x.ToString(),
+    }).ToList());
+}
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle">
+            <a asp-page="/@nameof(Manage)/@nameof(User)/Add">@SharedLocalizer["NewUser"]</a>
+        </widget-header>
+        <section class="container-fluid">
+            @*<div class="row justify-content-center align-items-center margin-bottomed">
+                <div class="col-12">
+                    <form method="post" class="widget mini-widget bg-white">
+                        <widget-header title="@SharedLocalizer["Search"]"></widget-header>
+                        <section class="container-fluid margin-bottomed">
+                            <div class="row">
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Username"></label>
+                                    <input asp-for="SearchInput.Username" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Password"></label>
+                                    <input asp-for="SearchInput.Password" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.FirstName"></label>
+                                    <input asp-for="SearchInput.FirstName" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.LastName"></label>
+                                    <input asp-for="SearchInput.LastName" class="form-control" />
+                                </div>
+                                <div class="col-12 col-lg-6 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Address"></label>
+                                    <input asp-for="SearchInput.Address" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Mobile"></label>
+                                    <input asp-for="SearchInput.Mobile" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Role"></label>
+                                    <select asp-items="roles" asp-for="SearchInput.Role" class="form-control"></select>
+                                </div>
+                            </div>
+                        </section>
+                        <widget-footer>
+                            <widget-footer-text></widget-footer-text>
+                            <widget-footer-button>
+                                <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
+                            </widget-footer-button>
+                        </widget-footer>
+                    </form>
+                </div>
+            </div>*@
+            @if (Model.List.Items?.Any() == true)
+            {
+                foreach (var item in Model.List.Items)
+                {
+                    if (item.Role == Role.SuperAdmin && !User.IsInRole(Role.SuperAdmin.ToString()))
+                    {
+                        continue;
+                    }
+
+                    var lastTrack = item.LastLog;
+                    var disabledClass = lastTrack?.Type == LogTypeEnum.Delete ? "disabled" : "";
+                    var disabledTerm = lastTrack?.Type == LogTypeEnum.Delete ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
+                    //                    var hasNoProperties = item.Properties <= 0 ? "disabled" : "";
+                    <div class="row justify-content-center itemShow @disabledClass">
+                        <div class="col-12 detail">
+                            <div class="info">
+                                <span>
+                                    <b class="title">
+                                        @item.Username
+                                    </b>
+                                    <span class="badge badge-primary">@item.FirstName، @item.LastName</span>
+                                    @if (!string.IsNullOrEmpty(item.Mobile))
+                                    {
+                                        <span class="badge badge-secondary">@item.Mobile</span>
+                                    }
+                                    <span class="badge badge-warning"><b>@SharedLocalizer["Password"]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
+                                    @if (!string.IsNullOrEmpty(item.Address))
+                                    {
+                                        <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Address</span>
+                                    }
+                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Index" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.Display()</a>
+                                </span>
+                            </div>
+                            <div class="button">
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()))
+                                {
+                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+
+                                    if (User.Identity.Name != item.Username)
+                                    {
+                                        <a asp-controller="Remove" asp-action="UserDeActivateAsync" asp-route-id="@item.Id" asp-route-pageNo="@Model.PageNo" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        @if (item.Role != Role.SuperAdmin)
+                        {
+                            <vc:log logs="@item.Logs"></vc:log>
+                        }
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="row justify-content-center align-items-center">
+                    <h5>
+                        @SharedLocalizer["NoItemToShow"]
+                    </h5>
+                </div>
+            }
+            <vc:pagination model="@Model.List"></vc:pagination>
+        </section>
+    </div>
+</div>

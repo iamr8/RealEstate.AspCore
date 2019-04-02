@@ -74,6 +74,15 @@ namespace RealEstate.Base.Enums
         PropertyOwnershipIsNull,
         OwnershipIsNull,
         PropertyOwnershipNotUpdated,
-        BasedOnModelNullability
+        BasedOnModelNullability,
+        ItemRequestIsNull,
+
+        SmsTemplateIdIsNull,
+        RecipientIsNull,
+        SmsTemplateIsNull,
+        TokensCountMismatch,
+        UnexpectedError,
+        TokenIsNull,
+        IdIsNull
     }
 }

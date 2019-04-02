@@ -29,9 +29,9 @@ namespace RealEstate.Domain.Tables
         public string Description { get; set; }
 
         public string DistrictId { get; set; }
-        public string PropertyCategoryId { get; set; }
+        public string CategoryId { get; set; }
         public IPoint Geolocation { get; set; }
-        public virtual PropertyCategory PropertyCategory { get; set; }
+        public virtual Category Category { get; set; }
 
         public virtual District District { get; set; }
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }

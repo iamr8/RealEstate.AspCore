@@ -1,0 +1,12 @@
+﻿@using Pages.Manage.User
+@model LogViewModel
+
+@if (Model != null)
+{
+    <text>
+        <b>@SharedLocalizer[Model.Type.Display()]:</b>
+        @Model.DateTime.GregorianToPersian(false, true)
+        @SharedLocalizer["By"]
+        <a asp-page="@typeof(IndexModel).Page()" asp-route-userId="@Model.User.Id" target="_blank">@Model.User.FirstName @Model.User.LastName</a>
+    </text>
+}

@@ -6,8 +6,8 @@
     <RootNamespace>RealEstate.Web</RootNamespace>
     <AssemblyName>RealEstate.Web</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.30</AssemblyVersion>
-    <FileVersion>1.0.0.30</FileVersion>
+    <AssemblyVersion>1.0.0.58</AssemblyVersion>
+    <FileVersion>1.0.0.58</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -45,6 +45,11 @@
     <ProjectReference Include="..\RealEstate.Domain\RealEstate.Domain.csproj" />
     <ProjectReference Include="..\RealEstate.Extensions\RealEstate.Extensions.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Folder Include="Pages\Manage\Feature\" />
   </ItemGroup>
 
 </Project>

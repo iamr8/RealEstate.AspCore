@@ -2,7 +2,7 @@
 
 namespace RealEstate.ViewModels
 {
-    public class DistrictViewModel : BaseTrackViewModel
+    public class DistrictViewModel : BaseLogViewModel
     {
         public string Name { get; set; }
 

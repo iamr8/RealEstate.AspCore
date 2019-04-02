@@ -15,7 +15,6 @@ namespace RealEstate.Domain.Tables
         public bool IsReject { get; set; }
         public string ItemId { get; set; }
         public virtual Item Item { get; set; }
-        public string DealId { get; set; }
         public virtual Deal Deal { get; set; }
         public virtual ICollection<Applicant> Applicants { get; set; }
     }

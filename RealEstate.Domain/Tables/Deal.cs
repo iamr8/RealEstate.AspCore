@@ -14,7 +14,7 @@ namespace RealEstate.Domain.Tables
         }
 
         public string Description { get; set; }
-
+        public string ItemRequestId { get; set; }
         public virtual ItemRequest ItemRequest { get; set; }
         public virtual ICollection<Picture> Pictures { get; set; }
         public virtual ICollection<Beneficiary> Beneficiaries { get; set; }

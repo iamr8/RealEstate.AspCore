@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class PropertyViewModel : BaseTrackViewModel
+    public class PropertyViewModel : BaseLogViewModel
     {
         public string Street { get; set; }
 
@@ -15,7 +15,7 @@ namespace RealEstate.ViewModels
         public int Flat { get; set; }
         public int Deals { get; set; }
         public string Description { get; set; }
-        public PropertyCategoryViewModel Category { get; set; }
+        public CategoryViewModel Category { get; set; }
         public GeolocationViewModel Geolocation { get; set; }
 
         public DistrictViewModel District { get; set; }
