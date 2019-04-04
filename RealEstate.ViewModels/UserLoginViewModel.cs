@@ -2,7 +2,7 @@
 using RealEstate.Resources;
 using System.ComponentModel.DataAnnotations;
 
-namespace RealEstate.ViewModels.Input
+namespace RealEstate.ViewModels
 {
     public class UserLoginViewModel
     {

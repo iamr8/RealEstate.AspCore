@@ -17,6 +17,7 @@ namespace RealEstate.Domain.Tables
             Payments = new HashSet<Payment>();
             Logs = new HashSet<Log>();
             Smses = new HashSet<Sms>();
+            Permissions = new HashSet<Permission>();
         }
 
         [Required]
@@ -51,5 +52,6 @@ namespace RealEstate.Domain.Tables
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<Sms> Smses { get; set; }
+        public virtual ICollection<Permission> Permissions { get; set; }
     }
 }

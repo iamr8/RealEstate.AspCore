@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class ContactInputViewModel : BaseViewModel
+    public class ContactInputViewModel : BaseInputViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "FirstName")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]

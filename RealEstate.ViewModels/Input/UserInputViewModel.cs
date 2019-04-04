@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
@@ -9,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class UserInputViewModel : BaseViewModel
+    public class UserInputViewModel : BaseInputViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Username")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
@@ -46,6 +47,7 @@ namespace RealEstate.ViewModels.Input
         public DateTime DateOfPay { get; set; }
         public double FixedSalary { get; set; }
 
+        [HiddenInput]
         public string UserPropertyCategoriesJson { get; set; }
 
         public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories =>
@@ -53,6 +55,7 @@ namespace RealEstate.ViewModels.Input
                 ? default
                 : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
 
+        [HiddenInput]
         public string UserItemCategoriesJson { get; set; }
 
         public List<UserItemCategoryJsonViewModel> UserItemCategories =>

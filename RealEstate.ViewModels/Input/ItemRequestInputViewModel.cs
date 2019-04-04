@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class ItemRequestInputViewModel : BaseViewModel
+    public class ItemRequestInputViewModel : BaseInputViewModel
     {
         [HiddenInput]
         [Display(ResourceType = typeof(SharedResource), Name = "Deal")]

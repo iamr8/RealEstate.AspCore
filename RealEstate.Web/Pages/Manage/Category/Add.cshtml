@@ -1,5 +1,40 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Category.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+@{
+    var types = EnumsConverterExtension.ToList<CategoryTypeEnum>().Select(x => new SelectListItem
+    {
+        Text = ((CategoryTypeEnum)x).Display(),
+        Value = x.ToString(),
+        Selected = (CategoryTypeEnum)x == CategoryTypeEnum.Property
+    });
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewCategory.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewCategory.Name" class="control-label"></label>
+                    <input asp-for="NewCategory.Name" class="form-control" />
+                    <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewCategory.Type" class="control-label"></label>
+                    <select asp-items="types" asp-for="NewCategory.Type" class="form-control"></select>
+                    <span asp-validation-for="NewCategory.Type" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.CategoryStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

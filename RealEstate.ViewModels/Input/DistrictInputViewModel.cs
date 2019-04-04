@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class DistrictInputViewModel : BaseViewModel
+    public class DistrictInputViewModel : BaseInputViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Subject")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]

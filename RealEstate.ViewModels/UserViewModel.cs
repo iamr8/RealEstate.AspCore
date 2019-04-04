@@ -30,5 +30,6 @@ namespace RealEstate.ViewModels
         public List<BeneficiaryViewModel> Beneficiaries { get; set; }
         public List<PaymentViewModel> Payments { get; set; }
         public List<SmsViewModel> Smses { get; set; }
+        public List<PermissionViewModel> Permissions { get; set; }
     }
 }

@@ -9,21 +9,39 @@ namespace RealEstate.Base
     public class BaseLogViewModel : BaseViewModel
     {
         [JsonIgnore]
-        public List<LogViewModel> Logs { get; set; }
+        public LogViewModel Log { get; set; }
 
-        [JsonIgnore]
-        public LogViewModel LastLog => Logs?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+        public bool IsDeleted => Log?.Last()?.Type == LogTypeEnum.Delete;
     }
 
     public static class BaseTrackExtension
     {
-        public static LogViewModel Last(this List<LogViewModel> logs)
+        public static LogDetailViewModel Last(this LogViewModel log)
         {
-            return logs?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+            var populate = new List<LogDetailViewModel>();
+
+            if (log.Create != null)
+                populate.Add(log.Create);
+
+            if (log.Modifies?.Any() == true)
+                populate.AddRange(log.Modifies);
+
+            if (log.Deletes?.Any() == true)
+                populate.AddRange(log.Deletes);
+
+            populate = populate.OrderByDescending(x => x.DateTime).ToList();
+            return populate.FirstOrDefault();
         }
     }
 
     public class LogViewModel
+    {
+        public LogDetailViewModel Create { get; set; }
+        public List<LogDetailViewModel> Modifies { get; set; }
+        public List<LogDetailViewModel> Deletes { get; set; }
+    }
+
+    public class LogDetailViewModel
     {
         public LogTypeEnum Type { get; set; }
         public DateTime DateTime { get; set; }

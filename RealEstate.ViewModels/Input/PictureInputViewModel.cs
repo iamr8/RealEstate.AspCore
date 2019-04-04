@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class PictureInputViewModel : BaseViewModel
+    public class PictureInputViewModel : BaseInputViewModel
     {
         [R8AllowedFileTypes("jpg", "png")]
         [Display(ResourceType = typeof(SharedResource), Name = "UploadPhotos")]

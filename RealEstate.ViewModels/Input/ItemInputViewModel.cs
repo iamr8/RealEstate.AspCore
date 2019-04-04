@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class ItemInputViewModel : BaseViewModel
+    public class ItemInputViewModel : BaseInputViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Property")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]

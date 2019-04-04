@@ -205,6 +205,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دسته بندیها.
+        /// </summary>
+        public static string Categories {
+            get {
+                return ResourceManager.GetString("Categories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to دسته بندی.
+        /// </summary>
+        public static string Category {
+            get {
+                return ResourceManager.GetString("Category", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to پیش از تکمیل این فرم، در صورت نیاز به ایجاد تغییرات، روی دکمه زیر کلید/تپ کنید.
         /// </summary>
         public static string ChangeDealBeforeAccept {
@@ -426,6 +444,15 @@ namespace RealEstate.Resources {
         public static string Edit {
             get {
                 return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش دسته بندی.
+        /// </summary>
+        public static string EditCategory {
+            get {
+                return ResourceManager.GetString("EditCategory", resourceCulture);
             }
         }
         
@@ -664,6 +691,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مورد.
+        /// </summary>
+        public static string Item {
+            get {
+                return ResourceManager.GetString("Item", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to نام خانوادگی.
         /// </summary>
         public static string LastName {
@@ -768,6 +804,15 @@ namespace RealEstate.Resources {
         public static string MonthLength {
             get {
                 return ResourceManager.GetString("MonthLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to دسته بندی جدید.
+        /// </summary>
+        public static string NewCategory {
+            get {
+                return ResourceManager.GetString("NewCategory", resourceCulture);
             }
         }
         
@@ -1632,6 +1677,15 @@ namespace RealEstate.Resources {
         public static string UserNotFound {
             get {
                 return ResourceManager.GetString("UserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to دسته بندی های ملک مجاز برای کاربر.
+        /// </summary>
+        public static string UserPropertyCategories {
+            get {
+                return ResourceManager.GetString("UserPropertyCategories", resourceCulture);
             }
         }
         

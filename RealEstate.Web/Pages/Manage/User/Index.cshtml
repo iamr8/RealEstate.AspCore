@@ -71,9 +71,8 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
                         continue;
                     }
 
-                    var lastTrack = item.LastLog;
-                    var disabledClass = lastTrack?.Type == LogTypeEnum.Delete ? "disabled" : "";
-                    var disabledTerm = lastTrack?.Type == LogTypeEnum.Delete ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
                     //                    var hasNoProperties = item.Properties <= 0 ? "disabled" : "";
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
@@ -109,7 +108,7 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
                         </div>
                         @if (item.Role != Role.SuperAdmin)
                         {
-                            <vc:log logs="@item.Logs"></vc:log>
+                            <vc:log logs="@item.Log"></vc:log>
                         }
                     </div>
                 }

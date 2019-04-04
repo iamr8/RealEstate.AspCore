@@ -31,6 +31,7 @@ namespace RealEstate.Domain
         public virtual DbSet<Log> Log { get; set; }
         public virtual DbSet<Ownership> Ownership { get; set; }
         public virtual DbSet<Payment> Payment { get; set; }
+        public virtual DbSet<Permission> Permission { get; set; }
         public virtual DbSet<Picture> Picture { get; set; }
         public virtual DbSet<Property> Property { get; set; }
         public virtual DbSet<Category> Category { get; set; }
@@ -48,7 +49,7 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            modelBuilder.SeedDatabase();
+//            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }

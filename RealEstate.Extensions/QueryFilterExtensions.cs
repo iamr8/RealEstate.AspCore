@@ -26,6 +26,5 @@ namespace RealEstate.Extensions
             var result = entity.Logs.LastLog();
             return result;
         }
-
     }
 }

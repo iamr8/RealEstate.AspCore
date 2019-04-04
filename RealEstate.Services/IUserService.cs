@@ -72,7 +72,7 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return null;
 
-            var model = await UserFindEntityAsync(id).ConfigureAwait(false);
+            var model = await EntityAsync(id).ConfigureAwait(false);
             if (model == null) return null;
 
             var result = _baseService.Map(model,
@@ -141,22 +141,20 @@ namespace RealEstate.Services
                 return default;
 
             var superAdmin = result.Items.Find(x => x.Username == "admin" && x.Role == Role.SuperAdmin);
-            if (superAdmin?.Logs?.Any() == true)
-            {
-                var tempTracks = superAdmin.Logs;
-                var creationTrack = tempTracks.Find(x => x.Type == LogTypeEnum.Create);
-                if (creationTrack != null)
-                {
-                    var isRemoved = tempTracks.Remove(creationTrack);
-                    if (isRemoved)
-                        superAdmin.Logs = tempTracks;
-                }
-            }
+            if (superAdmin?.Log?.Last() == null)
+                return result;
 
+            var tempTracks = superAdmin.Log;
+            var creationTrack = tempTracks.Create;
+            if (creationTrack == null)
+                return result;
+
+            tempTracks.Create = null;
+            superAdmin.Log = tempTracks;
             return result;
         }
 
-        public async Task<User> UserFindEntityAsync(string id)
+        public async Task<User> EntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -173,7 +171,7 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.IdIsNull, null);
 
-            var entity = await UserFindEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await EntityAsync(model.Id).ConfigureAwait(false);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
@@ -251,72 +249,6 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(newUser, save).ConfigureAwait(false);
         }
 
-        //public async Task<(StatusEnum, string)> AddAsync(UserInputViewModel model)
-        //{
-        //    if (model == null)
-        //        return new ValueTuple<StatusEnum, string>(StatusEnum.ModelIsNull, null);
-
-        //    StatusEnum finalStatus;
-        //    User finalEntity;
-
-        //    if (model?.Id != null)
-        //    {
-        //        var models = _users.Where(x => x.Id == model.Id);
-
-        //        var (status, entity) = await _baseService.UpdateTrackedAsync(models,
-        //            true,
-        //            user => user.Username == model.Username,
-        //            (user, currentUser) =>
-        //            {
-        //                user.FirstName = model.FirstName;
-        //                user.LastName = model.LastName;
-        //                user.Mobile = model.Mobile;
-        //                user.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
-        //                user.Username = model.Username;
-        //                user.Role = model.Role == Role.SuperAdmin ? Role.Admin : model.Role;
-        //                user.Address = model.Address;
-        //                user.Phone = model.Phone;
-        //            },
-        //            oldEntity =>
-        //            {
-        //                var message = $"کاربر \"{oldEntity.Username}\" ویرایش شد.";
-        //                _baseService.AddNotification(message, Role.Admin, Role.SuperAdmin);
-        //            }, Role.SuperAdmin).ConfigureAwait(false);
-
-        //        finalEntity = entity;
-        //        finalStatus = status;
-        //    }
-        //    else
-        //    {
-        //        var (status, entity) = await _baseService.AddAsync(_users,
-        //            (userEntity, user) => userEntity.Username == model.Username,
-        //            new User
-        //            {
-        //                FirstName = model.FirstName,
-        //                LastName = model.LastName,
-        //                Mobile = model.Mobile,
-        //                Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption),
-        //                Username = model.Username,
-        //                Role = model.Role,
-        //                Address = model.Address,
-        //                Phone = model.Phone
-        //            },
-        //            new[]
-        //            {
-        //                Role.SuperAdmin
-        //            },
-        //            new[]
-        //            {
-        //                Role.Admin, Role.SuperAdmin
-        //            }).ConfigureAwait(false);
-
-        //        finalEntity = entity;
-        //        finalStatus = status;
-        //    }
-
-        //    return new ValueTuple<StatusEnum, string>(finalStatus, finalEntity?.Id);
-        //}
-
         public async Task<bool> IsUserValidAsync(List<Claim> claims)
         {
             var currentUser = _baseService.CurrentUser(claims);
@@ -340,7 +272,7 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(userId))
                 return StatusEnum.ParamIsNull;
 
-            var user = await UserFindEntityAsync(userId).ConfigureAwait(false);
+            var user = await EntityAsync(userId).ConfigureAwait(false);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {

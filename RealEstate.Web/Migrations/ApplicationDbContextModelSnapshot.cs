@@ -372,6 +372,8 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("PaymentId");
 
+                    b.Property<string>("PermissionId");
+
                     b.Property<string>("PictureId");
 
                     b.Property<string>("PropertyFacilityId");
@@ -427,6 +429,8 @@ namespace RealEstate.Web.Migrations
                     b.HasIndex("OwnershipId");
 
                     b.HasIndex("PaymentId");
+
+                    b.HasIndex("PermissionId");
 
                     b.HasIndex("PictureId");
 
@@ -499,6 +503,29 @@ namespace RealEstate.Web.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Payment");
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Tables.Permission", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("Key");
+
+                    b.Property<int>("Type");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Permission");
                 });
 
             modelBuilder.Entity("RealEstate.Domain.Tables.Picture", b =>
@@ -749,10 +776,10 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "fbc6e313-98c0-4fe3-b234-6eabe2763f86",
+                            Id = "9d466a6d-8183-49ae-b12c-2da6191de79e",
                             Address = "باهنر",
-                            DateOfPay = new DateTime(2019, 4, 2, 20, 33, 22, 766, DateTimeKind.Local).AddTicks(9302),
-                            DateTime = new DateTime(2019, 4, 2, 20, 33, 22, 733, DateTimeKind.Local).AddTicks(9666),
+                            DateOfPay = new DateTime(2019, 4, 4, 19, 17, 36, 866, DateTimeKind.Local).AddTicks(5507),
+                            DateTime = new DateTime(2019, 4, 4, 19, 17, 36, 831, DateTimeKind.Local).AddTicks(372),
                             FirstName = "هانی",
                             FixedSalary = 3600000.0,
                             LastName = "موسی زاده",
@@ -970,6 +997,10 @@ namespace RealEstate.Web.Migrations
                         .WithMany("Logs")
                         .HasForeignKey("PaymentId");
 
+                    b.HasOne("RealEstate.Domain.Tables.Permission")
+                        .WithMany("Logs")
+                        .HasForeignKey("PermissionId");
+
                     b.HasOne("RealEstate.Domain.Tables.Picture", "Picture")
                         .WithMany("Logs")
                         .HasForeignKey("PictureId");
@@ -1027,6 +1058,14 @@ namespace RealEstate.Web.Migrations
                 {
                     b.HasOne("RealEstate.Domain.Tables.User", "User")
                         .WithMany("Payments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("RealEstate.Domain.Tables.Permission", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                        .WithMany("Permissions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });

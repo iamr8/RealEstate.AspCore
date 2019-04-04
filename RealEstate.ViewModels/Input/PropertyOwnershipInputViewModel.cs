@@ -5,7 +5,7 @@ using RealEstate.Base;
 
 namespace RealEstate.ViewModels.Input
 {
-    public class PropertyOwnershipInputViewModel : BaseViewModel
+    public class PropertyOwnershipInputViewModel : BaseInputViewModel
     {
         public string PropertyId { get; set; }
         public string OwnersJson { get; set; }

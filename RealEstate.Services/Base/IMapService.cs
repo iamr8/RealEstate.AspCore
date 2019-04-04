@@ -10,6 +10,10 @@ namespace RealEstate.Services.Base
     public interface IMapService
     {
         List<ApplicantViewModel> Map(List<Applicant> model);
+        List<PermissionViewModel> Map(List<Permission> model);
+        PermissionViewModel Map(Permission model);
+
+        List<PropertyViewModel> Map(List<Property> model);
 
         List<UserViewModel> Map(List<User> model);
 
@@ -231,6 +235,15 @@ namespace RealEstate.Services.Base
                     Id = model.Id,
                     Name = model.Facility.Name
                 });
+            return result;
+        }
+
+        public List<PropertyViewModel> Map(List<Property> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
             return result;
         }
 
@@ -566,7 +579,10 @@ namespace RealEstate.Services.Base
                 new CategoryViewModel
                 {
                     Id = model.Id,
-                    Name = model.Name
+                    Name = model.Name,
+                    Type = model.Type,
+                    Properties = Map(model.Properties.ToList()),
+                    Items = Map(model.Items.ToList())
                 });
 
             return result;
@@ -628,7 +644,20 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model, Map);
             return result;
         }
+        public PermissionViewModel Map(Permission model)
+        {
+            if (model == null)
+                return default;
 
+            var result = _baseService.Map(model,
+                new PermissionViewModel
+                {
+                    Type = model.Type,
+                    Key = model.Key
+                });
+
+            return result;
+        }
         public PaymentViewModel Map(Payment model)
         {
             if (model == null)
@@ -646,7 +675,14 @@ namespace RealEstate.Services.Base
 
             return result;
         }
+        public List<PermissionViewModel> Map(List<Permission> model)
+        {
+            if (model?.Any() != true)
+                return default;
 
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
         public List<PaymentViewModel> Map(List<Payment> model)
         {
             if (model?.Any() != true)
@@ -686,7 +722,8 @@ namespace RealEstate.Services.Base
                     Beneficiaries = Map(model.Beneficiaries.ToList()),
                     Applicants = Map(model.Applicants.ToList()),
                     Payments = Map(model.Payments.ToList()),
-                    Smses = Map(model.Smses.ToList())
+                    Smses = Map(model.Smses.ToList()),
+                    Permissions = Map(model.Permissions.ToList())
                 });
             return result;
         }

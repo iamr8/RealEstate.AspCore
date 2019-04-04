@@ -660,4 +660,22 @@
   <data name="UploadPhotos" xml:space="preserve">
     <value>آپلود تصویر</value>
   </data>
+  <data name="Categories" xml:space="preserve">
+    <value>دسته بندیها</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>دسته بندی</value>
+  </data>
+  <data name="EditCategory" xml:space="preserve">
+    <value>ویرایش دسته بندی</value>
+  </data>
+  <data name="Item" xml:space="preserve">
+    <value>مورد</value>
+  </data>
+  <data name="NewCategory" xml:space="preserve">
+    <value>دسته بندی جدید</value>
+  </data>
+  <data name="UserPropertyCategories" xml:space="preserve">
+    <value>دسته بندی های ملک مجاز برای کاربر</value>
+  </data>
 </root>

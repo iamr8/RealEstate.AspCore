@@ -3,7 +3,6 @@
 @if (Model?.SelectListItems?.Any() == true)
 {
     <div class="row justify-content-center align-items-center">
-        <input asp-for="@Model.Json" />
         <div class="col-12">
             <div class="widget mini-widget">
                 <widget-header title="@Model.LocalizerName"></widget-header>
@@ -37,36 +36,36 @@
     <script asp-cut-key="@Model.ScriptKey">
         $(document).ready(function() {
 
-            const facilityJson = $("#@Model.Json");
-            const facilities = $(".@Model.WrapperClass");
-            const selectFacility = $("#@Model.SelectId");
-            const submitFacility = $("#@Model.ButtonId");
-            const facilityitemSelectorClass = "@Model.ItemSelectorClass";
+            const jsonInput = $("#@Model.Json");
+            const wrapperClass = $(".@Model.WrapperClass");
+            const selectInput = $("#@Model.SelectId");
+            const submitInput = $("#@Model.ButtonId");
+            const itemSelector = "@Model.ItemSelectorClass";
 
-            $(facilityJson).change(function() {
+            $(jsonInput).change(function() {
 
-                const adder = $("> .adder", facilities);
-                const items = $("> .items", facilities);
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
                 $(items).empty();
 
-                if ($(facilityJson).val() === "") {
-                    $(facilityJson).val("[]");
+                if ($(jsonInput).val() === "") {
+                    $(jsonInput).val("[]");
                 }
 
-                const jsonString = $(facilityJson).val();
+                const jsonString = $(jsonInput).val();
                 const json = $.parseJSON(jsonString);
 
                 $.each(json,
-                    (index, facility) => {
+                    (index, item) => {
 
-                        const key = facility.@Model.IdProperty;
-                        const name = facility.@Model.NameProperty;
+                        const key = item.@Model.IdProperty;
+                        const name = item.@Model.NameProperty;
 
                         const anchor = document.createElement("a");
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", key);
                         $(anchor).addClass("btn btn-warning");
-                        $(anchor).addClass(facilityitemSelectorClass);
+                        $(anchor).addClass(itemSelector);
                         $(anchor).addClass("m-1");
                         $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
 
@@ -78,34 +77,34 @@
 
                     });
 
-                $.each(selectFacility.children(),
-                    (index, facility) => {
-                        const name = $(facility).text();
-                        const key = $(facility).val();
+                $.each(selectInput.children(),
+                    (index, item) => {
+                        const name = $(item).text();
+                        const key = $(item).val();
                         const i = json.findIndex(
                             obj => obj.@Model.IdProperty === key);
                         if (i >= 0) {
-                            $(facility).addClass("hidden");
+                            $(item).addClass("hidden");
                         } else {
-                            $(facility).removeClass("hidden");
+                            $(item).removeClass("hidden");
                         }
 
                     });
 
-                if ($('option:not(.hidden)', selectFacility).length > 0) {
-                    $('option:not(.hidden):eq(0)', selectFacility).prop('selected', true);
+                if ($('option:not(.hidden)', selectInput).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
                     $(adder).fadeIn("slow");
                 } else {
                     $(adder).fadeOut("slow");
                 }
             });
 
-            $(submitFacility).click(function(e) {
+            $(submitInput).click(function(e) {
 
-                if ($(selectFacility).children().length > 0) {
-                    let selected = $(selectFacility).find('option:selected:eq(0)')[0];
+                if ($(selectInput).children().length > 0) {
+                    let selected = $(selectInput).find('option:selected:eq(0)')[0];
                     if (selected === undefined || selected === null) {
-                        selected = $(selectFacility).find('option:eq(0)')[0];
+                        selected = $(selectInput).find('option:eq(0)')[0];
                     }
                     console.log(selected);
 
@@ -115,7 +114,7 @@
                     if (keyId === undefined || keyId === null)
                         return;
 
-                    addJson(facilityJson,
+                    addJson(jsonInput,
                         {
                             @Model.IdProperty: keyId,
                             @Model.NameProperty: keyName
@@ -124,13 +123,13 @@
             });
 
             $(document).on("click",
-                `.${facilityitemSelectorClass}`,
+                `.${itemSelector}`,
                 function (e) {
                     e.preventDefault();
-                    removeButtonEvent(facilityJson, this);
+                    removeButtonEvent(jsonInput, this);
                 });
 
-            $(facilityJson).trigger("change");
+            $(jsonInput).trigger("change");
 
         });
     </script>

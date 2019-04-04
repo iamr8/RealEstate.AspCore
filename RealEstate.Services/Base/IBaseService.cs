@@ -207,41 +207,50 @@ namespace RealEstate.Services.Base
             if (model == null) return default;
             var viewModel = expression.Invoke(model);
 
-            var trackProperty = model.GetType().GetProperty("Tracks");
-            if (trackProperty == null || !(trackProperty.GetValue(model) is ICollection<Log> entityTracks))
+            var entityLogProperty = model.GetType().GetProperty("Logs");
+            if (entityLogProperty == null || !(entityLogProperty.GetValue(model) is ICollection<Log> entityTracks))
                 return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
             var templateViewModel = new BaseLogViewModel();
-            var entityTracksInfo = viewModel.GetType().GetProperty(nameof(templateViewModel.Logs));
-            if (entityTracksInfo == null || entityTracksInfo.PropertyType != typeof(List<LogViewModel>))
+            var viewModelLogProperty = viewModel.GetType().GetProperty(nameof(templateViewModel.Log));
+            if (viewModelLogProperty == null || viewModelLogProperty.PropertyType != typeof(LogViewModel))
                 return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
-            var viewTracks = new List<LogViewModel>();
+            var processedLog = new LogViewModel();
             if (entityTracks.Count == 0)
                 return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
             if (users == null)
                 users = new List<LogUserViewModel>();
 
-            var lastTracks = new List<Log>
-            {
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Create),
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Modify || x.Type == LogTypeEnum.Undelete),
-                entityTracks.OrderByDescending(x => x.DateTime).FirstOrDefault(x => x.Type == LogTypeEnum.Delete)
-            }.Where(x => x != null).ToList();
+            var create = entityTracks.FirstOrDefault(x => x.Type == LogTypeEnum.Create);
+            var modifies = entityTracks.OrderByDescending(x => x.DateTime).Where(x => x.Type == LogTypeEnum.Modify || x.Type == LogTypeEnum.Undelete).ToList();
+            var deletes = entityTracks.OrderByDescending(x => x.DateTime).Where(x => x.Type == LogTypeEnum.Delete).ToList();
 
-            var packedTracks = from trc in lastTracks
-                               join creator in _users on trc.CreatorId equals creator.Id
+            var logsList = new List<Log>();
+
+            if (create != null)
+                logsList.Add(create);
+
+            if (modifies?.Any() == true)
+                logsList.AddRange(modifies);
+
+            if (deletes?.Any() == true)
+                logsList.AddRange(deletes);
+
+            logsList = logsList.OrderByDescending(x => x.DateTime).ToList();
+            var packedTracks = from log in logsList
+                               join creator in _users on log.CreatorId equals creator.Id
                                select new
                                {
-                                   Track = trc,
+                                   Log = log,
                                    Creator = creator
                                };
 
             foreach (var packedTrack in packedTracks)
             {
                 var thisUser = packedTrack.Creator;
-                var thisTrack = packedTrack.Track;
+                var thisLog = packedTrack.Log;
 
                 var alreadyAddedUser = users.Find(x => x.Id == packedTrack.Creator.Id);
                 if (alreadyAddedUser == null)
@@ -257,16 +266,38 @@ namespace RealEstate.Services.Base
                     });
                 }
 
-                viewTracks.Add(new LogViewModel
+                var mustBeAdded = new LogDetailViewModel
                 {
-                    Type = thisTrack.Type,
-                    DateTime = thisTrack.DateTime,
-                    Id = thisTrack.Id,
+                    Type = thisLog.Type,
+                    DateTime = thisLog.DateTime,
+                    Id = thisLog.Id,
                     User = users.Find(x => x.Id == thisUser.Id)
-                });
+                };
+
+                switch (thisLog.Type)
+                {
+                    case LogTypeEnum.Create:
+                        processedLog.Create = mustBeAdded;
+                        break;
+
+                    case LogTypeEnum.Delete:
+                        if (processedLog.Deletes?.Any() != true)
+                            processedLog.Deletes = new List<LogDetailViewModel>();
+
+                        processedLog.Deletes.Add(mustBeAdded);
+                        break;
+
+                    case LogTypeEnum.Modify:
+                    case LogTypeEnum.Undelete:
+                        if (processedLog.Modifies?.Any() != true)
+                            processedLog.Modifies = new List<LogDetailViewModel>();
+
+                        processedLog.Modifies.Add(mustBeAdded);
+                        break;
+                }
             }
 
-            entityTracksInfo.SetValue(viewModel, viewTracks);
+            viewModelLogProperty.SetValue(viewModel, processedLog);
             return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
         }
 
@@ -364,6 +395,7 @@ namespace RealEstate.Services.Base
                 CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
                 PropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
                 ItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
+                
             };
             return result;
         }

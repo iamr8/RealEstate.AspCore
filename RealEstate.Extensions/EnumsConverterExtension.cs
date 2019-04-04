@@ -82,27 +82,27 @@ namespace RealEstate.Extensions
                    ?? enumMemberName;
         }
 
-        public static T To<T>(this int value)
+        public static TEnum To<TEnum>(this int value)
         {
-            return (T)(object)value;
+            return (TEnum)(object)value;
         }
 
-        public static T To<T>(this string value)
+        public static TEnum To<TEnum>(this string value) where TEnum : Enum
         {
-            return (T)Enum.Parse(typeof(T), value, true);
+            return (TEnum)Enum.Parse(typeof(TEnum), value, true);
         }
 
-        public static List<int> ToList<T>()
+        public static List<int> ToList<TEnum>()
         {
-            return Enum.GetValues(typeof(T)).Cast<int>().ToList();
+            return Enum.GetValues(typeof(TEnum)).Cast<int>().ToList();
         }
 
-        public static string[] ToArray<T>()
+        public static string[] ToArray<TEnum>()
         {
-            if (!typeof(T).IsEnum)
+            if (!typeof(TEnum).IsEnum)
                 throw new InvalidOperationException();
 
-            return (string[])Enum.GetValues(typeof(T));
+            return (string[])Enum.GetValues(typeof(TEnum));
         }
     }
 }

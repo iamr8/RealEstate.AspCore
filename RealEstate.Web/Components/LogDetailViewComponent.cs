@@ -5,9 +5,9 @@ namespace RealEstate.Web.Components
 {
     public class LogDetailViewComponent : ViewComponent
     {
-        public IViewComponentResult Invoke(LogViewModel tracker)
+        public IViewComponentResult Invoke(LogDetailViewModel tracker)
         {
-            return View(tracker ?? new LogViewModel());
+            return View(tracker ?? new LogDetailViewModel());
         }
     }
 }
