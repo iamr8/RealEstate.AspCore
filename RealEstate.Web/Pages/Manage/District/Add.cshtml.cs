@@ -1,17 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using RealEstate.Base.Enums;
+using RealEstate.Extensions;
+using RealEstate.Resources;
+using RealEstate.Services;
+using RealEstate.ViewModels.Input;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.District
 {
     public class AddModel : PageModel
     {
-        public void OnGet()
-        {
+        private readonly ILocationService _locationService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
+        public AddModel(
+            ILocationService locationService,
+            IStringLocalizer<SharedResource> sharedLocalizer
+            )
+        {
+            _locationService = locationService;
+            _localizer = sharedLocalizer;
+        }
+
+        [BindProperty]
+        public DistrictInputViewModel NewDistrict { get; set; }
+
+        [ViewData]
+        public string PageTitle { get; set; }
+
+        [TempData]
+        public string DistrictStatus { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(string id)
+        {
+            if (!string.IsNullOrEmpty(id))
+            {
+                if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
+                    return Forbid();
+
+                var model = await _locationService.DistrictInputAsync(id).ConfigureAwait(false);
+                if (model == null)
+                    return RedirectToPage(typeof(IndexModel).Page());
+
+                NewDistrict = model;
+                PageTitle = _localizer["EditDistrict"];
+            }
+            else
+            {
+                PageTitle = _localizer["NewDistrict"];
+            }
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            var finalStatus = ModelState.IsValid
+                ? (await _locationService.DistrictAddOrUpdateAsync(NewDistrict, !NewDistrict.IsNew, true).ConfigureAwait(false)).Item1
+                : StatusEnum.RetryAfterReview;
+
+            DistrictStatus = finalStatus.GetDisplayName();
+            if (finalStatus != StatusEnum.Success || !NewDistrict.IsNew)
+                return Page();
+
+            ModelState.Clear();
+            NewDistrict = default;
+
+            return RedirectToPage(typeof(AddModel).Page(), new
+            {
+                id = NewDistrict?.Id
+            });
         }
     }
 }

@@ -62,7 +62,7 @@ namespace RealEstate.Web.Pages.Manage.Feature
                 ? (await _featureService.FeatureAddOrUpdateAsync(NewFeature, !NewFeature.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            FeatureStatus = finalStatus.Display();
+            FeatureStatus = finalStatus.GetDisplayName();
             if (finalStatus != StatusEnum.Success || !NewFeature.IsNew)
                 return Page();
 

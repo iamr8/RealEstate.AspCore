@@ -2,7 +2,7 @@
 
 namespace RealEstate.Extensions
 {
-    public static class EfFunctionExtension
+    public static class EfFunctionExtensions
     {
         public static string LikeExpression(this string searchString)
         {

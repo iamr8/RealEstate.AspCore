@@ -678,4 +678,7 @@
   <data name="UserPropertyCategories" xml:space="preserve">
     <value>دسته بندی های ملک مجاز برای کاربر</value>
   </data>
+  <data name="Applicant" xml:space="preserve">
+    <value>متقاضی</value>
+  </data>
 </root>

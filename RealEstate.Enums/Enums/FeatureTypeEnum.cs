@@ -11,6 +11,7 @@ namespace RealEstate.Base.Enums
         [Display(ResourceType = typeof(SharedResource), Name = "Property")]
         Property,
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Applicant")]
         Applicant
     }
 }

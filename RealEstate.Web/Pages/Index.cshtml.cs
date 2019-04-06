@@ -69,7 +69,7 @@ namespace RealEstate.Web.Pages
                 return RedirectToPage($"/{nameof(Manage)}/Index");
             }
 
-            ErrorMessage = status.Display();
+            ErrorMessage = status.GetDisplayName();
             return Page();
         }
     }

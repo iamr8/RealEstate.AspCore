@@ -160,6 +160,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to متقاضی.
+        /// </summary>
+        public static string Applicant {
+            get {
+                return ResourceManager.GetString("Applicant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مشاورین املاک موسی زاده.
         /// </summary>
         public static string AppName {

@@ -1,9 +1,9 @@
 ﻿@page
 @model AddModel
 @{
-    var types = EnumsConverterExtension.ToList<CategoryTypeEnum>().Select(x => new SelectListItem
+    var types = EnumsExtensions.ToList<CategoryTypeEnum>().Select(x => new SelectListItem
     {
-        Text = ((CategoryTypeEnum)x).Display(),
+        Text = ((CategoryTypeEnum)x).GetDisplayName(),
         Value = x.ToString(),
         Selected = (CategoryTypeEnum)x == CategoryTypeEnum.Property
     });

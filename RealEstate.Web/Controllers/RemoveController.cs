@@ -11,13 +11,17 @@ namespace RealEstate.Web.Controllers
     {
         private readonly IFeatureService _featureService;
         private readonly IUserService _userService;
+        private readonly ILocationService _locationService;
 
         public RemoveController(
             IUserService userService,
-            IFeatureService featureService
+            IFeatureService featureService,
+            ILocationService locationService
+
             )
         {
             _userService = userService;
+            _locationService = locationService;
             _featureService = featureService;
         }
 
@@ -26,6 +30,16 @@ namespace RealEstate.Web.Controllers
         {
             var model = await _featureService.FeatureRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Feature.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
+        [Route("district/remove")]
+        public async Task<IActionResult> DistrictAsync(string id)
+        {
+            var model = await _locationService.DistrictRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.District.IndexModel).Page(), new
             {
                 status = (int)model
             });

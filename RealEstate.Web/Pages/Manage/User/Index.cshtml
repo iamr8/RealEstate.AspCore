@@ -5,9 +5,9 @@
 {
 new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
 };
-    roles.AddRange(EnumsConverterExtension.ToList<Role>().Select(x => new SelectListItem
+    roles.AddRange(EnumsExtensions.ToList<Role>().Select(x => new SelectListItem
     {
-        Text = ((Role)x).Display(),
+        Text = ((Role)x).GetDisplayName(),
         Value = x.ToString(),
     }).ToList());
 }
@@ -91,7 +91,7 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
                                     {
                                         <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Address</span>
                                     }
-                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Index" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.Display()</a>
+                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Index" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
                             </div>
                             <div class="button">

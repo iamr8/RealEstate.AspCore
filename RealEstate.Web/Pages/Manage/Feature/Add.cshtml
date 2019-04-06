@@ -2,9 +2,9 @@
 @model AddModel
 
 @{
-    var types = EnumsConverterExtension.ToList<FeatureTypeEnum>().Select(x => new SelectListItem
+    var types = EnumsExtensions.ToList<FeatureTypeEnum>().Select(x => new SelectListItem
     {
-        Text = ((FeatureTypeEnum)x).Display(),
+        Text = ((FeatureTypeEnum)x).GetDisplayName(),
         Value = x.ToString(),
         Selected = (FeatureTypeEnum)x == FeatureTypeEnum.Property
     });
@@ -15,7 +15,7 @@
         <input asp-for="NewFeature.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-12 col-6 margin-bottomed">
+                <div class="col-xs-12 col-6 margin-bottomed">
                     <label asp-for="NewFeature.Name" class="control-label"></label>
                     <input asp-for="NewFeature.Name" class="form-control" />
                     <span asp-validation-for="NewFeature.Name" class="text-danger"></span>

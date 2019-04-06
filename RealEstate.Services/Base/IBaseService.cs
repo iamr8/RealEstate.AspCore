@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GeoAPI.Geometries;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -9,6 +10,7 @@ using RealEstate.Extensions;
 using RealEstate.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -117,7 +119,7 @@ namespace RealEstate.Services.Base
             var pageProperty = outputType.GetProperty(nameof(output.CurrentPage));
             var itemsProperty = outputType.GetProperty(nameof(output.Items));
 
-            pagesProperty.SetValue(output, NumberProcessorExtension.RoundToUp((double)count / pageSize));
+            pagesProperty.SetValue(output, NumberProcessorExtensions.RoundToUp((double)count / pageSize));
             pageProperty.SetValue(output, page);
             itemsProperty.SetValue(output, viewList);
 
@@ -431,9 +433,36 @@ namespace RealEstate.Services.Base
             if (entity == null)
                 return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
 
+            var tempEntityBeforeChanges = entity.ClassProperties();
             changes.Invoke();
-            _unitOfWork.Update(entity, currentUser.Id);
+            var tempEntityAfterChanges = entity.ClassProperties();
 
+            var changesIndicator = 0;
+            if (tempEntityBeforeChanges?.Any() == true)
+            {
+                var needTypes = tempEntityAfterChanges
+                    .Where(x => x.Value is string
+                                || x.Value is int
+                                || x.Value is decimal
+                                || x.Value is double
+                                || x.Value is IPoint
+                                || x.Value is DateTime
+                                || x.Value is Enum)
+                    .Where(x => x.Key != nameof(entity.Id)
+                                && x.Key != nameof(entity.DateTime))
+                    .ToList();
+                foreach (var (keyAfterChanges, valueAfterChanges) in needTypes)
+                {
+                    var propertyBeforeChanges = tempEntityBeforeChanges.FirstOrDefault(x => x.Key == keyAfterChanges);
+                    if (!propertyBeforeChanges.Value.Equals(valueAfterChanges))
+                        changesIndicator++;
+                }
+            }
+
+            if (changesIndicator <= 0)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, null);
+
+            _unitOfWork.Update(entity, currentUser.Id);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 

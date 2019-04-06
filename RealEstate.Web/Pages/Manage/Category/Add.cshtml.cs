@@ -62,7 +62,7 @@ namespace RealEstate.Web.Pages.Manage.Category
                 ? (await _featureService.CategoryAddOrUpdateAsync(NewCategory, !NewCategory.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            CategoryStatus = finalStatus.Display();
+            CategoryStatus = finalStatus.GetDisplayName();
             if (finalStatus != StatusEnum.Success || !NewCategory.IsNew)
                 return Page();
 

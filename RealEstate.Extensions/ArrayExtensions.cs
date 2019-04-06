@@ -2,7 +2,7 @@
 
 namespace RealEstate.Extensions
 {
-    public static class ArrayExtension
+    public static class ArrayExtensions
     {
         public static int IndexOfNth(this string str, string value, int nth = 1)
         {

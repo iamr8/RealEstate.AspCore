@@ -2,9 +2,9 @@
 @using RealEstate.Web.Components
 @model AddModel
 @{
-    var roles = EnumsConverterExtension.ToList<Role>().Where(x => x != (int)Role.SuperAdmin).Select(x => new SelectListItem
+    var roles = EnumsExtensions.ToList<Role>().Where(x => x != (int)Role.SuperAdmin).Select(x => new SelectListItem
     {
-        Text = ((Role)x).Display(),
+        Text = ((Role)x).GetDisplayName(),
         Value = x.ToString(),
         Selected = (Role)x == Role.User
     }).ToList();

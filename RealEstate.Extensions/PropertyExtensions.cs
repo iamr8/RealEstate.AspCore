@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using RealEstate.Resources;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
@@ -12,6 +14,16 @@ namespace RealEstate.Extensions
 {
     public static class PropertyExtensions
     {
+        public static TAttribute GetEnumAttribute<TAttribute>(this Enum enumMember)
+            where TAttribute : Attribute
+        {
+            var enumType = enumMember.GetType();
+            var enumName = enumMember.ToName();
+            var memberInfos = enumType.GetMember(enumName);
+            var memberInfo = memberInfos.Single();
+            return memberInfo.GetCustomAttribute<TAttribute>();
+        }
+
         public static TAttribute GetPropertyAttribute<TModel, TAttribute>(
             this Expression<Func<TModel, object>> expression) where TAttribute : Attribute
         {
@@ -19,12 +31,19 @@ namespace RealEstate.Extensions
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
+        public static Dictionary<string, object> ClassProperties<TModel>(this TModel model) where TModel : class
+        {
+            return model.GetType()
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .ToDictionary(propertyInfo => propertyInfo.Name, prop => prop.GetValue(model, null));
+        }
+
         public static PropertyInfo GetProperty<TModel>(this Expression<Func<TModel, object>> expression)
         {
-            var lambda = expression as LambdaExpression;
-            var memberExpression = lambda.Body is UnaryExpression unaryExpression
+            var lambdaExpression = expression as LambdaExpression;
+            var memberExpression = lambdaExpression.Body is UnaryExpression unaryExpression
                 ? (MemberExpression)unaryExpression.Operand
-                : (MemberExpression)lambda.Body;
+                : (MemberExpression)lambdaExpression.Body;
 
             return memberExpression.Member as PropertyInfo;
         }
@@ -44,7 +63,7 @@ namespace RealEstate.Extensions
             }
         }
 
-        public static IHtmlContent GetValidator<TModel>(this Expression<Func<TModel, object>> property)
+        public static IHtmlContent GetValidator<TModel>(this Expression<Func<TModel, object>> property) where TModel : class
         {
             var regTerm = string.Empty;
             var finalTerm = "data-val=\"true\"";
@@ -75,35 +94,36 @@ namespace RealEstate.Extensions
             return new HtmlString($"{finalTerm} {regTerm}");
         }
 
+        public static string GetDescription(this Enum value)
+        {
+            return value.GetEnumAttribute<DescriptionAttribute>()?.Description ?? Enum.GetName(value.GetType(), value);
+        }
+
+        public static string GetDisplayName(this Enum value)
+        {
+            return value.GetEnumAttribute<DisplayAttribute>()?.GetName() ?? Enum.GetName(value.GetType(), value);
+        }
+
         public static string GetDisplayName<TModel>(this Expression<Func<TModel, object>> property)
         {
-            var resourceManager = new ResourceManager(typeof(SharedResource));
-
             var display = property.GetPropertyAttribute<TModel, DisplayAttribute>();
             return display != null
-                ? display.ResourceType != null
-                    ? resourceManager.GetString(display.Name)
-                    : display.Name
+                ? display.GetName()
                 : property.Name;
         }
 
         public static string GetJsonProperty<TModel>(this Expression<Func<TModel, object>> property)
         {
             var json = property.GetPropertyAttribute<TModel, JsonPropertyAttribute>();
-            if (json == null)
-            {
-                var propertyInfo = property.GetProperty();
-                var contract = JsonExtensions.JsonNetSetting.ContractResolver;
-                if (contract is JsonExtensions.NullToEmptyContractResolver customContract)
-                {
-                    var resolved = customContract.GetResolvedPropertyName(propertyInfo.Name);
-                    return resolved;
-                }
+            if (json != null)
+                return json.PropertyName;
 
-                return propertyInfo.Name;
-            }
+            var propertyInfo = property.GetProperty();
+            var contractResolver = JsonExtensions.JsonNetSetting.ContractResolver;
+            if (contractResolver is JsonExtensions.NullToEmptyContractResolver nullToEmptyContractResolver)
+                return nullToEmptyContractResolver.GetResolvedPropertyName(propertyInfo.Name);
 
-            return json.PropertyName;
+            return propertyInfo.Name;
         }
 
         public static (IHtmlContent, IHtmlContent) GetRegularExpression<TModel>(this Expression<Func<TModel, object>> property, bool requireTag = true)

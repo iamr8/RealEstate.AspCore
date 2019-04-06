@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using RealEstate.Base;
+using RealEstate.Extensions.FileHandler.Models;
+using SixLabors.ImageSharp;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http;
-using RealEstate.Base;
-using RealEstate.Extensions.FileHandler.Models;
-using SixLabors.ImageSharp;
 
 namespace RealEstate.Extensions.FileHandler
 {
@@ -54,22 +54,11 @@ namespace RealEstate.Extensions.FileHandler
 
         public static string SanitizeFileName(this string fileName)
         {
-            return Regex.Match(fileName.Replace(" ", "_"), RegexPatterns.SafeFilename.Display(),
+            return Regex.Match(fileName.Replace(" ", "_"), RegexPatterns.SafeFilename.GetDisplayName(),
                 RegexOptions.IgnoreCase).Value;
         }
 
-        public static void SaveAs(this IFormFile file, string path)
-        {
-            if (file.Length <= 0) return;
-
-            using (var fileStream = new FileStream(path, FileMode.Create))
-            {
-                file.CopyTo(fileStream);
-                fileStream.Flush();
-            }
-        }
-
-        public static async void SaveAs<T>(this T file, string path, Action<T> action) where T : Stream
+        public static async void SaveAsAsync<T>(this T file, string path, Action<T> action) where T : Stream
         {
             if (file.Length <= 0) return;
 

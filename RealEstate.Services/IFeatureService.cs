@@ -81,7 +81,11 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var query = _features.Where(x => x.Id == id);
+            var query = _features.Where(x => x.Id == id)
+                .Include(x => x.ApplicantFeatures)
+                .Include(x => x.ItemFeatures)
+                .Include(x => x.PropertyFeatures);
+
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
             var viewModel = _mapService.Map(model);
             if (viewModel == null)

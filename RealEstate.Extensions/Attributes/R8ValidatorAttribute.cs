@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using RealEstate.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RealEstate.Base;
 
 namespace RealEstate.Extensions
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class R8ValidatorAttribute : ValidationAttribute, IClientModelValidator
     {
         public string Pattern { get; set; }
@@ -15,8 +15,8 @@ namespace RealEstate.Extensions
 
         public R8ValidatorAttribute(RegexPatterns pattern)
         {
-            Pattern = pattern.Display();
-            Caution = pattern.Description();
+            Pattern = pattern.GetDisplayName();
+            Caution = pattern.GetDescription();
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
@@ -36,7 +36,6 @@ namespace RealEstate.Extensions
             MergeAttribute(context.Attributes, "data-val", "true");
             MergeAttribute(context.Attributes, "data-val-regex", Caution);
             MergeAttribute(context.Attributes, "data-val-regex-pattern", Pattern);
-            //MergeAttribute(context.Attributes, "data-val-required", "این فیلد اجباری است.");
         }
 
         private void MergeAttribute(IDictionary<string, string> attributes, string key, string value)

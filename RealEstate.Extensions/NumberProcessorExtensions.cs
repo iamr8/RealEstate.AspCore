@@ -2,7 +2,7 @@
 
 namespace RealEstate.Extensions
 {
-    public static class NumberProcessorExtension
+    public static class NumberProcessorExtensions
     {
         public static int RoundToUp(double num)
         {

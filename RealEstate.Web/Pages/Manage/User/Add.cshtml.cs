@@ -62,7 +62,7 @@ namespace RealEstate.Web.Pages.Manage.User
                 ? (await _userService.CategoryAddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            UserStatus = finalStatus.Display();
+            UserStatus = finalStatus.GetDisplayName();
             if (finalStatus != StatusEnum.Success || !NewUser.IsNew)
                 return Page();
 
