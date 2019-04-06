@@ -26,5 +26,11 @@ namespace RealEstate.Extensions
             var result = entity.Logs.LastLog();
             return result;
         }
+
+        public static bool IsDeleted<TEntity>(this TEntity entity) where TEntity : BaseEntity
+        {
+            var lastLog = entity.LastLog();
+            return lastLog?.Type == LogTypeEnum.Delete;
+        }
     }
 }

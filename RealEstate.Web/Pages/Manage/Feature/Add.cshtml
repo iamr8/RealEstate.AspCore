@@ -1,5 +1,41 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Feature.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+
+@{
+    var types = EnumsConverterExtension.ToList<FeatureTypeEnum>().Select(x => new SelectListItem
+    {
+        Text = ((FeatureTypeEnum)x).Display(),
+        Value = x.ToString(),
+        Selected = (FeatureTypeEnum)x == FeatureTypeEnum.Property
+    });
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewFeature.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-6 margin-bottomed">
+                    <label asp-for="NewFeature.Name" class="control-label"></label>
+                    <input asp-for="NewFeature.Name" class="form-control" />
+                    <span asp-validation-for="NewFeature.Name" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewFeature.Type" class="control-label"></label>
+                    <select asp-items="types" asp-for="NewFeature.Type" class="form-control"></select>
+                    <span asp-validation-for="NewFeature.Type" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.FeatureStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

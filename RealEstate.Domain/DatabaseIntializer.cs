@@ -21,9 +21,7 @@ namespace RealEstate.Domain
                 Role = Role.SuperAdmin,
                 Password = "123456".Cipher(CryptologyExtension.CypherMode.Encryption),
                 Mobile = "09166000341",
-                DateOfPay = DateTime.Now,
                 Phone = "33379367",
-                FixedSalary = 3600000
             };
             modelBuilder.Entity<User>().HasData(user);
         }

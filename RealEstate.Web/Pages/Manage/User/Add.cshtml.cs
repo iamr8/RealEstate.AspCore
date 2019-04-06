@@ -58,13 +58,12 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var editMode = NewUser?.Id != null;
             var finalStatus = ModelState.IsValid
-                ? (await _userService.AddAsync(NewUser, true).ConfigureAwait(false)).Item1
+                ? (await _userService.CategoryAddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
             UserStatus = finalStatus.Display();
-            if (finalStatus != StatusEnum.Success || editMode)
+            if (finalStatus != StatusEnum.Success || !NewUser.IsNew)
                 return Page();
 
             ModelState.Clear();

@@ -45,32 +45,3 @@ $(document).ready(function () {
         }
     });
 });
-
-function removeJson(jsonElement, index) {
-    if ($(jsonElement).val() === "") {
-        $(jsonElement).val("[]");
-    }
-
-    const jsonString = $(jsonElement).val();
-    const json = $.parseJSON(jsonString);
-
-    json.splice(index, 1);
-    $(jsonElement).val(JSON.stringify(json)).trigger("change");
-}
-
-function addJson(jsonElement, item) {
-    if ($(jsonElement).val() === "") {
-        $(jsonElement).val("[]");
-    }
-
-    const jsonString = $(jsonElement).val();
-    const json = $.parseJSON(jsonString);
-
-    const found = json.findIndex(obj => obj.k === item.k) >= 0;
-    if (found)
-        return;
-
-    json.push(item);
-    $(jsonElement).val(JSON.stringify(json)).trigger("change");
-
-}

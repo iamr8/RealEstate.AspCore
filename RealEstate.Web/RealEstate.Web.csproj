@@ -6,8 +6,8 @@
     <RootNamespace>RealEstate.Web</RootNamespace>
     <AssemblyName>RealEstate.Web</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.109</AssemblyVersion>
-    <FileVersion>1.0.0.109</FileVersion>
+    <AssemblyVersion>1.0.0.143</AssemblyVersion>
+    <FileVersion>1.0.0.143</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,10 +17,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="bundleconfig.json" />
     <Content Remove="compilerconfig.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="bundleconfig.json" />
     <None Include="compilerconfig.json" />
   </ItemGroup>
 

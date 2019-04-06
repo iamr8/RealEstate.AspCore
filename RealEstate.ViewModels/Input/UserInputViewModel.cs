@@ -4,7 +4,6 @@ using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.ViewModels.Json;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -44,23 +43,23 @@ namespace RealEstate.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Phone { get; set; }
 
-        public DateTime DateOfPay { get; set; }
+        [Required]
         public double FixedSalary { get; set; }
 
         [HiddenInput]
         public string UserPropertyCategoriesJson { get; set; }
 
-        public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories =>
+        public List<UserCategoryJsonViewModel> UserPropertyCategories =>
             string.IsNullOrEmpty(UserPropertyCategoriesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
+                : JsonConvert.DeserializeObject<List<UserCategoryJsonViewModel>>(UserPropertyCategoriesJson);
 
         [HiddenInput]
         public string UserItemCategoriesJson { get; set; }
 
-        public List<UserItemCategoryJsonViewModel> UserItemCategories =>
+        public List<UserCategoryJsonViewModel> UserItemCategories =>
             string.IsNullOrEmpty(UserItemCategoriesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<UserItemCategoryJsonViewModel>>(UserItemCategoriesJson);
+                : JsonConvert.DeserializeObject<List<UserCategoryJsonViewModel>>(UserItemCategoriesJson);
     }
 }

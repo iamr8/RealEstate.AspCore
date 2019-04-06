@@ -9,6 +9,12 @@ namespace RealEstate.Extensions
             return Convert.ToInt32(Math.Ceiling(num));
         }
 
+        public static int FixPageNumber(this string pageNo)
+        {
+            var pg = string.IsNullOrEmpty(pageNo) ? 1 : int.TryParse(pageNo, out var page) ? page : 1;
+            return pg;
+        }
+
         public static string FixNumbers(this string num)
         {
             var result = "";

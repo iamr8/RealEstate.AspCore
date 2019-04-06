@@ -54,10 +54,9 @@ namespace RealEstate.Web.Pages.Manage.User
             };
 
             PageTitle = _localizer["Users"];
-            var pg = string.IsNullOrEmpty(pageNo) ? 1 : int.TryParse(pageNo, out var page) ? page : 1;
-            PageNo = pg;
+            PageNo = pageNo.FixPageNumber();
             List = await _userService
-                .ListAsync(pg, userName, userFirst, userLast, userMobile, userAddress, password, role, userId)
+                .ListAsync(PageNo, userName, userFirst, userLast, userMobile, userAddress, password, role, userId)
                 .ConfigureAwait(false);
         }
 

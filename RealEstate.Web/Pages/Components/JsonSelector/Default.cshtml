@@ -106,19 +106,17 @@
                     if (selected === undefined || selected === null) {
                         selected = $(selectInput).find('option:eq(0)')[0];
                     }
-                    console.log(selected);
-
                     const keyId = $(selected).attr("value");
                     const keyName = $(selected).text();
 
                     if (keyId === undefined || keyId === null)
                         return;
 
-                    addJson(jsonInput,
-                        {
-                            @Model.IdProperty: keyId,
-                            @Model.NameProperty: keyName
-                        });
+                    const newItem = {
+                        @Model.IdProperty: keyId,
+                        @Model.NameProperty: keyName
+                    };
+                    addJson(jsonInput, newItem, obj => obj.@Model.IdProperty === newItem.@Model.IdProperty);
                 }
             });
 

@@ -25,6 +25,7 @@ namespace RealEstate.Domain
         public virtual DbSet<District> District { get; set; }
         public virtual DbSet<Facility> Facility { get; set; }
         public virtual DbSet<Feature> Feature { get; set; }
+        public virtual DbSet<FixedSalary> FixedSalary { get; set; }
         public virtual DbSet<Item> Item { get; set; }
         public virtual DbSet<ItemFeature> ItemFeature { get; set; }
         public virtual DbSet<ItemRequest> ItemRequest { get; set; }
@@ -49,7 +50,7 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-//            modelBuilder.SeedDatabase();
+            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -104,6 +105,8 @@ namespace RealEstate.Domain
             var trackType = track.GetType();
             var typeName = model.GetType().Name.Replace("Proxy", "");
             var findProperty = trackType.GetProperty($"{typeName}Id");
+            if (findProperty == null)
+                return;
 
             var propertyId = model.GetType().GetProperty("Id");
             var id = propertyId.GetValue(model);

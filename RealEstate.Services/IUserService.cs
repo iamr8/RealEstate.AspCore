@@ -23,11 +23,11 @@ namespace RealEstate.Services
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
-        Task<(StatusEnum, User)> UpdateAsync(UserInputViewModel model, bool save);
+        Task<(StatusEnum, User)> CategoryAddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
 
-        Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save);
+        Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string userId, bool save);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(int page, string userName, string userFirst,
             string userLast, string userMobile, string userAddress, string password, string role, string userId);
@@ -48,6 +48,7 @@ namespace RealEstate.Services
         private readonly IMapService _mapService;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
+        private readonly DbSet<FixedSalary> _fixedSalaries;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -64,6 +65,7 @@ namespace RealEstate.Services
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
             _logs = _unitOfWork.Set<Log>();
+            _fixedSalaries = _unitOfWork.Set<FixedSalary>();
         }
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
@@ -86,10 +88,9 @@ namespace RealEstate.Services
                     Username = model.Username,
                     Address = model.Address,
                     Phone = model.Phone,
-                    DateOfPay = model.DateOfPay,
-                    FixedSalary = model.FixedSalary,
-                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(_mapService.Map),
-                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(_mapService.Map)
+                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(_mapService.MapJson),
+                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(_mapService.MapJson),
+                    FixedSalary = model.FixedSalaries.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Value ?? 0
                 });
             return result;
         }
@@ -175,52 +176,57 @@ namespace RealEstate.Services
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
-                    entity.DateOfPay = model.DateOfPay;
-                    entity.FixedSalary = model.FixedSalary;
                     entity.Address = model.Address;
                     entity.FirstName = model.FirstName;
                     entity.LastName = model.LastName;
                     entity.Mobile = model.Mobile;
-                    entity.Password = model.Password;
+                    entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
                     entity.Phone = model.Phone;
-                    entity.Role = model.Role;
+                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
                 }, new[]
                 {
                     Role.SuperAdmin
                 }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
 
             await SyncAsync(updatedUser, model, false).ConfigureAwait(false);
-
             return await _baseService.SaveChangesAsync(updatedUser, save).ConfigureAwait(false);
         }
 
-        public async Task<StatusEnum> SyncAsync(User entity, UserInputViewModel model, bool save)
+        public async Task<StatusEnum> SyncAsync(User user, UserInputViewModel model, bool save)
         {
             var syncItemFeature = await _baseService.SyncAsync(
-                entity.UserItemCategories,
+                user.UserItemCategories,
                 model.UserItemCategories,
                 (itemCategory, currentUser) => new UserItemCategory
                 {
-                    CategoryId = itemCategory.Id,
-                    UserId = currentUser.Id,
+                    UserId = user.Id,
+                    CategoryId = itemCategory.Id
                 },
-                (currentItemCategory, newItemCategory) => currentItemCategory.CategoryId == newItemCategory.Id,
+                (inDb, inModel) => inDb.CategoryId == inModel.Id,
                 null,
                 false).ConfigureAwait(false);
 
             var syncPropertyFeature = await _baseService.SyncAsync(
-                entity.UserPropertyCategories,
+                user.UserPropertyCategories,
                 model.UserPropertyCategories,
                 (propertyCategory, currentUser) => new UserPropertyCategory
                 {
-                    UserId = currentUser.Id,
+                    UserId = user.Id,
                     CategoryId = propertyCategory.Id
                 },
-                (currentPropertyCategory, newPropertyCategory) => currentPropertyCategory.CategoryId == newPropertyCategory.Id,
+                (inDb, inModel) => inDb.CategoryId == inModel.Id,
                 null,
                 false).ConfigureAwait(false);
 
+            await FixedSalarySyncAsync(model.FixedSalary, user.Id, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+        }
+
+        public Task<(StatusEnum, User)> CategoryAddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? UpdateAsync(model, save)
+                : AddAsync(model, save);
         }
 
         public async Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save)
@@ -232,9 +238,7 @@ namespace RealEstate.Services
             {
                 Role = model.Role,
                 Address = model.Address,
-                DateOfPay = model.DateOfPay,
                 FirstName = model.FirstName,
-                FixedSalary = model.FixedSalary,
                 LastName = model.LastName,
                 Username = model.Username,
                 Phone = model.Phone,
@@ -247,6 +251,24 @@ namespace RealEstate.Services
 
             await SyncAsync(newUser, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newUser, save).ConfigureAwait(false);
+        }
+
+        public async Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string userId, bool save)
+        {
+            if (value <= 0 || string.IsNullOrEmpty(userId))
+                return new ValueTuple<StatusEnum, FixedSalary>(StatusEnum.ParamIsNull, null);
+
+            var findSalary = await _fixedSalaries.OrderByDescending(x => x.DateTime).FirstOrDefaultAsync(x => x.UserId == userId && x.Value == value)
+                .ConfigureAwait(false);
+            if (findSalary != null)
+                return new ValueTuple<StatusEnum, FixedSalary>(StatusEnum.AlreadyExists, findSalary);
+
+            var addStatus = await _baseService.AddAsync(new FixedSalary
+            {
+                UserId = userId,
+                Value = value
+            }, null, save).ConfigureAwait(false);
+            return addStatus;
         }
 
         public async Task<bool> IsUserValidAsync(List<Claim> claims)
@@ -307,8 +329,7 @@ namespace RealEstate.Services
                 return StatusEnum.WrongPassword;
             }
 
-            var lastTrack = userDb.LastLog();
-            if (lastTrack?.Type == LogTypeEnum.Delete)
+            if (userDb.IsDeleted())
                 return StatusEnum.Deactivated;
 
             var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryViewModel

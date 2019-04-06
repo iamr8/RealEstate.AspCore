@@ -105,9 +105,7 @@ namespace RealEstate.Web.Migrations
                     Username = table.Column<string>(nullable: false),
                     Phone = table.Column<string>(nullable: false),
                     Address = table.Column<string>(nullable: false),
-                    Password = table.Column<string>(nullable: false),
-                    FixedSalary = table.Column<double>(nullable: false),
-                    DateOfPay = table.Column<DateTime>(nullable: false)
+                    Password = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -149,6 +147,26 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "FixedSalary",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
+                    Value = table.Column<double>(nullable: false),
+                    UserId = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FixedSalary", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FixedSalary_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Payment",
                 columns: table => new
                 {
@@ -164,6 +182,27 @@ namespace RealEstate.Web.Migrations
                     table.PrimaryKey("PK_Payment", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Payment_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Permission",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    DateTime = table.Column<DateTime>(nullable: false, defaultValueSql: "getdate()"),
+                    Type = table.Column<int>(nullable: false),
+                    Key = table.Column<string>(nullable: true),
+                    UserId = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Permission", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Permission_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -627,6 +666,7 @@ namespace RealEstate.Web.Migrations
                     FacilityId = table.Column<string>(nullable: true),
                     FeatureId = table.Column<string>(nullable: true),
                     ItemId = table.Column<string>(nullable: true),
+                    FixedSalaryId = table.Column<string>(nullable: true),
                     CategoryId = table.Column<string>(nullable: true),
                     ItemFeatureId = table.Column<string>(nullable: true),
                     OwnershipId = table.Column<string>(nullable: true),
@@ -642,6 +682,7 @@ namespace RealEstate.Web.Migrations
                     ItemRequestId = table.Column<string>(nullable: true),
                     SmsTemplateId = table.Column<string>(nullable: true),
                     LogId = table.Column<string>(nullable: true),
+                    PermissionId = table.Column<string>(nullable: true),
                     SmsId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -708,6 +749,12 @@ namespace RealEstate.Web.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
+                        name: "FK_Log_FixedSalary_FixedSalaryId",
+                        column: x => x.FixedSalaryId,
+                        principalTable: "FixedSalary",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Log_ItemFeature_ItemFeatureId",
                         column: x => x.ItemFeatureId,
                         principalTable: "ItemFeature",
@@ -741,6 +788,12 @@ namespace RealEstate.Web.Migrations
                         name: "FK_Log_Payment_PaymentId",
                         column: x => x.PaymentId,
                         principalTable: "Payment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Log_Permission_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permission",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -807,8 +860,8 @@ namespace RealEstate.Web.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "Address", "DateOfPay", "DateTime", "FirstName", "FixedSalary", "LastName", "Mobile", "Password", "Phone", "Role", "Username" },
-                values: new object[] { "fbc6e313-98c0-4fe3-b234-6eabe2763f86", "باهنر", new DateTime(2019, 4, 2, 20, 33, 22, 766, DateTimeKind.Local).AddTicks(9302), new DateTime(2019, 4, 2, 20, 33, 22, 733, DateTimeKind.Local).AddTicks(9666), "هانی", 3600000.0, "موسی زاده", "09166000341", "YmAdyc6Ph9PNcJOLeira6w==", "33379367", 2, "admin" });
+                columns: new[] { "Id", "Address", "DateTime", "FirstName", "LastName", "Mobile", "Password", "Phone", "Role", "Username" },
+                values: new object[] { "0f9bbcb0-0442-493f-82a2-28f3466ccbb4", "باهنر", new DateTime(2019, 4, 4, 20, 10, 19, 214, DateTimeKind.Local).AddTicks(6750), "هانی", "موسی زاده", "09166000341", "YmAdyc6Ph9PNcJOLeira6w==", "33379367", 2, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applicant_ContactId",
@@ -856,6 +909,11 @@ namespace RealEstate.Web.Migrations
                 name: "IX_DealPayment_DealId",
                 table: "DealPayment",
                 column: "DealId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FixedSalary_UserId",
+                table: "FixedSalary",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Item_CategoryId",
@@ -933,6 +991,11 @@ namespace RealEstate.Web.Migrations
                 column: "FeatureId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Log_FixedSalaryId",
+                table: "Log",
+                column: "FixedSalaryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Log_ItemFeatureId",
                 table: "Log",
                 column: "ItemFeatureId");
@@ -961,6 +1024,11 @@ namespace RealEstate.Web.Migrations
                 name: "IX_Log_PaymentId",
                 table: "Log",
                 column: "PaymentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Log_PermissionId",
+                table: "Log",
+                column: "PermissionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Log_PictureId",
@@ -1025,6 +1093,11 @@ namespace RealEstate.Web.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Payment_UserId",
                 table: "Payment",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permission_UserId",
+                table: "Permission",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -1142,10 +1215,16 @@ namespace RealEstate.Web.Migrations
                 name: "Beneficiary");
 
             migrationBuilder.DropTable(
+                name: "FixedSalary");
+
+            migrationBuilder.DropTable(
                 name: "ItemFeature");
 
             migrationBuilder.DropTable(
                 name: "Ownership");
+
+            migrationBuilder.DropTable(
+                name: "Permission");
 
             migrationBuilder.DropTable(
                 name: "Picture");

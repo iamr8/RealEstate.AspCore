@@ -79,7 +79,7 @@ namespace RealEstate.Services
                     FeatureId = feature.Id,
                     Value = feature.Value,
                 },
-                (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
+                (inDb, inModel) => inDb.FeatureId == inModel.Id,
                 null, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
@@ -90,8 +90,9 @@ namespace RealEstate.Services
                     PropertyId = newProperty.Id,
                     FacilityId = facility.Id
                 },
-                (currentFacility, newFacility) => currentFacility.FacilityId == newFacility.Id,
-                null, false).ConfigureAwait(false);
+                (inDb, inModel) => inDb.FacilityId == inModel.Id,
+                null, 
+                false).ConfigureAwait(false);
 
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
         }

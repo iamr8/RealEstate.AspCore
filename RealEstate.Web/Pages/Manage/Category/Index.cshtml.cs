@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.Base;
@@ -50,9 +51,8 @@ namespace RealEstate.Web.Pages.Manage.Category
             };
 
             PageTitle = _localizer["Categories"];
-            var pg = string.IsNullOrEmpty(pageNo) ? 1 : int.TryParse(pageNo, out var page) ? page : 1;
-            PageNo = pg;
-            List = await _featureService.CategoryListAsync(pg, categoryName, categoryId, type).ConfigureAwait(false);
+            PageNo = pageNo.FixPageNumber();
+            List = await _featureService.CategoryListAsync(PageNo, categoryName, categoryId, type).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

@@ -308,8 +308,7 @@ namespace RealEstate.Services.Base
             if (currentUser == null)
                 return StatusEnum.UserIsNull;
 
-            var lastLog = entity.LastLog();
-            if (lastLog?.Type == LogTypeEnum.Delete)
+            if (entity.IsDeleted())
             {
                 if (undeleteAllowed)
                     _unitOfWork.UnDelete(entity, currentUser.Id);
@@ -348,8 +347,8 @@ namespace RealEstate.Services.Base
             var currentUser = CurrentUser();
             if (currentUser == null) return StatusEnum.UserIsNull;
 
-            var mustBePresent = entities.Where(entity => syncWith.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
-            var mustBeRemoved = entities.Where(x => !mustBePresent.Contains(x)).ToList();
+            var mustBeLeft = entities.Where(entity => syncWith.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+            var mustBeRemoved = entities.Where(x => !mustBeLeft.Contains(x)).ToList();
             if (mustBeRemoved.Count > 0)
                 foreach (var redundant in mustBeRemoved)
                     await RemoveAsync(redundant, false, false).ConfigureAwait(false);
@@ -358,19 +357,18 @@ namespace RealEstate.Services.Base
             {
                 foreach (var model in syncWith)
                 {
-                    var _model = mustBePresent.Find(entity => indentifier.Compile().Invoke(entity, model));
-                    if (_model == null)
+                    var source = entities.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
+                    if (source == null)
                     {
                         var newItem = newEntity.Invoke(model, currentUser);
                         await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
                     }
                     else
                     {
-                        var lastLog = _model.LastLog();
-                        if (lastLog?.Type != LogTypeEnum.Delete)
+                        if (!source.IsDeleted())
                             continue;
 
-                        _unitOfWork.UnDelete(_model, currentUser.Id);
+                        _unitOfWork.UnDelete(source, currentUser.Id);
                     }
                 }
             }
@@ -395,7 +393,6 @@ namespace RealEstate.Services.Base
                 CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
                 PropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
                 ItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryViewModel>>(),
-                
             };
             return result;
         }

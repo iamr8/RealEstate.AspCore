@@ -31,6 +31,8 @@ namespace RealEstate.Domain.Tables
         public string FeatureId { get; set; }
         public virtual Feature Feature { get; set; }
         public string ItemId { get; set; }
+        public string FixedSalaryId { get; set; }
+        public virtual FixedSalary FixedSalary { get; set; }
         public virtual Item Item { get; set; }
         public string CategoryId { get; set; }
         public virtual Category Category { get; set; }

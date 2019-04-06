@@ -10,7 +10,19 @@ namespace RealEstate.Services.Base
     public interface IMapService
     {
         List<ApplicantViewModel> Map(List<Applicant> model);
+
+        UserCategoryJsonViewModel MapJson(UserPropertyCategory model);
+
+        List<FeatureViewModel> Map(List<Feature> model);
+
+        UserCategoryJsonViewModel MapJson(UserItemCategory model);
+
+        List<UserCategoryJsonViewModel> MapJson(List<UserItemCategory> model);
+
+        List<UserCategoryJsonViewModel> MapJson(List<UserPropertyCategory> model);
+
         List<PermissionViewModel> Map(List<Permission> model);
+
         PermissionViewModel Map(Permission model);
 
         List<PropertyViewModel> Map(List<Property> model);
@@ -400,6 +412,15 @@ namespace RealEstate.Services.Base
             return result;
         }
 
+        public List<FeatureViewModel> Map(List<Feature> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
         public List<CategoryViewModel> Map(List<Category> model)
         {
             if (model?.Any() != true)
@@ -538,6 +559,50 @@ namespace RealEstate.Services.Base
             return result;
         }
 
+        public List<UserCategoryJsonViewModel> MapJson(List<UserItemCategory> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, MapJson);
+            return result;
+        }
+
+        public UserCategoryJsonViewModel MapJson(UserItemCategory model)
+        {
+            if (model == null)
+                return null;
+
+            var result = _baseService.Map(model, new UserCategoryJsonViewModel
+            {
+                Id = model.CategoryId,
+                Name = model.Category.Name
+            });
+            return result;
+        }
+
+        public List<UserCategoryJsonViewModel> MapJson(List<UserPropertyCategory> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, MapJson);
+            return result;
+        }
+
+        public UserCategoryJsonViewModel MapJson(UserPropertyCategory model)
+        {
+            if (model == null)
+                return null;
+
+            var result = _baseService.Map(model, new UserCategoryJsonViewModel
+            {
+                Id = model.CategoryId,
+                Name = model.Category.Name
+            });
+            return result;
+        }
+
         public CategoryViewModel Map(UserPropertyCategory model)
         {
             if (model == null)
@@ -644,6 +709,7 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model, Map);
             return result;
         }
+
         public PermissionViewModel Map(Permission model)
         {
             if (model == null)
@@ -658,6 +724,7 @@ namespace RealEstate.Services.Base
 
             return result;
         }
+
         public PaymentViewModel Map(Payment model)
         {
             if (model == null)
@@ -675,6 +742,7 @@ namespace RealEstate.Services.Base
 
             return result;
         }
+
         public List<PermissionViewModel> Map(List<Permission> model)
         {
             if (model?.Any() != true)
@@ -683,6 +751,7 @@ namespace RealEstate.Services.Base
             var result = _baseService.Map(model, Map);
             return result;
         }
+
         public List<PaymentViewModel> Map(List<Payment> model)
         {
             if (model?.Any() != true)

@@ -11,8 +11,8 @@ using RealEstate.Domain;
 namespace RealEstate.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190404144737_AddPermission")]
-    partial class AddPermission
+    [Migration("20190404154019_InitialDatabase")]
+    partial class InitialDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -254,6 +254,27 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Feature");
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Tables.FixedSalary", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("DateTime")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValueSql("getdate()");
+
+                    b.Property<string>("UserId")
+                        .IsRequired();
+
+                    b.Property<double>("Value");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("FixedSalary");
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Tables.Item", b =>
                 {
                     b.Property<string>("Id")
@@ -362,6 +383,8 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("FeatureId");
 
+                    b.Property<string>("FixedSalaryId");
+
                     b.Property<string>("ItemFeatureId");
 
                     b.Property<string>("ItemId");
@@ -419,6 +442,8 @@ namespace RealEstate.Web.Migrations
                     b.HasIndex("FacilityId");
 
                     b.HasIndex("FeatureId");
+
+                    b.HasIndex("FixedSalaryId");
 
                     b.HasIndex("ItemFeatureId");
 
@@ -737,16 +762,12 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("Address")
                         .IsRequired();
 
-                    b.Property<DateTime>("DateOfPay");
-
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("FirstName")
                         .IsRequired();
-
-                    b.Property<double>("FixedSalary");
 
                     b.Property<string>("LastName")
                         .IsRequired();
@@ -778,12 +799,10 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9d466a6d-8183-49ae-b12c-2da6191de79e",
+                            Id = "0f9bbcb0-0442-493f-82a2-28f3466ccbb4",
                             Address = "باهنر",
-                            DateOfPay = new DateTime(2019, 4, 4, 19, 17, 36, 866, DateTimeKind.Local).AddTicks(5507),
-                            DateTime = new DateTime(2019, 4, 4, 19, 17, 36, 831, DateTimeKind.Local).AddTicks(372),
+                            DateTime = new DateTime(2019, 4, 4, 20, 10, 19, 214, DateTimeKind.Local).AddTicks(6750),
                             FirstName = "هانی",
-                            FixedSalary = 3600000.0,
                             LastName = "موسی زاده",
                             Mobile = "09166000341",
                             Password = "YmAdyc6Ph9PNcJOLeira6w==",
@@ -899,6 +918,14 @@ namespace RealEstate.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("RealEstate.Domain.Tables.FixedSalary", b =>
+                {
+                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                        .WithMany("FixedSalaries")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("RealEstate.Domain.Tables.Item", b =>
                 {
                     b.HasOne("RealEstate.Domain.Tables.Category", "Category")
@@ -974,6 +1001,10 @@ namespace RealEstate.Web.Migrations
                     b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
                         .WithMany("Logs")
                         .HasForeignKey("FeatureId");
+
+                    b.HasOne("RealEstate.Domain.Tables.FixedSalary", "FixedSalary")
+                        .WithMany("Logs")
+                        .HasForeignKey("FixedSalaryId");
 
                     b.HasOne("RealEstate.Domain.Tables.ItemFeature", "ItemFeature")
                         .WithMany("Logs")

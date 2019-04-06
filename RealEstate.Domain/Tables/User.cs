@@ -1,6 +1,5 @@
 ﻿using RealEstate.Base.Enums;
 using RealEstate.Domain.Base;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,6 +17,7 @@ namespace RealEstate.Domain.Tables
             Logs = new HashSet<Log>();
             Smses = new HashSet<Sms>();
             Permissions = new HashSet<Permission>();
+            FixedSalaries = new HashSet<FixedSalary>();
         }
 
         [Required]
@@ -44,8 +44,6 @@ namespace RealEstate.Domain.Tables
         [Required]
         public string Password { get; set; }
 
-        public double FixedSalary { get; set; }
-        public DateTime DateOfPay { get; set; }
         public virtual ICollection<Beneficiary> Beneficiaries { get; set; }
         public virtual ICollection<Applicant> Applicants { get; set; }
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
@@ -53,5 +51,6 @@ namespace RealEstate.Domain.Tables
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<Sms> Smses { get; set; }
         public virtual ICollection<Permission> Permissions { get; set; }
+        public virtual ICollection<FixedSalary> FixedSalaries { get; set; }
     }
 }

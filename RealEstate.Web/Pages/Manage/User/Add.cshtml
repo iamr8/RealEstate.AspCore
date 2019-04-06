@@ -14,8 +14,8 @@
 
     var userPropertySelector = new JsonSelectorViewModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
         ScriptKey = "userPropertyScript",
         SelectId = "NewUser_UserPropertyCategory_Select",
         ButtonId = "NewUser_NewUserPropertyCategory_Submit",
@@ -25,6 +25,25 @@
         ItemSelectorClass = "userPropertyCategory-item",
         LocalizerButtonName = "Submit",
         SelectListItems = propertyCategories?.Select(x => new SelectListItem
+        {
+            Text = x.Name,
+            Value = x.Id,
+        }).SelectFirstItem()
+    };
+
+    var userItemSelector = new JsonSelectorViewModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
+        ScriptKey = "useritemScript",
+        SelectId = "NewUser_UserItemCategory_Select",
+        ButtonId = "NewUser_NewUserItemCategory_Submit",
+        Json = "NewUser_UserItemCategoriesJson",
+        WrapperClass = "userItemCategories",
+        LocalizerName = "UserItemCategories",
+        ItemSelectorClass = "userItemCategory-item",
+        LocalizerButtonName = "Submit",
+        SelectListItems = itemCategories?.Select(x => new SelectListItem
         {
             Text = x.Name,
             Value = x.Id,
@@ -84,9 +103,23 @@
             </div>
             <hr />
             <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewUser.FixedSalary" class="control-label"></label>
+                    <input asp-for="NewUser.FixedSalary" class="form-control" />
+                    <span asp-validation-for="NewUser.FixedSalary" class="text-danger"></span>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
                 <div class="col-12">
                     <input asp-for="NewUser.UserPropertyCategoriesJson" />
                     <vc:json-selector model="@userPropertySelector" />
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <input asp-for="NewUser.UserItemCategoriesJson" />
+                    <vc:json-selector model="@userItemSelector" />
                 </div>
             </div>
         </section>
@@ -106,4 +139,5 @@
 @section Scripts
     {
     <script asp-paste-key="userPropertyScript"></script>
+    <script asp-paste-key="useritemScript"></script>
 }

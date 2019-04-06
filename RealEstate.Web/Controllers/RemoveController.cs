@@ -21,6 +21,16 @@ namespace RealEstate.Web.Controllers
             _featureService = featureService;
         }
 
+        [Route("feature/remove")]
+        public async Task<IActionResult> FeatureAsync(string id)
+        {
+            var model = await _featureService.FeatureRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Feature.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
         [Route("category/remove")]
         public async Task<IActionResult> CategoryAsync(string id)
         {

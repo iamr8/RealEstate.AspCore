@@ -50,6 +50,10 @@ namespace RealEstate.Domain.Configuration
                 .WithMany(x => x.Logs)
                 .HasForeignKey(x => x.FeatureId);
 
+            builder.HasOne(x => x.FixedSalary)
+                .WithMany(x => x.Logs)
+                .HasForeignKey(x => x.FixedSalaryId);
+
             builder.HasOne(x => x.Item)
                 .WithMany(x => x.Logs)
                 .HasForeignKey(x => x.ItemId);

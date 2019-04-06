@@ -12,7 +12,7 @@
     </nav-button>
     if (User.IsInRole(Role.SuperAdmin.ToString()))
     {
-        <nav-button page="/@typeof(Manage.Deal.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["Deals"]"></nav-button>
+        <nav-button page="@typeof(Manage.Deal.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["Deals"]"></nav-button>
     }
     <nav-button page="@typeof(Manage.Property.IndexModel).Page()" icon="~/icons/property.svg" subject="@SharedLocalizer["Properties"]"></nav-button>
 
@@ -20,7 +20,7 @@
     {
         <nav-button page="@typeof(Manage.Facility.IndexModel).Page()" icon="~/icons/possibility.svg" subject="@SharedLocalizer["Facilities"]"></nav-button>
         <nav-button page="@typeof(Manage.District.IndexModel).Page()" icon="~/icons/map.svg" subject="@SharedLocalizer["Districts"]"></nav-button>
-        <nav-button page="/@typeof(Manage.Feature.IndexModel).Page()" icon="~/icons/features.svg" subject="@SharedLocalizer["Features"]"></nav-button>
+        <nav-button page="@typeof(Manage.Feature.IndexModel).Page()" icon="~/icons/features.svg" subject="@SharedLocalizer["Features"]"></nav-button>
         <nav-button page="@typeof(Manage.Category.IndexModel).Page()" icon="~/icons/features.svg" subject="@SharedLocalizer["Categories"]"></nav-button>
     }
     <nav-button page="@typeof(Manage.Contact.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Persons"]"></nav-button>
