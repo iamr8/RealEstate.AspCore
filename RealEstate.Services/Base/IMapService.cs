@@ -184,7 +184,11 @@ namespace RealEstate.Services.Base
                     Contact = Map(model.Contact),
                     Features = Map(model.ApplicantFeatures.ToList()),
                     Type = model.Type,
-                    User = Map(model.User)
+                    User = Map(model.User),
+                    Description = model.Description,
+                    Address = model.Address,
+                    Name = model.Name,
+                    Phone = model.PhoneNumber,
                 });
             return result;
         }
@@ -201,6 +205,10 @@ namespace RealEstate.Services.Base
                     Dong = model.Dong,
                     Id = model.Id,
                     PropertyOwnershipId = model.PropertyOwnershipId,
+                    Address = model.Address,
+                    Description = model.Description,
+                    Name = model.Name,
+                    Phone = model.PhoneNumber
                 });
 
             return result;
@@ -224,11 +232,7 @@ namespace RealEstate.Services.Base
                 new ContactViewModel
                 {
                     Id = model.Id,
-                    Description = model.Description,
-                    Address = model.Address,
                     Mobile = model.MobileNumber,
-                    Name = model.Name,
-                    Phone = model.PhoneNumber,
                     Smses = Map(model.Smses.ToList()),
                     Applicants = Map(model.Applicants.ToList()),
                     Ownerships = Map(model.Ownerships.ToList())

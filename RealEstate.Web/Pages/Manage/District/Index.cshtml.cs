@@ -48,11 +48,7 @@ namespace RealEstate.Web.Pages.Manage.District
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(),
-                new
-                {
-                    districtName = SearchInput.Name,
-                });
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }
 }

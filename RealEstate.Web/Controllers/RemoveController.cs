@@ -12,15 +12,18 @@ namespace RealEstate.Web.Controllers
         private readonly IFeatureService _featureService;
         private readonly IUserService _userService;
         private readonly ILocationService _locationService;
+        private readonly IContactService _contactService;
 
         public RemoveController(
             IUserService userService,
             IFeatureService featureService,
-            ILocationService locationService
+            ILocationService locationService,
+            IContactService contactService
 
             )
         {
             _userService = userService;
+            _contactService = contactService;
             _locationService = locationService;
             _featureService = featureService;
         }
@@ -30,6 +33,16 @@ namespace RealEstate.Web.Controllers
         {
             var model = await _featureService.FeatureRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Feature.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
+        [Route("applicant/remove")]
+        public async Task<IActionResult> ApplicantAsync(string id)
+        {
+            var model = await _contactService.ApplicantRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Applicant.IndexModel).Page(), new
             {
                 status = (int)model
             });

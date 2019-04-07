@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Newtonsoft.Json;
+using RealEstate.Extensions.Attributes;
 using RealEstate.Resources;
 using System;
 using System.Collections.Generic;
@@ -31,11 +32,69 @@ namespace RealEstate.Extensions
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
-        public static Dictionary<string, object> ClassProperties<TModel>(this TModel model) where TModel : class
+        public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : class
+        {
+            var routeValues = new Dictionary<string, object>();
+            var properties = model.GetProperties();
+            if (properties?.Any(x => x.Value != null) != true)
+                return default;
+
+            foreach (var (searchKey, searchValue) in properties.Where(x => x.Value != null))
+            {
+                var property = model.GetProperty(searchKey);
+                if (property == null)
+                    continue;
+
+                var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
+                if (searchParameterAttribute == null)
+                    continue;
+
+                var searchParameter = searchParameterAttribute.ParameterName;
+                if (string.IsNullOrEmpty(searchParameter))
+                    continue;
+
+                routeValues.Add(searchParameter, searchValue);
+            }
+
+            return routeValues;
+        }
+
+        public static TAttribute GetPropertyAttribute<TAttribute>(
+            this PropertyInfo property) where TAttribute : Attribute
+        {
+            return property?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
+        }
+
+        public static object[] GetPropertyAttributes<TModel>(
+            this Expression<Func<TModel, object>> expression)
+        {
+            var propertyInfo = expression.GetProperty();
+            return propertyInfo?.GetCustomAttributes(false);
+        }
+
+        public static ParameterInfo[] GetParameters(this MethodInfo method)
+        {
+            var retVal = method.GetParameters();
+            return retVal;
+        }
+
+        public static MethodInfo GetMethodInfo(this Type parentType, string methodName)
+        {
+            var methodInfo = parentType.GetMethod(methodName);
+            return methodInfo;
+        }
+
+        public static Dictionary<string, object> GetProperties<TModel>(this TModel model) where TModel : class
         {
             return model.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(propertyInfo => propertyInfo.Name, prop => prop.GetValue(model, null));
+                .ToDictionary(propertyInfo => propertyInfo.Name, propertyInfo => propertyInfo.GetValue(model, null));
+        }
+
+        public static PropertyInfo GetProperty<TModel>(this TModel model, string propertyName) where TModel : class
+        {
+            var type = model.GetType().GetProperty(propertyName);
+            return type;
         }
 
         public static PropertyInfo GetProperty<TModel>(this Expression<Func<TModel, object>> expression)

@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
-using RealEstate.Base.Enums;
 using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Search;
 using System.Threading.Tasks;
+using RealEstate.Base.Enums;
 
 namespace RealEstate.Web.Pages.Manage.User
 {
@@ -62,17 +62,7 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(),
-                new
-                {
-                    userName = SearchInput.Username,
-                    userFirst = SearchInput.FirstName,
-                    userLast = SearchInput.LastName,
-                    userMobile = SearchInput.Mobile,
-                    userAddress = SearchInput.Address,
-                    password = SearchInput.Password,
-                    role = SearchInput.Role
-                });
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }
 }

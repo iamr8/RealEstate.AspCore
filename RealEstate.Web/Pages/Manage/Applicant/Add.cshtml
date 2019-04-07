@@ -1,0 +1,22 @@
+﻿@page
+@model AddModel
+
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewApplicant.Id" />
+        <section class="container-fluid">
+            <vc:person-creator model="@Model.NewApplicant"></vc:person-creator>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.ApplicantStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

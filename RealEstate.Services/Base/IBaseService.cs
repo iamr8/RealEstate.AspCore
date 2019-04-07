@@ -433,9 +433,9 @@ namespace RealEstate.Services.Base
             if (entity == null)
                 return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
 
-            var tempEntityBeforeChanges = entity.ClassProperties();
+            var tempEntityBeforeChanges = entity.GetProperties();
             changes.Invoke();
-            var tempEntityAfterChanges = entity.ClassProperties();
+            var tempEntityAfterChanges = entity.GetProperties();
 
             var changesIndicator = 0;
             if (tempEntityBeforeChanges?.Any() == true)

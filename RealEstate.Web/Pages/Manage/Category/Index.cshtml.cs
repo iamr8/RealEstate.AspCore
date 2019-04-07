@@ -57,13 +57,7 @@ namespace RealEstate.Web.Pages.Manage.Category
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(),
-                new
-                {
-                    categoryName = SearchInput.Name,
-                    categoryId = SearchInput.Id,
-                    type = SearchInput.Type
-                });
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }
 }

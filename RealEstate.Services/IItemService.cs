@@ -80,7 +80,7 @@ namespace RealEstate.Services
             }, null, false);
 
             foreach (var applicant in model.Applicants)
-                await _contactService.ApplicantUpdateItemRequestAsync(applicant.Id, newItemRequest.Id, false).ConfigureAwait(false);
+                await _contactService.ApplicantPlugItemRequestAsync(applicant.Id, newItemRequest.Id, false).ConfigureAwait(false);
 
             return await _baseService.SaveChangesAsync(newItemRequest, save).ConfigureAwait(false);
         }

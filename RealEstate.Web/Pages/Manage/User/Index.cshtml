@@ -17,7 +17,7 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
             <a asp-page="/@nameof(Manage)/@nameof(User)/Add">@SharedLocalizer["NewUser"]</a>
         </widget-header>
         <section class="container-fluid">
-            @*<div class="row justify-content-center align-items-center margin-bottomed">
+            <div class="row justify-content-center align-items-center margin-bottomed">
                 <div class="col-12">
                     <form method="post" class="widget mini-widget bg-white">
                         <widget-header title="@SharedLocalizer["Search"]"></widget-header>
@@ -61,7 +61,7 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
                         </widget-footer>
                     </form>
                 </div>
-            </div>*@
+            </div>
             @if (Model.List.Items?.Any() == true)
             {
                 foreach (var item in Model.List.Items)

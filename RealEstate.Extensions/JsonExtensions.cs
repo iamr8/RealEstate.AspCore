@@ -29,6 +29,18 @@ namespace RealEstate.Extensions
             return json;
         }
 
+        public static string JsonConversion<TModel>(this List<TModel> model) where TModel : class
+        {
+            if (model?.Any() != true)
+                return "[]";
+
+            var json = model.Count > 0
+                ? JsonConvert.SerializeObject(model)
+                : "[]";
+
+            return json;
+        }
+
         public static TEntity JsonConversion<TEntity>(this string json)
         {
             if (string.IsNullOrEmpty(json))

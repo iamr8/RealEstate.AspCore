@@ -50,7 +50,7 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            modelBuilder.SeedDatabase();
+//            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }

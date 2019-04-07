@@ -68,7 +68,7 @@ namespace RealEstate.Services
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
 
             foreach (var owner in model.Ownerships)
-                await _contactService.OwnershipUpdatePropertyAsync(owner.OwnershipId, newPropertyOwnership.Id, false).ConfigureAwait(false);
+                await _contactService.OwnershipPlugPropertyAsync(owner.OwnershipId, newPropertyOwnership.Id, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
                 newProperty.PropertyFeatures,

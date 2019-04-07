@@ -1,10 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
+using RealEstate.Extensions;
 using RealEstate.Services.Base;
+using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services
@@ -17,11 +21,17 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
-        Task<Applicant> ApplicantFindEntityAsync(string id);
+        Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(int page);
 
-        Task<(StatusEnum, Ownership)> OwnershipUpdatePropertyAsync(string ownerId, string propertyOwnershipId, bool save);
+        Task<ApplicantInputViewModel> ApplicantInputAsync(string id);
 
-        Task<(StatusEnum, Applicant)> ApplicantUpdateItemRequestAsync(string applicantId, string itemRequestId, bool save);
+        Task<Applicant> ApplicantEntityAsync(string id);
+
+        Task<StatusEnum> ApplicantRemoveAsync(string id);
+
+        Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
+
+        Task<(StatusEnum, Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save);
 
         Task<Ownership> OwnershipFindEntityAsync(string id);
     }
@@ -30,23 +40,26 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IMapService _mapService;
         private readonly DbSet<Contact> _contacts;
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Ownership> _ownerships;
 
         public ContactService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService
+            IBaseService baseService,
+            IMapService mapService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _mapService = mapService;
             _contacts = _unitOfWork.Set<Contact>();
             _applicants = _unitOfWork.Set<Applicant>();
             _ownerships = _unitOfWork.Set<Ownership>();
         }
 
-        public async Task<Applicant> ApplicantFindEntityAsync(string id)
+        public async Task<Applicant> ApplicantEntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -64,12 +77,30 @@ namespace RealEstate.Services
             return entity;
         }
 
-        public async Task<(StatusEnum, Applicant)> ApplicantUpdateItemRequestAsync(string applicantId, string itemRequestId, bool save)
+        public async Task<StatusEnum> ApplicantRemoveAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return StatusEnum.ParamIsNull;
+
+            var user = await ApplicantEntityAsync(id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(user,
+                    new[]
+                    {
+                        Role.SuperAdmin, Role.Admin
+                    },
+                    true,
+                    true)
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<(StatusEnum, Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save)
         {
             if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(itemRequestId))
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ParamIsNull, null);
 
-            var applicant = await ApplicantFindEntityAsync(applicantId).ConfigureAwait(false);
+            var applicant = await ApplicantEntityAsync(applicantId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(applicant,
                 () => applicant.ItemRequestId = itemRequestId,
                 null, save, StatusEnum.ApplicantIsNull
@@ -77,7 +108,47 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipUpdatePropertyAsync(string ownerId, string propertyOwnershipId, bool save)
+        public async Task<ApplicantInputViewModel> ApplicantInputAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return default;
+
+            var query = _applicants.Where(x => x.Id == id);
+            var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var viewModel = _mapService.Map(model);
+            if (viewModel == null)
+                return default;
+
+            var result = new ApplicantInputViewModel
+            {
+                Id = viewModel.Id,
+                Type = viewModel.Type,
+                Name = viewModel.Name,
+                Description = viewModel.Description,
+                Address = viewModel.Address,
+                Mobile = viewModel.Contact.Mobile,
+                Phone = viewModel.Phone,
+                ApplicantFeaturesJson = viewModel.Features.JsonConversion(),
+            };
+            return result;
+        }
+
+        public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(int page)
+        {
+            var models = _applicants as IQueryable<Applicant>;
+            models = models.Include(x => x.ApplicantFeatures);
+            models = models.Include(x => x.Logs);
+
+            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
+                new[]
+                {
+                    Role.Admin, Role.SuperAdmin
+                }
+            ).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save)
         {
             if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(propertyOwnershipId))
                 return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ParamIsNull, null);
@@ -97,11 +168,7 @@ namespace RealEstate.Services
 
             var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
             {
-                Address = model.Address,
-                Description = model.Description,
-                Mobile = model.Mobile,
-                Name = model.Name,
-                Phone = model.Phone
+                Mobile = model.Mobile
             }, false).ConfigureAwait(false);
             if (contactAddStatus != StatusEnum.Success)
                 return new ValueTuple<StatusEnum, Applicant>(contactAddStatus, null);
@@ -111,6 +178,10 @@ namespace RealEstate.Services
                 ContactId = newContact.Id,
                 UserId = currentUser.Id,
                 Type = model.Type,
+                Address = model.Address,
+                Description = model.Description,
+                Name = model.Name,
+                PhoneNumber = model.Phone
             }, null, false).ConfigureAwait(false);
 
             var syncFeaturesStatus = await _baseService.SyncAsync(
@@ -134,11 +205,7 @@ namespace RealEstate.Services
 
             var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
             {
-                Address = model.Address,
-                Description = model.Description,
                 Mobile = model.Mobile,
-                Name = model.Name,
-                Phone = model.Phone
             }, true).ConfigureAwait(false);
             if (contactAddStatus != StatusEnum.Success)
                 return new ValueTuple<StatusEnum, Ownership>(contactAddStatus, null);
@@ -147,6 +214,10 @@ namespace RealEstate.Services
             {
                 ContactId = newContact.Id,
                 Dong = model.Dong,
+                Description = model.Description,
+                Address = model.Address,
+                Name = model.Name,
+                PhoneNumber = model.Phone,
             }, null, save).ConfigureAwait(false);
             return addStatus;
         }
@@ -158,11 +229,7 @@ namespace RealEstate.Services
 
             var addStatus = await _baseService.AddAsync(new Contact
             {
-                Address = model.Address,
-                Description = model.Description,
                 MobileNumber = model.Mobile,
-                Name = model.Name,
-                PhoneNumber = model.Phone
             }, null, save).ConfigureAwait(false);
             return addStatus;
         }

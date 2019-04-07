@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RealEstate.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using RealEstate.Base;
 
-namespace RealEstate.Extensions
+namespace RealEstate.Extensions.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class R8ValidatorAttribute : ValidationAttribute, IClientModelValidator

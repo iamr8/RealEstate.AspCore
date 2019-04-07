@@ -14,17 +14,9 @@ namespace RealEstate.Domain.Tables
             Smses = new HashSet<Sms>();
         }
 
-        public string Description { get; set; }
-
-        [Required]
-        public string Name { get; set; }
-
-        public string PhoneNumber { get; set; }
-
         [Required]
         public string MobileNumber { get; set; }
 
-        public string Address { get; set; }
         public virtual ICollection<Applicant> Applicants { get; set; }
         public virtual ICollection<Ownership> Ownerships { get; set; }
         public virtual ICollection<Sms> Smses { get; set; }
