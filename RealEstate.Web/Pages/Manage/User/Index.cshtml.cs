@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Search;
 using System.Threading.Tasks;
-using RealEstate.Base.Enums;
 
 namespace RealEstate.Web.Pages.Manage.User
 {
@@ -32,16 +32,15 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public PaginationViewModel<UserViewModel> List { get; set; }
 
-        public int PageNo { get; set; }
-
         [ViewData]
-        public string PageTitle { get; set; }
+        public string PageTitle => _localizer["Users"];
 
         public async Task OnGetAsync(string pageNo, string userName, string userFirst, string userLast,
             string userMobile, string userAddress, string password, string role, string userId)
         {
             SearchInput = new UserSearchViewModel
             {
+                PageNo = pageNo.FixPageNumber(),
                 Address = userAddress,
                 Mobile = userMobile,
                 Username = userName,
@@ -50,14 +49,11 @@ namespace RealEstate.Web.Pages.Manage.User
                 Password = password,
                 Role = (Role?)(string.IsNullOrEmpty(role)
                     ? (System.Enum)null
-                    : role.To<Role>())
+                    : role.To<Role>()),
+                UserId = userId
             };
 
-            PageTitle = _localizer["Users"];
-            PageNo = pageNo.FixPageNumber();
-            List = await _userService
-                .ListAsync(PageNo, userName, userFirst, userLast, userMobile, userAddress, password, role, userId)
-                .ConfigureAwait(false);
+            List = await _userService.ListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

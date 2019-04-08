@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using RealEstate.Base;
 
 namespace RealEstate.ViewModels.Search
 {
-    public class ApplicantSearchViewModel
+    public class ApplicantSearchViewModel : BaseSearchModel
     {
     }
 }

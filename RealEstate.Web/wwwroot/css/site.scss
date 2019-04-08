@@ -334,7 +334,7 @@ input[type=submit], button {
             padding-right: 20px;
         }
 
-        a {
+        .nav-link {
             padding: 12px 8px;
             padding-right: 25px;
             min-height: 43px;
@@ -343,23 +343,6 @@ input[type=submit], button {
             @include justify-content(flex-start);
             @include align-items(center);
             @include transition(all, 0.3s, ease-in-out);
-
-            &.active {
-                background-color: $background-color;
-            }
-
-            &:hover,
-            &:focus {
-                background-color: mix(white, $background-color, 5);
-
-                > .text {
-                    color: #f1f1f1;
-                }
-            }
-
-            &:active {
-                background-color: mix(white, $background-color, 10);
-            }
 
             > .img {
                 width: 30px;
@@ -376,6 +359,29 @@ input[type=submit], button {
                 padding-right: 10px;
                 color: white;
             }
+        }
+
+        a.nav-link {
+            &.active {
+                background-color: $background-color;
+            }
+
+            &:hover,
+            &:focus {
+                background-color: mix(white, $background-color, 5);
+
+                > .text {
+                    color: #f1f1f1;
+                }
+            }
+
+            &:active {
+                background-color: mix(white, $background-color, 10);
+            }
+        }
+
+        span.nav-link {
+            @include user-select(none);
         }
     }
 }

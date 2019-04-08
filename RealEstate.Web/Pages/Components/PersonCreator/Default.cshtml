@@ -1,0 +1,31 @@
+﻿@model ContactInputViewModel
+@{
+    var NewPerson = Model;
+}
+<div class="row justify-content-center align-items-center">
+    <div class="col-12 col-md-4 margin-bottomed">
+        <label asp-for="@NewPerson.Name" class="control-label"></label>
+        <input asp-for="@NewPerson.Name" class="form-control" />
+        <span asp-validation-for="@NewPerson.Name" class="text-danger"></span>
+    </div>
+    <div class="col-6 col-md-4 margin-bottomed">
+        <label asp-for="@NewPerson.Mobile" class="control-label"></label>
+        <input asp-for="@NewPerson.Mobile" class="form-control" />
+        <span asp-validation-for="@NewPerson.Mobile" class="text-danger"></span>
+    </div>
+    <div class="col-6 col-md-4 margin-bottomed">
+        <label asp-for="@NewPerson.Phone" class="control-label"></label>
+        <input asp-for="@NewPerson.Phone" class="form-control" />
+        <span asp-validation-for="@NewPerson.Phone" class="text-danger"></span>
+    </div>
+    <div class="col-12 margin-bottomed">
+        <label asp-for="@NewPerson.Address" class="control-label"></label>
+        <input asp-for="@NewPerson.Address" class="form-control" />
+        <span asp-validation-for="@NewPerson.Address" class="text-danger"></span>
+    </div>
+    <div class="col-12 margin-bottomed">
+        <label asp-for="@NewPerson.Description" class="control-label"></label>
+        <input asp-for="@NewPerson.Description" class="form-control" />
+        <span asp-validation-for="@NewPerson.Description" class="text-danger"></span>
+    </div>
+</div>

@@ -163,7 +163,7 @@
     <value>این حساب کاربری غیرفعال شده است</value>
   </data>
   <data name="DealCategory" xml:space="preserve">
-    <value>دسته بندی معامله</value>
+    <value>دسته بندی قرارداد</value>
   </data>
   <data name="DealStatus" xml:space="preserve">
     <value>وضعیت معامله</value>
@@ -307,10 +307,10 @@
     <value>رمز عبور اشتباه است</value>
   </data>
   <data name="Deals" xml:space="preserve">
-    <value>موارد</value>
+    <value>قراردادها</value>
   </data>
   <data name="NewDeal" xml:space="preserve">
-    <value>مورد جدید</value>
+    <value>قرارداد جدید</value>
   </data>
   <data name="HomePage" xml:space="preserve">
     <value>صفحه اصلی</value>
@@ -390,10 +390,10 @@
   <data name="SuperAdmin" xml:space="preserve">
     <value>مدیر اصلی</value>
   </data>
-  <data name="NewPerson" xml:space="preserve">
+  <data name="NewContact" xml:space="preserve">
     <value>فرد جدید</value>
   </data>
-  <data name="Persons" xml:space="preserve">
+  <data name="Contacts" xml:space="preserve">
     <value>افراد</value>
   </data>
   <data name="NewProperty" xml:space="preserve">
@@ -411,7 +411,7 @@
   <data name="EditFeature" xml:space="preserve">
     <value>ویرایش مشخصه</value>
   </data>
-  <data name="EditPerson" xml:space="preserve">
+  <data name="EditContact" xml:space="preserve">
     <value>ویرایش فرد</value>
   </data>
   <data name="EditFacility" xml:space="preserve">
@@ -442,7 +442,7 @@
     <value>ثبت این امکان</value>
   </data>
   <data name="EditDeal" xml:space="preserve">
-    <value>ویرایش مورد</value>
+    <value>ویرایش قرارداد</value>
   </data>
   <data name="Specifications" xml:space="preserve">
     <value>مشخصات</value>
@@ -610,10 +610,10 @@
     <value>درصد شیرینی</value>
   </data>
   <data name="DealFirstPerson" xml:space="preserve">
-    <value>طرف اول معامله</value>
+    <value>طرف اول قراداد</value>
   </data>
   <data name="DealSecondPerson" xml:space="preserve">
-    <value>طرف دوم معامله</value>
+    <value>طرف دوم قرارداد</value>
   </data>
   <data name="NewSecondPerson" xml:space="preserve">
     <value>طرف دوم معامله جدید</value>
@@ -625,7 +625,7 @@
     <value>انتخاب طرف دوم معامله</value>
   </data>
   <data name="Deal" xml:space="preserve">
-    <value>مورد</value>
+    <value>قرارداد</value>
   </data>
   <data name="Rejected" xml:space="preserve">
     <value>رد شده</value>
@@ -680,5 +680,41 @@
   </data>
   <data name="Applicant" xml:space="preserve">
     <value>متقاضی</value>
+  </data>
+  <data name="Applicants" xml:space="preserve">
+    <value>متقاضیان</value>
+  </data>
+  <data name="EditApplicant" xml:space="preserve">
+    <value>ویرایش متقاضی</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>موارد</value>
+  </data>
+  <data name="NewApplicant" xml:space="preserve">
+    <value>متقاضی جدید</value>
+  </data>
+  <data name="DealsManagement" xml:space="preserve">
+    <value>مدیریت قراردادها</value>
+  </data>
+  <data name="ItemRequests" xml:space="preserve">
+    <value>درخواست های معامله</value>
+  </data>
+  <data name="Management" xml:space="preserve">
+    <value>مدیریت</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>تنظیمات</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>لیست</value>
+  </data>
+  <data name="Constructor" xml:space="preserve">
+    <value>سازنده</value>
+  </data>
+  <data name="Mediator" xml:space="preserve">
+    <value>واسطه</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>نوع</value>
   </data>
 </root>

@@ -10,7 +10,7 @@
 
             @if (Model.List.Items?.Any() == true)
             {
-                @*<div class="row justify-content-center align-items-center margin-bottomed">
+                <div class="row justify-content-center align-items-center margin-bottomed">
                     <div class="col-12">
                         <form method="post" class="widget mini-widget bg-white">
                             <widget-header title="@SharedLocalizer["Search"]"></widget-header>
@@ -30,7 +30,7 @@
                             </widget-footer>
                         </form>
                     </div>
-                </div>*@
+                </div>
 
                 foreach (var item in Model.List.Items)
                 {
@@ -51,7 +51,7 @@
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
                                     <a asp-page="/@nameof(Manage)/@nameof(District)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
-                                    <a asp-controller="Remove" asp-action="DistrictAsync" asp-route-id="@item.Id" asp-route-pageNo="@Model.PageNo" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    <a asp-controller="Remove" asp-action="DistrictAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>
                         </div>

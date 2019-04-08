@@ -379,7 +379,7 @@ input[type=submit], button {
     .sidenav > .nav-items .sub-items {
       background-color: #191919;
       padding-right: 20px; }
-    .sidenav > .nav-items a {
+    .sidenav > .nav-items .nav-link {
       padding: 12px 8px;
       padding-right: 25px;
       min-height: 43px;
@@ -401,24 +401,29 @@ input[type=submit], button {
       align-items: center;
       -webkit-transition: all 0.3s ease-in-out;
       transition: all 0.3s ease-in-out; }
-      .sidenav > .nav-items a.active {
-        background-color: #282c34; }
-      .sidenav > .nav-items a:hover, .sidenav > .nav-items a:focus {
-        background-color: #33373e; }
-        .sidenav > .nav-items a:hover > .text, .sidenav > .nav-items a:focus > .text {
-          color: #f1f1f1; }
-      .sidenav > .nav-items a:active {
-        background-color: #3e4148; }
-      .sidenav > .nav-items a > .img {
+      .sidenav > .nav-items .nav-link > .img {
         width: 30px; }
-        .sidenav > .nav-items a > .img > img {
+        .sidenav > .nav-items .nav-link > .img > img {
           max-height: 17px;
           width: auto;
           display: block; }
-      .sidenav > .nav-items a > .text {
+      .sidenav > .nav-items .nav-link > .text {
         font-size: 10pt;
         padding-right: 10px;
         color: white; }
+    .sidenav > .nav-items a.nav-link.active {
+      background-color: #282c34; }
+    .sidenav > .nav-items a.nav-link:hover, .sidenav > .nav-items a.nav-link:focus {
+      background-color: #33373e; }
+      .sidenav > .nav-items a.nav-link:hover > .text, .sidenav > .nav-items a.nav-link:focus > .text {
+        color: #f1f1f1; }
+    .sidenav > .nav-items a.nav-link:active {
+      background-color: #3e4148; }
+    .sidenav > .nav-items span.nav-link {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; }
 
 .backdrop {
   position: fixed;

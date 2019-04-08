@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RealEstate.Extensions.Attributes
+namespace RealEstate.Base.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class SearchParameterAttribute : Attribute

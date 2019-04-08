@@ -31,21 +31,18 @@ namespace RealEstate.Web.Pages.Manage.Feature
 
         public PaginationViewModel<FeatureViewModel> List { get; set; }
 
-        public int PageNo { get; set; }
-
         [ViewData]
-        public string PageTitle { get; set; }
+        public string PageTitle => _localizer["Features"];
 
         public async Task OnGetAsync(string pageNo, string featureName)
         {
             SearchInput = new FeatureSearchViewModel
             {
-                Name = featureName
+                PageNo = pageNo.FixPageNumber(),
+                Name = featureName,
             };
 
-            PageTitle = _localizer["Features"];
-            PageNo = pageNo.FixPageNumber();
-            List = await _featureService.FeatureListAsync(PageNo, featureName, null).ConfigureAwait(false);
+            List = await _featureService.FeatureListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

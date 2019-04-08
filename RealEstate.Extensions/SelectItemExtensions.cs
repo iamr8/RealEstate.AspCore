@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using RealEstate.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,6 +15,54 @@ namespace RealEstate.Extensions
                 Value = string.Empty,
                 Text = "---"
             }).ToList();
+        }
+
+        public static List<SelectListItem> ToSelectList<TEnum>(TEnum defaultValue, Func<TEnum, bool> predicate) where TEnum : Enum
+        {
+            return Enum.GetValues(typeof(TEnum))
+                .Cast<TEnum>()
+                .Where(predicate)
+                .Select(e => new SelectListItem
+                {
+                    Text = e.GetDisplayName(),
+                    Value = e.ToString(),
+                    Selected = Equals(e, defaultValue)
+                }).ToList();
+        }
+
+        public static List<SelectListItem> ToSelectList<TEnum>(Func<TEnum, bool> predicate) where TEnum : Enum
+        {
+            return Enum.GetValues(typeof(TEnum))
+                .Cast<TEnum>()
+                .Where(predicate)
+                .Select(e => new SelectListItem
+                {
+                    Text = e.GetDisplayName(),
+                    Value = e.ToString(),
+                }).ToList();
+        }
+
+        public static List<SelectListItem> ToSelectList<TEnum>() where TEnum : Enum
+        {
+            return Enum.GetValues(typeof(TEnum))
+                .Cast<TEnum>()
+                .Select(e => new SelectListItem
+                {
+                    Text = e.GetDisplayName(),
+                    Value = e.ToString(),
+                }).ToList();
+        }
+
+        public static List<SelectListItem> ToSelectList<TEnum>(TEnum defaultValue) where TEnum : Enum
+        {
+            return Enum.GetValues(typeof(TEnum))
+                .Cast<TEnum>()
+                .Select(e => new SelectListItem
+                {
+                    Text = e.GetDisplayName(),
+                    Value = e.ToString(),
+                    Selected = Equals(e, defaultValue)
+                }).ToList();
         }
 
         public static List<SelectListItem> SelectFirstItem(this IEnumerable<SelectListItem> selectList)

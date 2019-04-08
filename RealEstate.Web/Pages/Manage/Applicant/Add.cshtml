@@ -1,12 +1,44 @@
 ﻿@page
 @model AddModel
-
+@{
+    var applicantTypes = SelectItemExtensions.ToSelectList(ApplicantTypeEnum.Applicant);
+    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Applicant).ConfigureAwait(false);
+    var applicantFeatures = new JsonSelectorViewModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
+        ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
+        ModelName = nameof(Model.NewApplicant),
+        ItemName = nameof(Model.NewApplicant.ApplicantFeatures),
+        Json = nameof(Model.NewApplicant.ApplicantFeaturesJson),
+        Title = SharedLocalizer["ApplicantFeatures"],
+        ScriptKey = "applicantFeatureScript",
+        SelectListItems = features?.Select(x => new SelectListItem
+        {
+            Text = x.Name,
+            Value = x.Id,
+        }).SelectFirstItem(),
+    };
+}
 <form method="post" class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md-4 margin-bottomed">
+                    <label asp-for="NewApplicant.Type" class="control-label"></label>
+                    <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="form-control"></select>
+                    <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
+                </div>
+            </div>
             <vc:person-creator model="@Model.NewApplicant"></vc:person-creator>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <input asp-for="NewApplicant.ApplicantFeaturesJson" />
+                    <vc:json-selector model="@applicantFeatures" />
+                </div>
+            </div>
         </section>
         <widget-footer>
             <widget-footer-text>
@@ -20,3 +52,7 @@
         </widget-footer>
     </div>
 </form>
+@section Scripts
+    {
+    <script asp-paste-key="applicantFeatureScript"></script>
+}

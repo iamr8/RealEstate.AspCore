@@ -1,12 +1,7 @@
 ﻿@page
 @model AddModel
 @{
-    var types = EnumsExtensions.ToList<CategoryTypeEnum>().Select(x => new SelectListItem
-    {
-        Text = ((CategoryTypeEnum)x).GetDisplayName(),
-        Value = x.ToString(),
-        Selected = (CategoryTypeEnum)x == CategoryTypeEnum.Property
-    });
+    var types = SelectItemExtensions.ToSelectList(CategoryTypeEnum.Property);
 }
 <form method="post" class="col-12">
     <div class="widget">

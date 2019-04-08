@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace RealEstate.Extensions.Attributes
+namespace RealEstate.Base.Attributes
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
     public class R8AllowedFileTypesAttribute : RequiredAttribute, IClientModelValidator

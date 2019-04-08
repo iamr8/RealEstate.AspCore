@@ -29,21 +29,18 @@ namespace RealEstate.Web.Pages.Manage.District
 
         public PaginationViewModel<DistrictViewModel> List { get; set; }
 
-        public int PageNo { get; set; }
-
         [ViewData]
-        public string PageTitle { get; set; }
+        public string PageTitle => _localizer["Districts"];
 
         public async Task OnGetAsync(string pageNo, string districtName)
         {
             SearchInput = new DistrictSearchViewModel
             {
+                PageNo = pageNo.FixPageNumber(),
                 Name = districtName,
             };
 
-            PageTitle = _localizer["Districts"];
-            PageNo = pageNo.FixPageNumber();
-            List = await _locationService.DistrictListAsync(PageNo, districtName).ConfigureAwait(false);
+            List = await _locationService.DistrictListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

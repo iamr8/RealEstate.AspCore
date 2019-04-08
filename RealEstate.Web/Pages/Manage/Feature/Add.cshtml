@@ -2,12 +2,7 @@
 @model AddModel
 
 @{
-    var types = EnumsExtensions.ToList<FeatureTypeEnum>().Select(x => new SelectListItem
-    {
-        Text = ((FeatureTypeEnum)x).GetDisplayName(),
-        Value = x.ToString(),
-        Selected = (FeatureTypeEnum)x == FeatureTypeEnum.Property
-    });
+    var types = SelectItemExtensions.ToSelectList(FeatureTypeEnum.Property);
 }
 <form method="post" class="col-12">
     <div class="widget">

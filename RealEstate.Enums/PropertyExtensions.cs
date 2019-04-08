@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Newtonsoft.Json;
-using RealEstate.Extensions.Attributes;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Resources;
 
-namespace RealEstate.Extensions
+namespace RealEstate.Base
 {
     public static class PropertyExtensions
     {
@@ -32,7 +32,7 @@ namespace RealEstate.Extensions
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
-        public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : class
+        public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : BaseSearchModel
         {
             var routeValues = new Dictionary<string, object>();
             var properties = model.GetProperties();

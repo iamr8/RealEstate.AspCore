@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
@@ -56,13 +57,13 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 
         public async Task<IActionResult> OnPostAsync()
         {
-            //            var finalStatus = ModelState.IsValid
-            //                ? (await _contactService.CategoryAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
-            //                : StatusEnum.RetryAfterReview;
+            var finalStatus = ModelState.IsValid
+                ? (await _contactService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
+                : StatusEnum.RetryAfterReview;
 
-            //            ApplicantStatus = finalStatus.GetDisplayName();
-            //            if (finalStatus != StatusEnum.Success || !NewApplicant.IsNew)
-            //                return Page();
+            ApplicantStatus = finalStatus.GetDisplayName();
+            if (finalStatus != StatusEnum.Success || !NewApplicant.IsNew)
+                return Page();
 
             ModelState.Clear();
             NewApplicant = default;
@@ -72,7 +73,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
                 id = NewApplicant?.Id
             };
             var routeValues = HtmlHelper.AnonymousObjectToHtmlAttributes(routeAnonymous);
-            return RedirectToPage(typeof(Category.AddModel).Page(), routeValues);
+            return RedirectToPage(typeof(Applicant.AddModel).Page(), routeValues);
         }
     }
 }

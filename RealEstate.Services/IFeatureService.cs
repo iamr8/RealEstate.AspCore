@@ -8,6 +8,7 @@ using RealEstate.Services.Base;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using RealEstate.ViewModels.Json;
+using RealEstate.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,17 +18,27 @@ namespace RealEstate.Services
 {
     public interface IFeatureService
     {
-        Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(int page, string categoryName, string categoryId, CategoryTypeEnum? type);
+        Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel);
+
+        Task<StatusEnum> FacilityRemoveAsync(string id);
 
         Task<(StatusEnum, Feature)> FeatureUpdateAsync(FeatureInputViewModel model, bool save);
 
+        Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel);
+
+        Task<Facility> FacilityEntityAsync(string id);
+
         Task<(StatusEnum, Feature)> FeatureAddAsync(FeatureInputViewModel model, bool save);
+
+        Task<(StatusEnum, Facility)> FacilityAddAsync(FacilityInputViewModel model, bool save);
 
         Task<List<FeatureJsonViewModel>> FeatureListJsonAsync(FeatureTypeEnum type);
 
+        Task<(StatusEnum, Facility)> FacilityUpdateAsync(FacilityInputViewModel model, bool save);
+
         Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type);
 
-        Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(int page, string featureName, FeatureTypeEnum? type);
+        Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel);
 
         Task<(StatusEnum, Feature)> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save);
 
@@ -43,7 +54,11 @@ namespace RealEstate.Services
 
         Task<StatusEnum> CategoryRemoveAsync(string id);
 
+        Task<(StatusEnum, Facility)> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save);
+
         Task<(StatusEnum, Category)> CategoryAddAsync(CategoryInputViewModel model, bool save);
+
+        Task<FacilityInputViewModel> FacilityInputAsync(string id);
 
         Task<(StatusEnum, Category)> CategoryUpdateAsync(CategoryInputViewModel model, bool save);
 
@@ -61,6 +76,7 @@ namespace RealEstate.Services
         private readonly DbSet<UserItemCategory> _userItemCategories;
         private readonly DbSet<Category> _categories;
         private readonly DbSet<Feature> _features;
+        private readonly DbSet<Facility> _facilities;
 
         public FeatureService(
             IUnitOfWork unitOfWork,
@@ -75,6 +91,7 @@ namespace RealEstate.Services
             _userItemCategories = _unitOfWork.Set<UserItemCategory>();
             _categories = _unitOfWork.Set<Category>();
             _features = _unitOfWork.Set<Feature>();
+            _facilities = _unitOfWork.Set<Facility>();
         }
 
         public async Task<FeatureInputViewModel> FeatureInputAsync(string id)
@@ -101,6 +118,27 @@ namespace RealEstate.Services
             return result;
         }
 
+        public async Task<FacilityInputViewModel> FacilityInputAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return default;
+
+            var query = _facilities.Where(x => x.Id == id)
+                .Include(x => x.PropertyFacilities);
+
+            var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var viewModel = _mapService.Map(model);
+            if (viewModel == null)
+                return default;
+
+            var result = new FacilityInputViewModel
+            {
+                Id = viewModel.Id,
+                Name = viewModel.Name
+            };
+
+            return result;
+        }
+
         public async Task<CategoryInputViewModel> CategoryInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;
@@ -121,6 +159,15 @@ namespace RealEstate.Services
             return result;
         }
 
+        public async Task<Facility> FacilityEntityAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var result = await _facilities.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            return result;
+        }
+
         public async Task<Feature> FeatureEntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -136,6 +183,24 @@ namespace RealEstate.Services
                 return default;
 
             var result = await _categories.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<StatusEnum> FacilityRemoveAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return StatusEnum.ParamIsNull;
+
+            var user = await FacilityEntityAsync(id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(user,
+                    new[]
+                    {
+                        Role.SuperAdmin, Role.Admin
+                    },
+                    true,
+                    true)
+                .ConfigureAwait(false);
+
             return result;
         }
 
@@ -196,6 +261,26 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
+        public async Task<(StatusEnum, Facility)> FacilityUpdateAsync(FacilityInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Facility>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new ValueTuple<StatusEnum, Facility>(StatusEnum.IdIsNull, null);
+
+            var entity = await FacilityEntityAsync(model.Id).ConfigureAwait(false);
+            var updateStatus = await _baseService.UpdateAsync(entity,
+                () =>
+                {
+                    entity.Name = model.Name;
+                }, new[]
+                {
+                    Role.SuperAdmin
+                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+            return updateStatus;
+        }
+
         public async Task<(StatusEnum, Category)> CategoryUpdateAsync(CategoryInputViewModel model, bool save)
         {
             if (model == null)
@@ -217,6 +302,13 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
+        public Task<(StatusEnum, Facility)> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? FacilityUpdateAsync(model, save)
+                : FacilityAddAsync(model, save);
+        }
+
         public Task<(StatusEnum, Feature)> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save)
         {
             return update
@@ -229,6 +321,21 @@ namespace RealEstate.Services
             return update
                 ? CategoryUpdateAsync(model, save)
                 : CategoryAddAsync(model, save);
+        }
+
+        public async Task<(StatusEnum, Facility)> FacilityAddAsync(FacilityInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Facility>(StatusEnum.ModelIsNull, null);
+
+            var addStatus = await _baseService.AddAsync(new Facility
+            {
+                Name = model.Name,
+            }, new[]
+            {
+                Role.SuperAdmin, Role.Admin
+            }, save).ConfigureAwait(false);
+            return addStatus;
         }
 
         public async Task<(StatusEnum, Feature)> FeatureAddAsync(FeatureInputViewModel model, bool save)
@@ -263,7 +370,7 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(int page, string featureName, FeatureTypeEnum? type)
+        public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel)
         {
             var models = _features as IQueryable<Feature>;
             models = models.Include(x => x.ApplicantFeatures);
@@ -271,13 +378,37 @@ namespace RealEstate.Services
             models = models.Include(x => x.PropertyFeatures);
             models = models.Include(x => x.Logs);
 
-            if (type != null)
-                models = models.Where(x => x.Type == type);
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.Name))
+                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(featureName))
-                models = models.Where(x => EF.Functions.Like(x.Name, featureName.LikeExpression()));
+                if (searchModel.Type != null)
+                    models = models.Where(x => x.Type == searchModel.Type);
+            }
 
-            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
+                new[]
+                {
+                    Role.Admin, Role.SuperAdmin
+                }
+            ).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel)
+        {
+            var models = _facilities as IQueryable<Facility>;
+            models = models.Include(x => x.PropertyFacilities);
+            models = models.Include(x => x.Logs);
+
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.Name))
+                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+            }
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin
@@ -316,7 +447,7 @@ namespace RealEstate.Services
             return _mapService.Map(features);
         }
 
-        public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(int page, string categoryName, string categoryId, CategoryTypeEnum? type)
+        public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
         {
             var models = _categories as IQueryable<Category>;
             models = models.Include(x => x.Properties);
@@ -325,19 +456,18 @@ namespace RealEstate.Services
             models = models.Include(x => x.Items);
             models = models.Include(x => x.Logs);
 
-            if (!string.IsNullOrEmpty(categoryName))
-                models = models.Where(x => EF.Functions.Like(x.Name, categoryName.LikeExpression()));
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.Name))
+                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(categoryId))
-                models = models.Where(x => EF.Functions.Like(x.Name, categoryId.LikeExpression()));
+                if (!string.IsNullOrEmpty(searchModel.Id))
+                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Id.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(categoryName))
-                models = models.Where(x => EF.Functions.Like(x.Name, categoryName.LikeExpression()));
-
-            if (type != null)
-                models = models.Where(x => x.Type == type);
-
-            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
+                if (searchModel.Type != null)
+                    models = models.Where(x => x.Type == searchModel.Type);
+            }
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin

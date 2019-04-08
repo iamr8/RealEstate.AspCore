@@ -1,11 +1,12 @@
-﻿using RealEstate.Base.Enums;
-using RealEstate.Extensions.Attributes;
+﻿using RealEstate.Base;
+using RealEstate.Base.Attributes;
+using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Search
 {
-    public class UserSearchViewModel
+    public class UserSearchViewModel : BaseSearchModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Id")]
         [SearchParameter("userId")]

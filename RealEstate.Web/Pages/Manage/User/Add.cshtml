@@ -1,14 +1,7 @@
 ﻿@page
-@using RealEstate.Web.Components
 @model AddModel
 @{
-    var roles = EnumsExtensions.ToList<Role>().Where(x => x != (int)Role.SuperAdmin).Select(x => new SelectListItem
-    {
-        Text = ((Role)x).GetDisplayName(),
-        Value = x.ToString(),
-        Selected = (Role)x == Role.User
-    }).ToList();
-
+    var roles = SelectItemExtensions.ToSelectList(Role.User, role => role != Role.SuperAdmin);
     var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property).ConfigureAwait(false);
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item).ConfigureAwait(false);
 
@@ -16,38 +9,32 @@
     {
         IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
+        ModelName = nameof(Model.NewUser),
+        ItemName = nameof(Model.NewUser.UserPropertyCategories),
+        Json = nameof(Model.NewUser.UserPropertyCategoriesJson),
+        Title = SharedLocalizer["UserPropertyCategories"],
         ScriptKey = "userPropertyScript",
-        SelectId = "NewUser_UserPropertyCategory_Select",
-        ButtonId = "NewUser_NewUserPropertyCategory_Submit",
-        Json = "NewUser_UserPropertyCategoriesJson",
-        WrapperClass = "userPropertyCategories",
-        LocalizerName = "UserPropertyCategories",
-        ItemSelectorClass = "userPropertyCategory-item",
-        LocalizerButtonName = "Submit",
         SelectListItems = propertyCategories?.Select(x => new SelectListItem
         {
             Text = x.Name,
             Value = x.Id,
-        }).SelectFirstItem()
+        }).SelectFirstItem(),
     };
 
     var userItemSelector = new JsonSelectorViewModel
     {
         IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
+        ModelName = nameof(Model.NewUser),
+        ItemName = nameof(Model.NewUser.UserItemCategories),
+        Json = nameof(Model.NewUser.UserItemCategoriesJson),
+        Title = SharedLocalizer["UserItemCategories"],
         ScriptKey = "useritemScript",
-        SelectId = "NewUser_UserItemCategory_Select",
-        ButtonId = "NewUser_NewUserItemCategory_Submit",
-        Json = "NewUser_UserItemCategoriesJson",
-        WrapperClass = "userItemCategories",
-        LocalizerName = "UserItemCategories",
-        ItemSelectorClass = "userItemCategory-item",
-        LocalizerButtonName = "Submit",
         SelectListItems = itemCategories?.Select(x => new SelectListItem
         {
             Text = x.Name,
             Value = x.Id,
-        }).SelectFirstItem()
+        }).SelectFirstItem(),
     };
 }
 <form method="post" class="col-12">

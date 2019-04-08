@@ -29,20 +29,17 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 
         public PaginationViewModel<ApplicantViewModel> List { get; set; }
 
-        public int PageNo { get; set; }
-
         [ViewData]
-        public string PageTitle { get; set; }
+        public string PageTitle => _localizer["Applicants"];
 
         public async Task OnGetAsync(string pageNo)
         {
             SearchInput = new ApplicantSearchViewModel
             {
+                PageNo = pageNo.FixPageNumber()
             };
 
-            PageTitle = _localizer["Applicants"];
-            PageNo = pageNo.FixPageNumber();
-            List = await _contactService.ApplicantListAsync(PageNo).ConfigureAwait(false);
+            List = await _contactService.ApplicantListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

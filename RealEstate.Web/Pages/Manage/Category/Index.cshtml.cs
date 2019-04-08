@@ -36,23 +36,20 @@ namespace RealEstate.Web.Pages.Manage.Category
 
         public PaginationViewModel<CategoryViewModel> List { get; set; }
 
-        public int PageNo { get; set; }
-
         [ViewData]
-        public string PageTitle { get; set; }
+        public string PageTitle => _localizer["Categories"];
 
         public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type)
         {
             SearchInput = new CategorySearchViewModel
             {
+                PageNo = pageNo.FixPageNumber(),
                 Name = categoryName,
                 Id = categoryId,
                 Type = type
             };
 
-            PageTitle = _localizer["Categories"];
-            PageNo = pageNo.FixPageNumber();
-            List = await _featureService.CategoryListAsync(PageNo, categoryName, categoryId, type).ConfigureAwait(false);
+            List = await _featureService.CategoryListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

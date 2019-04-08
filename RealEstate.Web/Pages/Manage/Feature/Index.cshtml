@@ -36,7 +36,6 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-                    var hasNoProperties = item.Properties <= 0 ? "disabled" : "";
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">

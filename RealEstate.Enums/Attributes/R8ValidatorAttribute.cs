@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using RealEstate.Base;
 
-namespace RealEstate.Extensions.Attributes
+namespace RealEstate.Base.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
     public class R8ValidatorAttribute : ValidationAttribute, IClientModelValidator

@@ -1,11 +1,12 @@
-﻿using RealEstate.Base.Enums;
-using RealEstate.Extensions.Attributes;
+﻿using RealEstate.Base;
+using RealEstate.Base.Attributes;
+using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Search
 {
-    public class CategorySearchViewModel
+    public class CategorySearchViewModel : BaseSearchModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Subject")]
         [SearchParameter("categoryName")]

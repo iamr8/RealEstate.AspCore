@@ -7,6 +7,7 @@ using RealEstate.Extensions;
 using RealEstate.Services.Base;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
+using RealEstate.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, District)> DistrictUpdateAsync(DistrictInputViewModel model, bool save);
 
-        Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(int page, string districtName);
+        Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel);
     }
 
     public class LocationService : ILocationService
@@ -49,16 +50,18 @@ namespace RealEstate.Services
             _districts = _unitOfWork.Set<District>();
         }
 
-        public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(int page, string districtName)
+        public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
         {
             var models = _districts as IQueryable<District>;
             models = models.Include(x => x.Properties);
             models = models.Include(x => x.Logs);
 
-            if (!string.IsNullOrEmpty(districtName))
-                models = models.Where(x => EF.Functions.Like(x.Name, districtName.LikeExpression()));
-
-            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.Name))
+                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+            }
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin

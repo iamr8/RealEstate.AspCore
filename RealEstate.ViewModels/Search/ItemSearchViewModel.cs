@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using RealEstate.Base;
 using RealEstate.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Search
 {
-    public class ItemSearchViewModel
+    public class ItemSearchViewModel : BaseSearchModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Address")]
         public string Address { get; set; }

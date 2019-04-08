@@ -7,6 +7,7 @@ using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.ViewModels.Input;
 using System.Threading.Tasks;
+using RealEstate.Base;
 
 namespace RealEstate.Web.Pages.Manage.District
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using RealEstate.Base;
-using RealEstate.Extensions.Attributes;
 using RealEstate.Resources;
 using System.ComponentModel.DataAnnotations;
+using RealEstate.Base.Attributes;
 
 namespace RealEstate.ViewModels.Input
 {

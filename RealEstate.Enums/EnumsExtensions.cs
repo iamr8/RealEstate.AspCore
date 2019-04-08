@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-namespace RealEstate.Extensions
+namespace RealEstate.Base
 {
     public static class EnumsExtensions
     {
@@ -47,6 +48,22 @@ namespace RealEstate.Extensions
         public static TEnum To<TEnum>(this string value) where TEnum : Enum
         {
             return (TEnum)Enum.Parse(typeof(TEnum), value, true);
+        }
+
+        private static string Display(Type enumType, string name)
+        {
+            var result = name;
+
+            var attribute = enumType
+                .GetField(name)
+                .GetCustomAttributes(inherit: false)
+                .OfType<DisplayAttribute>()
+                .FirstOrDefault();
+
+            if (attribute != null)
+                result = attribute.GetName();
+
+            return result;
         }
 
         public static List<int> ToList<TEnum>()

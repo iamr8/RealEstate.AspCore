@@ -169,6 +169,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to متقاضیان.
+        /// </summary>
+        public static string Applicants {
+            get {
+                return ResourceManager.GetString("Applicants", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مشاورین املاک موسی زاده.
         /// </summary>
         public static string AppName {
@@ -295,6 +304,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to سازنده.
+        /// </summary>
+        public static string Constructor {
+            get {
+                return ResourceManager.GetString("Constructor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to افراد.
+        /// </summary>
+        public static string Contacts {
+            get {
+                return ResourceManager.GetString("Contacts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ایجاد.
         /// </summary>
         public static string Create {
@@ -340,7 +367,7 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to مورد.
+        ///   Looks up a localized string similar to قرارداد.
         /// </summary>
         public static string Deal {
             get {
@@ -349,7 +376,7 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to دسته بندی معامله.
+        ///   Looks up a localized string similar to دسته بندی قرارداد.
         /// </summary>
         public static string DealCategory {
             get {
@@ -358,7 +385,7 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to طرف اول معامله.
+        ///   Looks up a localized string similar to طرف اول قراداد.
         /// </summary>
         public static string DealFirstPerson {
             get {
@@ -367,7 +394,7 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to موارد.
+        ///   Looks up a localized string similar to قراردادها.
         /// </summary>
         public static string Deals {
             get {
@@ -376,11 +403,20 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to طرف دوم معامله.
+        ///   Looks up a localized string similar to طرف دوم قرارداد.
         /// </summary>
         public static string DealSecondPerson {
             get {
                 return ResourceManager.GetString("DealSecondPerson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مدیریت قراردادها.
+        /// </summary>
+        public static string DealsManagement {
+            get {
+                return ResourceManager.GetString("DealsManagement", resourceCulture);
             }
         }
         
@@ -457,6 +493,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ویرایش متقاضی.
+        /// </summary>
+        public static string EditApplicant {
+            get {
+                return ResourceManager.GetString("EditApplicant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ویرایش دسته بندی.
         /// </summary>
         public static string EditCategory {
@@ -466,7 +511,16 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to ویرایش مورد.
+        ///   Looks up a localized string similar to ویرایش فرد.
+        /// </summary>
+        public static string EditContact {
+            get {
+                return ResourceManager.GetString("EditContact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش قرارداد.
         /// </summary>
         public static string EditDeal {
             get {
@@ -498,15 +552,6 @@ namespace RealEstate.Resources {
         public static string EditFeature {
             get {
                 return ResourceManager.GetString("EditFeature", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ویرایش فرد.
-        /// </summary>
-        public static string EditPerson {
-            get {
-                return ResourceManager.GetString("EditPerson", resourceCulture);
             }
         }
         
@@ -709,6 +754,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to درخواست های معامله.
+        /// </summary>
+        public static string ItemRequests {
+            get {
+                return ResourceManager.GetString("ItemRequests", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to موارد.
+        /// </summary>
+        public static string Items {
+            get {
+                return ResourceManager.GetString("Items", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to نام خانوادگی.
         /// </summary>
         public static string LastName {
@@ -723,6 +786,15 @@ namespace RealEstate.Resources {
         public static string Latitude {
             get {
                 return ResourceManager.GetString("Latitude", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to لیست.
+        /// </summary>
+        public static string List {
+            get {
+                return ResourceManager.GetString("List", resourceCulture);
             }
         }
         
@@ -772,11 +844,29 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مدیریت.
+        /// </summary>
+        public static string Management {
+            get {
+                return ResourceManager.GetString("Management", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مساحت.
         /// </summary>
         public static string Measurement {
             get {
                 return ResourceManager.GetString("Measurement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to واسطه.
+        /// </summary>
+        public static string Mediator {
+            get {
+                return ResourceManager.GetString("Mediator", resourceCulture);
             }
         }
         
@@ -817,6 +907,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to متقاضی جدید.
+        /// </summary>
+        public static string NewApplicant {
+            get {
+                return ResourceManager.GetString("NewApplicant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to دسته بندی جدید.
         /// </summary>
         public static string NewCategory {
@@ -826,7 +925,16 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to مورد جدید.
+        ///   Looks up a localized string similar to فرد جدید.
+        /// </summary>
+        public static string NewContact {
+            get {
+                return ResourceManager.GetString("NewContact", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to قرارداد جدید.
         /// </summary>
         public static string NewDeal {
             get {
@@ -867,15 +975,6 @@ namespace RealEstate.Resources {
         public static string NewOwner {
             get {
                 return ResourceManager.GetString("NewOwner", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to فرد جدید.
-        /// </summary>
-        public static string NewPerson {
-            get {
-                return ResourceManager.GetString("NewPerson", resourceCulture);
             }
         }
         
@@ -1011,15 +1110,6 @@ namespace RealEstate.Resources {
         public static string PendingResponse {
             get {
                 return ResourceManager.GetString("PendingResponse", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to افراد.
-        /// </summary>
-        public static string Persons {
-            get {
-                return ResourceManager.GetString("Persons", resourceCulture);
             }
         }
         
@@ -1263,6 +1353,15 @@ namespace RealEstate.Resources {
         public static string SelectSecondPerson {
             get {
                 return ResourceManager.GetString("SelectSecondPerson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to تنظیمات.
+        /// </summary>
+        public static string Settings {
+            get {
+                return ResourceManager.GetString("Settings", resourceCulture);
             }
         }
         
@@ -1605,6 +1704,15 @@ namespace RealEstate.Resources {
         public static string TipPrice {
             get {
                 return ResourceManager.GetString("TipPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to نوع.
+        /// </summary>
+        public static string Type {
+            get {
+                return ResourceManager.GetString("Type", resourceCulture);
             }
         }
         

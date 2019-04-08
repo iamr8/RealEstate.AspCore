@@ -1,25 +1,18 @@
 ﻿@page
 @model IndexModel
 @{
-    var roles = new List<SelectListItem>
-{
-new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
-};
-    roles.AddRange(EnumsExtensions.ToList<Role>().Select(x => new SelectListItem
-    {
-        Text = ((Role)x).GetDisplayName(),
-        Value = x.ToString(),
-    }).ToList());
+    var roles = SelectItemExtensions.ToSelectList<Role>().AddNone();
 }
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="/@nameof(Manage)/@nameof(User)/Add">@SharedLocalizer["NewUser"]</a>
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewUser"]</a>
         </widget-header>
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center margin-bottomed">
                 <div class="col-12">
                     <form method="post" class="widget mini-widget bg-white">
+                        <input asp-for="SearchInput.PageNo" />
                         <widget-header title="@SharedLocalizer["Search"]"></widget-header>
                         <section class="container-fluid margin-bottomed">
                             <div class="row">
@@ -73,7 +66,6 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
 
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
-                    //                    var hasNoProperties = item.Properties <= 0 ? "disabled" : "";
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
@@ -91,17 +83,17 @@ new SelectListItem {Value = null, Text = SharedLocalizer["Unknown"]}
                                     {
                                         <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Address</span>
                                     }
-                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Index" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
+                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
                             </div>
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
-                                    <a asp-page="/@nameof(Manage)/@nameof(User)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
 
                                     if (User.Identity.Name != item.Username)
                                     {
-                                        <a asp-controller="Remove" asp-action="UserDeActivateAsync" asp-route-id="@item.Id" asp-route-pageNo="@Model.PageNo" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                        <a asp-controller="Remove" asp-action="UserDeActivateAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                     }
                                 }
                             </div>

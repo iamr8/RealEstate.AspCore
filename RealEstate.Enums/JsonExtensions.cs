@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using RealEstate.Domain.Base;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,12 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace RealEstate.Extensions
+namespace RealEstate.Base
 {
     public static class JsonExtensions
     {
         public static string JsonConversion<TEntity, TModel>(this ICollection<TEntity> model, Func<TEntity, TModel> mapTo, bool includeDeletedItems = true)
-            where TEntity : BaseEntity
         {
             if (model?.Any() != true)
                 return "[]";

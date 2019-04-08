@@ -1,27 +1,41 @@
-﻿@model JsonSelectorViewModel
-
+﻿@using System.Globalization
+@using RestSharp.Extensions
+@model JsonSelectorViewModel
 @if (Model?.SelectListItems?.Any() == true)
 {
+    var selectId = $"{Model.ModelName}_{Model.ItemName}_Select";
+    var submitId = $"{Model.ModelName}_{Model.ItemName}_Submit";
+    var valueId = $"{Model.ModelName}_{Model.ItemName}_Value";
+    var jsonInput = $"{Model.ModelName}_{Model.Json}";
+    var wrapperClass = Model.ItemName.ToCamelCase(CultureInfo.CurrentCulture);
+    var itemSelectorClass = $"{wrapperClass}-item";
+
     <div class="row justify-content-center align-items-center">
         <div class="col-12">
             <div class="widget mini-widget">
-                <widget-header title="@Model.LocalizerName"></widget-header>
+                <widget-header title="@Model.Title"></widget-header>
                 <section class="container-fluid">
                     <div class="row">
-                        <div class="col-12 @Model.WrapperClass">
+                        <div class="col-12 @wrapperClass">
                             <div class="itemShow adder">
                                 <div class="detail">
                                     <div class="info">
                                         <span>
                                             <div class="row">
                                                 <div class="col-5">
-                                                    <select class="form-control d-inline-block" id="@Model.SelectId" asp-items="@Model.SelectListItems"></select>
+                                                    <select class="form-control d-inline-block" id="@selectId" asp-items="@Model.SelectListItems"></select>
                                                 </div>
+                                                @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                                                {
+                                                    <div class="col-7">
+                                                        <input type="text" id="@valueId" class="form-control d-inline-block" />
+                                                    </div>
+                                                }
                                             </div>
                                         </span>
                                     </div>
                                     <div class="button">
-                                        <button type="button" class="btn btn-sm btn-success btn-block" id="@Model.ButtonId">@Model.LocalizerButtonName</button>
+                                        <button type="button" class="btn btn-sm btn-success btn-block" id="@submitId">@SharedLocalizer["Submit"]</button>
                                     </div>
                                 </div>
                             </div>
@@ -36,11 +50,17 @@
     <script asp-cut-key="@Model.ScriptKey">
         $(document).ready(function() {
 
-            const jsonInput = $("#@Model.Json");
-            const wrapperClass = $(".@Model.WrapperClass");
-            const selectInput = $("#@Model.SelectId");
-            const submitInput = $("#@Model.ButtonId");
-            const itemSelector = "@Model.ItemSelectorClass";
+            const jsonInput = $("#@jsonInput");
+            const wrapperClass = $(".@wrapperClass");
+            const selectInput = $("#@selectId");
+            const submitInput = $("#@submitId");
+            const itemSelector = "@itemSelectorClass";
+            @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+            {
+                <text>
+                    const valueInput = $("#@valueId");
+                </text>
+            }
 
             $(jsonInput).change(function() {
 
@@ -61,6 +81,13 @@
                         const key = item.@Model.IdProperty;
                         const name = item.@Model.NameProperty;
 
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    {
+                        <text>
+                        const value = item.@Model.ValueProperty;
+                        </text>
+                    }
+
                         const anchor = document.createElement("a");
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", key);
@@ -72,6 +99,15 @@
                         const nameElement = document.createElement("span");
                         $(nameElement).html(name);
 
+                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        {
+                            <text>
+                                const badge = document.createElement("span");
+                                $(badge).addClass("badge bg-white mr-2");
+                                $(badge).html(value);
+                            </text>
+                        }
+
                         $(anchor).append(nameElement);
                         $(items).append(anchor);
 
@@ -81,6 +117,7 @@
                     (index, item) => {
                         const name = $(item).text();
                         const key = $(item).val();
+
                         const i = json.findIndex(
                             obj => obj.@Model.IdProperty === key);
                         if (i >= 0) {
@@ -109,14 +146,46 @@
                     const keyId = $(selected).attr("value");
                     const keyName = $(selected).text();
 
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    {
+                        <text>
+                            const valueElement = $(valueInput);
+                            const value = $(valueElement).val();
+                        </text>
+                    }
+
                     if (keyId === undefined || keyId === null)
                         return;
+
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        {
+                            <text>
+                                if (value === null ||
+                                    value === undefined ||
+                                    value.length <= 0)
+                        return;
+                            </text>
+                        }
 
                     const newItem = {
                         @Model.IdProperty: keyId,
                         @Model.NameProperty: keyName
+                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        {
+                            <text>
+                            , @Model.ValueProperty: value
+                            </text>
+                        }
                     };
-                    addJson(jsonInput, newItem, obj => obj.@Model.IdProperty === newItem.@Model.IdProperty);
+                addJson(jsonInput, newItem, obj => obj.@Model.IdProperty === newItem.@Model.IdProperty);
+
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        {
+                            <text>
+                                $(valueElement).val("");
+                            </text>
+                        }
+
                 }
             });
 

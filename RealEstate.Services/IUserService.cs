@@ -10,6 +10,7 @@ using RealEstate.Services.Base;
 using RealEstate.ViewModels;
 using RealEstate.ViewModels.Input;
 using RealEstate.ViewModels.Json;
+using RealEstate.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,8 +30,7 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string userId, bool save);
 
-        Task<PaginationViewModel<UserViewModel>> ListAsync(int page, string userName, string userFirst,
-            string userLast, string userMobile, string userAddress, string password, string role, string userId);
+        Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
 
         Task<bool> IsUserValidAsync(List<Claim> claims);
 
@@ -106,40 +106,42 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<PaginationViewModel<UserViewModel>> ListAsync(int page, string userName, string userFirst,
-            string userLast, string userMobile, string userAddress, string password, string role, string userId)
+        public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
         {
             var models = _users as IQueryable<User>;
 
-            if (!string.IsNullOrEmpty(userName))
-                models = models.Where(x => EF.Functions.Like(x.Username, userName.LikeExpression()));
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.Username))
+                    models = models.Where(x => EF.Functions.Like(x.Username, searchModel.Username.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(userFirst))
-                models = models.Where(x => EF.Functions.Like(x.FirstName, userFirst.LikeExpression()));
+                if (!string.IsNullOrEmpty(searchModel.FirstName))
+                    models = models.Where(x => EF.Functions.Like(x.FirstName, searchModel.FirstName.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(userLast))
-                models = models.Where(x => EF.Functions.Like(x.LastName, userLast.LikeExpression()));
+                if (!string.IsNullOrEmpty(searchModel.LastName))
+                    models = models.Where(x => EF.Functions.Like(x.LastName, searchModel.LastName.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(userMobile))
-                models = models.Where(x => EF.Functions.Like(x.Mobile, userMobile.LikeExpression()));
+                if (!string.IsNullOrEmpty(searchModel.Mobile))
+                    models = models.Where(x => EF.Functions.Like(x.Mobile, searchModel.Mobile.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(userAddress))
-                models = models.Where(x => EF.Functions.Like(x.Address, userAddress.LikeExpression()));
+                if (!string.IsNullOrEmpty(searchModel.Address))
+                    models = models.Where(x => EF.Functions.Like(x.Address, searchModel.Address.LikeExpression()));
 
-            if (!string.IsNullOrEmpty(role))
-                models = models.Where(x => x.Role.ToString() == role);
+                if (searchModel.Role != null)
+                    models = models.Where(x => x.Role == searchModel.Role);
 
-            if (!string.IsNullOrEmpty(userId))
-                models = models.Where(x => x.Id == userId);
+                if (!string.IsNullOrEmpty(searchModel.UserId))
+                    models = models.Where(x => x.Id == searchModel.UserId);
+            }
 
-            var result = await _baseService.PaginateAsync(models, page, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
                 new[]
                 {
                     Role.SuperAdmin
                 }).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
-                return default;
+                return result;
 
             var superAdmin = result.Items.Find(x => x.Username == "admin" && x.Role == Role.SuperAdmin);
             if (superAdmin?.Log?.Last() == null)

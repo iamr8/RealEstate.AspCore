@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using RealEstate.Base;
 using RealEstate.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.ViewModels.Search
 {
-    public class PropertySearchViewModel
+    public class PropertySearchViewModel : BaseSearchModel
     {
         [JsonProperty("id")]
         public string Id { get; set; }

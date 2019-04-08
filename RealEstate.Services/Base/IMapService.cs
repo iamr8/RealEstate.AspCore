@@ -13,6 +13,8 @@ namespace RealEstate.Services.Base
 
         UserCategoryJsonViewModel MapJson(UserPropertyCategory model);
 
+        List<FacilityViewModel> Map(List<Facility> model);
+
         List<FeatureViewModel> Map(List<Feature> model);
 
         UserCategoryJsonViewModel MapJson(UserItemCategory model);
@@ -24,6 +26,8 @@ namespace RealEstate.Services.Base
         List<PermissionViewModel> Map(List<Permission> model);
 
         PermissionViewModel Map(Permission model);
+
+        FacilityViewModel Map(Facility model);
 
         List<PropertyViewModel> Map(List<Property> model);
 
@@ -272,6 +276,21 @@ namespace RealEstate.Services.Base
             return result;
         }
 
+        public FacilityViewModel Map(Facility model)
+        {
+            if (model == null)
+                return default;
+
+            var result = _baseService.Map(model,
+                new FacilityViewModel
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                    Properties = model.PropertyFacilities.Count
+                });
+            return result;
+        }
+
         public FeatureViewModel Map(Feature model)
         {
             if (model == null)
@@ -408,6 +427,15 @@ namespace RealEstate.Services.Base
         }
 
         public List<ItemViewModel> Map(List<Item> model)
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = _baseService.Map(model, Map);
+            return result;
+        }
+
+        public List<FacilityViewModel> Map(List<Facility> model)
         {
             if (model?.Any() != true)
                 return default;

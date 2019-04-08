@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RealEstate.Extensions;
 using System.Threading.Tasks;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services;
 using RealEstate.Services.Base;
