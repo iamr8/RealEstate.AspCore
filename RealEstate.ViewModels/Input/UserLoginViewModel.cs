@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using RealEstate.Resources;
-using System.ComponentModel.DataAnnotations;
 
-namespace RealEstate.ViewModels
+namespace RealEstate.ViewModels.Input
 {
     public class UserLoginViewModel
     {

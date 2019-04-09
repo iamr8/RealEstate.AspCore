@@ -1,10 +1,32 @@
 ﻿using RealEstate.Base;
+using RealEstate.Domain.Tables;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.ViewModels
 {
-    public class PropertyViewModel : BaseLogViewModel
+    public class PropertyViewModel : BaseLogViewModel<Property>
     {
+        public PropertyViewModel(Property model) : base(model)
+        {
+            if (model == null)
+                return;
+
+            Street = model.Street;
+            Id = model.Id;
+            Alley = model.Alley;
+            BuildingName = model.BuildingName;
+            Number = model.Number;
+            Floor = model.Floor;
+            Flat = model.Flat;
+            Deals = model.Items.Sum(x => x.ItemRequests.Count(c => c.Deal?.Id != null));
+            Description = model.Description;
+        }
+
+        public PropertyViewModel()
+        {
+        }
+
         public string Street { get; set; }
 
         public string Alley { get; set; }

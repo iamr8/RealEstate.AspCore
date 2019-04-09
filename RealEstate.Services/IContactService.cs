@@ -56,20 +56,20 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
+
         private readonly DbSet<Contact> _contacts;
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Ownership> _ownerships;
 
         public ContactService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService,
-            IMapService mapService
+            IBaseService baseService
+
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
+
             _contacts = _unitOfWork.Set<Contact>();
             _applicants = _unitOfWork.Set<Applicant>();
             _ownerships = _unitOfWork.Set<Ownership>();
@@ -164,12 +164,11 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var query = _applicants.Where(x => x.Id == id);
-            var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = _mapService.Map(model);
-            if (viewModel == null)
+            var model = await ApplicantEntityAsync(id).ConfigureAwait(false);
+            if (model == null)
                 return default;
 
+            var viewModel = new ApplicantViewModel(model);
             var result = new ApplicantInputViewModel
             {
                 Id = viewModel.Id,
@@ -179,7 +178,7 @@ namespace RealEstate.Services
                 Address = viewModel.Address,
                 Mobile = viewModel.Contact.Mobile,
                 Phone = viewModel.Phone,
-                ApplicantFeaturesJson = viewModel.Features.JsonConversion(),
+                ApplicantFeaturesJson = viewModel.ApplicantFeatures.JsonConversion(),
             };
             return result;
         }
@@ -187,14 +186,26 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
         {
             var models = _applicants as IQueryable<Applicant>;
-            models = models.Include(x => x.ApplicantFeatures);
+            models = models.Include(x => x.ApplicantFeatures)
+                .ThenInclude(x => x.Applicant);
+            models = models.Include(x => x.Contact);
             models = models.Include(x => x.Logs);
 
             if (searchModel != null)
             {
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => new ApplicantViewModel(item)
+                    .Include(model =>
+                    {
+                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity => new FeatureValueViewModel(propEntity).Include(x =>
+                        {
+                            x.Feature = new FeatureViewModel(x.Entity.Feature);
+                        })).ToList();
+                        model.Contact = new ContactViewModel(model.Entity.Contact);
+                    })
+                ,
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin
@@ -211,12 +222,19 @@ namespace RealEstate.Services
             models = models.Include(x => x.Applicants);
             models = models.Include(x => x.Smses);
             models = models.Include(x => x.Ownerships);
+            models = models.Where(x => x.Ownerships.Count > 0 || x.Applicants.Any(c => c.ItemRequest.Deal != null));
 
             if (searchModel != null)
             {
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => new ContactViewModel(item)
+                    .Include(model =>
+                    {
+                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity)).ToList();
+                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity)).ToList();
+                    }),
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin
@@ -380,10 +398,7 @@ namespace RealEstate.Services
                 () =>
                 {
                     entity.MobileNumber = model.Mobile;
-                }, new[]
-                {
-                    Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, null, save, StatusEnum.UserIsNull).ConfigureAwait(false);
             return updateStatus;
         }
     }

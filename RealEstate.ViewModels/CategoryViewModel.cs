@@ -1,12 +1,27 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Domain.Tables;
 using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class CategoryViewModel : BaseLogViewModel
+    public class CategoryViewModel : BaseLogViewModel<Category>
     {
+        public CategoryViewModel(Category entity) : base(entity)
+        {
+            if (entity == null)
+                return;
+
+            Name = entity.Name;
+            Type = entity.Type;
+            Id = entity.Id;
+        }
+
+        public CategoryViewModel()
+        {
+        }
+
         [JsonProperty("nm")]
         public string Name { get; set; }
 

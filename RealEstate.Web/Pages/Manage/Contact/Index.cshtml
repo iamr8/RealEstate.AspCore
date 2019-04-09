@@ -3,9 +3,8 @@
 
 <div class="col-12">
     <div class="widget">
-        <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewApplicant"]</a>
-        </widget-header>
+        <widget-header title="@Model.PageTitle" />
+        
         <section class="container-fluid">
 
             @if (Model.List.Items?.Any() == true)
@@ -14,30 +13,16 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
-                                @*<span>
+                                <span>
                                     <b class="title">
                                         @item.Name
                                     </b>
-                                    <span class="badge badge-secondary">@item.Type.GetDisplayName()</span>
-                                    <a href="tel:@item.Contact?.Mobile" class="badge badge-primary">@item.Contact?.Mobile</a>
-                                    @if (!string.IsNullOrEmpty(item.Phone))
-                                    {
-                                        <span class="badge badge-secondary">@item.Phone</span>
-                                    }
-                                    @if (!string.IsNullOrEmpty(item.Address))
-                                    {
-                                        <span class="badge badge-warning">@item.Address</span>
-                                    }
+                                    <a href="tel:@item.Mobile" class="badge badge-primary">@item.Mobile</a>
                                 </span>
-                                @if (!string.IsNullOrEmpty(item.Description))
-                                {
-                                    <span class="text-gray text-justify description">
-                                        @item.Description
-                                    </span>
-                                }*@
                             </div>
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
@@ -49,7 +34,7 @@
                         </div>
                         @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                         {
-                            <vc:log logs="@item.Log"></vc:log>
+                            <vc:log logs="@item.Logs"></vc:log>
                         }
                     </div>
                 }

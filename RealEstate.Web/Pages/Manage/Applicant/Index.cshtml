@@ -32,6 +32,15 @@
                                         <span class="badge badge-warning">@item.Address</span>
                                     }
                                 </span>
+                                @if (item.ApplicantFeatures?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var feature in item.ApplicantFeatures)
+                                        {
+                                            <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value</span>
+                                        }
+                                    </span>
+                                }
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {
                                     <span class="text-gray text-justify description">
@@ -49,7 +58,7 @@
                         </div>
                         @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                         {
-                            <vc:log logs="@item.Log"></vc:log>
+                            <vc:log logs="@item.Logs"></vc:log>
                         }
                     </div>
                 }

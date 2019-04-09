@@ -32,7 +32,33 @@
                     <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
                 </div>
             </div>
-            <vc:person-creator model="@Model.NewApplicant"></vc:person-creator>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md-4 margin-bottomed">
+                    <label asp-for="NewApplicant.Name" class="control-label"></label>
+                    <input asp-for="NewApplicant.Name" class="form-control" />
+                    <span asp-validation-for="NewApplicant.Name" class="text-danger"></span>
+                </div>
+                <div class="col-6 col-md-4 margin-bottomed">
+                    <label asp-for="NewApplicant.Mobile" class="control-label"></label>
+                    <input asp-for="NewApplicant.Mobile" class="form-control" />
+                    <span asp-validation-for="NewApplicant.Mobile" class="text-danger"></span>
+                </div>
+                <div class="col-6 col-md-4 margin-bottomed">
+                    <label asp-for="NewApplicant.Phone" class="control-label"></label>
+                    <input asp-for="NewApplicant.Phone" class="form-control" />
+                    <span asp-validation-for="NewApplicant.Phone" class="text-danger"></span>
+                </div>
+                <div class="col-12 margin-bottomed">
+                    <label asp-for="NewApplicant.Address" class="control-label"></label>
+                    <input asp-for="NewApplicant.Address" class="form-control" />
+                    <span asp-validation-for="NewApplicant.Address" class="text-danger"></span>
+                </div>
+                <div class="col-12 margin-bottomed">
+                    <label asp-for="NewApplicant.Description" class="control-label"></label>
+                    <input asp-for="NewApplicant.Description" class="form-control" />
+                    <span asp-validation-for="NewApplicant.Description" class="text-danger"></span>
+                </div>
+            </div>
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">
                     <input asp-for="NewApplicant.ApplicantFeaturesJson" />

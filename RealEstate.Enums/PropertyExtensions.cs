@@ -97,7 +97,7 @@ namespace RealEstate.Base
             return type;
         }
 
-        public static PropertyInfo GetProperty<TModel>(this Expression<Func<TModel, object>> expression)
+        public static PropertyInfo GetProperty<TSource, TModel>(this Expression<Func<TSource, List<TModel>>> expression)
         {
             var lambdaExpression = expression as LambdaExpression;
             var memberExpression = lambdaExpression.Body is UnaryExpression unaryExpression
@@ -105,6 +105,21 @@ namespace RealEstate.Base
                 : (MemberExpression)lambdaExpression.Body;
 
             return memberExpression.Member as PropertyInfo;
+        }
+
+        public static PropertyInfo GetProperty<TSource, TModel>(this Expression<Func<TSource, TModel>> expression)
+        {
+            var lambdaExpression = expression as LambdaExpression;
+            var memberExpression = lambdaExpression.Body is UnaryExpression unaryExpression
+                ? (MemberExpression)unaryExpression.Operand
+                : (MemberExpression)lambdaExpression.Body;
+
+            return memberExpression.Member as PropertyInfo;
+        }
+
+        public static PropertyInfo GetProperty<TModel>(this Expression<Func<TModel, object>> expression)
+        {
+            return expression.GetProperty<TModel, object>();
         }
 
         public static bool HasBaseType(this Type type, Type baseType)

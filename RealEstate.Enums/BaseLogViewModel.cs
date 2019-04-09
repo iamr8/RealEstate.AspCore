@@ -6,12 +6,26 @@ using System.Linq;
 
 namespace RealEstate.Base
 {
-    public class BaseLogViewModel : BaseViewModel
+    public class BaseLogViewModel<TEntity> : BaseViewModel where TEntity : class
     {
-        [JsonIgnore]
-        public LogViewModel Log { get; set; }
+        public readonly TEntity Entity;
 
-        public bool IsDeleted => Log?.Last()?.Type == LogTypeEnum.Delete;
+        protected BaseLogViewModel(TEntity entity)
+        {
+            if (entity == null)
+                return;
+
+            Entity = entity;
+        }
+
+        public BaseLogViewModel()
+        {
+        }
+
+        [JsonIgnore]
+        public LogViewModel Logs { get; set; }
+
+        public bool IsDeleted => Logs?.Last()?.Type == LogTypeEnum.Delete;
     }
 
     public static class BaseTrackExtension

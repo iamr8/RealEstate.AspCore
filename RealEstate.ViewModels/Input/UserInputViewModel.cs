@@ -49,17 +49,17 @@ namespace RealEstate.ViewModels.Input
         [HiddenInput]
         public string UserPropertyCategoriesJson { get; set; }
 
-        public List<UserCategoryJsonViewModel> UserPropertyCategories =>
+        public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories =>
             string.IsNullOrEmpty(UserPropertyCategoriesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<UserCategoryJsonViewModel>>(UserPropertyCategoriesJson);
+                : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
 
         [HiddenInput]
         public string UserItemCategoriesJson { get; set; }
 
-        public List<UserCategoryJsonViewModel> UserItemCategories =>
+        public List<UserPropertyCategoryJsonViewModel> UserItemCategories =>
             string.IsNullOrEmpty(UserItemCategoriesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<UserCategoryJsonViewModel>>(UserItemCategoriesJson);
+                : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserItemCategoriesJson);
     }
 }

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using RealEstate.Base;
+﻿using RealEstate.Base;
+using RealEstate.Domain.Tables;
+using System.Collections.Generic;
 
 namespace RealEstate.ViewModels
 {
-    public class ItemViewModel : BaseLogViewModel
+    public class ItemViewModel : BaseLogViewModel<Item>
     {
         public string Description { get; set; }
 

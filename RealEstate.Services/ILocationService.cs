@@ -35,18 +35,15 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly DbSet<District> _districts;
 
         public LocationService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService,
-            IMapService mapService
+            IBaseService baseService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
             _districts = _unitOfWork.Set<District>();
         }
 
@@ -61,7 +58,8 @@ namespace RealEstate.Services
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => new DistrictViewModel(item),
                 new[]
                 {
                     Role.Admin, Role.SuperAdmin
@@ -148,10 +146,7 @@ namespace RealEstate.Services
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = _mapService.Map(model);
-            if (viewModel == null)
-                return default;
-
+            var viewModel = new DistrictViewModel(model);
             var result = new DistrictInputViewModel
             {
                 Id = viewModel.Id,

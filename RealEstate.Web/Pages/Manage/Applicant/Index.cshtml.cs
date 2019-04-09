@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
@@ -29,16 +30,18 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 
         public PaginationViewModel<ApplicantViewModel> List { get; set; }
 
-        [ViewData]
+        public string Status { get; set; }
+
         public string PageTitle => _localizer["Applicants"];
 
-        public async Task OnGetAsync(string pageNo)
+        public async Task OnGetAsync(string pageNo, string status)
         {
             SearchInput = new ApplicantSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber()
             };
 
+            Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;
             List = await _contactService.ApplicantListAsync(SearchInput).ConfigureAwait(false);
         }
 

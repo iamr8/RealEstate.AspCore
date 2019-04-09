@@ -158,8 +158,9 @@ namespace RealEstate.Services.Base
             if (!IsAllowed(allowedRoles))
                 return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
-            _unitOfWork.Add(entity, currentUser.Id);
-            return await SaveChangesAsync(entity.Invoke(currentUser), save).ConfigureAwait(false);
+            var finalEntity = entity.Invoke(currentUser);
+            _unitOfWork.Add(finalEntity, currentUser.Id);
+            return await SaveChangesAsync(finalEntity, save).ConfigureAwait(false);
         }
 
         public async Task<(StatusEnum, TSource)> AddAsync<TSource>(TSource entity,
@@ -213,8 +214,8 @@ namespace RealEstate.Services.Base
             if (entityLogProperty == null || !(entityLogProperty.GetValue(model) is ICollection<Log> entityTracks))
                 return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 
-            var templateViewModel = new BaseLogViewModel();
-            var viewModelLogProperty = viewModel.GetType().GetProperty(nameof(templateViewModel.Log));
+            var templateViewModel = new BaseLogViewModel<TSource>();
+            var viewModelLogProperty = viewModel.GetType().GetProperty(nameof(templateViewModel.Logs));
             if (viewModelLogProperty == null || viewModelLogProperty.PropertyType != typeof(LogViewModel))
                 return new ValueTuple<TModel, List<LogUserViewModel>>(viewModel, users);
 

@@ -7,8 +7,8 @@
 
     var userPropertySelector = new JsonSelectorViewModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
+        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
         ModelName = nameof(Model.NewUser),
         ItemName = nameof(Model.NewUser.UserPropertyCategories),
         Json = nameof(Model.NewUser.UserPropertyCategoriesJson),
@@ -23,8 +23,8 @@
 
     var userItemSelector = new JsonSelectorViewModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserCategoryJsonViewModel>(x => x.Name),
+        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
         ModelName = nameof(Model.NewUser),
         ItemName = nameof(Model.NewUser.UserItemCategories),
         Json = nameof(Model.NewUser.UserItemCategoriesJson),

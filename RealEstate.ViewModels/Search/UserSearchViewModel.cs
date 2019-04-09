@@ -1,6 +1,7 @@
 ﻿using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
+using RealEstate.Domain.Tables;
 using RealEstate.Resources;
 using System.ComponentModel.DataAnnotations;
 
@@ -8,6 +9,29 @@ namespace RealEstate.ViewModels.Search
 {
     public class UserSearchViewModel : BaseSearchModel
     {
+        private readonly User _model;
+
+        public UserSearchViewModel()
+        {
+        }
+
+        public UserSearchViewModel(User model, int pageNo)
+        {
+            if (model == null)
+                return;
+
+            _model = model;
+            PageNo = pageNo;
+            UserId = _model.Id;
+            FirstName = _model.FirstName;
+            LastName = _model.LastName;
+            Username = _model.Username;
+            Password = _model.Password;
+            Mobile = _model.Mobile;
+            Address = _model.Address;
+            Role = _model.Role;
+        }
+
         [Display(ResourceType = typeof(SharedResource), Name = "Id")]
         [SearchParameter("userId")]
         public string UserId { get; set; }

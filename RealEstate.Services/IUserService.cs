@@ -45,7 +45,6 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly DbSet<User> _users;
         private readonly DbSet<Log> _logs;
         private readonly DbSet<FixedSalary> _fixedSalaries;
@@ -55,13 +54,11 @@ namespace RealEstate.Services
         public UserService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IMapService mapService,
             IHttpContextAccessor httpContextAccessor
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
             _logs = _unitOfWork.Set<Log>();
@@ -88,8 +85,8 @@ namespace RealEstate.Services
                     Username = model.Username,
                     Address = model.Address,
                     Phone = model.Phone,
-                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(_mapService.MapJson),
-                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(_mapService.MapJson),
+                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(x => new UserItemCategoryJsonViewModel(x)),
+                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(x => new UserPropertyCategoryJsonViewModel(x)),
                     FixedSalary = model.FixedSalaries.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Value ?? 0
                 });
             return result;
@@ -134,7 +131,8 @@ namespace RealEstate.Services
                     models = models.Where(x => x.Id == searchModel.UserId);
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1, _mapService.Map,
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => new UserViewModel(item),
                 new[]
                 {
                     Role.SuperAdmin
@@ -144,16 +142,16 @@ namespace RealEstate.Services
                 return result;
 
             var superAdmin = result.Items.Find(x => x.Username == "admin" && x.Role == Role.SuperAdmin);
-            if (superAdmin?.Log?.Last() == null)
+            if (superAdmin?.Logs?.Last() == null)
                 return result;
 
-            var tempTracks = superAdmin.Log;
-            var creationTrack = tempTracks.Create;
+            var tempLogs = superAdmin.Logs;
+            var creationTrack = tempLogs.Create;
             if (creationTrack == null)
                 return result;
 
-            tempTracks.Create = null;
-            superAdmin.Log = tempTracks;
+            tempLogs.Create = null;
+            superAdmin.Logs = tempLogs;
             return result;
         }
 
