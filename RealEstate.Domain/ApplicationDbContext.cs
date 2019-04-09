@@ -39,6 +39,7 @@ namespace RealEstate.Domain
         public virtual DbSet<PropertyFacility> PropertyFacility { get; set; }
         public virtual DbSet<PropertyFeature> PropertyFeature { get; set; }
         public virtual DbSet<PropertyOwnership> PropertyOwnership { get; set; }
+        public virtual DbSet<Reminder> Reminder { get; set; }
         public virtual DbSet<Sms> Sms { get; set; }
         public virtual DbSet<SmsTemplate> SmsTemplate { get; set; }
 
@@ -50,7 +51,7 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-//            modelBuilder.SeedDatabase();
+            //            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }

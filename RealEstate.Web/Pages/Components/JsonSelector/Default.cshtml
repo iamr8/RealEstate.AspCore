@@ -22,13 +22,16 @@
                                     <div class="info">
                                         <span>
                                             <div class="row">
-                                                <div class="col-5">
+                                                @{
+                                                    var size = !string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId) ? "col-5" : "col-12";
+                                                }
+                                                <div class="@size">
                                                     <select class="form-control d-inline-block" id="@selectId" asp-items="@Model.SelectListItems"></select>
                                                 </div>
                                                 @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
                                                 {
                                                     <div class="col-7">
-                                                        <input type="text" id="@valueId" class="form-control d-inline-block" />
+                                                        <input type="text" id="@valueId" class="form-control d-inline-block"/>
                                                     </div>
                                                 }
                                             </div>

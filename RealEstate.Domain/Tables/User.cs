@@ -18,6 +18,7 @@ namespace RealEstate.Domain.Tables
             Smses = new HashSet<Sms>();
             Permissions = new HashSet<Permission>();
             FixedSalaries = new HashSet<FixedSalary>();
+            Reminders = new HashSet<Reminder>();
         }
 
         [Required]
@@ -52,5 +53,6 @@ namespace RealEstate.Domain.Tables
         public virtual ICollection<Sms> Smses { get; set; }
         public virtual ICollection<Permission> Permissions { get; set; }
         public virtual ICollection<FixedSalary> FixedSalaries { get; set; }
+        public virtual ICollection<Reminder> Reminders { get; set; }
     }
 }
