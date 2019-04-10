@@ -6,11 +6,14 @@ namespace RealEstate.Base
 {
     public class LogJsonEntity
     {
+        [JsonProperty("i")]
+        public string UserId { get; set; }
+
         [JsonProperty("n")]
-        public string Name { get; set; }
+        public string UserFullName { get; set; }
 
         [JsonProperty("m")]
-        public string Mobile { get; set; }
+        public string UserMobile { get; set; }
 
         [JsonProperty("d")]
         public DateTime DateTime { get; set; }

@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Extensions", "RealEstate.Extensions\RealEstate.Extensions.csproj", "{F15C382B-22D9-4CEE-AF81-FA69B762FB2D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Domain", "RealEstate.Domain\RealEstate.Domain.csproj", "{0A909CF5-B080-49EC-9B51-51F0DB8BAA90}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Base", "RealEstate.Enums\RealEstate.Base.csproj", "{643E16B0-F4EF-43D8-809F-BEB4FAA3286A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Services", "RealEstate.Services\RealEstate.Services.csproj", "{67096874-580D-4F5A-A1ED-4E457178037C}"
@@ -21,14 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F15C382B-22D9-4CEE-AF81-FA69B762FB2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F15C382B-22D9-4CEE-AF81-FA69B762FB2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F15C382B-22D9-4CEE-AF81-FA69B762FB2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F15C382B-22D9-4CEE-AF81-FA69B762FB2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A909CF5-B080-49EC-9B51-51F0DB8BAA90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A909CF5-B080-49EC-9B51-51F0DB8BAA90}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A909CF5-B080-49EC-9B51-51F0DB8BAA90}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A909CF5-B080-49EC-9B51-51F0DB8BAA90}.Release|Any CPU.Build.0 = Release|Any CPU
 		{643E16B0-F4EF-43D8-809F-BEB4FAA3286A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{643E16B0-F4EF-43D8-809F-BEB4FAA3286A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{643E16B0-F4EF-43D8-809F-BEB4FAA3286A}.Release|Any CPU.ActiveCfg = Release|Any CPU

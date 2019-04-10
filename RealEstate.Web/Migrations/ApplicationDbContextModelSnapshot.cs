@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RealEstate.Domain;
+using RealEstate.Services.Database;
 
 namespace RealEstate.Web.Migrations
 {
@@ -16,16 +16,18 @@ namespace RealEstate.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Applicant", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Applicant", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Address");
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("ContactId")
                         .IsRequired();
@@ -59,13 +61,15 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Applicant");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ApplicantFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ApplicantFeature", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("ApplicantId")
                         .IsRequired();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -86,10 +90,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("ApplicantFeature");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Beneficiary", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Beneficiary", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<int>("CommissionPercent");
 
@@ -114,10 +120,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Beneficiary");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Category", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Category", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -133,10 +141,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Contact", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Contact", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -150,10 +160,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Contact");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Deal", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Deal", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -172,10 +184,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Deal");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.DealPayment", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.DealPayment", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<decimal>("CommissionPrice");
 
@@ -199,10 +213,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("DealPayment");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.District", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.District", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -216,10 +232,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("District");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Facility", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Facility", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -233,10 +251,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Facility");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Feature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Feature", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -252,10 +272,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Feature");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.FixedSalary", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.FixedSalary", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -273,10 +295,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("FixedSalary");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Item", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Item", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("CategoryId")
                         .IsRequired();
@@ -299,10 +323,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Item");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ItemFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ItemFeature", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -326,10 +352,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("ItemFeature");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ItemRequest", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ItemRequest", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -349,147 +377,14 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("ItemRequest");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Log", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<string>("ApplicantFeatureId");
-
-                    b.Property<string>("ApplicantId");
-
-                    b.Property<string>("BeneficiaryId");
-
-                    b.Property<string>("CategoryId");
-
-                    b.Property<string>("ContactId");
-
-                    b.Property<string>("CreatorId")
-                        .IsRequired();
-
-                    b.Property<DateTime>("DateTime")
-                        .ValueGeneratedOnAdd()
-                        .HasDefaultValueSql("getdate()");
-
-                    b.Property<string>("DealId");
-
-                    b.Property<string>("DealPaymentId");
-
-                    b.Property<string>("DistrictId");
-
-                    b.Property<string>("FacilityId");
-
-                    b.Property<string>("FeatureId");
-
-                    b.Property<string>("FixedSalaryId");
-
-                    b.Property<string>("ItemFeatureId");
-
-                    b.Property<string>("ItemId");
-
-                    b.Property<string>("ItemRequestId");
-
-                    b.Property<string>("LogId");
-
-                    b.Property<string>("OwnershipId");
-
-                    b.Property<string>("PaymentId");
-
-                    b.Property<string>("PermissionId");
-
-                    b.Property<string>("PictureId");
-
-                    b.Property<string>("PropertyFacilityId");
-
-                    b.Property<string>("PropertyFeatureId");
-
-                    b.Property<string>("PropertyId");
-
-                    b.Property<string>("PropertyOwnershipId");
-
-                    b.Property<string>("ReminderId");
-
-                    b.Property<string>("SmsId");
-
-                    b.Property<string>("SmsTemplateId");
-
-                    b.Property<int>("Type");
-
-                    b.Property<string>("UserId");
-
-                    b.Property<string>("UserItemCategoryId");
-
-                    b.Property<string>("UserPropertyCategoryId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicantFeatureId");
-
-                    b.HasIndex("ApplicantId");
-
-                    b.HasIndex("BeneficiaryId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("ContactId");
-
-                    b.HasIndex("DealId");
-
-                    b.HasIndex("DealPaymentId");
-
-                    b.HasIndex("DistrictId");
-
-                    b.HasIndex("FacilityId");
-
-                    b.HasIndex("FeatureId");
-
-                    b.HasIndex("FixedSalaryId");
-
-                    b.HasIndex("ItemFeatureId");
-
-                    b.HasIndex("ItemId");
-
-                    b.HasIndex("ItemRequestId");
-
-                    b.HasIndex("LogId");
-
-                    b.HasIndex("OwnershipId");
-
-                    b.HasIndex("PaymentId");
-
-                    b.HasIndex("PermissionId");
-
-                    b.HasIndex("PictureId");
-
-                    b.HasIndex("PropertyFacilityId");
-
-                    b.HasIndex("PropertyFeatureId");
-
-                    b.HasIndex("PropertyId");
-
-                    b.HasIndex("PropertyOwnershipId");
-
-                    b.HasIndex("ReminderId");
-
-                    b.HasIndex("SmsId");
-
-                    b.HasIndex("SmsTemplateId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserItemCategoryId");
-
-                    b.HasIndex("UserPropertyCategoryId");
-
-                    b.ToTable("Log");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Tables.Ownership", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Ownership", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Address");
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("ContactId")
                         .IsRequired();
@@ -518,10 +413,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Ownership");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Payment", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Payment", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -543,10 +440,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Payment");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Permission", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Permission", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -566,10 +465,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Permission");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Picture", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Picture", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -601,12 +502,14 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Picture");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Property", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Property", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Alley");
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("BuildingName");
 
@@ -641,10 +544,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Property");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyFacility", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyFacility", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -665,10 +570,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("PropertyFacility");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyFeature", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -692,10 +599,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("PropertyFeature");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyOwnership", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyOwnership", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -711,12 +620,14 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("PropertyOwnership");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Reminder", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Reminder", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("AlarmTime");
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -734,10 +645,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Reminder");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Sms", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Sms", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("ContactId");
 
@@ -772,10 +685,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("Sms");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.SmsTemplate", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.SmsTemplate", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -788,13 +703,15 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("SmsTemplate");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.User", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.User", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Address")
                         .IsRequired();
+
+                    b.Property<string>("Audit");
 
                     b.Property<DateTime>("DateTime")
                         .ValueGeneratedOnAdd()
@@ -829,12 +746,30 @@ namespace RealEstate.Web.Migrations
                         .IsUnique();
 
                     b.ToTable("User");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "63de9bc0-3285-4ba9-9374-6518389b25ec",
+                            Address = "باهنر",
+                            Audit = "[{\"i\":null,\"n\":null,\"m\":null,\"d\":\"2019-04-10T23:14:05.2315564+04:30\",\"t\":0}]",
+                            DateTime = new DateTime(2019, 4, 10, 23, 14, 5, 200, DateTimeKind.Local).AddTicks(2037),
+                            FirstName = "هانی",
+                            LastName = "موسی زاده",
+                            Mobile = "09166000341",
+                            Password = "YmAdyc6Ph9PNcJOLeira6w==",
+                            Phone = "33379367",
+                            Role = 2,
+                            Username = "admin"
+                        });
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.UserItemCategory", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.UserItemCategory", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("CategoryId")
                         .IsRequired();
@@ -855,10 +790,12 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("UserItemCategory");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.UserPropertyCategory", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.UserPropertyCategory", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
 
                     b.Property<string>("CategoryId")
                         .IsRequired();
@@ -879,362 +816,243 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("UserPropertyCategory");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Applicant", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Applicant", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
+                    b.HasOne("RealEstate.Services.Database.Tables.Contact", "Contact")
                         .WithMany("Applicants")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.ItemRequest", "ItemRequest")
+                    b.HasOne("RealEstate.Services.Database.Tables.ItemRequest", "ItemRequest")
                         .WithMany("Applicants")
                         .HasForeignKey("ItemRequestId");
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Applicants")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ApplicantFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ApplicantFeature", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Applicant", "Applicant")
+                    b.HasOne("RealEstate.Services.Database.Tables.Applicant", "Applicant")
                         .WithMany("ApplicantFeatures")
                         .HasForeignKey("ApplicantId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
+                    b.HasOne("RealEstate.Services.Database.Tables.Feature", "Feature")
                         .WithMany("ApplicantFeatures")
                         .HasForeignKey("FeatureId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Beneficiary", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Beneficiary", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Deal", "Deal")
+                    b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
                         .WithMany("Beneficiaries")
                         .HasForeignKey("DealId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Beneficiaries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Deal", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Deal", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.ItemRequest", "ItemRequest")
+                    b.HasOne("RealEstate.Services.Database.Tables.ItemRequest", "ItemRequest")
                         .WithOne("Deal")
-                        .HasForeignKey("RealEstate.Domain.Tables.Deal", "ItemRequestId");
+                        .HasForeignKey("RealEstate.Services.Database.Tables.Deal", "ItemRequestId");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.DealPayment", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.DealPayment", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Deal", "Deal")
+                    b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
                         .WithMany("DealPayments")
                         .HasForeignKey("DealId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.FixedSalary", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.FixedSalary", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("FixedSalaries")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Item", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Item", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                    b.HasOne("RealEstate.Services.Database.Tables.Category", "Category")
                         .WithMany("Items")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                    b.HasOne("RealEstate.Services.Database.Tables.Property", "Property")
                         .WithMany("Items")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ItemFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ItemFeature", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
+                    b.HasOne("RealEstate.Services.Database.Tables.Feature", "Feature")
                         .WithMany("ItemFeatures")
                         .HasForeignKey("FeatureId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.Item", "Item")
+                    b.HasOne("RealEstate.Services.Database.Tables.Item", "Item")
                         .WithMany("ItemFeatures")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.ItemRequest", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.ItemRequest", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Item", "Item")
+                    b.HasOne("RealEstate.Services.Database.Tables.Item", "Item")
                         .WithMany("ItemRequests")
                         .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Log", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Ownership", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.ApplicantFeature", "ApplicantFeature")
-                        .WithMany("Logs")
-                        .HasForeignKey("ApplicantFeatureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Applicant", "Applicant")
-                        .WithMany("Logs")
-                        .HasForeignKey("ApplicantId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Beneficiary", "Beneficiary")
-                        .WithMany("Logs")
-                        .HasForeignKey("BeneficiaryId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
-                        .WithMany("Logs")
-                        .HasForeignKey("CategoryId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
-                        .WithMany("Logs")
-                        .HasForeignKey("ContactId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Deal", "Deal")
-                        .WithMany("Logs")
-                        .HasForeignKey("DealId");
-
-                    b.HasOne("RealEstate.Domain.Tables.DealPayment", "DealPayment")
-                        .WithMany("Logs")
-                        .HasForeignKey("DealPaymentId");
-
-                    b.HasOne("RealEstate.Domain.Tables.District", "District")
-                        .WithMany("Logs")
-                        .HasForeignKey("DistrictId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Facility", "Facility")
-                        .WithMany("Logs")
-                        .HasForeignKey("FacilityId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
-                        .WithMany("Logs")
-                        .HasForeignKey("FeatureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.FixedSalary", "FixedSalary")
-                        .WithMany("Logs")
-                        .HasForeignKey("FixedSalaryId");
-
-                    b.HasOne("RealEstate.Domain.Tables.ItemFeature", "ItemFeature")
-                        .WithMany("Logs")
-                        .HasForeignKey("ItemFeatureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Item", "Item")
-                        .WithMany("Logs")
-                        .HasForeignKey("ItemId");
-
-                    b.HasOne("RealEstate.Domain.Tables.ItemRequest", "ItemRequest")
-                        .WithMany("Logs")
-                        .HasForeignKey("ItemRequestId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Log")
-                        .WithMany("Logs")
-                        .HasForeignKey("LogId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Ownership", "Ownership")
-                        .WithMany("Logs")
-                        .HasForeignKey("OwnershipId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Payment", "Payment")
-                        .WithMany("Logs")
-                        .HasForeignKey("PaymentId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Permission")
-                        .WithMany("Logs")
-                        .HasForeignKey("PermissionId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Picture", "Picture")
-                        .WithMany("Logs")
-                        .HasForeignKey("PictureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.PropertyFacility", "PropertyFacility")
-                        .WithMany("Logs")
-                        .HasForeignKey("PropertyFacilityId");
-
-                    b.HasOne("RealEstate.Domain.Tables.PropertyFeature", "PropertyFeature")
-                        .WithMany("Logs")
-                        .HasForeignKey("PropertyFeatureId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
-                        .WithMany("Logs")
-                        .HasForeignKey("PropertyId");
-
-                    b.HasOne("RealEstate.Domain.Tables.PropertyOwnership", "PropertyOwnership")
-                        .WithMany("Logs")
-                        .HasForeignKey("PropertyOwnershipId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Reminder")
-                        .WithMany("Logs")
-                        .HasForeignKey("ReminderId");
-
-                    b.HasOne("RealEstate.Domain.Tables.Sms")
-                        .WithMany("Logs")
-                        .HasForeignKey("SmsId");
-
-                    b.HasOne("RealEstate.Domain.Tables.SmsTemplate", "SmsTemplate")
-                        .WithMany("Logs")
-                        .HasForeignKey("SmsTemplateId");
-
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
-                        .WithMany("Logs")
-                        .HasForeignKey("UserId");
-
-                    b.HasOne("RealEstate.Domain.Tables.UserItemCategory", "UserItemCategory")
-                        .WithMany("Logs")
-                        .HasForeignKey("UserItemCategoryId");
-
-                    b.HasOne("RealEstate.Domain.Tables.UserPropertyCategory", "UserPropertyCategory")
-                        .WithMany("Logs")
-                        .HasForeignKey("UserPropertyCategoryId");
-                });
-
-            modelBuilder.Entity("RealEstate.Domain.Tables.Ownership", b =>
-                {
-                    b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
+                    b.HasOne("RealEstate.Services.Database.Tables.Contact", "Contact")
                         .WithMany("Ownerships")
                         .HasForeignKey("ContactId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.PropertyOwnership", "PropertyOwnership")
+                    b.HasOne("RealEstate.Services.Database.Tables.PropertyOwnership", "PropertyOwnership")
                         .WithMany("Ownerships")
                         .HasForeignKey("PropertyOwnershipId");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Payment", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Payment", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Permission", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Permission", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Permissions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Picture", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Picture", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Deal", "Deal")
+                    b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
                         .WithMany("Pictures")
                         .HasForeignKey("DealId");
 
-                    b.HasOne("RealEstate.Domain.Tables.DealPayment", "DealPayment")
+                    b.HasOne("RealEstate.Services.Database.Tables.DealPayment", "DealPayment")
                         .WithMany("Pictures")
                         .HasForeignKey("DealPaymentId");
 
-                    b.HasOne("RealEstate.Domain.Tables.Payment", "Payment")
+                    b.HasOne("RealEstate.Services.Database.Tables.Payment", "Payment")
                         .WithMany("Pictures")
                         .HasForeignKey("PaymentId");
 
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                    b.HasOne("RealEstate.Services.Database.Tables.Property", "Property")
                         .WithMany("Pictures")
                         .HasForeignKey("PropertyId");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Property", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Property", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                    b.HasOne("RealEstate.Services.Database.Tables.Category", "Category")
                         .WithMany("Properties")
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("RealEstate.Domain.Tables.District", "District")
+                    b.HasOne("RealEstate.Services.Database.Tables.District", "District")
                         .WithMany("Properties")
                         .HasForeignKey("DistrictId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyFacility", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyFacility", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Facility", "Facility")
+                    b.HasOne("RealEstate.Services.Database.Tables.Facility", "Facility")
                         .WithMany("PropertyFacilities")
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                    b.HasOne("RealEstate.Services.Database.Tables.Property", "Property")
                         .WithMany("PropertyFacilities")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyFeature", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyFeature", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Feature", "Feature")
+                    b.HasOne("RealEstate.Services.Database.Tables.Feature", "Feature")
                         .WithMany("PropertyFeatures")
                         .HasForeignKey("FeatureId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                    b.HasOne("RealEstate.Services.Database.Tables.Property", "Property")
                         .WithMany("PropertyFeatures")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.PropertyOwnership", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.PropertyOwnership", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Property", "Property")
+                    b.HasOne("RealEstate.Services.Database.Tables.Property", "Property")
                         .WithMany("PropertyOwnerships")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Reminder", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Reminder", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Reminders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.Sms", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.Sms", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Contact", "Contact")
+                    b.HasOne("RealEstate.Services.Database.Tables.Contact", "Contact")
                         .WithMany("Smses")
                         .HasForeignKey("ContactId");
 
-                    b.HasOne("RealEstate.Domain.Tables.SmsTemplate", "SmsTemplate")
+                    b.HasOne("RealEstate.Services.Database.Tables.SmsTemplate", "SmsTemplate")
                         .WithMany("Smses")
                         .HasForeignKey("SmsTemplateId");
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Smses")
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.UserItemCategory", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.UserItemCategory", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                    b.HasOne("RealEstate.Services.Database.Tables.Category", "Category")
                         .WithMany("UserItemCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("UserItemCategories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("RealEstate.Domain.Tables.UserPropertyCategory", b =>
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.UserPropertyCategory", b =>
                 {
-                    b.HasOne("RealEstate.Domain.Tables.Category", "Category")
+                    b.HasOne("RealEstate.Services.Database.Tables.Category", "Category")
                         .WithMany("UserPropertyCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Domain.Tables.User", "User")
+                    b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("UserPropertyCategories")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

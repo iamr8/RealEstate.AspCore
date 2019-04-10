@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -37,28 +37,34 @@ namespace RealEstate.Services.ViewModels.Input
         [HiddenInput]
         public string OwnershipsJson { get; set; }
 
-        [Required]
-        public List<OwnershipJsonViewModel> Ownerships =>
-            string.IsNullOrEmpty(OwnershipsJson)
+        public List<OwnershipJsonViewModel> Ownerships
+        {
+            get => string.IsNullOrEmpty(OwnershipsJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<OwnershipJsonViewModel>>(OwnershipsJson);
+            set => OwnershipsJson = JsonConvert.SerializeObject(value);
+        }
 
         [HiddenInput]
         public string PropertyFeaturesJson { get; set; }
 
-        [Required]
-        public List<FeatureJsonValueViewModel> PropertyFeatures =>
-            string.IsNullOrEmpty(PropertyFeaturesJson)
+        public List<FeatureJsonValueViewModel> PropertyFeatures
+        {
+            get => string.IsNullOrEmpty(PropertyFeaturesJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(PropertyFeaturesJson);
+            set => PropertyFeaturesJson = JsonConvert.SerializeObject(value);
+        }
 
         [HiddenInput]
         public string PropertyFacilitiesJson { get; set; }
 
-        [Required]
-        public List<Json.FacilityJsonViewModel> PropertyFacilities =>
-            string.IsNullOrEmpty(PropertyFacilitiesJson)
+        public List<FacilityJsonViewModel> PropertyFacilities
+        {
+            get => string.IsNullOrEmpty(PropertyFacilitiesJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<Json.FacilityJsonViewModel>>(PropertyFacilitiesJson);
+            set => PropertyFacilitiesJson = JsonConvert.SerializeObject(value);
+        }
     }
 }

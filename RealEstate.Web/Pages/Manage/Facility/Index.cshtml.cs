@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
-using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;

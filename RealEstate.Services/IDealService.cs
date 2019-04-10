@@ -1,10 +1,12 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
+using RealEstate.Services.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
-using RealEstate.Services.ViewModels.Input;
+using Beneficiary = RealEstate.Services.Database.Tables.Beneficiary;
+using Deal = RealEstate.Services.Database.Tables.Deal;
+using DealPayment = RealEstate.Services.Database.Tables.DealPayment;
+using IUnitOfWork = RealEstate.Services.Database.IUnitOfWork;
 
 namespace RealEstate.Services
 {

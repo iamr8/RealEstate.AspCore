@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -9,7 +9,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public OwnershipViewModel(Ownership entity, bool showDeleted) : base(entity)
+        public OwnershipViewModel(Ownership entity) : base(entity)
         {
             if (entity == null)
                 return;

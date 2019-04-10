@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public ContactViewModel(Contact entity, bool showDeleted) : base(entity)
+        public ContactViewModel(Contact entity) : base(entity)
         {
             if (entity == null)
                 return;

@@ -2,11 +2,10 @@
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using RealEstate.Extensions;
+using RealEstate.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RealEstate.Base;
 
 namespace RealEstate.Web.Components
 {

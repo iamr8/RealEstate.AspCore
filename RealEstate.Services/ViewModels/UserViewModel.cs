@@ -1,6 +1,6 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 using System;
 using System.Collections.Generic;
 

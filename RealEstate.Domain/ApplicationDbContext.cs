@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using RealEstate.Base.Enums;
 using RealEstate.Domain.Tables;
 using System.Threading.Tasks;
+using RealEstate.Domain.Base;
 
 namespace RealEstate.Domain
 {
@@ -51,7 +52,7 @@ namespace RealEstate.Domain
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            //            modelBuilder.SeedDatabase();
+            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -114,7 +115,25 @@ namespace RealEstate.Domain
             findProperty.SetValue(track, id);
             Add(track);
         }
+        private void AddTrack<TEntity>(TEntity model, UserViewModel userId, LogTypeEnum type) where TEntity : BaseEntity
+        {
+            var track = new Log
+            {
+                Type = type,
+                CreatorId = userId,
+            };
 
+            var trackType = track.GetType();
+            var typeName = model.GetType().Name.Replace("Proxy", "");
+            var findProperty = trackType.GetProperty($"{typeName}Id");
+            if (findProperty == null)
+                return;
+
+            var propertyId = model.GetType().GetProperty("Id");
+            var id = propertyId.GetValue(model);
+            findProperty.SetValue(track, id);
+            Add(track);
+        }
         public TEntity Add<TEntity>(TEntity entity, string userId) where TEntity : class
         {
             var model = Add(entity);

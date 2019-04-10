@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -17,20 +17,24 @@ namespace RealEstate.Services.ViewModels.Input
         [Required]
         public string DealPaymentsJson { get; set; }
 
-        [Required]
-        public List<DealPaymentJsonViewModel> DealPayments =>
-            string.IsNullOrEmpty(DealPaymentsJson)
+        public List<DealPaymentJsonViewModel> DealPayments
+        {
+            get => string.IsNullOrEmpty(DealPaymentsJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<DealPaymentJsonViewModel>>(DealPaymentsJson);
+            set => DealPaymentsJson = JsonConvert.SerializeObject(value);
+        }
 
         [HiddenInput]
         [Required]
         public string BeneficiaryJson { get; set; }
 
-        [Required]
-        public List<BeneficiaryJsonViewModel> Beneficiaries =>
-            string.IsNullOrEmpty(BeneficiaryJson)
+        public List<BeneficiaryJsonViewModel> Beneficiaries
+        {
+            get => string.IsNullOrEmpty(BeneficiaryJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<BeneficiaryJsonViewModel>>(BeneficiaryJson);
+            set => BeneficiaryJson = JsonConvert.SerializeObject(value);
+        }
     }
 }

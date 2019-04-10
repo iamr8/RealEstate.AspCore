@@ -1,5 +1,4 @@
-﻿@using Pages.Manage.User
-@model RealEstate.Services.BaseLog.LogDetailViewModel
+﻿@model LogDetailViewModel
 
 @if (Model != null)
 {
@@ -7,6 +6,6 @@
         <b>@SharedLocalizer[Model.Type.GetDisplayName()]:</b>
         @Model.DateTime.GregorianToPersian(false, true)
         @SharedLocalizer["By"]
-        <a asp-page="@typeof(IndexModel).Page()" asp-route-userId="@Model.User.Id" target="_blank">@Model.User.FirstName @Model.User.LastName</a>
+        <a asp-page="@typeof(IndexModel).Page()" asp-route-userId="@Model.User.Id" target="_blank">@Model.User.FullName</a>
     </text>
 }

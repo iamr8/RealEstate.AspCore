@@ -1,11 +1,11 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
     public class DistrictViewModel : BaseLogViewModel<District>
     {
-        public DistrictViewModel(District model, bool showDeleted) : base(model)
+        public DistrictViewModel(District model) : base(model)
         {
             if (model == null)
                 return;

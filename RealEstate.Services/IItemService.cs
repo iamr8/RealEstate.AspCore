@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
+using RealEstate.Services.ViewModels.Input;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ViewModels.Input;
+using Item = RealEstate.Services.Database.Tables.Item;
+using ItemFeature = RealEstate.Services.Database.Tables.ItemFeature;
+using ItemRequest = RealEstate.Services.Database.Tables.ItemRequest;
+using IUnitOfWork = RealEstate.Services.Database.IUnitOfWork;
 
 namespace RealEstate.Services
 {

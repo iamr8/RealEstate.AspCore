@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.101</AssemblyVersion>
-    <FileVersion>1.0.0.101</FileVersion>
+    <AssemblyVersion>1.0.0.105</AssemblyVersion>
+    <FileVersion>1.0.0.105</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -13,12 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFSecondLevelCache.Core" Version="1.7.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="2.2.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.3">
+    <PackageReference Include="EFSecondLevelCache.Core" Version="1.7.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="2.2.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

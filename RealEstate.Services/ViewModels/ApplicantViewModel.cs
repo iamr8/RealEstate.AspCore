@@ -1,13 +1,13 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.BaseLog;
 using System.Collections.Generic;
+using Applicant = RealEstate.Services.Database.Tables.Applicant;
 
 namespace RealEstate.Services.ViewModels
 {
     public class ApplicantViewModel : BaseLogViewModel<Applicant>
     {
-        public ApplicantViewModel(Applicant entity, bool showDeleted) : base(entity)
+        public ApplicantViewModel(Applicant entity) : base(entity)
         {
             Type = Entity.Type;
             Description = Entity.Description;

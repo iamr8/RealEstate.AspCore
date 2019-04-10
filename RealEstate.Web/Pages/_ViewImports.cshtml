@@ -1,6 +1,5 @@
 @namespace RealEstate.Web.Pages
 
-@using RealEstate.Extensions
 @using RealEstate.Base
 @using RealEstate.Base.Enums
 @using RealEstate.Services
@@ -10,6 +9,9 @@
 @using RealEstate.Services.ViewModels.Input
 @using RealEstate.Services.ViewModels.Search
 @using RealEstate.Services.ViewModels.Json
+@using Pages.Manage.User
+@using RealEstate.Services.Extensions
+@using RealEstate.Services.BaseLog
 
 @using Microsoft.Extensions.Localization
 @using System.Globalization
@@ -22,7 +24,7 @@
 @inject IFeatureService FeatureService
 
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@addTagHelper *, RealEstate.Extensions.TagHelpers
-@addTagHelper *, RealEstate.Extensions
+@addTagHelper *, RealEstate.Services.TagHelpers
+@addTagHelper *, RealEstate.Services
 @addTagHelper *, RealEstate
 @addTagHelper *, RealEstate.Web

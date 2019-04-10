@@ -1,10 +1,10 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
+using RealEstate.Services.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
-using RealEstate.Services.ViewModels.Input;
+using IUnitOfWork = RealEstate.Services.Database.IUnitOfWork;
+using Payment = RealEstate.Services.Database.Tables.Payment;
 
 namespace RealEstate.Services
 {

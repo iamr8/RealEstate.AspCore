@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -19,9 +19,12 @@ namespace RealEstate.Services.ViewModels.Input
 
         public string ApplicantsJson { get; set; }
 
-        public List<ApplicantJsonViewModel> Applicants =>
-            string.IsNullOrEmpty(ApplicantsJson)
+        public List<ApplicantJsonViewModel> Applicants
+        {
+            get => string.IsNullOrEmpty(ApplicantsJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<ApplicantJsonViewModel>>(ApplicantsJson);
+            set => ApplicantsJson = JsonConvert.SerializeObject(value);
+        }
     }
 }

@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -9,7 +9,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public FeatureValueViewModel(ApplicantFeature entity, bool showDeleted) : base(entity)
+        public FeatureValueViewModel(ApplicantFeature entity) : base(entity)
         {
             if (entity == null)
                 return;

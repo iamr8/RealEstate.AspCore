@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {

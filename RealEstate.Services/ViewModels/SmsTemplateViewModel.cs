@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
@@ -10,7 +10,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public SmsTemplateViewModel(SmsTemplate model, bool showDeleted) : base(model)
+        public SmsTemplateViewModel(SmsTemplate model) : base(model)
         {
             if (model == null)
                 return;

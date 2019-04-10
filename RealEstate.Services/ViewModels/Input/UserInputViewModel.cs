@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -49,17 +49,23 @@ namespace RealEstate.Services.ViewModels.Input
         [HiddenInput]
         public string UserPropertyCategoriesJson { get; set; }
 
-        public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories =>
-            string.IsNullOrEmpty(UserPropertyCategoriesJson)
+        public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories
+        {
+            get => string.IsNullOrEmpty(UserPropertyCategoriesJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
+            set => UserPropertyCategoriesJson = JsonConvert.SerializeObject(value);
+        }
 
         [HiddenInput]
         public string UserItemCategoriesJson { get; set; }
 
-        public List<UserPropertyCategoryJsonViewModel> UserItemCategories =>
-            string.IsNullOrEmpty(UserItemCategoriesJson)
+        public List<UserItemCategoryJsonViewModel> UserItemCategories
+        {
+            get => string.IsNullOrEmpty(UserItemCategoriesJson)
                 ? default
-                : JsonConvert.DeserializeObject<List<UserPropertyCategoryJsonViewModel>>(UserItemCategoriesJson);
+                : JsonConvert.DeserializeObject<List<UserItemCategoryJsonViewModel>>(UserItemCategoriesJson);
+            set => UserItemCategoriesJson = JsonConvert.SerializeObject(value);
+        }
     }
 }

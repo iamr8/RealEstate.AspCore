@@ -1,11 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
-using RealEstate.Services.ViewModels.Input;
 
 namespace RealEstate.Services
 {

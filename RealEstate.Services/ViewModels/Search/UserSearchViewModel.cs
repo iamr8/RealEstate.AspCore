@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using RealEstate.Base;
+﻿using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
-using RealEstate.Domain.Tables;
 using RealEstate.Resources;
+using RealEstate.Services.Database.Tables;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Search
 {

@@ -2,17 +2,18 @@
 using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
-using RealEstate.Extensions.KavenNegarProvider;
-using RealEstate.Extensions.KavenNegarProvider.Response;
-using RealEstate.Extensions.KavenNegarProvider.Response.ResultModels;
 using RealEstate.Services.Base;
+using RealEstate.Services.Extensions.KavenNegarProvider;
+using RealEstate.Services.Extensions.KavenNegarProvider.Response;
+using RealEstate.Services.Extensions.KavenNegarProvider.Response.ResultModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using IUnitOfWork = RealEstate.Services.Database.IUnitOfWork;
+using Sms = RealEstate.Services.Database.Tables.Sms;
+using SmsTemplate = RealEstate.Services.Database.Tables.SmsTemplate;
 
 namespace RealEstate.Services
 {

@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.ViewModels.Input;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ViewModels.Input;
 
 namespace RealEstate.Services
 {
@@ -91,7 +91,7 @@ namespace RealEstate.Services
                     FacilityId = facility.Id
                 },
                 (inDb, inModel) => inDb.FacilityId == inModel.Id,
-                null, 
+                null,
                 false).ConfigureAwait(false);
 
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);

@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
-using RealEstate.Extensions;
 using RealEstate.Services.Base;
 using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
@@ -17,7 +17,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using AuthenticationScheme = RealEstate.Extensions.AuthenticationScheme;
 
 namespace RealEstate.Services
 {
@@ -80,10 +79,10 @@ namespace RealEstate.Services
             var viewModel = new UserViewModel(model).Include(x =>
             {
                 x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
-                    new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category)).AddLogs(c, _users)).Filtered().ToList();
+                    new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
                 x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
-                    new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category)).AddLogs(c, _users)).Filtered().ToList();
-                x.FixedSalaries = x.Entity.FixedSalaries.Select(c => new FixedSalaryViewModel(c).AddLogs(c, _users)).Filtered().ToList();
+                    new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                x.FixedSalaries = x.Entity.FixedSalaries.Select(c => new FixedSalaryViewModel(c)).Where(v => !v.IsDeleted).ToList();
             });
             if (viewModel == null)
                 return default;
@@ -98,16 +97,16 @@ namespace RealEstate.Services
                 Username = viewModel.Username,
                 Address = viewModel.Address,
                 Phone = viewModel.Phone,
-                UserItemCategoriesJson = viewModel.ItemCategories.JsonConversion(x => new UserItemCategoryJsonViewModel
+                UserItemCategories = viewModel.ItemCategories.Select(x => new UserItemCategoryJsonViewModel
                 {
                     Id = x.Id,
                     Name = x.Category?.Name
-                }),
-                UserPropertyCategoriesJson = viewModel.PropertyCategories.JsonConversion(x => new UserPropertyCategoryJsonViewModel
+                }).ToList(),
+                UserPropertyCategories = viewModel.PropertyCategories.Select(x => new UserPropertyCategoryJsonViewModel
                 {
                     Id = x.Id,
                     Name = x.Category?.Name
-                }),
+                }).ToList(),
                 FixedSalary = viewModel.FixedSalaries.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
                 Id = viewModel.Id
             };
@@ -163,7 +162,16 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new UserViewModel(item)).ConfigureAwait(false);
+                item =>
+                {
+                    return new UserViewModel(item).Include(x =>
+                    {
+                        x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
+                            new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                        x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
+                            new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                    });
+                }).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -172,13 +180,13 @@ namespace RealEstate.Services
             if (superAdmin?.Logs?.Last() == null)
                 return result;
 
-            var tempLogs = superAdmin.Logs;
-            var creationTrack = tempLogs.Create;
-            if (creationTrack == null)
-                return result;
+            //            var tempLogs = superAdmin.Logs;
+            //            var creationTrack = tempLogs.Create;
+            //            if (creationTrack == null)
+            //                return result;
 
-            tempLogs.Create = null;
-            superAdmin.Logs = tempLogs;
+            //            tempLogs.Create = null;
+            //            superAdmin.Logs = tempLogs;
             return result;
         }
 
@@ -356,7 +364,7 @@ namespace RealEstate.Services
                 return StatusEnum.WrongPassword;
             }
 
-            if (userDb.IsDeleted())
+            if (userDb.LastLog()?.Type == LogTypeEnum.Delete)
                 return StatusEnum.Deactivated;
 
             var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryViewModel
@@ -386,7 +394,7 @@ namespace RealEstate.Services
                 new Claim("PropertyCategories",propertyCategoriesJson),
             };
 
-            var identity = new ClaimsIdentity(claims, AuthenticationScheme.Scheme);
+            var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);
             var principal = new ClaimsPrincipal(identity);
             var properties = new AuthenticationProperties
             {
@@ -395,7 +403,7 @@ namespace RealEstate.Services
                 IsPersistent = true,
             };
 
-            await HttpContext.SignInAsync(AuthenticationScheme.Scheme, principal, properties).ConfigureAwait(false);
+            await HttpContext.SignInAsync(Extensions.AuthenticationScheme.Scheme, principal, properties).ConfigureAwait(false);
             HttpContext.User.AddIdentity(identity);
 
             var identities = HttpContext.User.Identities.Where(x => x.Claims.Any()).ToList();
@@ -404,7 +412,7 @@ namespace RealEstate.Services
             var findIdentity = identities.Find(x => x.Name == identity.Name);
             if (findIdentity == null) return StatusEnum.Failed;
 
-            var isConnected = findIdentity.AuthenticationType == AuthenticationScheme.Scheme
+            var isConnected = findIdentity.AuthenticationType == Extensions.AuthenticationScheme.Scheme
                               && findIdentity.IsAuthenticated;
             return isConnected
                 ? StatusEnum.SignedIn

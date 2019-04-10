@@ -26,12 +26,13 @@
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-12 col-md-4 margin-bottomed">
+                <div class="col-12 margin-bottomed">
                     <label asp-for="NewApplicant.Type" class="control-label"></label>
                     <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="form-control"></select>
                     <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
                 </div>
             </div>
+            <hr />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12 col-md-4 margin-bottomed">
                     <label asp-for="NewApplicant.Name" class="control-label"></label>

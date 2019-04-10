@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels

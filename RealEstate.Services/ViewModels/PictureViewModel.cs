@@ -1,11 +1,11 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
     public class PictureViewModel : BaseLogViewModel<Picture>
     {
-        public PictureViewModel(Picture model, bool showDeleted) : base(model)
+        public PictureViewModel(Picture model) : base(model)
         {
             if (model == null)
                 return;

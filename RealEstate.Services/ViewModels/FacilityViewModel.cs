@@ -1,11 +1,11 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
     public class FacilityViewModel : BaseLogViewModel<Facility>
     {
-        public FacilityViewModel(Facility model, bool showDeleted) : base(model)
+        public FacilityViewModel(Facility model) : base(model)
         {
             if (model == null)
                 return;

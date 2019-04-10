@@ -1,6 +1,6 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -10,7 +10,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public SmsViewModel(Sms model, bool showDeleted) : base(model)
+        public SmsViewModel(Sms model) : base(model)
         {
             if (model == null)
                 return;

@@ -1,5 +1,5 @@
-﻿using RealEstate.Domain.Tables;
-using RealEstate.Services.BaseLog;
+﻿using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Tables;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +7,7 @@ namespace RealEstate.Services.ViewModels
 {
     public class PropertyViewModel : BaseLogViewModel<Property>
     {
-        public PropertyViewModel(Property model, bool showDeleted) : base(model)
+        public PropertyViewModel(Property model) : base(model)
         {
             if (model == null)
                 return;

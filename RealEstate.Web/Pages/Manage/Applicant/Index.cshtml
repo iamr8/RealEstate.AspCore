@@ -37,7 +37,7 @@
                                     <span>
                                         @foreach (var feature in item.ApplicantFeatures)
                                         {
-                                            <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value</span>
+                                            <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value.FixCurrency()</span>
                                         }
                                     </span>
                                 }

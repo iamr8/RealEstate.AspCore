@@ -85,8 +85,26 @@
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
-                            </div>
-                            <div class="button">
+                                @if (item.ItemCategories?.Any() == true || item.PropertyCategories?.Any() == true)
+                                {
+                                <span>
+                                    @if (item.ItemCategories?.Any() == true)
+                                    {
+                                        foreach (var category in item.ItemCategories)
+                                        {
+                                            <span class="badge badge-success">@category.Category.Name</span>
+                                        }
+                                    }
+                                    @if (item.PropertyCategories?.Any() == true)
+                                    {
+                                        foreach (var category in item.PropertyCategories)
+                                        {
+                                            <span class="badge badge-primary">@category.Category.Name</span>
+                                        }
+                                    }
+                                </span>
+                                }
+                            </div><div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>

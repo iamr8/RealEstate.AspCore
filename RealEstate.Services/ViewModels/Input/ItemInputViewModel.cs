@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -22,10 +22,13 @@ namespace RealEstate.Services.ViewModels.Input
         [HiddenInput]
         public string ItemFeaturesJson { get; set; }
 
-        public List<FeatureJsonValueViewModel> ItemFeatures =>
-            string.IsNullOrEmpty(ItemFeaturesJson)
+        public List<FeatureJsonValueViewModel> ItemFeatures
+        {
+            get => string.IsNullOrEmpty(ItemFeaturesJson)
                 ? default
                 : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(ItemFeaturesJson);
+            set => ItemFeaturesJson = JsonConvert.SerializeObject(value);
+        }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
         public string Description { get; set; }

@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Base;
-using RealEstate.Domain.Tables;
-using RealEstate.Extensions;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Base;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -161,7 +161,7 @@ namespace RealEstate.Services.Base
                 return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
             var finalEntity = entity.Invoke(currentUser);
-            _unitOfWork.Add(finalEntity, currentUser.Id);
+            _unitOfWork.Add(finalEntity, currentUser);
             return await SaveChangesAsync(finalEntity, save).ConfigureAwait(false);
         }
 
@@ -175,7 +175,7 @@ namespace RealEstate.Services.Base
             if (!IsAllowed(allowedRoles))
                 return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
-            _unitOfWork.Add(entity, currentUser.Id);
+            _unitOfWork.Add(entity, currentUser);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 
@@ -233,16 +233,16 @@ namespace RealEstate.Services.Base
             if (currentUser == null)
                 return StatusEnum.UserIsNull;
 
-            if (entity.IsDeleted())
+            if (entity.LastLog().Type == LogTypeEnum.Delete)
             {
                 if (undeleteAllowed)
-                    _unitOfWork.UnDelete(entity, currentUser.Id);
+                    _unitOfWork.UnDelete(entity, currentUser);
                 else
                     return StatusEnum.AlreadyDeleted;
             }
             else
             {
-                _unitOfWork.Delete(entity, currentUser.Id);
+                _unitOfWork.Delete(entity, currentUser);
             }
 
             return await SaveChangesAsync(save).ConfigureAwait(false);
@@ -290,10 +290,10 @@ namespace RealEstate.Services.Base
                     }
                     else
                     {
-                        if (!source.IsDeleted())
+                        if (source.LastLog().Type != LogTypeEnum.Delete)
                             continue;
 
-                        _unitOfWork.UnDelete(source, currentUser.Id);
+                        _unitOfWork.UnDelete(source, currentUser);
                     }
                 }
             }
@@ -394,7 +394,7 @@ namespace RealEstate.Services.Base
             if (changesIndicator <= 0)
                 return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
 
-            _unitOfWork.Update(entity, currentUser.Id);
+            _unitOfWork.Update(entity, currentUser);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 

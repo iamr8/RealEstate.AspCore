@@ -1,52 +1,52 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.Search;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
     public interface IContactService
     {
-        Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save);
+        Task<(StatusEnum, Database.Tables.Contact)> ContactAddAsync(ContactInputViewModel model, bool save);
 
-        Task<(StatusEnum, Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
+        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
+        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
 
-        Task<Contact> ContactEntityByMobileAsync(string mobile);
+        Task<Database.Tables.Contact> ContactEntityByMobileAsync(string mobile);
 
-        Task<(StatusEnum, Contact)> ContactAddOrUpdateAsync(ContactInputViewModel model, bool update, bool save);
+        Task<(StatusEnum, Database.Tables.Contact)> ContactAddOrUpdateAsync(ContactInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, bool save);
+        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, bool save);
 
         Task<PaginationViewModel<ContactViewModel>> ContactListAsync(ContactSearchViewModel searchModel);
 
         Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
-        Task<(StatusEnum, Contact)> ContactUpdateAsync(ContactInputViewModel model, bool save);
+        Task<(StatusEnum, Database.Tables.Contact)> ContactUpdateAsync(ContactInputViewModel model, bool save);
 
         Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel);
 
         Task<ApplicantInputViewModel> ApplicantInputAsync(string id);
 
-        Task<Applicant> ApplicantEntityAsync(string id);
+        Task<Database.Tables.Applicant> ApplicantEntityAsync(string id);
 
         Task<StatusEnum> ApplicantRemoveAsync(string id);
 
         Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
 
-        Task<Contact> ContactEntityAsync(string id);
+        Task<Database.Tables.Contact> ContactEntityAsync(string id);
 
-        Task<(StatusEnum, Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save);
+        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save);
 
         Task<StatusEnum> ContactRemoveAsync(string id);
 
@@ -58,8 +58,8 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
 
-        private readonly DbSet<Contact> _contacts;
-        private readonly DbSet<Applicant> _applicants;
+        private readonly DbSet<Database.Tables.Contact> _contacts;
+        private readonly DbSet<Database.Tables.Applicant> _applicants;
         private readonly DbSet<Ownership> _ownerships;
 
         public ContactService(
@@ -71,12 +71,12 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
 
-            _contacts = _unitOfWork.Set<Contact>();
-            _applicants = _unitOfWork.Set<Applicant>();
+            _contacts = _unitOfWork.Set<Database.Tables.Contact>();
+            _applicants = _unitOfWork.Set<Database.Tables.Applicant>();
             _ownerships = _unitOfWork.Set<Ownership>();
         }
 
-        public async Task<Contact> ContactEntityAsync(string id)
+        public async Task<Database.Tables.Contact> ContactEntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -85,7 +85,7 @@ namespace RealEstate.Services
             return entity;
         }
 
-        public async Task<Contact> ContactEntityByMobileAsync(string mobile)
+        public async Task<Database.Tables.Contact> ContactEntityByMobileAsync(string mobile)
         {
             if (string.IsNullOrEmpty(mobile))
                 return default;
@@ -94,7 +94,7 @@ namespace RealEstate.Services
             return entity;
         }
 
-        public async Task<Applicant> ApplicantEntityAsync(string id)
+        public async Task<Database.Tables.Applicant> ApplicantEntityAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -148,10 +148,10 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save)
+        public async Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save)
         {
             if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(itemRequestId))
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ParamIsNull, null);
+                return new ValueTuple<StatusEnum, Database.Tables.Applicant>(StatusEnum.ParamIsNull, null);
 
             var applicant = await ApplicantEntityAsync(applicantId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(applicant,
@@ -169,13 +169,13 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new ApplicantViewModel(model, _baseService.IsAllowed(Role.SuperAdmin)).Include(x =>
+            var viewModel = new ApplicantViewModel(model).Include(x =>
             {
-                x.ApplicantFeatures = x.Entity.ApplicantFeatures.Select(c => new FeatureValueViewModel(c, false).Include(v =>
+                x.ApplicantFeatures = x.Entity.ApplicantFeatures.Select(c => new FeatureValueViewModel(c).Include(v =>
                 {
-                    v.Feature = new FeatureViewModel(v.Entity.Feature, false);
+                    v.Feature = new FeatureViewModel(v.Entity.Feature);
                 })).ToList();
-                x.Contact = new ContactViewModel(x.Entity.Contact, false);
+                x.Contact = new ContactViewModel(x.Entity.Contact);
             });
             var result = new ApplicantInputViewModel
             {
@@ -186,12 +186,12 @@ namespace RealEstate.Services
                 Address = viewModel.Address,
                 Mobile = viewModel.Contact.Mobile,
                 Phone = viewModel.Phone,
-                ApplicantFeaturesJson = viewModel.ApplicantFeatures.JsonConversion(x => new FeatureJsonValueViewModel
+                ApplicantFeatures = viewModel.ApplicantFeatures.Select(x => new FeatureJsonValueViewModel
                 {
                     Id = x.Feature.Id,
                     Name = x.Feature.Name,
                     Value = x.Value
-                }),
+                }).ToList(),
             };
             return result;
         }
@@ -202,21 +202,20 @@ namespace RealEstate.Services
             models = models.Include(x => x.ApplicantFeatures)
                 .ThenInclude(x => x.Applicant);
             models = models.Include(x => x.Contact);
-            models = models.Include(x => x.Logs);
 
             if (searchModel != null)
             {
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ApplicantViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
+                item => new ApplicantViewModel(item)
                     .Include(model =>
                     {
-                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity => new FeatureValueViewModel(propEntity, false).Include(x =>
+                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity => new FeatureValueViewModel(propEntity).Include(x =>
                          {
-                             x.Feature = new FeatureViewModel(x.Entity.Feature, false);
+                             x.Feature = new FeatureViewModel(x.Entity.Feature);
                          })).ToList();
-                        model.Contact = new ContactViewModel(model.Entity.Contact, false);
+                        model.Contact = new ContactViewModel(model.Entity.Contact);
                     })).ConfigureAwait(false);
 
             return result;
@@ -225,7 +224,6 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<ContactViewModel>> ContactListAsync(ContactSearchViewModel searchModel)
         {
             var models = _contacts as IQueryable<Contact>;
-            models = models.Include(x => x.Logs);
             models = models.Include(x => x.Applicants);
             models = models.Include(x => x.Smses);
             models = models.Include(x => x.Ownerships);
@@ -236,11 +234,11 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ContactViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
+                item => new ContactViewModel(item)
                     .Include(model =>
                     {
-                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity, false)).ToList();
-                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity, false)).ToList();
+                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity)).ToList();
+                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity)).ToList();
                     })
             ).ConfigureAwait(false);
 

@@ -65,7 +65,7 @@ namespace RealEstate.Web.Pages
                 if (!string.IsNullOrEmpty(Input.ReturnUrl))
                     return Redirect(Input.ReturnUrl);
 
-                return RedirectToPage($"/{nameof(Manage)}/Index");
+                return RedirectToPage(typeof(Manage.IndexModel).Page());
             }
 
             ErrorMessage = status.GetDisplayName();

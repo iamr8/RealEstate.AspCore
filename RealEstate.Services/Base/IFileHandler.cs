@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using RealEstate.Base;
-using RealEstate.Extensions.FileHandler;
-using RealEstate.Extensions.FileHandler.Models;
+using RealEstate.Services.Extensions.FileHandler;
+using RealEstate.Services.Extensions.FileHandler.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System;

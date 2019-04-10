@@ -1,16 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Domain;
-using RealEstate.Domain.Tables;
-using RealEstate.Extensions;
 using RealEstate.Services.Base;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Search;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
@@ -51,7 +51,6 @@ namespace RealEstate.Services
         {
             var models = _districts as IQueryable<District>;
             models = models.Include(x => x.Properties);
-            models = models.Include(x => x.Logs);
 
             if (searchModel != null)
             {
@@ -59,7 +58,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new DistrictViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
+                item => new DistrictViewModel(item)
             ).ConfigureAwait(false);
 
             return result;
@@ -142,7 +141,7 @@ namespace RealEstate.Services
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new DistrictViewModel(model, _baseService.IsAllowed(Role.SuperAdmin));
+            var viewModel = new DistrictViewModel(model);
             var result = new DistrictInputViewModel
             {
                 Id = viewModel.Id,
