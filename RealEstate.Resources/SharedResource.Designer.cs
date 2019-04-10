@@ -1780,6 +1780,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دسته بندی های مورد مجاز برای کاربر.
+        /// </summary>
+        public static string UserItemCategories {
+            get {
+                return ResourceManager.GetString("UserItemCategories", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شناسه کاربری.
         /// </summary>
         public static string Username {

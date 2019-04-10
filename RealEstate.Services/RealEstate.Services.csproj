@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.203</AssemblyVersion>
-    <FileVersion>1.0.0.203</FileVersion>
+    <AssemblyVersion>1.0.0.222</AssemblyVersion>
+    <FileVersion>1.0.0.222</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,7 +16,6 @@
     <ProjectReference Include="..\RealEstate.Domain\RealEstate.Domain.csproj" />
     <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
     <ProjectReference Include="..\RealEstate.Extensions\RealEstate.Extensions.csproj" />
-    <ProjectReference Include="..\RealEstate.ViewModels\RealEstate.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

@@ -717,4 +717,7 @@
   <data name="Type" xml:space="preserve">
     <value>نوع</value>
   </data>
+  <data name="UserItemCategories" xml:space="preserve">
+    <value>دسته بندی های مورد مجاز برای کاربر</value>
+  </data>
 </root>

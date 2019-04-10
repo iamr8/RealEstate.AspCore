@@ -6,7 +6,7 @@ using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
-using RealEstate.ViewModels.Input;
+using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Applicant

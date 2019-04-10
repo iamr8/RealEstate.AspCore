@@ -18,11 +18,27 @@ namespace RealEstate.Base
 
             var json = includeDeletedItems
                 ? model.Count > 0
-                    ? JsonConvert.SerializeObject(model.ToList().Select(mapTo.Invoke))
+                    ? JsonConvert.SerializeObject(model.ToList().Select(mapTo.Invoke), JsonNetSetting)
                     : "[]"
                 : model.ToList().Count > 0
-                    ? JsonConvert.SerializeObject(model.ToList().Select(mapTo.Invoke))
+                    ? JsonConvert.SerializeObject(model.ToList().Select(mapTo.Invoke), JsonNetSetting)
                     : "[]";
+
+            return json;
+        }
+
+        public static string JsonConversion<TModel, TOutput>(this List<TModel> model, Func<TModel, TOutput> selector) where TModel : class
+        {
+            if (model?.Any() != true)
+                return "[]";
+
+            var result = new List<TOutput>();
+            foreach (var source in model)
+                result.Add(selector.Invoke(source));
+
+            var json = result.Count > 0
+                ? JsonConvert.SerializeObject(result, JsonNetSetting)
+                : "[]";
 
             return json;
         }
@@ -33,7 +49,7 @@ namespace RealEstate.Base
                 return "[]";
 
             var json = model.Count > 0
-                ? JsonConvert.SerializeObject(model)
+                ? JsonConvert.SerializeObject(model, JsonNetSetting)
                 : "[]";
 
             return json;
@@ -44,7 +60,7 @@ namespace RealEstate.Base
             if (string.IsNullOrEmpty(json))
                 return default;
 
-            var obj = JsonConvert.DeserializeObject<TEntity>(json);
+            var obj = JsonConvert.DeserializeObject<TEntity>(json, JsonNetSetting);
             return obj;
         }
 

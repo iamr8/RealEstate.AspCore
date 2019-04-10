@@ -1,17 +1,19 @@
 @namespace RealEstate.Web.Pages
 
 @using RealEstate.Extensions
-@using RealEstate.ViewModels
-@using RealEstate.ViewModels.Json
-@using RealEstate.ViewModels.Search
-@using RealEstate.ViewModels.Input
 @using RealEstate.Base
 @using RealEstate.Base.Enums
 @using RealEstate.Services
 @using RealEstate.Services.Base
 @using RealEstate.Resources
+@using RealEstate.Services.ViewModels
+@using RealEstate.Services.ViewModels.Input
+@using RealEstate.Services.ViewModels.Search
+@using RealEstate.Services.ViewModels.Json
 
 @using Microsoft.Extensions.Localization
+@using System.Globalization
+@using RestSharp.Extensions
 
 @inject IStringLocalizer<SharedResource> SharedLocalizer
 @inject IBaseService BaseService

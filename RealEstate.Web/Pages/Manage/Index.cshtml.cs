@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using RealEstate.Base;
 using RealEstate.Services;
-using RealEstate.ViewModels;
+using RealEstate.Services.ViewModels;
 
 namespace RealEstate.Web.Pages.Manage
 {

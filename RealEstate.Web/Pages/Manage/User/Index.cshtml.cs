@@ -7,8 +7,8 @@ using RealEstate.Base.Enums;
 using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Search;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User

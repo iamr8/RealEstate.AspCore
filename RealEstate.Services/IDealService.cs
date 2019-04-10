@@ -2,9 +2,9 @@
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels.Input;
 using System;
 using System.Threading.Tasks;
+using RealEstate.Services.ViewModels.Input;
 
 namespace RealEstate.Services
 {

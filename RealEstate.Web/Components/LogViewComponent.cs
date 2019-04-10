@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RealEstate.Base;
+using RealEstate.Services.BaseLog;
 
 namespace RealEstate.Web.Components
 {

@@ -4,12 +4,13 @@ using RealEstate.Base.Enums;
 using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Input;
-using RealEstate.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Json;
+using RealEstate.Services.ViewModels.Search;
 
 namespace RealEstate.Services
 {
@@ -168,7 +169,14 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new ApplicantViewModel(model);
+            var viewModel = new ApplicantViewModel(model, _baseService.IsAllowed(Role.SuperAdmin)).Include(x =>
+            {
+                x.ApplicantFeatures = x.Entity.ApplicantFeatures.Select(c => new FeatureValueViewModel(c, false).Include(v =>
+                {
+                    v.Feature = new FeatureViewModel(v.Entity.Feature, false);
+                })).ToList();
+                x.Contact = new ContactViewModel(x.Entity.Contact, false);
+            });
             var result = new ApplicantInputViewModel
             {
                 Id = viewModel.Id,
@@ -178,7 +186,12 @@ namespace RealEstate.Services
                 Address = viewModel.Address,
                 Mobile = viewModel.Contact.Mobile,
                 Phone = viewModel.Phone,
-                ApplicantFeaturesJson = viewModel.ApplicantFeatures.JsonConversion(),
+                ApplicantFeaturesJson = viewModel.ApplicantFeatures.JsonConversion(x => new FeatureJsonValueViewModel
+                {
+                    Id = x.Feature.Id,
+                    Name = x.Feature.Name,
+                    Value = x.Value
+                }),
             };
             return result;
         }
@@ -196,21 +209,15 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ApplicantViewModel(item)
+                item => new ApplicantViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
                     .Include(model =>
                     {
-                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity => new FeatureValueViewModel(propEntity).Include(x =>
-                        {
-                            x.Feature = new FeatureViewModel(x.Entity.Feature);
-                        })).ToList();
-                        model.Contact = new ContactViewModel(model.Entity.Contact);
-                    })
-                ,
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
-            ).ConfigureAwait(false);
+                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity => new FeatureValueViewModel(propEntity, false).Include(x =>
+                         {
+                             x.Feature = new FeatureViewModel(x.Entity.Feature, false);
+                         })).ToList();
+                        model.Contact = new ContactViewModel(model.Entity.Contact, false);
+                    })).ConfigureAwait(false);
 
             return result;
         }
@@ -229,16 +236,12 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ContactViewModel(item)
+                item => new ContactViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
                     .Include(model =>
                     {
-                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity)).ToList();
-                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity)).ToList();
-                    }),
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
+                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity, false)).ToList();
+                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity, false)).ToList();
+                    })
             ).ConfigureAwait(false);
 
             return result;

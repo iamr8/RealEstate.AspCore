@@ -7,10 +7,11 @@ using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Extensions;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Input;
-using RealEstate.ViewModels.Json;
-using RealEstate.ViewModels.Search;
+using RealEstate.Services.BaseLog;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Json;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,37 +70,67 @@ namespace RealEstate.Services
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
         {
-            if (string.IsNullOrEmpty(id)) return null;
+            if (string.IsNullOrEmpty(id))
+                return default;
 
-            var model = await EntityAsync(id).ConfigureAwait(false);
-            if (model == null) return null;
+            var model = await EntityAsync(id, null).ConfigureAwait(false);
+            if (model == null)
+                return default;
 
-            var result = _baseService.Map(model,
-                new UserInputViewModel
+            var viewModel = new UserViewModel(model).Include(x =>
+            {
+                x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
+                    new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category)).AddLogs(c, _users)).Filtered().ToList();
+                x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
+                    new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category)).AddLogs(c, _users)).Filtered().ToList();
+                x.FixedSalaries = x.Entity.FixedSalaries.Select(c => new FixedSalaryViewModel(c).AddLogs(c, _users)).Filtered().ToList();
+            });
+            if (viewModel == null)
+                return default;
+
+            var result = new UserInputViewModel
+            {
+                Role = viewModel.Role,
+                FirstName = viewModel.FirstName,
+                LastName = viewModel.LastName,
+                Mobile = viewModel.Mobile,
+                Password = viewModel.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption),
+                Username = viewModel.Username,
+                Address = viewModel.Address,
+                Phone = viewModel.Phone,
+                UserItemCategoriesJson = viewModel.ItemCategories.JsonConversion(x => new UserItemCategoryJsonViewModel
                 {
-                    Role = model.Role,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Mobile = model.Mobile,
-                    Password = model.Password.Cipher(CryptologyExtension.CypherMode.Decryption),
-                    Username = model.Username,
-                    Address = model.Address,
-                    Phone = model.Phone,
-                    UserItemCategoriesJson = model.UserItemCategories.JsonConversion(x => new UserItemCategoryJsonViewModel(x)),
-                    UserPropertyCategoriesJson = model.UserPropertyCategories.JsonConversion(x => new UserPropertyCategoryJsonViewModel(x)),
-                    FixedSalary = model.FixedSalaries.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Value ?? 0
-                });
+                    Id = x.Id,
+                    Name = x.Category?.Name
+                }),
+                UserPropertyCategoriesJson = viewModel.PropertyCategories.JsonConversion(x => new UserPropertyCategoryJsonViewModel
+                {
+                    Id = x.Id,
+                    Name = x.Category?.Name
+                }),
+                FixedSalary = viewModel.FixedSalaries.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
+                Id = viewModel.Id
+            };
             return result;
         }
 
         public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
         {
             var users = await _users.Filtered().ToListAsync().ConfigureAwait(false);
-            var result = _baseService.Map(users, x => new BeneficiaryJsonViewModel
+            if (users?.Any() != true)
+                return default;
+
+            var result = new List<BeneficiaryJsonViewModel>();
+            foreach (var user in users)
             {
-                UserId = x.Id,
-                UserFullName = $"{x.LastName}، {x.FirstName}",
-            });
+                var item = new BeneficiaryJsonViewModel
+                {
+                    Id = user.Id,
+                    UserId = user.Id,
+                    UserFullName = $"{user.LastName}، {user.FirstName}",
+                };
+                result.Add(item);
+            }
             return result;
         }
 
@@ -132,11 +163,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new UserViewModel(item),
-                new[]
-                {
-                    Role.SuperAdmin
-                }).ConfigureAwait(false);
+                item => new UserViewModel(item)).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -155,12 +182,12 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<User> EntityAsync(string id)
+        public async Task<User> EntityAsync(string id, params Role[] allowedRolesshowDeletedItems)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _users.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.QueryByRole(_users, allowedRolesshowDeletedItems).FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return result;
         }
 
@@ -172,7 +199,7 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.IdIsNull, null);
 
-            var entity = await EntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await EntityAsync(model.Id, null).ConfigureAwait(false);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 () =>
                 {

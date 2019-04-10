@@ -5,12 +5,12 @@ using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Extensions;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Input;
-using RealEstate.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Search;
 
 namespace RealEstate.Services
 {
@@ -59,11 +59,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new DistrictViewModel(item),
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
+                item => new DistrictViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
             ).ConfigureAwait(false);
 
             return result;
@@ -146,7 +142,7 @@ namespace RealEstate.Services
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new DistrictViewModel(model);
+            var viewModel = new DistrictViewModel(model, _baseService.IsAllowed(Role.SuperAdmin));
             var result = new DistrictInputViewModel
             {
                 Id = viewModel.Id,

@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Extensions;
 using RealEstate.Resources;
 using RealEstate.Services;
-using RealEstate.ViewModels.Input;
+using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
-using RealEstate.Base;
 
 namespace RealEstate.Web.Pages.Manage.District
 {

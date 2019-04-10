@@ -30,10 +30,10 @@
 
     }
 
-    <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer["Persons"]">
-        <nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Applicants"]"></nav-button>
-        <nav-button page="@typeof(Manage.Contact.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Contacts"]"></nav-button>
-    </nav-button>
+        <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer["Contacts"]">
+            <nav-button page="@typeof(Manage.Contact.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["List"]"></nav-button>
+            <nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Applicants"]"></nav-button>
+        </nav-button>
 
     if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
     {

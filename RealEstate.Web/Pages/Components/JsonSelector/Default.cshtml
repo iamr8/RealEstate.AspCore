@@ -1,6 +1,4 @@
-﻿@using System.Globalization
-@using RestSharp.Extensions
-@model JsonSelectorViewModel
+﻿@model JsonSelectorViewModel
 @if (Model?.SelectListItems?.Any() == true)
 {
     var selectId = $"{Model.ModelName}_{Model.ItemName}_Select";
@@ -31,7 +29,7 @@
                                                 @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
                                                 {
                                                     <div class="col-7">
-                                                        <input type="text" id="@valueId" class="form-control d-inline-block"/>
+                                                        <input type="text" id="@valueId" class="form-control d-inline-block" />
                                                     </div>
                                                 }
                                             </div>

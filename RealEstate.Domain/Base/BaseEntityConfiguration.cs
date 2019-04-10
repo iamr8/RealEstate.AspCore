@@ -1,5 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Newtonsoft.Json;
+using RealEstate.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Domain.Base
 {
@@ -21,6 +24,10 @@ namespace RealEstate.Domain.Base
 
             builder.Property(e => e.DateTime)
                 .HasDefaultValueSql("getdate()");
+
+            builder.Property(x => x.Logs)
+                .HasConversion(value => JsonConvert.SerializeObject(value),
+                    value => JsonConvert.DeserializeObject<List<LogJsonEntity>>(value));
         }
     }
 }

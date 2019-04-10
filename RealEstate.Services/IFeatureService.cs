@@ -5,10 +5,10 @@ using RealEstate.Domain;
 using RealEstate.Domain.Tables;
 using RealEstate.Extensions;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Input;
-using RealEstate.ViewModels.Json;
-using RealEstate.ViewModels.Search;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Json;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,7 +102,7 @@ namespace RealEstate.Services
                 .Include(x => x.PropertyFeatures);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new FeatureViewModel(model);
+            var viewModel = new FeatureViewModel(model, _baseService.IsAllowed(Role.SuperAdmin));
 
             var result = new FeatureInputViewModel
             {
@@ -122,7 +122,7 @@ namespace RealEstate.Services
                 .Include(x => x.PropertyFacilities);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new FacilityViewModel(model);
+            var viewModel = new FacilityViewModel(model, _baseService.IsAllowed(Role.SuperAdmin));
             var result = new FacilityInputViewModel
             {
                 Id = viewModel.Id,
@@ -139,6 +139,7 @@ namespace RealEstate.Services
             var query = _categories.Where(x => x.Id == id);
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
             var viewModel = new CategoryViewModel(model);
+
             var result = new CategoryInputViewModel
             {
                 Id = viewModel.Id,
@@ -378,11 +379,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new FeatureViewModel(item),
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
+                item => new FeatureViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
             ).ConfigureAwait(false);
 
             return result;
@@ -400,11 +397,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new FacilityViewModel(item),
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
+                item => new FacilityViewModel(item, _baseService.IsAllowed(Role.SuperAdmin))
             ).ConfigureAwait(false);
 
             return result;
@@ -436,7 +429,7 @@ namespace RealEstate.Services
                 query = query.Where(x => x.Type == type);
 
             var features = await query.ToListAsync().ConfigureAwait(false);
-            return features.Select(x => new FeatureViewModel(x)).ToList();
+            return features.Select(x => new FeatureViewModel(x, _baseService.IsAllowed(Role.SuperAdmin))).ToList();
         }
 
         public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
@@ -460,11 +453,7 @@ namespace RealEstate.Services
                     models = models.Where(x => x.Type == searchModel.Type);
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new CategoryViewModel(item),
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }
+                item => new CategoryViewModel(item)
             ).ConfigureAwait(false);
 
             return result;

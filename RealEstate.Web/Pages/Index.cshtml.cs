@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RealEstate.Extensions;
-using System.Threading.Tasks;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services;
 using RealEstate.Services.Base;
-using RealEstate.ViewModels;
-using RealEstate.ViewModels.Input;
+using RealEstate.Services.ViewModels.Input;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages
 {
