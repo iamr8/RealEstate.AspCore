@@ -20,6 +20,8 @@ namespace RealEstate.Services
     {
         Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel);
 
+        Task<List<FacilityViewModel>> FacilityListAsync();
+
         Task<StatusEnum> FacilityRemoveAsync(string id);
 
         Task<(StatusEnum, Feature)> FeatureUpdateAsync(FeatureInputViewModel model, bool save);
@@ -64,7 +66,7 @@ namespace RealEstate.Services
 
         Task<Category> CategoryEntityAsync(string id);
 
-        Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category);
+        Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege);
     }
 
     public class FeatureService : IFeatureService
@@ -262,10 +264,8 @@ namespace RealEstate.Services
 
             var entity = await FacilityEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () =>
-                {
-                    entity.Name = model.Name;
-                }, new[]
+                () => entity.Name = model.Name,
+                new[]
                 {
                     Role.SuperAdmin
                 }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
@@ -418,6 +418,15 @@ namespace RealEstate.Services
             return result;
         }
 
+        public async Task<List<FacilityViewModel>> FacilityListAsync()
+        {
+            var query = _facilities as IQueryable<Facility>;
+            query = query.Filtered();
+
+            var features = await query.ToListAsync().ConfigureAwait(false);
+            return features.Select(x => new FacilityViewModel(x)).ToList();
+        }
+
         public async Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type)
         {
             var query = _features as IQueryable<Feature>;
@@ -456,13 +465,33 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category)
+        public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege)
         {
             var query = _categories as IQueryable<Category>;
             query = query.Filtered();
 
             if (category != null)
+            {
                 query = query.Where(x => x.Type == category);
+                if (byUserPrevilege)
+                {
+                    var user = _baseService.CurrentUser();
+                    if (user == null)
+                        return default;
+
+                    switch (category)
+                    {
+                        case CategoryTypeEnum.Property:
+                            query = query.Where(x => x.UserPropertyCategories.Any(c => c.UserId == user.Id));
+                            break;
+
+                        case CategoryTypeEnum.Item:
+                        default:
+                            query = query.Where(x => x.UserItemCategories.Any(c => c.UserId == user.Id));
+                            break;
+                    }
+                }
+            }
 
             var categories = await query.ToListAsync().ConfigureAwait(false);
             return categories.Select(x => new CategoryViewModel(x)).ToList();

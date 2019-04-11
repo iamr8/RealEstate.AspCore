@@ -34,11 +34,11 @@ namespace RealEstate.Services.ViewModels
 
             var max = usage.Max(c => c.Value);
             var name = usage.FirstOrDefault(x => x.Value == max);
-            Name = name.Key;
+            PopularName = name.Key;
         }
 
         public string Mobile { get; set; }
-        public string Name { get; set; }
+        public string PopularName { get; set; }
         public List<SmsViewModel> Smses { get; set; }
         public List<ApplicantViewModel> Applicants { get; set; }
         public List<OwnershipViewModel> Ownerships { get; set; }

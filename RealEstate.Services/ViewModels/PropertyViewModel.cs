@@ -27,6 +27,7 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
+        public string Address => $"{Street} {Alley} {Number} {BuildingName} {Floor} {Flat}";
         public string Street { get; set; }
 
         public string Alley { get; set; }
@@ -44,7 +45,7 @@ namespace RealEstate.Services.ViewModels
         public List<ItemViewModel> Items { get; set; }
         public List<PropertyOwnershipViewModel> Ownerships { get; set; }
         public List<PictureViewModel> Pictures { get; set; }
-        public List<FacilityViewModel> Facilities { get; set; }
-        public List<FeatureValueViewModel> Features { get; set; }
+        public List<PropertyFacilityViewModel> Facilities { get; set; }
+        public List<PropertyFeatureViewModel> Features { get; set; }
     }
 }

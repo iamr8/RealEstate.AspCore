@@ -9,6 +9,7 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Search;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace RealEstate.Services
         Task<District> DistrictEntityAsync(string id);
 
         Task<StatusEnum> DistrictRemoveAsync(string id);
+        Task<List<DistrictViewModel>> DistrictListAsync();
 
         Task<(StatusEnum, District)> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save);
 
@@ -45,6 +47,15 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _districts = _unitOfWork.Set<District>();
+        }
+
+        public async Task<List<DistrictViewModel>> DistrictListAsync()
+        {
+            var query = _districts as IQueryable<District>;
+            query = query.Filtered();
+
+            var districts = await query.ToListAsync().ConfigureAwait(false);
+            return districts.Select(x => new DistrictViewModel(x)).ToList();
         }
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
@@ -90,10 +101,8 @@ namespace RealEstate.Services
 
             var entity = await DistrictEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () =>
-                {
-                    entity.Name = model.Name;
-                }, new[]
+                () => entity.Name = model.Name,
+                new[]
                 {
                     Role.SuperAdmin
                 }, save, StatusEnum.UserIsNull).ConfigureAwait(false);

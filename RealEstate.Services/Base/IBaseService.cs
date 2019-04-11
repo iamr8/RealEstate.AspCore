@@ -21,6 +21,10 @@ namespace RealEstate.Services.Base
     {
         UserViewModel CurrentUser();
 
+        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+            List<TModel> newList, Action<TSource> onAdd, Action<TSource> onRemove, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save)
+            where TSource : BaseEntity;
+
         IQueryable<TSource> QueryByRole<TSource>(IQueryable<TSource> source, params Role[] allowedRolesToShowDeletedItems) where TSource : class;
 
         TModel Map<TSource, TModel>(TSource query,
@@ -59,8 +63,8 @@ namespace RealEstate.Services.Base
         Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity;
 
-        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> entities,
-            List<TModel> syncWith, Func<TModel, UserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save)
+        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save)
             where TSource : BaseEntity;
 
         Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
@@ -266,35 +270,62 @@ namespace RealEstate.Services.Base
             return entity;
         }
 
-        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> entities,
-            List<TModel> syncWith, Func<TModel, UserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
+        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+            List<TModel> newList, Action<TSource> onAdd, Action<TSource> onRemove, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null) return StatusEnum.UserIsNull;
 
-            var mustBeLeft = entities.Where(entity => syncWith.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
-            var mustBeRemoved = entities.Where(x => !mustBeLeft.Contains(x)).ToList();
+            var mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+            var mustBeUnplugged = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
+            if (mustBeUnplugged.Count > 0)
+                foreach (var unplug in mustBeUnplugged)
+                    onRemove.Invoke(unplug);
+
+            if (newList?.Any() != true)
+                return await SaveChangesAsync(save).ConfigureAwait(false);
+
+            foreach (var model in newList)
+            {
+                var source = currentListEntities.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
+                if (source == null)
+                    continue;
+
+                onAdd.Invoke(source);
+            }
+
+            return await SaveChangesAsync(save).ConfigureAwait(false);
+        }
+
+        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null) return StatusEnum.UserIsNull;
+
+            var mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+            var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
             if (mustBeRemoved.Count > 0)
                 foreach (var redundant in mustBeRemoved)
                     await RemoveAsync(redundant, false, false).ConfigureAwait(false);
 
-            if (syncWith?.Any() == true)
-            {
-                foreach (var model in syncWith)
-                {
-                    var source = entities.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
-                    if (source == null)
-                    {
-                        var newItem = newEntity.Invoke(model, currentUser);
-                        await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
-                    }
-                    else
-                    {
-                        if (source.LastLog().Type != LogTypeEnum.Delete)
-                            continue;
+            if (newList?.Any() != true)
+                return await SaveChangesAsync(save).ConfigureAwait(false);
 
-                        _unitOfWork.UnDelete(source, currentUser);
-                    }
+            foreach (var model in newList)
+            {
+                var source = currentListEntities.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
+                if (source == null)
+                {
+                    var newItem = newEntity.Invoke(model);
+                    await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (source.LastLog().Type != LogTypeEnum.Delete)
+                        continue;
+
+                    _unitOfWork.UnDelete(source, currentUser);
                 }
             }
 

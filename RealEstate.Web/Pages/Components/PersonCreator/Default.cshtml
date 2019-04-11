@@ -1,31 +1,33 @@
-﻿@model ContactInputViewModel
-@{
-    var NewPerson = Model;
+﻿@model PersonCreatorComponentModel
+@if (Model != null)
+{
+    var newContact = new ContactInputViewModel();
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md-4 margin-bottomed">
+            <label for="@Model.Name.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Name))</label>
+            <input asp-for="@newContact.Name" id="@Model.Name.Id" name="@Model.Name.Name" class="form-control" />
+            <span class="text-danger" data-valmsg-for="@Model.Name.Name" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-6 col-md-4 margin-bottomed">
+            <label for="@Model.Mobile.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Mobile))</label>
+            <input asp-for="@newContact.Mobile" id="@Model.Mobile.Id" name="@Model.Mobile.Name" class="form-control" />
+            <span class="text-danger" data-valmsg-for="@Model.Mobile.Name" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-6 col-md-4 margin-bottomed">
+            <label for="@Model.Phone.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Phone))</label>
+            <input asp-for="@newContact.Phone" id="@Model.Phone.Id" name="@Model.Phone.Name" class="form-control" />
+            <span class="text-danger" data-valmsg-for="@Model.Phone.Name" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-12 margin-bottomed">
+            <label for="@Model.Address.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Address))</label>
+            <input asp-for="@newContact.Address" id="@Model.Address.Id" name="@Model.Address.Name" class="form-control" />
+            <span class="text-danger" data-valmsg-for="@Model.Address.Name" data-valmsg-replace="true"></span>
+        </div>
+        <div class="col-12 margin-bottomed">
+            <label for="@Model.Description.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Description))</label>
+            <input asp-for="@newContact.Description" id="@Model.Description.Id" name="@Model.Description.Name" class="form-control" />
+            <span class="text-danger" data-valmsg-for="@Model.Description.Name" data-valmsg-replace="true"></span>
+        </div>
+    </div>
+
 }
-<div class="row justify-content-center align-items-center">
-    <div class="col-12 col-md-4 margin-bottomed">
-        <label asp-for="@NewPerson.Name" class="control-label"></label>
-        <input asp-for="@NewPerson.Name" class="form-control" />
-        <span asp-validation-for="@NewPerson.Name" class="text-danger"></span>
-    </div>
-    <div class="col-6 col-md-4 margin-bottomed">
-        <label asp-for="@NewPerson.Mobile" class="control-label"></label>
-        <input asp-for="@NewPerson.Mobile" class="form-control" />
-        <span asp-validation-for="@NewPerson.Mobile" class="text-danger"></span>
-    </div>
-    <div class="col-6 col-md-4 margin-bottomed">
-        <label asp-for="@NewPerson.Phone" class="control-label"></label>
-        <input asp-for="@NewPerson.Phone" class="form-control" />
-        <span asp-validation-for="@NewPerson.Phone" class="text-danger"></span>
-    </div>
-    <div class="col-12 margin-bottomed">
-        <label asp-for="@NewPerson.Address" class="control-label"></label>
-        <input asp-for="@NewPerson.Address" class="form-control" />
-        <span asp-validation-for="@NewPerson.Address" class="text-danger"></span>
-    </div>
-    <div class="col-12 margin-bottomed">
-        <label asp-for="@NewPerson.Description" class="control-label"></label>
-        <input asp-for="@NewPerson.Description" class="form-control" />
-        <span asp-validation-for="@NewPerson.Description" class="text-danger"></span>
-    </div>
-</div>

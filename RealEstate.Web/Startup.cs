@@ -160,14 +160,8 @@ namespace RealEstate.Web
                     options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                             new[] { "image/svg+xml" });
                 });
-            services.Configure<BrotliCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Optimal;
-            });
-            services.Configure<GzipCompressionProviderOptions>(options =>
-            {
-                options.Level = CompressionLevel.Optimal;
-            });
+            services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
+            services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
             services.AddConnections();
 

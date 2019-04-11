@@ -76,12 +76,12 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new UserViewModel(model).Include(x =>
+            var viewModel = new UserViewModel(model).R8Include(x =>
             {
                 x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
-                    new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                    new UserItemCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
                 x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
-                    new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                    new UserPropertyCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
                 x.FixedSalaries = x.Entity.FixedSalaries.Select(c => new FixedSalaryViewModel(c)).Where(v => !v.IsDeleted).ToList();
             });
             if (viewModel == null)
@@ -164,12 +164,12 @@ namespace RealEstate.Services
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                 item =>
                 {
-                    return new UserViewModel(item).Include(x =>
+                    return new UserViewModel(item).R8Include(x =>
                     {
                         x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
-                            new UserItemCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                            new UserItemCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
                         x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
-                            new UserPropertyCategoryViewModel(c).Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
+                            new UserPropertyCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
                     });
                 }).ConfigureAwait(false);
 
@@ -232,7 +232,7 @@ namespace RealEstate.Services
             var syncItemFeature = await _baseService.SyncAsync(
                 user.UserItemCategories,
                 model.UserItemCategories,
-                (itemCategory, currentUser) => new UserItemCategory
+                itemCategory => new UserItemCategory
                 {
                     UserId = user.Id,
                     CategoryId = itemCategory.Id
@@ -244,7 +244,7 @@ namespace RealEstate.Services
             var syncPropertyFeature = await _baseService.SyncAsync(
                 user.UserPropertyCategories,
                 model.UserPropertyCategories,
-                (propertyCategory, currentUser) => new UserPropertyCategory
+                propertyCategory => new UserPropertyCategory
                 {
                     UserId = user.Id,
                     CategoryId = propertyCategory.Id

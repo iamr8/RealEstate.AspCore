@@ -1,42 +1,35 @@
-﻿@model JsonSelectorViewModel
+﻿@model JsonSelectorComponentModel
 @if (Model?.SelectListItems?.Any() == true)
 {
-    var selectId = $"{Model.ModelName}_{Model.ItemName}_Select";
-    var submitId = $"{Model.ModelName}_{Model.ItemName}_Submit";
-    var valueId = $"{Model.ModelName}_{Model.ItemName}_Value";
-    var jsonInput = $"{Model.ModelName}_{Model.Json}";
-    var wrapperClass = Model.ItemName.ToCamelCase(CultureInfo.CurrentCulture);
-    var itemSelectorClass = $"{wrapperClass}-item";
-
     <div class="row justify-content-center align-items-center">
         <div class="col-12">
             <div class="widget mini-widget">
                 <widget-header title="@Model.Title"></widget-header>
                 <section class="container-fluid">
                     <div class="row">
-                        <div class="col-12 @wrapperClass">
+                        <div class="col-12 @Model.WrapperClass">
                             <div class="itemShow adder">
                                 <div class="detail">
                                     <div class="info">
                                         <span>
                                             <div class="row">
                                                 @{
-                                                    var size = !string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId) ? "col-5" : "col-12";
+                                                    var size = !string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId) ? "col-5" : "col-12";
                                                 }
                                                 <div class="@size">
-                                                    <select class="form-control d-inline-block" id="@selectId" asp-items="@Model.SelectListItems"></select>
+                                                    <select class="form-control d-inline-block" id="@Model.SelectId" asp-items="@Model.SelectListItems"></select>
                                                 </div>
-                                                @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                                                @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                                                 {
                                                     <div class="col-7">
-                                                        <input type="text" id="@valueId" class="form-control d-inline-block" />
+                                                        <input type="text" id="@Model.ValueId" class="form-control d-inline-block" />
                                                     </div>
                                                 }
                                             </div>
                                         </span>
                                     </div>
                                     <div class="button">
-                                        <button type="button" class="btn btn-sm btn-success btn-block" id="@submitId">@SharedLocalizer["Submit"]</button>
+                                        <button type="button" class="btn btn-sm btn-success btn-block" id="@Model.SubmitId">@SharedLocalizer["Submit"]</button>
                                     </div>
                                 </div>
                             </div>
@@ -51,15 +44,15 @@
     <script asp-cut-key="@Model.ScriptKey">
         $(document).ready(function() {
 
-            const jsonInput = $("#@jsonInput");
-            const wrapperClass = $(".@wrapperClass");
-            const selectInput = $("#@selectId");
-            const submitInput = $("#@submitId");
-            const itemSelector = "@itemSelectorClass";
-            @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+            const jsonInput = $("#@Model.JsonInputId");
+            const wrapperClass = $(".@Model.WrapperClass");
+            const selectInput = $("#@Model.SelectId");
+            const submitInput = $("#@Model.SubmitId");
+            const itemSelector = "@Model.ItemSelectorClass";
+            @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
             {
                 <text>
-                    const valueInput = $("#@valueId");
+                    const valueInput = $("#@Model.ValueId");
                 </text>
             }
 
@@ -82,7 +75,7 @@
                         const key = item.@Model.IdProperty;
                         const name = item.@Model.NameProperty;
 
-                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                     {
                         <text>
                         const value = item.@Model.ValueProperty;
@@ -100,7 +93,7 @@
                         const nameElement = document.createElement("span");
                         $(nameElement).html(name);
 
-                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                         {
                             <text>
                                 const badge = document.createElement("span");
@@ -147,7 +140,7 @@
                     const keyId = $(selected).attr("value");
                     const keyName = $(selected).text();
 
-                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                     {
                         <text>
                             const valueElement = $(valueInput);
@@ -158,7 +151,7 @@
                     if (keyId === undefined || keyId === null)
                         return;
 
-                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                         {
                             <text>
                                 if (value === null ||
@@ -171,7 +164,7 @@
                     const newItem = {
                         @Model.IdProperty: keyId,
                         @Model.NameProperty: keyName
-                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                        @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                         {
                             <text>
                             , @Model.ValueProperty: value
@@ -180,7 +173,7 @@
                     };
                 addJson(jsonInput, newItem, obj => obj.@Model.IdProperty === newItem.@Model.IdProperty);
 
-                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(valueId))
+                    @if (!string.IsNullOrEmpty(Model.ValueProperty) && !string.IsNullOrEmpty(Model.ValueId))
                         {
                             <text>
                                 $(valueElement).val("");

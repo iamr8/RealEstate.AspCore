@@ -2,10 +2,10 @@
 @model AddModel
 @{
     var roles = SelectItemExtensions.ToSelectList(Role.User, role => role != Role.SuperAdmin);
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property).ConfigureAwait(false);
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
 
-    var userPropertySelector = new JsonSelectorViewModel
+    var userPropertySelector = new JsonSelectorComponentModel
     {
         IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
@@ -21,7 +21,7 @@
         }).SelectFirstItem(),
     };
 
-    var userItemSelector = new JsonSelectorViewModel
+    var userItemSelector = new JsonSelectorComponentModel
     {
         IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
@@ -125,6 +125,6 @@
 
 @section Scripts
     {
-    <script asp-paste-key="userPropertyScript"></script>
-    <script asp-paste-key="useritemScript"></script>
+    <script asp-paste-key="@userPropertySelector.ScriptKey"></script>
+    <script asp-paste-key="@userItemSelector.ScriptKey"></script>
 }

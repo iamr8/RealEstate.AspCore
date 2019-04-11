@@ -27,6 +27,18 @@ namespace RealEstate.Base
             return json;
         }
 
+        public static TModel JsonGetAccessor<TModel>(this string json)
+        {
+            return string.IsNullOrEmpty(json)
+                ? default
+                : JsonConvert.DeserializeObject<TModel>(json);
+        }
+
+        public static string JsonSetAccessor<TModel>(this TModel obj)
+        {
+            return JsonConvert.SerializeObject(obj);
+        }
+
         public static string JsonConversion<TModel, TOutput>(this List<TModel> model, Func<TModel, TOutput> selector) where TModel : class
         {
             if (model?.Any() != true)

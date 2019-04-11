@@ -720,4 +720,43 @@
   <data name="UserItemCategories" xml:space="preserve">
     <value>دسته بندی های مورد مجاز برای کاربر</value>
   </data>
+  <data name="ApplicantFeatures" xml:space="preserve">
+    <value>انتظارات متقاضی</value>
+  </data>
+  <data name="NewItem" xml:space="preserve">
+    <value>مورد جدید</value>
+  </data>
+  <data name="ItemFeatures" xml:space="preserve">
+    <value>مشخصات مورد</value>
+  </data>
+  <data name="Alley" xml:space="preserve">
+    <value>کوچه</value>
+  </data>
+  <data name="BuildingName" xml:space="preserve">
+    <value>نام ساختمان</value>
+  </data>
+  <data name="BuildingNumber" xml:space="preserve">
+    <value>پلاک</value>
+  </data>
+  <data name="FlatNumber" xml:space="preserve">
+    <value>واحد</value>
+  </data>
+  <data name="Floor" xml:space="preserve">
+    <value>طبقه</value>
+  </data>
+  <data name="Street" xml:space="preserve">
+    <value>خیابان</value>
+  </data>
+  <data name="PropertyFacilities" xml:space="preserve">
+    <value>امکانات ملک</value>
+  </data>
+  <data name="PropertyFeatures" xml:space="preserve">
+    <value>مشخصات ملک</value>
+  </data>
+  <data name="Dong" xml:space="preserve">
+    <value>دانگ</value>
+  </data>
+  <data name="RangeError" xml:space="preserve">
+    <value>{0} باید بین {1} و {2} باشد.</value>
+  </data>
 </root>

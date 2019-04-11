@@ -20,14 +20,12 @@ namespace RealEstate.Services.ViewModels.Input
         public string CategoryId { get; set; }
 
         [HiddenInput]
-        public string ItemFeaturesJson { get; set; }
+        public string ItemFeaturesJson { get; private set; }
 
         public List<FeatureJsonValueViewModel> ItemFeatures
         {
-            get => string.IsNullOrEmpty(ItemFeaturesJson)
-                ? default
-                : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(ItemFeaturesJson);
-            set => ItemFeaturesJson = JsonConvert.SerializeObject(value);
+            get => ItemFeaturesJson.JsonGetAccessor<List<FeatureJsonValueViewModel>>();
+            set => ItemFeaturesJson = value.JsonSetAccessor();
         }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]

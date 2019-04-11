@@ -1,0 +1,61 @@
+﻿@model PropertySelectorComplexComponentModel
+@if (Model != null)
+{
+    var parentModelName = Model.ParentModelName;
+    var propertySelectorTab = $"{parentModelName}_Property";
+
+    var submitPropertyCreator = $"{Model.PropertyCreator.ModelName}_Submit";
+    var propertyCreatorId = "PCtor";
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#@propertySelectorTab">@SharedLocalizer["SelectProperty"]</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#NewPropertyComplex">@SharedLocalizer["NewProperty"]</a>
+        </li>
+    </ul>
+    <div class="tab-content stylize">
+        <div class="tab-pane active" id="@propertySelectorTab">
+            <div class="row justify-content-center align-items-center title">
+                <div class="col-12">
+                    <h6>@SharedLocalizer["IfYouAlreadyCreateProperty"]</h6>
+                </div>
+            </div>
+            <vc:property-selector model="@Model.PropertySelector" />
+        </div>
+        <div class="tab-pane fade" id="NewPropertyComplex">
+            <div class="row justify-content-center align-items-center title">
+                <div class="col-12">
+                    <h6>@SharedLocalizer["IfYouWantToCreateProperty"]</h6>
+                </div>
+            </div>
+            @*<vc:person-selector-complex model="@Model.PropertyCreator.PersonSelectorComplex" />*@
+            @*<div class="row justify-content-center align-items-center itemShow">
+                    <div class="col-12 detail">
+                        <div class="info">
+                            <span>
+                                <a href="#" target="_blank" class="name title"></a>
+                                <span class="badge badge-primary mobile"></span>
+                                <span class="badge badge-warning phone"></span>
+                                <span class="badge badge-danger address"></span>
+                            </span>
+                            <span class="text-gray text-justify description"></span>
+                        </div>
+                        <div class="button">
+                            <a href="#" class="btn btn-sm btn-danger" id="@Model.PropertyCreator.PersonSelectorComplex.ResetId">@SharedLocalizer["ResetSelection"]</a>
+                        </div>
+                    </div>
+                </div>*@
+            <vc:property-creator model="@Model.PropertyCreator" />
+            <form method="post" id="@propertyCreatorId">
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <button type="button" id="@submitPropertyCreator" class="btn btn-success btn-block btn-sm">@SharedLocalizer["Submit"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+}

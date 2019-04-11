@@ -47,7 +47,7 @@ namespace RealEstate.Services
             var syncBeneficiaries = await _baseService.SyncAsync(
                 newDeal.Beneficiaries,
                 model.Beneficiaries,
-                (beneficiary, currentUser) => new Beneficiary
+                beneficiary => new Beneficiary
                 {
                     CommissionPercent = beneficiary.CommissionPercent,
                     DealId = newDeal.Id,
@@ -61,7 +61,7 @@ namespace RealEstate.Services
             var syncPayments = await _baseService.SyncAsync(
                 newDeal.DealPayments,
                 model.DealPayments,
-                (payment, currentUser) => new DealPayment
+                payment => new DealPayment
                 {
                     CommissionPrice = payment.Commission,
                     DealId = newDeal.Id,

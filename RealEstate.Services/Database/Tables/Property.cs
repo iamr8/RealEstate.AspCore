@@ -2,6 +2,7 @@
 using RealEstate.Services.Database.Base;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -31,6 +32,9 @@ namespace RealEstate.Services.Database.Tables
         public string CategoryId { get; set; }
         public IPoint Geolocation { get; set; }
         public virtual Category Category { get; set; }
+
+        [NotMapped]
+        public string Address => $"{Street} {Alley} {Number} {BuildingName} {Floor} {Flat}";
 
         public virtual District District { get; set; }
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }

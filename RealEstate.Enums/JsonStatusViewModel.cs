@@ -11,4 +11,10 @@ namespace RealEstate.Base
         [JsonProperty("id")]
         public string Id { get; set; }
     }
+
+    public class JsonStatusValueViewModel : JsonStatusViewModel
+    {
+        [JsonProperty("nm")]
+        public string Name { get; set; }
+    }
 }

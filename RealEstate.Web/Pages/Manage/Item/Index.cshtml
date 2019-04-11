@@ -1,5 +1,125 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Item.IndexModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model IndexModel
+@{
+    var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
+    var categories = categorieslist?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name
+    }).ToList().AddNone();
+}
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle">
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
+        </widget-header>
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center margin-bottomed">
+            </div>
+            @if (Model.List.Items?.Any() == true)
+            {
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12">
+                        <form method="post" class="widget mini-widget bg-white">
+                            <widget-header title="@SharedLocalizer["Search"]"></widget-header>
+                            <section class="container-fluid margin-bottomed">
+                                <div class="row">
+                                    <div class="col-6 margin-bottomed">
+                                        <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                        <input asp-for="SearchInput.Owner" class="form-control" />
+                                    </div>
+                                    <div class="col-6 margin-bottomed">
+                                        <label class="control-label" asp-for="SearchInput.CategoryId"></label>
+                                        <select asp-items="categories" asp-for="SearchInput.CategoryId" class="form-control"></select>
+                                    </div>
+                                    <div class="col-12 margin-bottomed">
+                                        <label class="control-label" asp-for="SearchInput.Address"></label>
+                                        <input asp-for="SearchInput.Address" class="form-control" />
+                                    </div>
+                                </div>
+                            </section>
+                            <widget-footer>
+                                <widget-footer-text></widget-footer-text>
+                                <widget-footer-button>
+                                    <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
+                                </widget-footer-button>
+                            </widget-footer>
+                        </form>
+                    </div>
+                </div>
+                foreach (var item in Model.List.Items)
+                {
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    var requestStatus = item.IsRequested;
+                    var lastOwnership = item.Property.Ownerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
+
+                    <div class="row justify-content-center itemShow @disabledClass">
+                        <div class="col-12 detail">
+                            <div class="info">
+                                <span>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property.Id" target="_blank">@item.Property?.Address</a>
+                                    <span class="badge badge-danger">@item.Category?.Name</span>
+                                    @if (lastOwnership?.Owners?.Any() == true)
+                                    {
+                                        foreach (var ownership in lastOwnership.Owners)
+                                        {
+                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Name &mdash; @ownership.Contact.Mobile</a>
+                                        }
+                                    }
+                                    @if (item.Features?.Any() == true)
+                                    {
+                                        <div class="d-md-inline-block mt-1 mt-md-0">
+                                            @foreach (var spec in item.Features)
+                                            {
+                                                <text>
+                                                    <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
+                                                </text>
+                                            }
+                                        </div>
+
+                                    }
+                                </span>
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <span class="text-gray text-justify description">
+                                        @item.Description
+                                    </span>
+                                }
+                            </div>
+                            <div class="button">
+                                @if (item.IsRequested)
+                                {
+                                    <span class="btn btn-sm btn-secondary">@SharedLocalizer["UpdatedDealStatus"]</span>
+                                }
+                                else
+                                {
+                                    <a asp-page="/@nameof(Manage)/@nameof(Item)/Request" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["UpdateDealStatus"]</a>
+                                }
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                {
+                                    <a asp-page="/@nameof(Manage)/@nameof(Item)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                }
+                            </div>
+                        </div>
+                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                        {
+                            <vc:log logs="@item.Logs" />
+                        }
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="row justify-content-center align-items-center">
+                    <h5>
+                        @SharedLocalizer["NoItemToShow"]
+                    </h5>
+                </div>
+            }
+            <vc:pagination model="@Model.List"></vc:pagination>
+        </section>
+    </div>
+</div>

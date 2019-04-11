@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
@@ -16,14 +17,12 @@ namespace RealEstate.Services.ViewModels.Input
 
         [HiddenInput]
         [Required]
-        public string ApplicantFeaturesJson { get; set; }
+        public string ApplicantFeaturesJson { get; private set; }
 
         public List<FeatureJsonValueViewModel> ApplicantFeatures
         {
-            get => string.IsNullOrEmpty(ApplicantFeaturesJson)
-                ? default
-                : JsonConvert.DeserializeObject<List<FeatureJsonValueViewModel>>(ApplicantFeaturesJson);
-            set => ApplicantFeaturesJson = JsonConvert.SerializeObject(value);
+            get => ApplicantFeaturesJson.JsonGetAccessor<List<FeatureJsonValueViewModel>>();
+            set => ApplicantFeaturesJson = value.JsonSetAccessor();
         }
     }
 }

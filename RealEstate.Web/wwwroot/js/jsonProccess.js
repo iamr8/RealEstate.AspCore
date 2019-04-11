@@ -62,7 +62,6 @@ function addJson(jsonElement, item, uniqueCheck) {
 
     const json = $.parseJSON(jsonString);
     const found = json.findIndex(uniqueCheck) >= 0;
-    console.log(uniqueCheck);
     if (found) {
         return;
     }

@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.Json
 {
@@ -21,10 +21,7 @@ namespace RealEstate.Services.ViewModels.Json
         public string District { get; set; }
 
         [JsonProperty("own")]
-        public string Owner { get; set; }
-
-        [JsonProperty("owm")]
-        public string OwnerMobile { get; set; }
+        public List<OwnershipJsonViewModel> Owners { get; set; }
 
         [JsonProperty("ftr")]
         public List<FeatureJsonValueViewModel> Features { get; set; }

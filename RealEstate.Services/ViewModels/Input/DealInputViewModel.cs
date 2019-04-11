@@ -15,26 +15,22 @@ namespace RealEstate.Services.ViewModels.Input
 
         [HiddenInput]
         [Required]
-        public string DealPaymentsJson { get; set; }
+        public string DealPaymentsJson { get; private set; }
 
         public List<DealPaymentJsonViewModel> DealPayments
         {
-            get => string.IsNullOrEmpty(DealPaymentsJson)
-                ? default
-                : JsonConvert.DeserializeObject<List<DealPaymentJsonViewModel>>(DealPaymentsJson);
-            set => DealPaymentsJson = JsonConvert.SerializeObject(value);
+            get => DealPaymentsJson.JsonGetAccessor<List<DealPaymentJsonViewModel>>();
+            set => DealPaymentsJson = value.JsonSetAccessor();
         }
 
         [HiddenInput]
         [Required]
-        public string BeneficiaryJson { get; set; }
+        public string BeneficiaryJson { get; private set; }
 
         public List<BeneficiaryJsonViewModel> Beneficiaries
         {
-            get => string.IsNullOrEmpty(BeneficiaryJson)
-                ? default
-                : JsonConvert.DeserializeObject<List<BeneficiaryJsonViewModel>>(BeneficiaryJson);
-            set => BeneficiaryJson = JsonConvert.SerializeObject(value);
+            get => BeneficiaryJson.JsonGetAccessor<List<BeneficiaryJsonViewModel>>();
+            set => BeneficiaryJson = value.JsonSetAccessor();
         }
     }
 }

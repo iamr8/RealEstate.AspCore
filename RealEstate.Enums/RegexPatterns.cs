@@ -33,6 +33,10 @@ namespace RealEstate.Base
         [Display(Name = @"^[\u0600-\u06FF\da-zA-Z0-9() .،-]+$")]
         SafeText,
 
+        [Description("فقط اعداد مجاز می باشد.")]
+        [Display(Name = @"^[\d]*$")]
+        NumbersOnly,
+
         [Description("فقط حروف انگلیسی مجاز است.")]
         [Display(Name = "^[a-zA-Z]+$")]
         EnglishText,

@@ -68,12 +68,10 @@ namespace RealEstate.Web.Pages.Manage.Applicant
             ModelState.Clear();
             NewApplicant = default;
 
-            var routeAnonymous = new
+            return RedirectToPage(typeof(Applicant.AddModel).Page(), new
             {
                 id = NewApplicant?.Id
-            };
-            var routeValues = HtmlHelper.AnonymousObjectToHtmlAttributes(routeAnonymous);
-            return RedirectToPage(typeof(Applicant.AddModel).Page(), routeValues);
+            });
         }
     }
 }

@@ -17,14 +17,12 @@ namespace RealEstate.Services.ViewModels.Input
 
         public string Description { get; set; }
 
-        public string ApplicantsJson { get; set; }
+        public string ApplicantsJson { get; private set; }
 
         public List<ApplicantJsonViewModel> Applicants
         {
-            get => string.IsNullOrEmpty(ApplicantsJson)
-                ? default
-                : JsonConvert.DeserializeObject<List<ApplicantJsonViewModel>>(ApplicantsJson);
-            set => ApplicantsJson = JsonConvert.SerializeObject(value);
+            get => ApplicantsJson.JsonGetAccessor<List<ApplicantJsonViewModel>>();
+            set => ApplicantsJson = value.JsonSetAccessor();
         }
     }
 }

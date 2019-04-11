@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Component;
 
 namespace RealEstate.Web.Components
 {
     public class JsonSelectorViewComponent : ViewComponent
     {
-        public IViewComponentResult Invoke(JsonSelectorViewModel model)
+        public IViewComponentResult Invoke(JsonSelectorComponentModel model)
         {
-            return View(model ?? new JsonSelectorViewModel());
+            return View(model ?? new JsonSelectorComponentModel());
         }
     }
 }

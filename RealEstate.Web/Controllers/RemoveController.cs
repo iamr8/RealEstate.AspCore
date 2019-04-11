@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Controllers
 {
+    [Route("manage")]
     [Authorize(Roles = "Admin,SuperAdmin")]
     public class RemoveController : Controller
     {
@@ -13,12 +14,16 @@ namespace RealEstate.Web.Controllers
         private readonly IUserService _userService;
         private readonly ILocationService _locationService;
         private readonly IContactService _contactService;
+        private readonly IPropertyService _propertyService;
+        private readonly IItemService _itemService;
 
         public RemoveController(
             IUserService userService,
             IFeatureService featureService,
             ILocationService locationService,
-            IContactService contactService
+            IContactService contactService,
+            IPropertyService propertyService,
+            IItemService itemService
 
             )
         {
@@ -26,6 +31,8 @@ namespace RealEstate.Web.Controllers
             _contactService = contactService;
             _locationService = locationService;
             _featureService = featureService;
+            _propertyService = propertyService;
+            _itemService = itemService;
         }
 
         [Route("facility/remove")]
@@ -33,6 +40,26 @@ namespace RealEstate.Web.Controllers
         {
             var model = await _featureService.FacilityRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Facility.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
+        [Route("item/remove")]
+        public async Task<IActionResult> ItemAsync(string id)
+        {
+            var model = await _itemService.ItemRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Item.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
+        [Route("property/remove")]
+        public async Task<IActionResult> PropertyAsync(string id)
+        {
+            var model = await _propertyService.PropertyRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Property.IndexModel).Page(), new
             {
                 status = (int)model
             });

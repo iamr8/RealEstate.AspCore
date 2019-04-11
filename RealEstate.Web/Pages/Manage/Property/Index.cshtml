@@ -1,5 +1,130 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Property.IndexModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model IndexModel
+@{
+    var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+    var categories = categorieslist?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name
+    }).ToList().AddNone();
+
+}
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center margin-bottomed">
+            </div>
+            @if (Model.List.Items?.Any() == true)
+            {
+                <div class="col-12">
+                    <form method="post" class="widget mini-widget bg-white">
+                        <widget-header title="@SharedLocalizer["Search"]"></widget-header>
+                        <section class="container-fluid margin-bottomed">
+                            <div class="row">
+                                <div class="col-12 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Address"></label>
+                                    <input asp-for="SearchInput.Address" class="form-control" />
+                                </div>
+                                <div class="col-12 col-lg-4 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                    <input asp-for="SearchInput.Owner" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-4 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Category"></label>
+                                    <select asp-items="categories" asp-for="SearchInput.Category" class="form-control"></select>
+                                </div>
+                                <div class="col-6 col-lg-4 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.District"></label>
+                                    <input asp-for="SearchInput.District" class="form-control" />
+                                </div>
+                            </div>
+                        </section>
+                        <widget-footer>
+                            <widget-footer-text></widget-footer-text>
+                            <widget-footer-button>
+                                <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
+                            </widget-footer-button>
+                        </widget-footer>
+                    </form>
+                </div>
+                foreach (var item in Model.List.Items)
+                {
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    var hasNoProperties = item.Deals <= 0 ? "disabled" : "";
+                    var lastOwnership = item.Ownerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
+                    <div class="row justify-content-center itemShow @disabledClass">
+                        <div class="col-12 detail">
+                            <div class="info">
+                                <span>
+                                    <b class="title">
+                                        @item.Address
+                                    </b>
+                                    <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Id" target="_blank" class="badge badge-warning">@item.District.Name</a>
+                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category?.Name</a>
+                                    @if (lastOwnership?.Owners?.Any() == true)
+                                    {
+                                        foreach (var owner in lastOwnership.Owners)
+                                        {
+                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Name - @owner.Contact?.Mobile - @owner.Dong دنگ</a>
+                                        }
+                                    }
+                                    <span class="badge badge-secondary">@SharedLocalizer["Status"]: در انتظار معامله</span>
+                                </span>
+                                @if (item.Facilities?.Any() == true || item.Features?.Any() == true)
+                                {
+                                    <span>
+                                        @if (item.Facilities?.Any() == true)
+                                        {
+                                            foreach (var facility in item.Facilities)
+                                            {
+                                                <span class="badge badge-secondary">@facility.Facility?.Name</span>
+                                            }
+                                        }
+                                        @if (item.Features?.Any() == true)
+                                        {
+                                            foreach (var feature in item.Features)
+                                            {
+                                                <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value</span>
+                                            }
+                                        }
+                                    </span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <span class="text-gray text-justify description">
+                                        @item.Description
+                                    </span>
+                                }
+                            </div>
+                            <div class="button">
+                                <a asp-page="@typeof(Deal.IndexModel).Page()" asp-route-dealAddress="@item.Street" class="@hasNoProperties">@SharedLocalizer["Deals"] <span class="badge badge-pill badge-light">@item.Deals</span></a>
+                                @* <a asp-page="/@nameof(Manage)/@nameof(Property)/AddPhoto" asp-route-id="@item.Id" class="btn btn-sm btn-primary">@SharedLocalizer["Photos"]</a> *@
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                {
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-controller="Remove" asp-action="PropertyAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                }
+                            </div>
+                        </div>
+                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                        {
+                            <vc:log logs="@item.Logs" />
+                        }
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="row justify-content-center align-items-center">
+                    <h5>
+                        @SharedLocalizer["NoItemToShow"]
+                    </h5>
+                </div>
+            }
+            <vc:pagination model="@Model.List"></vc:pagination>
+        </section>
+    </div>
+</div>

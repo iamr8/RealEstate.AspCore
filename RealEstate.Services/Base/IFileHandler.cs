@@ -108,10 +108,7 @@ namespace RealEstate.Services.Base
             {
                 var finalFilePath = Path.Combine(finalFilename.Directory,
                     $"{finalFilename.FileName}.{finalFilename.FileExtension}");
-                outputStream.SaveAsAsync(finalFilePath, stream =>
-                {
-                    outputStream.Flush();
-                });
+                outputStream.SaveAsAsync(finalFilePath, _ => outputStream.Flush());
 
                 return new RockFile
                 {

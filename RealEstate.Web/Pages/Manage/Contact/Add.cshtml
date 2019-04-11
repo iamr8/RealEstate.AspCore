@@ -1,12 +1,18 @@
 ﻿@page
+@using RealEstate.Web.Components
 @model AddModel
-
+@{
+    var personCreator = new CreatorComponentModel
+    {
+        ModelName = nameof(Model.NewApplicant)
+    };
+}
 <form method="post" class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
-            <vc:person-creator model="@Model.NewApplicant"></vc:person-creator>
+            @*<vc:person-creator model="@personCreator" />*@
         </section>
         <widget-footer>
             <widget-footer-text>

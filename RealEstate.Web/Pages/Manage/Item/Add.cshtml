@@ -1,5 +1,122 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Item.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+@{
+    var itemCategoriesList = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
+    var itemCategories = itemCategoriesList?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
+
+    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
+    var itemFeatureSelector = new JsonSelectorComponentModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        ModelName = nameof(Model.NewItem),
+        ItemName = nameof(Model.NewItem.ItemFeatures),
+        Json = nameof(Model.NewItem.ItemFeaturesJson),
+        Title = SharedLocalizer["ItemFeatures"],
+        ScriptKey = "itemFeaturesScript",
+        SelectListItems = itemFeatures?.Select(x => new SelectListItem
+        {
+            Text = x.Name,
+            Value = x.Id,
+        }).SelectFirstItem(),
+    };
+
+    const string modelName = nameof(Model.NewItem);
+    var propertySelectorName = $"{modelName}_Property";
+    var propertyCreatorModelName = $"{modelName}_NewProperty";
+    var personSelectorName = $"{propertyCreatorModelName}_Person";
+    var personCreatorModelName = $"{propertyCreatorModelName}_NewPerson";
+
+    var propertySelector = new PropertySelectorComplexComponentModel
+    {
+        ParentModelName = modelName,
+        PropertySelector = new PropertySelectorComponentModel
+        {
+            ModelName = propertySelectorName,
+            SearchId = $"{propertySelectorName}_Search",
+            SearchResultId = $"{propertySelectorName}_Searches",
+            ScriptKey = "propertySelector",
+            PropertyId = nameof(Model.NewItem.PropertyId)
+        },
+        PropertyCreator = new PropertyCreatorComponentModel
+        {
+            ModelName = propertyCreatorModelName,
+            PropertyId = nameof(Model.NewItem.PropertyId),
+            ScriptKey = "propertyCreator",
+            PersonCreator = new PersonCreatorComponentModel
+            {
+                ModelName = personCreatorModelName,
+            }
+        }
+    };
+}
+
+<div class="col-12" id="searcher">
+    <vc:property-selector-complex model="@propertySelector" />
+</div>
+<form method="post" class="widget" id="NewItem">
+    <widget-header title="@Model.PageTitle" />
+    <input asp-for="NewItem.PropertyId" />
+    <input asp-for="NewItem.Id" />
+    <section class="container-fluid">
+        <div class="row justify-content-center align-items-center itemShow" id="NewItem_PropertyInfo">
+            <div class="col-12 detail">
+                <div class="info">
+                    <span class="margin-bottomed">
+                        <a href="#" target="_blank" class="address title"></a>
+                        <a href="#" target="_blank" class="badge badge-primary district"></a>
+                        <a href="#" target="_blank" class="badge badge-warning category"></a>
+                        <a href="#" target="_blank" class="badge badge-danger owner"></a>
+                    </span>
+                    <span class="text-gray text-justify description"></span>
+                </div>
+                <div class="button">
+                    <a href="#" class="btn btn-sm btn-danger" id="NewItem_ResetProperty">@SharedLocalizer["ResetSelection"]</a>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center align-items-center">
+            <div class="col-12 margin-bottomed">
+                <label asp-for="NewItem.CategoryId" class="control-label"></label>
+                <select asp-items="itemCategories" asp-for="NewItem.CategoryId" class="form-control"></select>
+                <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
+            </div>
+        </div>
+        <input asp-for="NewItem.ItemFeaturesJson" />
+        <vc:json-selector model="@itemFeatureSelector" />
+        <hr />
+        <div class="row justify-content-center align-items-center">
+            <div class="col-12 margin-bottomed">
+                <label asp-for="NewItem.Description" class="control-label"></label>
+                <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="NewItem.Description" class="text-danger"></span>
+            </div>
+        </div>
+    </section>
+    <widget-footer>
+        <widget-footer-text>
+            <div asp-validation-summary="All">
+                @Model.ItemStatus
+            </div>
+        </widget-footer-text>
+        <widget-footer-button>
+            <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+        </widget-footer-button>
+    </widget-footer>
+</form>
+
+@section Scripts
+    {
+    <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
+    @* <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>  *@
+    <script asp-paste-key="propertyFeaturesScript"></script>
+    <script asp-paste-key="propertyFacilitiesScript"></script>
+    <script asp-paste-key="propertyOwnersScript"></script>
+
+    @* <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script> *@
+    <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
+}

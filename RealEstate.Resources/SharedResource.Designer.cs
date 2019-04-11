@@ -133,6 +133,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to کوچه.
+        /// </summary>
+        public static string Alley {
+            get {
+                return ResourceManager.GetString("Alley", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to حذف شده.
         /// </summary>
         public static string AlreadyDeleted {
@@ -169,6 +178,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to انتظارات متقاضی.
+        /// </summary>
+        public static string ApplicantFeatures {
+            get {
+                return ResourceManager.GetString("ApplicantFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to متقاضیان.
         /// </summary>
         public static string Applicants {
@@ -201,6 +219,24 @@ namespace RealEstate.Resources {
         public static string AreYouSureToDoThisRequest {
             get {
                 return ResourceManager.GetString("AreYouSureToDoThisRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to نام ساختمان.
+        /// </summary>
+        public static string BuildingName {
+            get {
+                return ResourceManager.GetString("BuildingName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to پلاک.
+        /// </summary>
+        public static string BuildingNumber {
+            get {
+                return ResourceManager.GetString("BuildingNumber", resourceCulture);
             }
         }
         
@@ -484,6 +520,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دانگ.
+        /// </summary>
+        public static string Dong {
+            get {
+                return ResourceManager.GetString("Dong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ویرایش.
         /// </summary>
         public static string Edit {
@@ -664,6 +709,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to واحد.
+        /// </summary>
+        public static string FlatNumber {
+            get {
+                return ResourceManager.GetString("FlatNumber", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to طبقه.
+        /// </summary>
+        public static string Floor {
+            get {
+                return ResourceManager.GetString("Floor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شما اجازه دسترسی به این درخواست را ندارید.
         /// </summary>
         public static string Forbidden {
@@ -750,6 +813,15 @@ namespace RealEstate.Resources {
         public static string Item {
             get {
                 return ResourceManager.GetString("Item", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مشخصات مورد.
+        /// </summary>
+        public static string ItemFeatures {
+            get {
+                return ResourceManager.GetString("ItemFeatures", resourceCulture);
             }
         }
         
@@ -966,6 +1038,15 @@ namespace RealEstate.Resources {
         public static string NewFeature {
             get {
                 return ResourceManager.GetString("NewFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مورد جدید.
+        /// </summary>
+        public static string NewItem {
+            get {
+                return ResourceManager.GetString("NewItem", resourceCulture);
             }
         }
         
@@ -1195,6 +1276,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to امکانات ملک.
+        /// </summary>
+        public static string PropertyFacilities {
+            get {
+                return ResourceManager.GetString("PropertyFacilities", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مشخصات ملک.
+        /// </summary>
+        public static string PropertyFeatures {
+            get {
+                return ResourceManager.GetString("PropertyFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ملک انتخاب نشده است..
         /// </summary>
         public static string PropertyNotSelected {
@@ -1209,6 +1308,15 @@ namespace RealEstate.Resources {
         public static string PropertySelectorPlaceholder {
             get {
                 return ResourceManager.GetString("PropertySelectorPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} باید بین {1} و {2} باشد..
+        /// </summary>
+        public static string RangeError {
+            get {
+                return ResourceManager.GetString("RangeError", resourceCulture);
             }
         }
         
@@ -1641,6 +1749,15 @@ namespace RealEstate.Resources {
         public static string Store {
             get {
                 return ResourceManager.GetString("Store", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to خیابان.
+        /// </summary>
+        public static string Street {
+            get {
+                return ResourceManager.GetString("Street", resourceCulture);
             }
         }
         
