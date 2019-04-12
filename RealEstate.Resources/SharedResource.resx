@@ -759,4 +759,7 @@
   <data name="RangeError" xml:space="preserve">
     <value>{0} باید بین {1} و {2} باشد.</value>
   </data>
+  <data name="Ownership" xml:space="preserve">
+    <value>مالکیت</value>
+  </data>
 </root>

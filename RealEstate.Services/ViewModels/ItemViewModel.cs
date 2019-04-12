@@ -1,5 +1,8 @@
-﻿using RealEstate.Services.BaseLog;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,12 +10,25 @@ namespace RealEstate.Services.ViewModels
 {
     public class ItemViewModel : BaseLogViewModel<Item>
     {
-        public ItemViewModel(Item entity) : base(entity)
-        {
-            Description = entity.Description;
+        [JsonIgnore]
+        public Item Entity { get; private set; }
 
-            var itemRequest = entity.ItemRequests?.OrderByDescending(x => x.DateTime).FirstOrDefault();
-            IsRequested = itemRequest?.IsReject == false;
+        [CanBeNull]
+        public readonly ItemViewModel Instance;
+
+        public ItemViewModel(Item entity, bool includeDeleted) : base(entity)
+        {
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
+                return;
+
+            Instance = new ItemViewModel
+            {
+                Entity = entity,
+                Description = entity.Description,
+                IsRequested = entity.ItemRequests?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.IsReject == false,
+                Id = entity.Id,
+                Logs = entity.GetLogs()
+            };
         }
 
         public ItemViewModel()

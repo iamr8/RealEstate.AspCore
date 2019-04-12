@@ -3,31 +3,114 @@
 {
     var newContact = new ContactInputViewModel();
     <div class="row justify-content-center align-items-center">
-        <div class="col-12 col-md-4 margin-bottomed">
-            <label for="@Model.Name.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Name))</label>
-            <input asp-for="@newContact.Name" id="@Model.Name.Id" name="@Model.Name.Name" class="form-control" />
-            <span class="text-danger" data-valmsg-for="@Model.Name.Name" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-6 col-md-4 margin-bottomed">
-            <label for="@Model.Mobile.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Mobile))</label>
-            <input asp-for="@newContact.Mobile" id="@Model.Mobile.Id" name="@Model.Mobile.Name" class="form-control" />
-            <span class="text-danger" data-valmsg-for="@Model.Mobile.Name" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-6 col-md-4 margin-bottomed">
-            <label for="@Model.Phone.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Phone))</label>
-            <input asp-for="@newContact.Phone" id="@Model.Phone.Id" name="@Model.Phone.Name" class="form-control" />
-            <span class="text-danger" data-valmsg-for="@Model.Phone.Name" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-12 margin-bottomed">
-            <label for="@Model.Address.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Address))</label>
-            <input asp-for="@newContact.Address" id="@Model.Address.Id" name="@Model.Address.Name" class="form-control" />
-            <span class="text-danger" data-valmsg-for="@Model.Address.Name" data-valmsg-replace="true"></span>
-        </div>
-        <div class="col-12 margin-bottomed">
-            <label for="@Model.Description.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Description))</label>
-            <input asp-for="@newContact.Description" id="@Model.Description.Id" name="@Model.Description.Name" class="form-control" />
-            <span class="text-danger" data-valmsg-for="@Model.Description.Name" data-valmsg-replace="true"></span>
+        <div class="col-12">
+            <div class="widget mini-widget">
+                <widget-header title="@SharedLocalizer["NewOwner"]" />
+                <section class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-md-4 margin-bottomed">
+                            <label for="@Model.Name.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Name))</label>
+                            <input asp-for="@newContact.Name" id="@Model.Name.Id" name="@Model.Name.Name" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="@Model.Name.Name" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-6 col-md-4 margin-bottomed">
+                            <label for="@Model.Mobile.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Mobile))</label>
+                            <input asp-for="@newContact.Mobile" id="@Model.Mobile.Id" name="@Model.Mobile.Name" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="@Model.Mobile.Name" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-6 col-md-4 margin-bottomed">
+                            <label for="@Model.Phone.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Phone))</label>
+                            <input asp-for="@newContact.Phone" id="@Model.Phone.Id" name="@Model.Phone.Name" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="@Model.Phone.Name" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-12 margin-bottomed">
+                            <label for="@Model.Address.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Address))</label>
+                            <input asp-for="@newContact.Address" id="@Model.Address.Id" name="@Model.Address.Name" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="@Model.Address.Name" data-valmsg-replace="true"></span>
+                        </div>
+                        <div class="col-12 margin-bottomed">
+                            <label for="@Model.Description.Id" class="control-label">@(PropertyExtensions.GetDisplayName<ContactInputViewModel>(x => x.Description))</label>
+                            <input asp-for="@newContact.Description" id="@Model.Description.Id" name="@Model.Description.Name" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="@Model.Description.Name" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                </section>
+                <widget-footer>
+                    <widget-footer-text>
+                        <span id="createPersonStatus"></span>
+                    </widget-footer-text>
+                    <widget-footer-button>
+                        <button type="button" id="@Model.SubmitId" class="btn btn-success btn-block btn-sm">@SharedLocalizer["Submit"]</button>
+                    </widget-footer-button>
+                </widget-footer>
+            </div>
         </div>
     </div>
 
+    <script asp-cut-key="@Model.ScriptKey">
+        $(document).ready(function() {
+            const newForm = $("#@Model.FormId");
+            const newName = $("#@Model.Name.Id");
+            const newMobile = $("#@Model.Mobile.Id");
+            const newAddress = $("#@Model.Address.Id");
+            const newPhone = $("#@Model.Phone.Id");
+            const newDescription = $("#@Model.Description.Id");
+            const newFormStatus = $("#createPersonStatus");
+
+              $(document).on("click",
+            "#@Model.SubmitId",
+            function() {
+                const name = $(newName).val();
+                const mobile = $(newMobile).val();
+                const address = $(newAddress).val();
+                const phone = $(newPhone).val();
+                const description = $(newDescription).val();
+
+                const children = $("[data-val='true']", newForm);
+                $.each(children,
+                    (key, value) => {
+                        $(value).valid();
+                    });
+
+                if ($(newForm)[0].checkValidity()) {
+                    const model = {
+                        @(nameof(Model.Address)): address,
+                        @(nameof(Model.Name)): name,
+                        @(nameof(Model.Description)): description,
+                        @(nameof(Model.Phone)): phone,
+                        @(nameof(Model.Mobile)): mobile,
+                    };
+
+                    console.log(model);
+                    $.post("@Url.Action("ContactAsync", "Add")",
+                        model,
+                        function(response) {
+                            console.log(response);
+                            if (response != undefined) {
+
+                                const responseStatus =
+                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x=>x.Status));
+                                const responseId =
+                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Id));
+                                const responseName =
+                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Name));
+
+                                if (responseStatus === @((int)StatusEnum.Success) ||
+                                    responseStatus === @((int)StatusEnum.PartialSuccess)) {
+                                    $(newFormStatus).html("@Html.Raw(StatusEnum.Success.GetDisplayName())");
+
+                                    @if (!string.IsNullOrEmpty(Model.JsCodeOnSuccess))
+                                    {
+                                        <text>
+                                            @Html.Raw(Model.JsCodeOnSuccess)
+                                        </text>
+                                    }
+
+                                }
+                            }
+                        });
+                }
+            });
+        });
+    </script>
 }

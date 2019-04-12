@@ -22,6 +22,7 @@ namespace RealEstate.Services
         Task<District> DistrictEntityAsync(string id);
 
         Task<StatusEnum> DistrictRemoveAsync(string id);
+
         Task<List<DistrictViewModel>> DistrictListAsync();
 
         Task<(StatusEnum, District)> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save);
@@ -55,7 +56,7 @@ namespace RealEstate.Services
             query = query.Filtered();
 
             var districts = await query.ToListAsync().ConfigureAwait(false);
-            return districts.Select(x => new DistrictViewModel(x)).ToList();
+            return districts.Select(x => new DistrictViewModel(x, false).Instance).ToList();
         }
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
@@ -69,7 +70,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new DistrictViewModel(item)
+                item => new DistrictViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance
             ).ConfigureAwait(false);
 
             return result;
@@ -144,13 +145,17 @@ namespace RealEstate.Services
 
         public async Task<DistrictInputViewModel> DistrictInputAsync(string id)
         {
-            if (string.IsNullOrEmpty(id)) return null;
+            if (string.IsNullOrEmpty(id))
+                return default;
 
             var query = _districts.Where(x => x.Id == id)
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new DistrictViewModel(model);
+            var viewModel = new DistrictViewModel(model, false);
+            if (viewModel.Instance == null)
+                return default;
+
             var result = new DistrictInputViewModel
             {
                 Id = viewModel.Id,

@@ -1,24 +1,35 @@
-﻿using RealEstate.Base;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
 using RealEstate.Base.Enums;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class PaymentViewModel : BaseViewModel
+    public class PaymentViewModel : BaseLogViewModel<Payment>
     {
-        private readonly Payment _model;
+        [JsonIgnore]
+        public Payment Entity { get; private set; }
 
-        public PaymentViewModel(Payment model)
+        [CanBeNull]
+        public readonly PaymentViewModel Instance;
+
+        public PaymentViewModel(Payment entity, bool includeDeleted) : base(entity)
         {
-            if (model == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _model = model;
-            Value = _model.Value;
-            Id = _model.Id;
-            Text = _model.Text;
-            Type = _model.Type;
+            Instance = new PaymentViewModel
+            {
+                Entity = entity,
+                Value = entity.Value,
+                Id = entity.Id,
+                Text = entity.Text,
+                Type = entity.Type,
+                Logs = entity.GetLogs()
+            };
         }
 
         public PaymentViewModel()

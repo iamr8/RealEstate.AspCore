@@ -53,25 +53,49 @@
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
                     var hasNoProperties = item.Deals <= 0 ? "disabled" : "";
-                    var lastOwnership = item.Ownerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.Address
-                                    </b>
-                                    <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Id" target="_blank" class="badge badge-warning">@item.District.Name</a>
-                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category?.Name</a>
-                                    @if (lastOwnership?.Owners?.Any() == true)
-                                    {
-                                        foreach (var owner in lastOwnership.Owners)
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Id" target="_blank">@item.District.Name</a> &mdash;
+                                        @if (!string.IsNullOrEmpty(item.Street))
                                         {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Name - @owner.Contact?.Mobile - @owner.Dong دنگ</a>
+                                            <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.Street<text> &mdash; </text>
                                         }
-                                    }
-                                    <span class="badge badge-secondary">@SharedLocalizer["Status"]: در انتظار معامله</span>
+                                        @if (!string.IsNullOrEmpty(item.Alley))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Alley"]: </span>@item.Alley<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Number))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingNumber"]: </span>@item.Number<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.BuildingName))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingName"]: </span>@item.BuildingName<text> &mdash; </text>
+                                        }
+                                        @if (item.Floor > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Floor"]: </span>@item.Floor<text> &mdash; </text>
+                                        }
+                                        @if (item.Flat > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Flat"]: </span>@item.Flat
+                                        }
+                                    </b>
+
+                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category?.Name</a>
                                 </span>
+                                @if (item.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var owner in item.CurrentPropertyOwnership.Ownerships)
+                                        {
+                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Contact.Name - @owner.Contact?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                        }
+                                    </span>
+                                }
                                 @if (item.Facilities?.Any() == true || item.Features?.Any() == true)
                                 {
                                     <span>
@@ -99,8 +123,6 @@
                                 }
                             </div>
                             <div class="button">
-                                <a asp-page="@typeof(Deal.IndexModel).Page()" asp-route-dealAddress="@item.Street" class="@hasNoProperties">@SharedLocalizer["Deals"] <span class="badge badge-pill badge-light">@item.Deals</span></a>
-                                @* <a asp-page="/@nameof(Manage)/@nameof(Property)/AddPhoto" asp-route-id="@item.Id" class="btn btn-sm btn-primary">@SharedLocalizer["Photos"]</a> *@
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>

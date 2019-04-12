@@ -21,7 +21,7 @@ namespace RealEstate.Services.ViewModels.Json
         public string District { get; set; }
 
         [JsonProperty("own")]
-        public List<OwnershipJsonViewModel> Owners { get; set; }
+        public List<OwnershipJsonViewModel> Ownerships { get; set; }
 
         [JsonProperty("ftr")]
         public List<FeatureJsonValueViewModel> Features { get; set; }

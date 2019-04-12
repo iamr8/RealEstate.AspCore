@@ -76,7 +76,7 @@
 
                                         const addressValue = value
                                             .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Address));
-                                        const ownersValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Owners));
+                                        const ownersValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Ownerships));
                                         const districtValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.District));
                                         const categoryValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Category));
                                         const idValue  = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Id));
@@ -91,7 +91,7 @@
                                                 const ownerItemElement = $(ownerTemplate).clone();
                                                 $(ownerItemElement).removeClass("template d-none");
 
-                                                const ownerIdValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Id));
+                                                const ownerIdValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.ContactId));
                                                 const ownerNameValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Name));
                                                 const ownerMobileValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Mobile));
 

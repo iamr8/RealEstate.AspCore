@@ -6,32 +6,32 @@ using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class ItemFeatureViewModel : BaseLogViewModel<ItemFeature>
+    public class ApplicantFeatureViewModel : BaseLogViewModel<ApplicantFeature>
     {
         private string _value;
 
         [JsonIgnore]
-        public ItemFeature Entity { get; private set; }
+        public ApplicantFeature Entity { get; private set; }
 
         [CanBeNull]
-        public readonly ItemFeatureViewModel Instance;
+        public readonly ApplicantFeatureViewModel Instance;
 
-        public ItemFeatureViewModel(ItemFeature entity, bool includeDeleted) : base(entity)
+        public ApplicantFeatureViewModel()
+        {
+        }
+
+        public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new ItemFeatureViewModel
+            Instance = new ApplicantFeatureViewModel
             {
                 Entity = entity,
                 Id = entity.Id,
                 Value = entity.Value,
                 Logs = entity.GetLogs()
             };
-        }
-
-        public ItemFeatureViewModel()
-        {
         }
 
         public string Value

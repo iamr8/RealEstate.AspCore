@@ -57,7 +57,7 @@ namespace RealEstate.Web.Pages.Manage.Property
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _propertyService.PropertyAddOrUpdateAsync(NewProperty, !NewProperty.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _propertyService.PropertyAddOrUpdateAsync(NewProperty, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
             PropertyStatus = finalStatus.GetDisplayName();

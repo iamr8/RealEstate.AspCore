@@ -75,10 +75,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ItemViewModel(item)
-                    .R8Include(model =>
-                    {
-                    })).ConfigureAwait(false);
+                item => new ItemViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance).ConfigureAwait(false);
 
             return result;
         }
@@ -91,13 +88,14 @@ namespace RealEstate.Services
             if (entity == null)
                 return default;
 
-            var viewModel = new ItemViewModel(entity)
+            var viewModel = new ItemViewModel(entity, false).Instance?
                 .R8Include(model =>
                 {
-                    model.Category = new CategoryViewModel(model.Entity.Category);
-                    model.Features = model.Entity.ItemFeatures.Select(propEntity =>
-                        new ItemFeatureViewModel(propEntity).R8Include(x => x.Feature = new FeatureViewModel(x.Entity.Feature))).ToList();
-                    model.Property = new PropertyViewModel(model.Entity.Property);
+                    model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
+                    model.Features = model.Entity?.ItemFeatures.Select(propEntity =>
+                        new ItemFeatureViewModel(propEntity, false).Instance?
+                            .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance)).R8ToList();
+                    model.Property = new PropertyViewModel(model.Entity?.Property, false).Instance;
                 });
             if (viewModel == null)
                 return default;
@@ -107,10 +105,10 @@ namespace RealEstate.Services
                 Id = viewModel.Id,
                 Description = viewModel.Description,
                 CategoryId = viewModel.Category?.Id,
-                ItemFeatures = viewModel.Features.Select(x => new FeatureJsonValueViewModel
+                ItemFeatures = viewModel.Features?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Id,
-                    Name = x.Feature.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
                 PropertyId = viewModel.Property?.Id

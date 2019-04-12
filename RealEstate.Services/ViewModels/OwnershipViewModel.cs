@@ -1,5 +1,8 @@
-﻿using RealEstate.Services.BaseLog;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -9,23 +12,26 @@ namespace RealEstate.Services.ViewModels
         {
         }
 
-        public OwnershipViewModel(Ownership entity) : base(entity)
+        [JsonIgnore]
+        public Ownership Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly OwnershipViewModel Instance;
+
+        public OwnershipViewModel(Ownership entity, bool includeDeleted) : base(entity)
         {
-            if (entity == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Id = Entity.Id;
-            Name = Entity.Name;
-            Phone = Entity.PhoneNumber;
-            Address = Entity.Address;
-            Description = Entity.Description;
-            Dong = Entity.Dong;
+            Instance = new OwnershipViewModel
+            {
+                Entity = entity,
+                Id = entity.Id,
+                Description = entity.Description,
+                Dong = entity.Dong,
+                Logs = entity.GetLogs()
+            };
         }
-
-        public string Name { get; set; }
-
-        public string Phone { get; set; }
-        public string Address { get; set; }
 
         public string Description { get; set; }
         public int Dong { get; set; }

@@ -1,18 +1,32 @@
-﻿using RealEstate.Services.BaseLog;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
     public class BeneficiaryViewModel : BaseLogViewModel<Beneficiary>
     {
-        protected BeneficiaryViewModel(Beneficiary entity, bool showDeleted) : base(entity)
+        [JsonIgnore]
+        public Beneficiary Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly BeneficiaryViewModel Instance;
+
+        public BeneficiaryViewModel(Beneficiary entity, bool includeDeleted) : base(entity)
         {
-            if (entity == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            TipPercent = Entity.TipPercent;
-            CommissionPercent = Entity.CommissionPercent;
-            Id = Entity.Id;
+            Instance = new BeneficiaryViewModel
+            {
+                Entity = entity,
+                TipPercent = entity.TipPercent,
+                CommissionPercent = entity.CommissionPercent,
+                Id = entity.Id,
+                Logs = entity.GetLogs()
+            };
         }
 
         public BeneficiaryViewModel()

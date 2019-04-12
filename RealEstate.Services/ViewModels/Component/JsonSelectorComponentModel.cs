@@ -20,7 +20,7 @@ namespace RealEstate.Services.ViewModels.Component
 
         public string SelectId => $"{ModelName}_{ItemName}_Select";
         public string SubmitId => $"{ModelName}_{ItemName}_Submit";
-        public string ValueId => $"{ModelName}_{ItemName}_Value";
+        public string ValueId => !string.IsNullOrEmpty(ValueProperty) ? $"{ModelName}_{ItemName}_Value" : null;
         public string JsonInputId => $"{ModelName}_{Json}";
         public string WrapperClass => ItemName.ToCamelCase(CultureInfo.CurrentCulture);
         public string ItemSelectorClass => $"{WrapperClass}-item";

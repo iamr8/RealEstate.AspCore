@@ -1,44 +1,47 @@
-﻿using RealEstate.Services.BaseLog;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using System.Collections.Concurrent;
+using RealEstate.Services.Extensions;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace RealEstate.Services.ViewModels
 {
     public class ContactViewModel : BaseLogViewModel<Contact>
     {
+        [JsonIgnore]
+        public Contact Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly ContactViewModel Instance;
+
         public ContactViewModel()
         {
         }
 
-        public ContactViewModel(Contact entity) : base(entity)
+        public ContactViewModel(Contact entity, bool includeDeleted) : base(entity)
         {
-            if (entity == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Id = Entity.Id;
-            Mobile = Entity.MobileNumber;
-
-            var usage = new ConcurrentDictionary<string, int>();
-            if (Applicants?.Any() == true)
-                foreach (var applicant in Applicants)
-                    usage.AddOrUpdate(applicant.Name, 0, (key, oldValue) => oldValue + 1);
-
-            if (Ownerships?.Any() == true)
-                foreach (var ownership in Ownerships)
-                    usage.AddOrUpdate(ownership.Name, 0, (key, oldValue) => oldValue + 1);
-
-            if (usage.Count == 0)
-                return;
-
-            var max = usage.Max(c => c.Value);
-            var name = usage.FirstOrDefault(x => x.Value == max);
-            PopularName = name.Key;
+            Instance = new ContactViewModel
+            {
+                Entity = entity,
+                Id = entity.Id,
+                Mobile = entity.MobileNumber,
+                Phone = entity.PhoneNumber,
+                Address = entity.Address,
+                IsPrivate = entity.IsPrivate,
+                Name = entity.Name,
+                Logs = entity.GetLogs()
+            };
         }
 
+        public string Name { get; set; }
+        public string Phone { get; set; }
+        public string Address { get; set; }
         public string Mobile { get; set; }
-        public string PopularName { get; set; }
+        public bool IsPrivate { get; set; }
         public List<SmsViewModel> Smses { get; set; }
         public List<ApplicantViewModel> Applicants { get; set; }
         public List<OwnershipViewModel> Ownerships { get; set; }

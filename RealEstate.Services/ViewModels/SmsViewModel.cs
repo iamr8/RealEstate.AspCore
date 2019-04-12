@@ -1,27 +1,41 @@
-﻿using RealEstate.Base.Enums;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
     public class SmsViewModel : BaseLogViewModel<Sms>
     {
+        [JsonIgnore]
+        public Sms Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly SmsViewModel Instance;
+
         public SmsViewModel()
         {
         }
 
-        public SmsViewModel(Sms model) : base(model)
+        public SmsViewModel(Sms entity, bool includeDeleted) : base(entity)
         {
-            if (model == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Sender = model.Sender;
-            Id = model.Id;
-            Receiver = model.Receiver;
-            ReferenceId = model.ReferenceId;
-            Text = model.Text;
-            Provider = model.Provider;
-            StatusJson = model.StatusJson;
+            Instance = new SmsViewModel
+            {
+                Entity = entity,
+                Id = entity.Id,
+                Receiver = entity.Receiver,
+                Provider = entity.Provider,
+                ReferenceId = entity.ReferenceId,
+                Sender = entity.Sender,
+                StatusJson = entity.StatusJson,
+                Text = entity.Text,
+                Logs = entity.GetLogs()
+            };
         }
 
         public string Sender { get; set; }

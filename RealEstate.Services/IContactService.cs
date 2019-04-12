@@ -18,13 +18,11 @@ namespace RealEstate.Services
 {
     public interface IContactService
     {
-        Task<(StatusEnum, Database.Tables.Contact)> ContactAddAsync(ContactInputViewModel model, bool save);
+        Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool isForApplicantUse, bool save);
 
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
 
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
-
-        Task<Database.Tables.Contact> ContactEntityByMobileAsync(string mobile);
 
         Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id);
 
@@ -32,9 +30,13 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, bool save);
 
+        Task<(StatusEnum, Ownership)> OwnershipAddAsync(Ownership model, bool save);
+
         Task<PaginationViewModel<ContactViewModel>> ContactListAsync(ContactSearchViewModel searchModel);
 
         Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
+
+        Task<StatusEnum> ContactPrivacyCheckAsync(string mobile);
 
         Task<(StatusEnum, Database.Tables.Contact)> ContactUpdateAsync(ContactInputViewModel model, bool save);
 
@@ -42,15 +44,15 @@ namespace RealEstate.Services
 
         Task<ApplicantInputViewModel> ApplicantInputAsync(string id);
 
-        Task<List<OwnershipViewModel>> OwnershipListAsync();
+        Task<List<ContactViewModel>> ContactListAsync();
 
-        Task<Database.Tables.Applicant> ApplicantEntityAsync(string id);
+        Task<Applicant> ApplicantEntityAsync(string id, bool includeContact = true, bool includeApplicantFeatures = true, bool includeItemRequest = true);
 
         Task<StatusEnum> ApplicantRemoveAsync(string id);
 
         Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
 
-        Task<Database.Tables.Contact> ContactEntityAsync(string id);
+        Task<Contact> ContactEntityAsync(string id, string mobile, bool includeApplicants = true, bool includeOwnerships = true, bool includeSmses = true);
 
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save);
 
@@ -82,43 +84,61 @@ namespace RealEstate.Services
             _ownerships = _unitOfWork.Set<Ownership>();
         }
 
-        public async Task<Database.Tables.Contact> ContactEntityAsync(string id)
+        public async Task<Database.Tables.Contact> ContactEntityAsync(string id, string mobile, bool includeApplicants = true, bool includeOwnerships = true, bool includeSmses = true)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var entity = await _contacts.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var query = _contacts as IQueryable<Contact>;
+
+            if (!string.IsNullOrEmpty(id))
+                query = query.Where(x => x.Id == id);
+
+            if (!string.IsNullOrEmpty(mobile))
+                query = query.Where(x => x.MobileNumber == mobile);
+
+            if (includeApplicants)
+                query = query.Include(x => x.Applicants);
+
+            if (includeOwnerships)
+                query = query.Include(x => x.Ownerships);
+
+            if (includeSmses)
+                query = query.Include(x => x.Smses);
+
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
         }
 
-        public async Task<Database.Tables.Contact> ContactEntityByMobileAsync(string mobile)
+        public async Task<List<ContactViewModel>> ContactListAsync()
         {
-            if (string.IsNullOrEmpty(mobile))
-                return default;
-
-            var entity = await _contacts.FirstOrDefaultAsync(x => x.MobileNumber == mobile).ConfigureAwait(false);
-            return entity;
-        }
-
-        public async Task<List<OwnershipViewModel>> OwnershipListAsync()
-        {
-            var query = _ownerships as IQueryable<Ownership>;
+            var query = _contacts as IQueryable<Contact>;
             query = query.Filtered();
-            query = query.Include(x => x.Contact);
+            query = query.Include(x => x.Ownerships)
+                .Include(x => x.Applicants);
+            query = query.WhereItIsPublic();
 
-            var features = await query.ToListAsync().ConfigureAwait(false);
-            return features.Select(x => new OwnershipViewModel(x).R8Include(c =>
-            {
-                c.Contact = new ContactViewModel(c.Entity.Contact);
-            })).ToList();
+            var contacts = await query.ToListAsync().ConfigureAwait(false);
+            return contacts.Select(x => new ContactViewModel(x, false).Instance).R8ToList();
         }
 
-        public async Task<Applicant> ApplicantEntityAsync(string id)
+        public async Task<Applicant> ApplicantEntityAsync(string id, bool includeContact = true, bool includeApplicantFeatures = true, bool includeItemRequest = true)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var entity = await _applicants.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var query = _applicants as IQueryable<Applicant>;
+
+            if (includeContact)
+                query = query.Include(x => x.Contact);
+
+            if (includeApplicantFeatures)
+                query.Include(x => x.ApplicantFeatures);
+
+            if (includeItemRequest)
+                query.Include(x => x.ItemRequest);
+
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
         }
 
@@ -138,11 +158,15 @@ namespace RealEstate.Services
             var entity = await OwnershipEntityAsync(id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = new OwnershipViewModel(entity).R8Include(model => model.Contact = new ContactViewModel(model.Entity.Contact));
+            var viewModel = new OwnershipViewModel(entity, false).Instance?
+                .R8Include(model => model.Contact = new ContactViewModel(model.Entity?.Contact, false).Instance);
+            if (viewModel?.Instance == null)
+                return default;
+
             return new OwnershipJsonViewModel
             {
-                Id = viewModel.Id,
-                Name = viewModel.Name,
+                ContactId = viewModel.Contact.Id,
+                Name = viewModel.Contact.Name,
                 Dong = viewModel.Dong,
                 Mobile = viewModel.Contact.Mobile
             };
@@ -153,7 +177,7 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await ContactEntityAsync(id).ConfigureAwait(false);
+            var user = await ContactEntityAsync(id, null).ConfigureAwait(false);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
@@ -172,6 +196,7 @@ namespace RealEstate.Services
                 return StatusEnum.ParamIsNull;
 
             var user = await ApplicantEntityAsync(id).ConfigureAwait(false);
+            var mobile = user.Contact.MobileNumber;
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
@@ -180,8 +205,26 @@ namespace RealEstate.Services
                     true,
                     true)
                 .ConfigureAwait(false);
+            if (result != StatusEnum.Success)
+                return result;
 
-            return result;
+            var contact = await ContactPrivacyCheckAsync(mobile).ConfigureAwait(false);
+            return contact;
+        }
+
+        public async Task<StatusEnum> ContactPrivacyCheckAsync(string mobile)
+        {
+            var contact = await ContactEntityAsync(null, mobile, true, false, false).ConfigureAwait(false);
+            if (contact == null)
+                return StatusEnum.ContactIsNull;
+
+            if (contact.Applicants.Count > 0 && contact.Ownerships.Count == 0 && contact.Applicants.All(c => c.ItemRequest.Deal == null))
+                return StatusEnum.Success;
+
+            var (updateStatus, updatedContact) = await _baseService.UpdateAsync(contact,
+                () => contact.IsPrivate = false,
+                null, true, StatusEnum.ContactIsNull).ConfigureAwait(false);
+            return updateStatus;
         }
 
         public async Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemRequestId, bool save)
@@ -205,23 +248,25 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new ApplicantViewModel(model).R8Include(x =>
+            var viewModel = new ApplicantViewModel(model, false).Instance?.R8Include(x =>
             {
-                x.ApplicantFeatures = x.Entity.ApplicantFeatures.Select(c => new FeatureValueViewModel(c).R8Include(v =>
-                {
-                    v.Feature = new FeatureViewModel(v.Entity.Feature);
-                })).ToList();
-                x.Contact = new ContactViewModel(x.Entity.Contact);
+                x.ApplicantFeatures = x.Entity?.ApplicantFeatures.Select(c =>
+                    new ApplicantFeatureViewModel(c, false).Instance?
+                        .R8Include(v => v.Feature = new FeatureViewModel(v.Entity?.Feature, false).Instance)).R8ToList();
+                x.Contact = new ContactViewModel(x.Entity?.Contact, false).Instance;
             });
+            if (viewModel?.Instance == null)
+                return default;
+
             var result = new ApplicantInputViewModel
             {
                 Id = viewModel.Id,
                 Type = viewModel.Type,
-                Name = viewModel.Name,
+                Name = viewModel.Contact.Name,
                 Description = viewModel.Description,
-                Address = viewModel.Address,
+                Address = viewModel.Contact.Address,
                 Mobile = viewModel.Contact.Mobile,
-                Phone = viewModel.Phone,
+                Phone = viewModel.Contact.Phone,
                 ApplicantFeatures = viewModel.ApplicantFeatures.Select(x => new FeatureJsonValueViewModel
                 {
                     Id = x.Feature.Id,
@@ -244,12 +289,13 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ApplicantViewModel(item)
+                item => new ApplicantViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?
                     .R8Include(model =>
                     {
-                        model.ApplicantFeatures = model.Entity.ApplicantFeatures.Select(propEntity =>
-                            new FeatureValueViewModel(propEntity).R8Include(x => x.Feature = new FeatureViewModel(x.Entity.Feature))).ToList();
-                        model.Contact = new ContactViewModel(model.Entity.Contact);
+                        model.ApplicantFeatures = model.Entity?.ApplicantFeatures.Select(propEntity =>
+                            new ApplicantFeatureViewModel(propEntity, false).Instance?
+                                .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance).ShowBasedOn(b=>b.Feature)).R8ToList();
+                        model.Contact = new ContactViewModel(model.Entity?.Contact, false).Instance;
                     })).ConfigureAwait(false);
 
             return result;
@@ -259,20 +305,19 @@ namespace RealEstate.Services
         {
             var models = _contacts as IQueryable<Contact>;
             models = models.Include(x => x.Applicants);
-            models = models.Include(x => x.Smses);
             models = models.Include(x => x.Ownerships);
-            models = models.Where(x => x.Ownerships.Count > 0 || x.Applicants.Any(c => c.ItemRequest.Deal != null));
+            models = models.WhereItIsPublic();
 
             if (searchModel != null)
             {
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ContactViewModel(item)
+                item => new ContactViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?
                     .R8Include(model =>
                     {
-                        model.Applicants = model.Entity.Applicants.Select(propEntity => new ApplicantViewModel(propEntity)).ToList();
-                        model.Ownerships = model.Entity.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity)).ToList();
+                        model.Applicants = model.Entity?.Applicants.Select(propEntity => new ApplicantViewModel(propEntity, false).Instance).R8ToList();
+                        model.Ownerships = model.Entity?.Ownerships.Select(propEntity => new OwnershipViewModel(propEntity, false).Instance).R8ToList();
                     })
             ).ConfigureAwait(false);
 
@@ -300,28 +345,38 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.IdIsNull, null);
 
-            var entity = await ApplicantEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await ApplicantEntityAsync(model.Id, true, false, true).ConfigureAwait(false);
+            if (entity?.Contact?.IsPrivate != true || entity.ItemRequest?.Deal != null)
+                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ApplicantIsNull, null);
+
             var (updateStatus, updatedApplicant) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
-                    entity.Address = model.Address;
                     entity.Description = model.Description;
-                    entity.Name = model.Name;
-                    entity.PhoneNumber = model.Phone;
                     entity.Type = model.Type;
-                }, null, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, null, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+
+            var contact = updatedApplicant.Contact;
+            var (updateContactStatus, updatedContact) = await _baseService.UpdateAsync(contact,
+                () =>
+                {
+                    contact.Address = model.Address;
+                    contact.MobileNumber = model.Mobile;
+                    contact.Name = model.Name;
+                    contact.PhoneNumber = model.Phone;
+                }, null, false, StatusEnum.ContactIsNull).ConfigureAwait(false);
 
             var syncFeaturesStatus = await _baseService.SyncAsync(
-                updatedApplicant.ApplicantFeatures,
-                model.ApplicantFeatures,
-                feature => new ApplicantFeature
-                {
-                    ApplicantId = updatedApplicant.Id,
-                    FeatureId = feature.Id,
-                    Value = feature.Value,
-                }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
-                null,
-                false).ConfigureAwait(false);
+                            updatedApplicant.ApplicantFeatures,
+                            model.ApplicantFeatures,
+                            feature => new ApplicantFeature
+                            {
+                                ApplicantId = updatedApplicant.Id,
+                                FeatureId = feature.Id,
+                                Value = feature.Value,
+                            }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
+                            null,
+                            false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedApplicant, save).ConfigureAwait(false);
         }
 
@@ -330,13 +385,17 @@ namespace RealEstate.Services
             if (model == null)
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ModelIsNull, null);
 
-            var contact = await ContactEntityByMobileAsync(model.Mobile).ConfigureAwait(false);
+            var contact = await ContactEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (contact == null)
             {
                 var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
                 {
-                    Mobile = model.Mobile
-                }, true).ConfigureAwait(false);
+                    Mobile = model.Mobile,
+                    Address = model.Address,
+                    Name = model.Name,
+                    Phone = model.Phone,
+                    Id = model.Id
+                }, true, true).ConfigureAwait(false);
                 if (contactAddStatus == StatusEnum.Success)
                     contact = newContact;
                 else
@@ -348,10 +407,7 @@ namespace RealEstate.Services
                 ContactId = contact.Id,
                 UserId = currentUser.Id,
                 Type = model.Type,
-                Address = model.Address,
                 Description = model.Description,
-                Name = model.Name,
-                PhoneNumber = model.Phone
             },
                 null,
                 false).ConfigureAwait(false);
@@ -370,18 +426,30 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(newApplicant, save).ConfigureAwait(false);
         }
 
+        public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(Ownership model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
+
+            var addStatus = await _baseService.AddAsync(model, null, save).ConfigureAwait(false);
+            return addStatus;
+        }
+
         public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
 
-            var existingContact = await ContactEntityByMobileAsync(model.Mobile).ConfigureAwait(false);
+            var existingContact = await ContactEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (existingContact == null)
             {
                 var (contactAddStatus, newContact) = await ContactAddAsync(new ContactInputViewModel
                 {
                     Mobile = model.Mobile,
-                }, true).ConfigureAwait(false);
+                    Address = model.Address,
+                    Name = model.Name,
+                    Phone = model.Phone,
+                }, false, true).ConfigureAwait(false);
                 if (contactAddStatus != StatusEnum.Success)
                     return new ValueTuple<StatusEnum, Ownership>(contactAddStatus, null);
 
@@ -393,21 +461,34 @@ namespace RealEstate.Services
                 ContactId = existingContact.Id,
                 Dong = model.Dong,
                 Description = model.Description,
-                Address = model.Address,
-                Name = model.Name,
-                PhoneNumber = model.Phone,
             }, null, save).ConfigureAwait(false);
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool save)
+        public async Task<(StatusEnum, Contact)> ContactAddAsync(ContactInputViewModel model, bool isForApplicantUse, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Contact>(StatusEnum.ModelIsNull, null);
 
+            var existing = await ContactEntityAsync(null, model.Mobile).ConfigureAwait(false);
+            if (existing != null)
+            {
+                if (!existing.IsPrivate || existing.IsPrivate == isForApplicantUse)
+                    return new ValueTuple<StatusEnum, Contact>(StatusEnum.Success, existing);
+
+                var updateStatus = await _baseService.UpdateAsync(existing,
+                    () => existing.IsPrivate = isForApplicantUse,
+                    null, save, StatusEnum.ContactIsNull).ConfigureAwait(false);
+                return updateStatus;
+            }
+
             var addStatus = await _baseService.AddAsync(new Contact
             {
                 MobileNumber = model.Mobile,
+                Name = model.Name,
+                Address = model.Address,
+                PhoneNumber = model.Phone,
+                IsPrivate = isForApplicantUse
             }, null, save).ConfigureAwait(false);
             return addStatus;
         }
@@ -423,7 +504,7 @@ namespace RealEstate.Services
         {
             return update
                 ? ContactUpdateAsync(model, save)
-                : ContactAddAsync(model, save);
+                : ContactAddAsync(model, false, save);
         }
 
         public async Task<(StatusEnum, Contact)> ContactUpdateAsync(ContactInputViewModel model, bool save)
@@ -434,7 +515,7 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, Contact>(StatusEnum.IdIsNull, null);
 
-            var entity = await ContactEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await ContactEntityAsync(model.Id, null).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 () => entity.MobileNumber = model.Mobile,
                 null, save, StatusEnum.UserIsNull).ConfigureAwait(false);

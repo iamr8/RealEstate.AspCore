@@ -1159,6 +1159,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مالکیت.
+        /// </summary>
+        public static string Ownership {
+            get {
+                return ResourceManager.GetString("Ownership", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to با موفقیت کامل انجام نشد..
         /// </summary>
         public static string PartialSuccess {

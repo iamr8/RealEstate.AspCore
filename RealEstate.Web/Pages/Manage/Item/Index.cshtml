@@ -51,20 +51,45 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-                    var requestStatus = item.IsRequested;
-                    var lastOwnership = item.Property.Ownerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
+                    var lastOwnership = item.Property.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
 
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property.Id" target="_blank">@item.Property?.Address</a>
-                                    <span class="badge badge-danger">@item.Category?.Name</span>
-                                    @if (lastOwnership?.Owners?.Any() == true)
-                                    {
-                                        foreach (var ownership in lastOwnership.Owners)
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property.Id" target="_blank">
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.Property.District.Id" target="_blank">@item.Property.District.Name</a> &mdash;
+                                        @if (!string.IsNullOrEmpty(item.Property.Street))
                                         {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Name &mdash; @ownership.Contact.Mobile</a>
+                                            <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.Property.Street<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Property.Alley))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Alley"]: </span>@item.Property.Alley<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Property.Number))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingNumber"]: </span>@item.Property.Number<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Property.BuildingName))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingName"]: </span>@item.Property.BuildingName<text> &mdash; </text>
+                                        }
+                                        @if (item.Property.Floor > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Floor"]: </span>@item.Property.Floor<text> &mdash; </text>
+                                        }
+                                        @if (item.Property.Flat > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Flat"]: </span>@item.Property.Flat
+                                        }
+                                    </a>
+                                    <span class="badge badge-danger">@item.Category?.Name</span>
+                                    @if (lastOwnership?.Ownerships?.Any() == true)
+                                    {
+                                        foreach (var ownership in lastOwnership.Ownerships)
+                                        {
+                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
                                         }
                                     }
                                     @if (item.Features?.Any() == true)

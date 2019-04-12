@@ -44,7 +44,7 @@ namespace RealEstate.Services.ViewModels.Input
         //        public double Longitude { get; set; }
 
         [HiddenInput]
-        public string OwnershipsJson { get; private set; }
+        public string OwnershipsJson { get; set; }
 
         public List<OwnershipJsonViewModel> Ownerships
         {
@@ -53,7 +53,7 @@ namespace RealEstate.Services.ViewModels.Input
         }
 
         [HiddenInput]
-        public string PropertyFeaturesJson { get; private set; }
+        public string PropertyFeaturesJson { get; set; }
 
         public List<FeatureJsonValueViewModel> PropertyFeatures
         {
@@ -62,7 +62,7 @@ namespace RealEstate.Services.ViewModels.Input
         }
 
         [HiddenInput]
-        public string PropertyFacilitiesJson { get; private set; }
+        public string PropertyFacilitiesJson { get; set; }
 
         public List<FacilityJsonViewModel> PropertyFacilities
         {

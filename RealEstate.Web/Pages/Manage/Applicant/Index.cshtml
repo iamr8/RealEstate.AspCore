@@ -19,17 +19,17 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.Name
+                                        @item.Contact.Name
                                     </b>
                                     <span class="badge badge-secondary">@item.Type.GetDisplayName()</span>
                                     <a href="tel:@item.Contact?.Mobile" class="badge badge-primary">@item.Contact?.Mobile</a>
-                                    @if (!string.IsNullOrEmpty(item.Phone))
+                                    @if (!string.IsNullOrEmpty(item.Contact.Phone))
                                     {
-                                        <span class="badge badge-secondary">@item.Phone</span>
+                                        <span class="badge badge-secondary">@item.Contact.Phone</span>
                                     }
-                                    @if (!string.IsNullOrEmpty(item.Address))
+                                    @if (!string.IsNullOrEmpty(item.Contact.Address))
                                     {
-                                        <span class="badge badge-warning">@item.Address</span>
+                                        <span class="badge badge-warning">@item.Contact.Address</span>
                                     }
                                 </span>
                                 @if (item.ApplicantFeatures?.Any() == true)

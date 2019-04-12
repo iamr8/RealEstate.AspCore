@@ -24,7 +24,7 @@ namespace RealEstate.Services
 
         Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm);
 
-        Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool update, bool save);
+        Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
 
         Task<PropertyInputViewModel> PropertyInputAsync(string id);
 
@@ -130,11 +130,11 @@ namespace RealEstate.Services
                         Id = x.FacilityId,
                         Name = x.Facility.Name,
                     }).ToList(),
-                    Owners = lastPropOwnership.Ownerships.Select(x => new OwnershipJsonViewModel
+                    Ownerships = lastPropOwnership.Ownerships.Select(x => new OwnershipJsonViewModel
                     {
-                        Name = x.Name,
-                        Id = x.Id,
-                        Mobile = x.Contact.MobileNumber,
+                        ContactId = x.Contact?.Id,
+                        Name = x.Contact?.Name,
+                        Mobile = x.Contact?.MobileNumber,
                         Dong = x.Dong
                     }).ToList()
                 };
@@ -152,7 +152,11 @@ namespace RealEstate.Services
                 .ThenInclude(x => x.Facility)
                 .Include(x => x.PropertyFeatures)
                 .ThenInclude(x => x.Feature)
-                .Include(x => x.District);
+                .Include(x => x.District)
+                .Include(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact)
+                .Include(x => x.Category);
 
             if (searchModel != null)
             {
@@ -175,14 +179,21 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new PropertyViewModel(item)
+                item => new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?
                     .R8Include(model =>
                     {
-                        model.Facilities = model.Entity.PropertyFacilities.Select(propEntity =>
-                            new PropertyFacilityViewModel(propEntity).R8Include(x => x.Facility = new FacilityViewModel(x.Entity.Facility))).ToList();
-                        model.Features = model.Entity.PropertyFeatures.Select(propEntity =>
-                            new PropertyFeatureViewModel(propEntity).R8Include(x => x.Feature = new FeatureViewModel(x.Entity.Feature))).ToList();
-                        model.District = new DistrictViewModel(model.Entity.District);
+                        model.Facilities = model.Entity?.PropertyFacilities.Select(propEntity =>
+                            new PropertyFacilityViewModel(propEntity, false).Instance?
+                                .R8Include(x => x.Facility = new FacilityViewModel(x.Entity?.Facility, false).Instance).ShowBasedOn(b => b.Facility)).R8ToList();
+                        model.Features = model.Entity?.PropertyFeatures.Select(propEntity =>
+                            new PropertyFeatureViewModel(propEntity, false).Instance?
+                                .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance).ShowBasedOn(b => b.Feature)).R8ToList();
+                        model.District = new DistrictViewModel(model.Entity?.District, false).Instance;
+                        model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
+                        model.PropertyOwnerships = model.Entity?.PropertyOwnerships.Select(propEntity =>
+                            new PropertyOwnershipViewModel(propEntity, false).Instance?.R8Include(x =>
+                                x.Ownerships = propEntity.Ownerships.Select(c => new OwnershipViewModel(c, false).Instance?
+                                    .R8Include(v => v.Contact = new ContactViewModel(v.Entity?.Contact, false).Instance).ShowBasedOn(b => b.Contact)).R8ToList()).ShowBasedOn(b => b.Ownerships)).R8ToList();
                     })).ConfigureAwait(false);
 
             return result;
@@ -193,6 +204,7 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return default;
 
+            var query = _properties as IQueryable<Property>;
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
         }
@@ -201,52 +213,70 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await PropertyEntityAsync(id).ConfigureAwait(false);
+            var query = _properties as IQueryable<Property>;
+            query = query.Include(x => x.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.District)
+                .Include(x => x.Category)
+                .Include(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact);
+
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null)
                 return default;
 
-            var viewModel = new PropertyViewModel(entity)
+            var viewModel = new PropertyViewModel(entity, false).Instance?
                 .R8Include(model =>
                 {
-                    model.Facilities = model.Entity.PropertyFacilities.Select(propEntity =>
-                        new PropertyFacilityViewModel(propEntity).R8Include(x => x.Facility = new FacilityViewModel(x.Entity.Facility))).ToList();
-                    model.Features = model.Entity.PropertyFeatures.Select(propEntity =>
-                        new PropertyFeatureViewModel(propEntity).R8Include(x => x.Feature = new FeatureViewModel(x.Entity.Feature))).ToList();
-                    model.District = new DistrictViewModel(model.Entity.District);
+                    model.Facilities = model.Entity?.PropertyFacilities.Select(propEntity =>
+                        new PropertyFacilityViewModel(propEntity, false).Instance?
+                            .R8Include(x => x.Facility = new FacilityViewModel(x.Entity?.Facility, false)).ShowBasedOn(b => b.Facility)).R8ToList();
+                    model.Features = model.Entity?.PropertyFeatures.Select(propEntity =>
+                        new PropertyFeatureViewModel(propEntity, false).Instance?
+                            .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance).ShowBasedOn(b => b.Feature)).R8ToList();
+                    model.District = new DistrictViewModel(model.Entity?.District, false).Instance;
+                    model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
+                    model.PropertyOwnerships = model.Entity?.PropertyOwnerships.Select(propEntity =>
+                        new PropertyOwnershipViewModel(propEntity, false).Instance?.R8Include(x =>
+                                x.Ownerships = propEntity.Ownerships.Select(c => new OwnershipViewModel(c, false).Instance?
+                                    .R8Include(v => v.Contact = new ContactViewModel(v.Entity?.Contact, false).Instance).ShowBasedOn(b => b.Contact)).R8ToList())
+                            .ShowBasedOn(b => b.Ownerships)).R8ToList();
                 });
             if (viewModel == null)
                 return default;
 
-            var lastOwnership = viewModel.Ownerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
             var result = new PropertyInputViewModel
             {
                 Id = viewModel.Id,
                 Description = viewModel.Description,
-                Ownerships = lastOwnership?.Owners.Select(x => new OwnershipJsonViewModel
+                Ownerships = viewModel.CurrentPropertyOwnership?.Ownerships?.Select(x => new OwnershipJsonViewModel
                 {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Mobile = x.Contact.Mobile,
+                    ContactId = x.Contact?.Id,
+                    Name = x.Contact?.Name,
+                    Mobile = x.Contact?.Mobile,
                     Dong = x.Dong
                 }).ToList(),
-                PropertyFacilities = viewModel.Facilities.Select(x => new FacilityJsonViewModel
+                PropertyFacilities = viewModel.Facilities?.Select(x => new FacilityJsonViewModel
                 {
-                    Id = x.Id,
-                    Name = x.Facility.Name
+                    Id = x.Facility?.Id,
+                    Name = x.Facility?.Name
                 }).ToList(),
-                CategoryId = viewModel.Category.Id,
+                CategoryId = viewModel.Category?.Id,
                 //                Latitude = viewModel.Geolocation?.Latitude ?? 0,
-                PropertyFeatures = viewModel.Features.Select(x => new FeatureJsonValueViewModel
+                PropertyFeatures = viewModel.Features?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Id,
-                    Name = x.Feature.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
                 //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
                 Number = viewModel.Number,
                 Street = viewModel.Street,
                 Flat = viewModel.Flat,
-                DistrictId = viewModel.District.Id,
+                DistrictId = viewModel.District?.Id,
                 Alley = viewModel.Alley,
                 BuildingName = viewModel.BuildingName,
                 Floor = viewModel.Floor
@@ -276,25 +306,39 @@ namespace RealEstate.Services
                 //                Geolocation = model.Latitude > 0 && model.Longitude > 0 ? new Point(model.Longitude, model.Latitude) : default,
             }, null, false).ConfigureAwait(false);
 
+            if (propertyAddStatus != StatusEnum.Success)
+            {
+                _unitOfWork.Detach(newProperty);
+                return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyIsNull, null);
+            }
+
             var (propertyOwnershipAddStatus, newPropertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false).ConfigureAwait(false);
             if (propertyOwnershipAddStatus != StatusEnum.Success)
+            {
+                _unitOfWork.Detach(newPropertyOwnership);
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
+            }
 
-            //            foreach (var owner in model.Ownerships)
-            //                await _contactService.OwnershipPlugPropertyAsync(owner.OwnershipId, newPropertyOwnership.Id, false).ConfigureAwait(false);
-            await SyncAsync(newProperty, newPropertyOwnership, model, false).ConfigureAwait(false);
+            await PropertySyncAsync(newProperty, newPropertyOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
         }
 
-        private async Task<StatusEnum> SyncAsync(Property property, PropertyOwnership propertyOwnership, PropertyInputViewModel model, bool save)
+        private async Task<StatusEnum> PropertySyncAsync(Property property, PropertyOwnership propertyOwnership, PropertyInputViewModel model, bool save)
         {
             await _baseService.SyncAsync(
                 propertyOwnership.Ownerships,
                 model.Ownerships,
-                ownership => ownership.PropertyOwnershipId = propertyOwnership.Id,
-                ownership => ownership.PropertyOwnershipId = null,
-                (inDb, inModel) => inDb.Id == inModel.Id,
-                null, false).ConfigureAwait(false);
+                ownership => new Ownership
+                {
+                    ContactId = ownership.ContactId,
+                    Dong = ownership.Dong,
+                    PropertyOwnershipId = propertyOwnership.Id,
+                },
+                (inDb, inModel) => inDb.ContactId == inModel.ContactId,
+                query => query.PropertyOwnershipId == propertyOwnership.Id,
+                (inDb, inModel) => inDb.PropertyOwnershipId = propertyOwnership.Id,
+                null,
+                false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
                 property.PropertyFeatures,
@@ -322,9 +366,9 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool update, bool save)
+        public Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save)
         {
-            return update
+            return model?.IsNew != true
                 ? PropertyUpdateAsync(model, save)
                 : PropertyAddAsync(model, save);
         }
@@ -337,7 +381,19 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.IdIsNull, null);
 
-            var entity = await PropertyEntityAsync(model.Id).ConfigureAwait(false);
+            if (model.Ownerships?.Any() != true)
+                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
+
+            var query = _properties.Include(x => x.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.District)
+                .Include(x => x.Category)
+                .Include(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact);
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
@@ -355,11 +411,10 @@ namespace RealEstate.Services
             if (updatedProperty == null)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyIsNull, null);
 
-            var lastOwnership = updatedProperty.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
-            if (lastOwnership == null)
+            if (updatedProperty.CurrentOwnership == null)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
 
-            await SyncAsync(updatedProperty, lastOwnership, model, false).ConfigureAwait(false);
+            await PropertySyncAsync(updatedProperty, updatedProperty.CurrentOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedProperty, save).ConfigureAwait(false);
         }
 

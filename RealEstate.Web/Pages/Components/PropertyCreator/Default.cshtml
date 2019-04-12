@@ -1,8 +1,5 @@
 ﻿@model PropertyCreatorComponentModel
 @{
-    var newProperty = new PropertyInputViewModel();
-    var newOwner = new OwnershipInputViewModel();
-
     var districtsList = await LocationService.DistrictListAsync().ConfigureAwait(false);
     var districts = districtsList?.Select(x => new SelectListItem
     {
@@ -52,12 +49,12 @@
         }).SelectFirstItem(),
     };
 
-    var ownerships = await ContactService.OwnershipListAsync().ConfigureAwait(false);
+    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
     var ownershipsSelector = new JsonSelectorComponentModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Id),
+        IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.ContactId),
         NameProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name),
-        ValueProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Dong),
+        ValueProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong),
         ModelName = Model.ModelName,
         ItemName = Model.Ownerships.Name,
         Json = nameof(Model.OwnershipsJson),
@@ -65,45 +62,21 @@
         ScriptKey = "propertyOwnersScript",
         SelectListItems = ownerships?.Select(x => new SelectListItem
         {
-            Text = $"{x.Name} • {x.Contact.Mobile}",
+            Text = $"{x.Name} • {x.Mobile}",
             Value = x.Id,
         }).SelectFirstItem(),
+
     };
 
-    var personCreateForm = $"{Model.PersonCreator.ModelName}_Form";
-    var creatorTab = $"{Model.PersonCreator.ModelName}_Tab";
-    var personCreateSubmit = $"{Model.PersonCreator.ModelName}_Submit";
-
+    Model.PersonCreator.JsCodeOnSuccess = "const option = document.createElement(\"option\");\r\n"
+                                          + "$(option).val(responseId).html(responseName);\r\n"
+                                          + $"$({ownershipsSelector.SelectId}).prepend(option);\r\n"
+                                          + $"$({Model.OwnershipsJson.Id}).trigger(\"change\");\r\n";
 }
-<form class="row justify-content-center align-items-center" method="post" id="@personCreateForm">
-    <div class="col-12">
-        <div class="widget mini-widget">
-            <widget-header title="@SharedLocalizer["NewOwner"]" />
-            <section class="container-fluid">
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-12 margin-bottomed">
-                        <label for="@Model.Dong.Id" class="control-label">@(PropertyExtensions.GetDisplayName<OwnershipInputViewModel>(x => x.Dong))</label>
-                        <input asp-for="@newOwner.Dong" id="@Model.Dong.Id" name="@Model.Dong.Name" class="form-control" />
-                        <span class="text-danger" data-valmsg-for="@Model.Dong.Name" data-valmsg-replace="true"></span>
-                    </div>
-                </div>
-                <vc:person-creator model="@Model.PersonCreator" />
-            </section>
-            <widget-footer>
-                <widget-footer-text>
-                    <span id="createPersonStatus"></span>
-                </widget-footer-text>
-                <widget-footer-button>
-                    <button type="button" id="@personCreateSubmit" class="btn btn-success btn-block btn-sm">@SharedLocalizer["Submit"]</button>
-                </widget-footer-button>
-            </widget-footer>
-        </div>
-    </div>
-</form>
-
+<input asp-for="@Model.Model.Id" id="@Model.Id.Id" name="@Model.Id.Name" value="@Model.Model.Id" class="form-control" />
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
-        <input asp-for="@newProperty.OwnershipsJson" id="@Model.OwnershipsJson.Id" name="@Model.OwnershipsJson.Name" class="form-control" />
+        <input asp-for="@Model.Model.OwnershipsJson" id="@Model.OwnershipsJson.Id" name="@Model.OwnershipsJson.Name" value="@Model.Model.OwnershipsJson" class="form-control" />
         <vc:json-selector model="@ownershipsSelector" />
     </div>
 </div>
@@ -111,42 +84,42 @@
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
         <label for="@Model.CategoryId.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.CategoryId))</label>
-        <select asp-for="@newProperty.CategoryId" asp-items="propertyCategories" id="@Model.CategoryId.Id" name="@Model.CategoryId.Name" class="form-control"></select>
+        <select asp-for="@Model.Model.CategoryId" asp-items="propertyCategories" id="@Model.CategoryId.Id" name="@Model.CategoryId.Name" class="form-control"></select>
         <span class="text-danger" data-valmsg-for="@Model.CategoryId.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-4 margin-bottomed">
         <label for="@Model.DistrictId.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.DistrictId))</label>
-        <select asp-for="@newProperty.DistrictId" asp-items="districts" id="@Model.DistrictId.Id" name="@Model.DistrictId.Name" class="form-control"></select>
+        <select asp-for="@Model.Model.DistrictId" asp-items="districts" id="@Model.DistrictId.Id" name="@Model.DistrictId.Name" class="form-control"></select>
         <span class="text-danger" data-valmsg-for="@Model.DistrictId.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-4 margin-bottomed">
         <label for="@Model.Street.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Street))</label>
-        <input asp-for="@newProperty.Street" id="@Model.Street.Id" name="@Model.Street.Name" class="form-control" />
+        <input asp-for="@Model.Model.Street" id="@Model.Street.Id" name="@Model.Street.Name" class="form-control" value="@Model.Model.Street" />
         <span class="text-danger" data-valmsg-for="@Model.Street.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-4 margin-bottomed">
         <label for="@Model.Alley.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Alley))</label>
-        <input asp-for="@newProperty.Alley" id="@Model.Alley.Id" name="@Model.Alley.Name" class="form-control" />
+        <input asp-for="@Model.Model.Alley" id="@Model.Alley.Id" name="@Model.Alley.Name" class="form-control" value="@Model.Model.Alley" />
         <span class="text-danger" data-valmsg-for="@Model.Alley.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-3 margin-bottomed">
         <label for="@Model.Number.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Number))</label>
-        <input asp-for="@newProperty.Number" id="@Model.Number.Id" name="@Model.Number.Name" class="form-control" />
+        <input asp-for="@Model.Model.Number" id="@Model.Number.Id" name="@Model.Number.Name" class="form-control" value="@Model.Model.Number" />
         <span class="text-danger" data-valmsg-for="@Model.Number.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-3 margin-bottomed">
         <label for="@Model.BuildingName.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.BuildingName))</label>
-        <input asp-for="@newProperty.BuildingName" id="@Model.BuildingName.Id" name="@Model.BuildingName.Name" class="form-control" />
+        <input asp-for="@Model.Model.BuildingName" id="@Model.BuildingName.Id" name="@Model.BuildingName.Name" class="form-control" value="@Model.Model.BuildingName" />
         <span class="text-danger" data-valmsg-for="@Model.BuildingName.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-3 margin-bottomed">
         <label for="@Model.Floor.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Floor))</label>
-        <input asp-for="@newProperty.Floor" id="@Model.Floor.Id" name="@Model.Floor.Name" class="form-control" />
+        <input asp-for="@Model.Model.Floor" id="@Model.Floor.Id" name="@Model.Floor.Name" class="form-control" value="@Model.Model.Floor" />
         <span class="text-danger" data-valmsg-for="@Model.Floor.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-3 margin-bottomed">
         <label for="@Model.Flat.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Flat))</label>
-        <input asp-for="@newProperty.Flat" id="@Model.Flat.Id" name="@Model.Flat.Name" class="form-control" />
+        <input asp-for="@Model.Model.Flat" id="@Model.Flat.Id" name="@Model.Flat.Name" class="form-control" value="@Model.Model.Flat" />
         <span class="text-danger" data-valmsg-for="@Model.Flat.Name" data-valmsg-replace="true"></span>
     </div>
 </div>
@@ -154,13 +127,13 @@
 
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
-        <input asp-for="@newProperty.PropertyFeaturesJson" id="@Model.PropertyFeaturesJson.Id" name="@Model.PropertyFeaturesJson.Name" class="form-control" />
+        <input asp-for="@Model.Model.PropertyFeaturesJson" id="@Model.PropertyFeaturesJson.Id" name="@Model.PropertyFeaturesJson.Name" value="@Model.Model.PropertyFeaturesJson" class="form-control" />
         <vc:json-selector model="@featureSelector" />
     </div>
 </div>
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
-        <input asp-for="@newProperty.PropertyFacilitiesJson" id="@Model.PropertyFacilitiesJson.Id" name="@Model.PropertyFacilitiesJson.Name" class="form-control" />
+        <input asp-for="@Model.Model.PropertyFacilitiesJson" id="@Model.PropertyFacilitiesJson.Id" name="@Model.PropertyFacilitiesJson.Name" value="@Model.Model.PropertyFacilitiesJson" class="form-control" />
         <vc:json-selector model="@facilitiesSelector" />
     </div>
 </div>
@@ -169,69 +142,56 @@
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
         <label for="@Model.Description.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Description))</label>
-        <input asp-for="@newProperty.Description" id="@Model.Description.Id" name="@Model.Description.Name" class="form-control" />
+        <input asp-for="@Model.Model.Description" id="@Model.Description.Id" name="@Model.Description.Name" value="@Model.Model.Description" class="form-control" />
         <span class="text-danger" data-valmsg-for="@Model.Description.Name" data-valmsg-replace="true"></span>
     </div>
 </div>
-<script asp-cut-key="@Model.PersonCreator.ScriptKey">
-    $(document).ready(function() {
 
-        const currentId = $("#@Model.PropertyId");
+<div class="row justify-content-center align-items-center">
+    <div class="col-12 text-danger text-center" id="createPropertyStatus"></div>
+</div>
+<div class="row justify-content-center align-items-center">
+    <div class="col-12">
+        <button type="button" id="@Model.SubmitId" class="btn btn-success btn-block btn-sm">@SharedLocalizer["Submit"]</button>
+    </div>
+</div>
+<script asp-cut-key="@Model.ScriptKey">
+       $(document).ready(function() {
+            const newForm = $("#@Model.FormId");
+            const newCategoryId = $("#@Model.CategoryId.Id");
+            const newDistrictId = $("#@Model.DistrictId.Id");
+            const newStreet = $("#@Model.Street.Id");
+            const newAlley = $("#@Model.Alley.Id");
+            const newNumber = $("#@Model.Number.Id");
+            const newBuildingNumber = $("#@Model.BuildingName.Id");
+            const newFloor = $("#@Model.Floor.Id");
+            const newFlat = $("#@Model.Flat.Id");
+            const newPropertyFeatures = $("#@Model.PropertyFeaturesJson.Id");
+            const newOwnerships = $("#@Model.OwnershipsJson.Id");
+            const newPropertyFacilities = $("#@Model.PropertyFacilitiesJson.Id");
+            const newDescription = $("#@Model.Description.Id");
+            const newFormStatus = $("#createPropertyStatus");
+           const newId = $("#@Model.Id.Id");
 
-        const newForm = $("#@personCreateForm");
-        const newName = $("#@Model.PersonCreator.Name.Id");
-        const newMobile = $("#@Model.PersonCreator.Mobile.Id");
-        const newAddress = $("#@Model.PersonCreator.Address.Id");
-        const newPhone = $("#@Model.PersonCreator.Phone.Id");
-        const newDescription = $("#@Model.PersonCreator.Description.Id");
-        const newDong = $("#@Model.Dong.Id");
-        const newFormStatus = $("#createPersonStatus");
-        const ownershipsSelect = $("#@ownershipsSelector.SelectId");
-        const ownersJson = $("#@ownershipsSelector.JsonInputId");
-        $(ownersJson).change(function() {
-            const children = $(".@ownershipsSelector.ItemSelectorClass");
-            console.log(children);
-            $.each(children,
-                (key, value) => {
-
-                    console.log(value);
-                    const ownershipId = $(value).attr("data-id");
-                    const ownershipName = $(">span", value);
-                    console.log(ownershipName);
-                    console.log(ownershipId);
-                    $.get("@Url.Action("OwnershipAsync","Detail")",
-                        {
-                            id: ownershipId
-                        }).then(function(response) {
-                        console.log(response);
-                        if (response != undefined) {
-
-                            const ownerId = response
-                                .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Id));
-                            const ownerName = response
-                                .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name));
-                            const ownerMobile = response
-                                .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Mobile));
-                            const ownerDong = response
-                                .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong));
-
-                            $(ownershipName)
-                                .html(`${ownerName} • ${ownerMobile} • ${ownerDong
-                                    } @Html.Raw(SharedLocalizer["Dong"])`);
-                        }
-                    });
-                });
-        });
-
-        $(document).on("click",
-            "#@personCreateSubmit",
+              $(document).on("click",
+            "#@Model.SubmitId",
             function() {
-                const name = $(newName).val();
-                const mobile = $(newMobile).val();
-                const address = $(newAddress).val();
-                const phone = $(newPhone).val();
+                const categoryId = $(newCategoryId).val();
+                const districtId = $(newDistrictId).val();
+                const street = $(newStreet).val();
+                const alley = $(newAlley).val();
+                const number = $(newNumber).val();
+                const buildingNumber = $(newBuildingNumber).val();
+
+                const flat = parseInt($(newFlat).val());
+                const floor = parseInt($(newFloor).val());
+                console.log(flat, floor);
+
+                const propertyFeatures = $(newPropertyFeatures).val();
+                const propertyFacilities = $(newPropertyFacilities).val();
+                const ownerships = $(newOwnerships).val();
                 const description = $(newDescription).val();
-                const dong = parseInt($(newDong).val());
+                const id = $(newId).val();
 
                 const children = $("[data-val='true']", newForm);
                 $.each(children,
@@ -241,16 +201,24 @@
 
                 if ($(newForm)[0].checkValidity()) {
                     const model = {
-                        @(nameof(newOwner.Address)): address,
-                        @(nameof(newOwner.Name)): name,
-                        @(nameof(newOwner.Description)): description,
-                        @(nameof(newOwner.Phone)): phone,
-                        @(nameof(newOwner.Mobile)): mobile,
-                        @(nameof(newOwner.Dong)): dong
+                        @(nameof(Model.Model.Street)): street,
+                        @(nameof(Model.Model.Alley)): alley,
+                        @(nameof(Model.Model.BuildingName)): buildingNumber,
+                        @(nameof(Model.Model.Number)): number,
+                        @(nameof(Model.Model.Floor)): floor,
+                        @(nameof(Model.Model.Flat)): flat,
+                        @(nameof(Model.Model.CategoryId)): categoryId,
+                        @(nameof(Model.Model.Description)): description,
+                        @(nameof(Model.Model.DistrictId)): districtId,
+                        @(nameof(Model.Model.OwnershipsJson)): ownerships,
+                        @(nameof(Model.Model.PropertyFeaturesJson)): propertyFeatures,
+                        @(nameof(Model.Model.PropertyFacilitiesJson)): propertyFacilities,
+                        @(nameof(Model.Model.Description)): description,
+                        @(nameof(Model.Model.Id)): id
                     };
 
                     console.log(model);
-                    $.post("@Url.Action("OwnershipAsync", "Add")",
+                    $.post("@Url.Action("PropertyAsync", "Add")",
                         model,
                         function(response) {
                             console.log(response);
@@ -260,21 +228,22 @@
                                     response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x=>x.Status));
                                 const responseId =
                                     response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Id));
-                                const responseName =
-                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Name));
 
                                 if (responseStatus === @((int)StatusEnum.Success) ||
                                     responseStatus === @((int)StatusEnum.PartialSuccess)) {
                                     $(newFormStatus).html("@Html.Raw(StatusEnum.Success.GetDisplayName())");
 
-                                    const option = document.createElement("option");
-                                    $(option).val(ownerId).html(`${ownerName} • ${ownerMobile} • ${ownerDong} @Html.Raw(SharedLocalizer["Dong"])`);
-                                    $(ownershipsSelect).prepend(option);
+                                    @if (!string.IsNullOrEmpty(Model.JsCodeOnSuccess))
+                                    {
+                                        <text>
+                                            @Html.Raw(Model.JsCodeOnSuccess)
+                                        </text>
+                                    }
 
                                 }
                             }
                         });
                 }
             });
-    });
+        });
 </script>

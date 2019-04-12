@@ -1,18 +1,32 @@
-﻿using RealEstate.Services.BaseLog;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
     public class FacilityViewModel : BaseLogViewModel<Facility>
     {
-        public FacilityViewModel(Facility model) : base(model)
+        [JsonIgnore]
+        public Facility Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly FacilityViewModel Instance;
+
+        public FacilityViewModel(Facility entity, bool includeDeleted) : base(entity)
         {
-            if (model == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Name = model.Name;
-            Properties = model.PropertyFacilities.Count;
-            Id = model.Id;
+            Instance = new FacilityViewModel
+            {
+                Entity = entity,
+                Name = entity.Name,
+                Properties = entity.PropertyFacilities?.Count ?? 0,
+                Id = entity.Id,
+                Logs = entity.GetLogs()
+            };
         }
 
         public FacilityViewModel()

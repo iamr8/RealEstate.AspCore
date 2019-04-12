@@ -4,7 +4,7 @@
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
-        
+
         <section class="container-fluid">
 
             @if (Model.List.Items?.Any() == true)
@@ -19,9 +19,14 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.PopularName
+                                        @item.Name
                                     </b>
+
                                     <a href="tel:@item.Mobile" class="badge badge-primary">@item.Mobile</a>
+                                    @if (item.Ownerships.Count > 0)
+                                    {
+                                        <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-contactId="@item.Id" class="badge badge-secondary">@item.Ownerships.Count @SharedLocalizer["Ownership"]</a>
+                                    }
                                 </span>
                             </div>
                             <div class="button">

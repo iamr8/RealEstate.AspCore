@@ -14,12 +14,16 @@ namespace RealEstate.Services.Database
 
         Task<int> SaveChangesAsync();
 
+        void Detach<TEntity>(TEntity entity) where TEntity : class;
+
         TEntity Update<TEntity>(TEntity entity) where TEntity : class;
 
         TEntity Update<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
 
         //        TEntity Update<TEntity>(TEntity entity, string userId) where TEntity : class;
         TEntity UnDelete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
+
+        void Delete<TEntity>(TEntity entity) where TEntity : class;
 
         TEntity Add<TEntity>(TEntity entity) where TEntity : class;
 

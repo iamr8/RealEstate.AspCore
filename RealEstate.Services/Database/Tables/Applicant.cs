@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using RealEstate.Base.Enums;
+﻿using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -13,12 +12,6 @@ namespace RealEstate.Services.Database.Tables
         }
 
         public string Description { get; set; }
-
-        [Required]
-        public string Name { get; set; }
-
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
 
         public ApplicantTypeEnum Type { get; set; }
         public string UserId { get; set; }

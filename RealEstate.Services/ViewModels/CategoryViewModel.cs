@@ -1,21 +1,34 @@
-﻿using Newtonsoft.Json;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using System.Collections.Generic;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
     public class CategoryViewModel : BaseLogViewModel<Category>
     {
-        public CategoryViewModel(Category entity) : base(entity)
+        [JsonIgnore]
+        public Category Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly CategoryViewModel Instance;
+
+        public CategoryViewModel(Category entity, bool includeDeleted) : base(entity)
         {
-            if (entity == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Name = entity.Name;
-            Type = entity.Type;
-            Id = entity.Id;
+            Instance = new CategoryViewModel
+            {
+                Entity = entity,
+                Name = entity.Name,
+                Type = entity.Type,
+                Id = entity.Id,
+                Logs = entity.GetLogs()
+            };
         }
 
         public CategoryViewModel()

@@ -13,25 +13,39 @@ namespace RealEstate.Web.Controllers
     public class AddController : ControllerBase
     {
         private readonly IContactService _contactService;
+        private readonly IPropertyService _propertyService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AddController(
             IContactService contactService,
+            IPropertyService propertyService,
             IStringLocalizer<SharedResource> localizer)
         {
             _contactService = contactService;
+            _propertyService = propertyService;
             _localizer = localizer;
         }
 
-        [Route("person/addItem"), HttpPost]
-        public async Task<IActionResult> OwnershipAsync([FromForm] OwnershipInputViewModel model)
+        [Route("contact/addItem"), HttpPost]
+        public async Task<IActionResult> ContactAsync([FromForm] ContactInputViewModel model)
         {
-            var (status, newOwnership) = await _contactService.OwnershipAddAsync(model, true).ConfigureAwait(false);
+            var (status, newContact) = await _contactService.ContactAddAsync(model, false, true).ConfigureAwait(false);
             return new JsonResult(new JsonStatusValueViewModel
             {
                 Status = status,
-                Id = newOwnership?.Id,
-                Name = newOwnership != null ? $"{newOwnership.Name} • {newOwnership.Contact.MobileNumber}" : null
+                Id = newContact?.Id,
+                Name = newContact != null ? $"{newContact.Name} • {newContact.MobileNumber}" : null
+            });
+        }
+
+        [Route("property/addItem"), HttpPost]
+        public async Task<IActionResult> PropertyAsync([FromForm] PropertyInputViewModel model)
+        {
+            var (status, newProperty) = await _propertyService.PropertyAddOrUpdateAsync(model, true).ConfigureAwait(false);
+            return new JsonResult(new JsonStatusViewModel
+            {
+                Status = status,
+                Id = newProperty?.Id,
             });
         }
     }

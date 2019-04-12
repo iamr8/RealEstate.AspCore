@@ -1,6 +1,9 @@
-﻿using RealEstate.Base.Enums;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -8,22 +11,37 @@ namespace RealEstate.Services.ViewModels
 {
     public class UserViewModel : BaseLogViewModel<User>
     {
+        [JsonIgnore]
+        public User Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly UserViewModel Instance;
+
         public UserViewModel()
         {
         }
 
-        public UserViewModel(User entity) : base(entity)
+        public UserViewModel(User entity, bool includeDeleted) : base(entity)
         {
-            Role = Entity.Role;
-            FirstName = Entity.FirstName;
-            LastName = Entity.LastName;
-            Mobile = Entity.Mobile;
-            EncryptedPassword = Entity.Password;
-            Username = Entity.Username;
-            Address = Entity.Address;
-            Phone = Entity.Phone;
-            CreationDateTime = Entity.DateTime;
-            Id = Entity.Id;
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
+                return;
+
+            Instance = new UserViewModel
+            {
+                Entity = entity,
+
+                Role = entity.Role,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                Mobile = entity.Mobile,
+                EncryptedPassword = entity.Password,
+                Username = entity.Username,
+                Address = entity.Address,
+                Phone = entity.Phone,
+                CreationDateTime = entity.DateTime,
+                Id = entity.Id,
+                Logs = entity.GetLogs()
+            };
         }
 
         public string Username { get; set; }

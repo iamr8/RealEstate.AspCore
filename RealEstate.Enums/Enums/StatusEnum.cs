@@ -26,7 +26,7 @@ namespace RealEstate.Base.Enums
         [Display(ResourceType = typeof(SharedResource), Name = "AlreadyExists")]
         AlreadyExists,
 
-        PersonIsNull,
+        ContactIsNull,
         DistrictIsNull,
         PropertyIsNull,
         NoNeedToSave,
@@ -74,7 +74,6 @@ namespace RealEstate.Base.Enums
         PropertyOwnershipIsNull,
         OwnershipIsNull,
         PropertyOwnershipNotUpdated,
-        BasedOnModelNullability,
         ItemRequestIsNull,
 
         SmsTemplateIdIsNull,
@@ -83,6 +82,6 @@ namespace RealEstate.Base.Enums
         TokensCountMismatch,
         UnexpectedError,
         TokenIsNull,
-        IdIsNull
+        IdIsNull,
     }
 }

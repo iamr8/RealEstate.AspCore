@@ -1,2 +1,39 @@
 ﻿@page
 @model AddModel
+@{
+    var propertyCreator = new PropertyCreatorComponentModel
+    {
+        ModelName = nameof(Model.NewProperty),
+        PropertyId = $"{nameof(Model.NewProperty)}_{nameof(Model.NewProperty.Id)}",
+        ScriptKey = "propertyCreator",
+        Model = Model.NewProperty,
+        PersonCreator = new PersonCreatorComponentModel
+        {
+            ModelName = $"{ nameof(Model.NewProperty)}_NewPerson",
+        },
+    };
+}
+
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <section class="container-fluid">
+            <form method="post" id="@propertyCreator.PersonCreator.FormId">
+                <vc:person-creator model="@propertyCreator.PersonCreator" />
+            </form>
+
+            <form method="post" id="@propertyCreator.FormId">
+                <vc:property-creator model="@propertyCreator" />
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script asp-paste-key="@propertyCreator.ScriptKey"></script>
+    <script asp-paste-key="propertyFeaturesScript"></script>
+    <script asp-paste-key="propertyFacilitiesScript"></script>
+    <script asp-paste-key="propertyOwnersScript"></script>
+    <script asp-paste-key="@propertyCreator.PersonCreator.ScriptKey"></script>
+}

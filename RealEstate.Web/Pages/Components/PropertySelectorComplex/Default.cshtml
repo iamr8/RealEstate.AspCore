@@ -4,7 +4,6 @@
     var parentModelName = Model.ParentModelName;
     var propertySelectorTab = $"{parentModelName}_Property";
 
-    var submitPropertyCreator = $"{Model.PropertyCreator.ModelName}_Submit";
     var propertyCreatorId = "PCtor";
 
     <ul class="nav nav-tabs">
@@ -30,30 +29,12 @@
                     <h6>@SharedLocalizer["IfYouWantToCreateProperty"]</h6>
                 </div>
             </div>
-            @*<vc:person-selector-complex model="@Model.PropertyCreator.PersonSelectorComplex" />*@
-            @*<div class="row justify-content-center align-items-center itemShow">
-                    <div class="col-12 detail">
-                        <div class="info">
-                            <span>
-                                <a href="#" target="_blank" class="name title"></a>
-                                <span class="badge badge-primary mobile"></span>
-                                <span class="badge badge-warning phone"></span>
-                                <span class="badge badge-danger address"></span>
-                            </span>
-                            <span class="text-gray text-justify description"></span>
-                        </div>
-                        <div class="button">
-                            <a href="#" class="btn btn-sm btn-danger" id="@Model.PropertyCreator.PersonSelectorComplex.ResetId">@SharedLocalizer["ResetSelection"]</a>
-                        </div>
-                    </div>
-                </div>*@
-            <vc:property-creator model="@Model.PropertyCreator" />
-            <form method="post" id="@propertyCreatorId">
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-12">
-                        <button type="button" id="@submitPropertyCreator" class="btn btn-success btn-block btn-sm">@SharedLocalizer["Submit"]</button>
-                    </div>
-                </div>
+            <form method="post" id="@Model.PropertyCreator.PersonCreator.FormId">
+                <vc:person-creator model="@Model.PropertyCreator.PersonCreator" />
+            </form>
+
+            <form method="post" id="@Model.PropertyCreator.FormId">
+                <vc:property-creator model="@Model.PropertyCreator" />
             </form>
         </div>
     </div>

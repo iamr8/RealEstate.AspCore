@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using RealEstate.Base;
+﻿using RealEstate.Base;
 using RealEstate.Base.Enums;
 using System;
 using System.Collections.Generic;
@@ -19,11 +18,11 @@ namespace RealEstate.Services.Database.Base
         [NotMapped]
         public List<LogJsonEntity> Audits
         {
-            get => Audit == null ? null : JsonConvert.DeserializeObject<List<LogJsonEntity>>(Audit);
-            set => Audit = JsonConvert.SerializeObject(value);
+            get => Audit.JsonGetAccessor<List<LogJsonEntity>>();
+            set => Audit = value.JsonSetAccessor();
         }
 
-//        [NotMapped]
-//        public bool IsDeleted => !string.IsNullOrEmpty(Audit) && Audits?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Type == LogTypeEnum.Delete;
+        [NotMapped]
+        public bool IsDeleted => !string.IsNullOrEmpty(Audit) && Audits?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Type == LogTypeEnum.Delete;
     }
 }

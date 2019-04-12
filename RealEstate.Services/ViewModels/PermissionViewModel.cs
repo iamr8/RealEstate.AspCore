@@ -1,23 +1,37 @@
-﻿using RealEstate.Base.Enums;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
+using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.ViewModels
 {
     public class PermissionViewModel : BaseLogViewModel<Permission>
     {
+        [JsonIgnore]
+        public Permission Entity { get; private set; }
+
+        [CanBeNull]
+        public readonly PermissionViewModel Instance;
+
         public PermissionViewModel()
         {
         }
 
-        public PermissionViewModel(Permission model) : base(model)
+        public PermissionViewModel(Permission entity, bool includeDeleted) : base(entity)
         {
-            if (model == null)
+            if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Key = model.Key;
-            Id = model.Id;
-            Type = model.Type;
+            Instance = new PermissionViewModel
+            {
+                Entity = entity,
+                Key = entity.Key,
+                Id = entity.Id,
+                Type = entity.Type,
+                Logs = entity.GetLogs()
+            };
         }
 
         public string Key { get; set; }

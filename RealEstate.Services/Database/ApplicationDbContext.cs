@@ -56,7 +56,7 @@ namespace RealEstate.Services.Database
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-//            modelBuilder.SeedDatabase();
+            //            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }
@@ -64,6 +64,16 @@ namespace RealEstate.Services.Database
         public new DbSet<TEntity> Set<TEntity>() where TEntity : class
         {
             return base.Set<TEntity>();
+        }
+
+        public void Detach<TEntity>(TEntity entity) where TEntity : class
+        {
+            var entries = ChangeTracker.Entries();
+            var entry = entries.FirstOrDefault(e => e.Entity == entity);
+            if (entry == null)
+                return;
+
+            Entry(entity).State = EntityState.Detached;
         }
 
         public override int SaveChanges()
@@ -158,6 +168,10 @@ namespace RealEstate.Services.Database
         //    AddTrack(entity, userId, LogTypeEnum.Create);
         //    return model;
         //}
+        public void Delete<TEntity>(TEntity entity) where TEntity : class
+        {
+            Entry(entity).State = EntityState.Deleted;
+        }
 
         public TEntity Delete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity
         {

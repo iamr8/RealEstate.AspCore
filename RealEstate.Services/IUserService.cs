@@ -76,15 +76,17 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new UserViewModel(model).R8Include(x =>
-            {
-                x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
-                    new UserItemCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
-                x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
-                    new UserPropertyCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
-                x.FixedSalaries = x.Entity.FixedSalaries.Select(c => new FixedSalaryViewModel(c)).Where(v => !v.IsDeleted).ToList();
-            });
-            if (viewModel == null)
+            var viewModel = new UserViewModel(model, false).Instance?.R8Include(x =>
+             {
+                 x.ItemCategories = x.Entity?.UserItemCategories.Select(c =>
+                     new UserItemCategoryViewModel(c, false).Instance?
+                         .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance)).R8ToList();
+                 x.PropertyCategories = x.Entity?.UserPropertyCategories.Select(c =>
+                     new UserPropertyCategoryViewModel(c, false).Instance?
+                         .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance)).R8ToList();
+                 x.FixedSalaries = x.Entity?.FixedSalaries.Select(c => new FixedSalaryViewModel(c, false).Instance).R8ToList();
+             });
+            if (viewModel?.Instance == null)
                 return default;
 
             var result = new UserInputViewModel
@@ -162,16 +164,15 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item =>
+                item => new UserViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?.R8Include(x =>
                 {
-                    return new UserViewModel(item).R8Include(x =>
-                    {
-                        x.ItemCategories = x.Entity.UserItemCategories.Select(c =>
-                            new UserItemCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
-                        x.PropertyCategories = x.Entity.UserPropertyCategories.Select(c =>
-                            new UserPropertyCategoryViewModel(c).R8Include(v => v.Category = new CategoryViewModel(v.Entity.Category))).Where(v => !v.IsDeleted).ToList();
-                    });
-                }).ConfigureAwait(false);
+                    x.ItemCategories = x.Entity?.UserItemCategories.Select(c =>
+                        new UserItemCategoryViewModel(c, false).Instance?
+                            .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance).ShowBasedOn(b => b.Category)).R8ToList();
+                    x.PropertyCategories = x.Entity?.UserPropertyCategories.Select(c =>
+                        new UserPropertyCategoryViewModel(c, false).Instance?
+                            .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance).ShowBasedOn(b => b.Category)).R8ToList();
+                })).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;

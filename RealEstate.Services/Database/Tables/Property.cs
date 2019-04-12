@@ -3,6 +3,7 @@ using RealEstate.Services.Database.Base;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -38,6 +39,10 @@ namespace RealEstate.Services.Database.Tables
 
         public virtual District District { get; set; }
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }
+
+        [NotMapped]
+        public PropertyOwnership CurrentOwnership => PropertyOwnerships?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+
         public virtual ICollection<Item> Items { get; set; }
 
         public virtual ICollection<Picture> Pictures { get; set; }
