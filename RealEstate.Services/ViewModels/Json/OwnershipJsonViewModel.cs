@@ -4,6 +4,9 @@ namespace RealEstate.Services.ViewModels.Json
 {
     public class OwnershipJsonViewModel
     {
+        [JsonProperty("dng")]
+        public int Dong { get; set; }
+
         [JsonProperty("id")]
         public string ContactId { get; set; }
 
@@ -12,8 +15,5 @@ namespace RealEstate.Services.ViewModels.Json
 
         [JsonProperty("mob")]
         public string Mobile { get; set; }
-
-        [JsonProperty("dng")]
-        public int Dong { get; set; }
     }
 }

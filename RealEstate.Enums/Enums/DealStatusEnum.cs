@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Base.Enums
 {
-    public enum ItemRequestStatusEnum
+    public enum DealStatusEnum
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Rejected")]
         Rejected,

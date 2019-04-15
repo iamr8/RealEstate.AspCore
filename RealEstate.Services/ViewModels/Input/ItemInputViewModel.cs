@@ -20,7 +20,7 @@ namespace RealEstate.Services.ViewModels.Input
         public string CategoryId { get; set; }
 
         [HiddenInput]
-        public string ItemFeaturesJson { get; private set; }
+        public string ItemFeaturesJson { get; set; }
 
         public List<FeatureJsonValueViewModel> ItemFeatures
         {

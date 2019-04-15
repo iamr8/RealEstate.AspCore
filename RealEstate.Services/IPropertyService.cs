@@ -26,6 +26,8 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
 
+        Task<PropertyJsonViewModel> PropertyJsonAsync(string id);
+
         Task<PropertyInputViewModel> PropertyInputAsync(string id);
 
         Task<Property> PropertyEntityAsync(string id);
@@ -40,20 +42,27 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IContactService _contactService;
+        private readonly IFeatureService _featureService;
+        private readonly IMapService _mapService;
+        private readonly ILocationService _locationService;
         private readonly DbSet<Property> _properties;
         private readonly DbSet<PropertyOwnership> _propertyOwnerships;
-        private readonly DbSet<Log> _logs;
 
         public PropertyService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
+            IMapService mapService,
+            IFeatureService featureService,
+            ILocationService locationService,
             IContactService contactService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _locationService = locationService;
+            _mapService = mapService;
+            _featureService = featureService;
             _contactService = contactService;
-            _logs = _unitOfWork.Set<Log>();
             _properties = _unitOfWork.Set<Property>();
             _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
         }
@@ -76,6 +85,37 @@ namespace RealEstate.Services
             return result;
         }
 
+        //public IIncludableQueryable<Property, TEntity> IncludeRequirements<TEntity>(IIncludableQueryable<Property, TEntity> exp)
+        //{
+        //    var inc = exp.Include(x => x.PropertyOwnerships)
+        //        .ThenInclude(x => x.Ownerships)
+        //        .ThenInclude(x => x.Contact);
+        //    return inc;
+        //}
+
+        public async Task<PropertyJsonViewModel> PropertyJsonAsync(string id)
+        {
+            var query = _properties as IQueryable<Property>;
+            query = query.Include(x => x.Items)
+                .Include(x => x.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.District)
+                .Include(x => x.Category)
+                .Include(x => x.District)
+                .Include(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact);
+
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            if (entity == null)
+                return default;
+
+            var result = MapJson(entity);
+            return result;
+        }
+
         public async Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
@@ -94,12 +134,12 @@ namespace RealEstate.Services
                 .ThenInclude(x => x.Ownerships)
                 .ThenInclude(x => x.Contact);
 
-            query = query.Where(x => EF.Functions.Like(x.Id, searchTerm.LikeExpression()));
-            query = query.Where(x => EF.Functions.Like(x.Street, searchTerm.LikeExpression())
-            || EF.Functions.Like(x.Alley, searchTerm.LikeExpression())
-            || EF.Functions.Like(x.BuildingName, searchTerm.LikeExpression()));
-            query = query.Where(x => EF.Functions.Like(x.Category.Name, searchTerm.LikeExpression()));
-            query = query.Where(x => EF.Functions.Like(x.District.Name, searchTerm.LikeExpression()));
+            query = query.Where(x => EF.Functions.Like(x.Id, searchTerm.LikeExpression())
+                                     || EF.Functions.Like(x.Street, searchTerm.LikeExpression())
+                                     || EF.Functions.Like(x.Alley, searchTerm.LikeExpression())
+                                     || EF.Functions.Like(x.BuildingName, searchTerm.LikeExpression())
+                                     || EF.Functions.Like(x.Category.Name, searchTerm.LikeExpression())
+                                     || EF.Functions.Like(x.District.Name, searchTerm.LikeExpression()));
 
             var models = await query.ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
@@ -108,37 +148,11 @@ namespace RealEstate.Services
             var result = new List<PropertyJsonViewModel>();
             foreach (var property in models)
             {
-                var lastPropOwnership = property.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
-                if (lastPropOwnership == null)
+                var mapped = MapJson(property);
+                if (mapped == null)
                     continue;
 
-                var prop = new PropertyJsonViewModel
-                {
-                    Id = property.Id,
-                    District = property.District.Name,
-                    Description = property.Description,
-                    Address = property.Address,
-                    Category = property.Category.Name,
-                    Features = property.PropertyFeatures.Select(x => new FeatureJsonValueViewModel
-                    {
-                        Id = x.FeatureId,
-                        Name = x.Feature.Name,
-                        Value = x.Value
-                    }).ToList(),
-                    Facilities = property.PropertyFacilities.Select(x => new FacilityJsonViewModel
-                    {
-                        Id = x.FacilityId,
-                        Name = x.Facility.Name,
-                    }).ToList(),
-                    Ownerships = lastPropOwnership.Ownerships.Select(x => new OwnershipJsonViewModel
-                    {
-                        ContactId = x.Contact?.Id,
-                        Name = x.Contact?.Name,
-                        Mobile = x.Contact?.MobileNumber,
-                        Dong = x.Dong
-                    }).ToList()
-                };
-                result.Add(prop);
+                result.Add(mapped);
             }
 
             return result;
@@ -179,24 +193,45 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?
-                    .R8Include(model =>
-                    {
-                        model.Facilities = model.Entity?.PropertyFacilities.Select(propEntity =>
-                            new PropertyFacilityViewModel(propEntity, false).Instance?
-                                .R8Include(x => x.Facility = new FacilityViewModel(x.Entity?.Facility, false).Instance).ShowBasedOn(b => b.Facility)).R8ToList();
-                        model.Features = model.Entity?.PropertyFeatures.Select(propEntity =>
-                            new PropertyFeatureViewModel(propEntity, false).Instance?
-                                .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance).ShowBasedOn(b => b.Feature)).R8ToList();
-                        model.District = new DistrictViewModel(model.Entity?.District, false).Instance;
-                        model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
-                        model.PropertyOwnerships = model.Entity?.PropertyOwnerships.Select(propEntity =>
-                            new PropertyOwnershipViewModel(propEntity, false).Instance?.R8Include(x =>
-                                x.Ownerships = propEntity.Ownerships.Select(c => new OwnershipViewModel(c, false).Instance?
-                                    .R8Include(v => v.Contact = new ContactViewModel(v.Entity?.Contact, false).Instance).ShowBasedOn(b => b.Contact)).R8ToList()).ShowBasedOn(b => b.Ownerships)).R8ToList();
-                    })).ConfigureAwait(false);
+                    item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)))
+                .ConfigureAwait(false);
 
             return result;
+        }
+
+        private PropertyJsonViewModel MapJson(Property property)
+        {
+            var lastPropOwnership = property.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
+            if (lastPropOwnership == null)
+                return default;
+
+            var prop = new PropertyJsonViewModel
+            {
+                Id = property.Id,
+                District = property.District.Name,
+                Description = property.Description,
+                Address = property.Address,
+                Category = property.Category.Name,
+                Features = property.PropertyFeatures.Select(x => new FeatureJsonValueViewModel
+                {
+                    Id = x.FeatureId,
+                    Name = x.Feature.Name,
+                    Value = x.Value
+                }).ToList(),
+                Facilities = property.PropertyFacilities.Select(x => new FacilityJsonViewModel
+                {
+                    Id = x.FacilityId,
+                    Name = x.Facility.Name,
+                }).ToList(),
+                Ownerships = lastPropOwnership.Ownerships.Select(x => new OwnershipJsonViewModel
+                {
+                    ContactId = x.Contact?.Id,
+                    Name = x.Contact?.Name,
+                    Mobile = x.Contact?.MobileNumber,
+                    Dong = x.Dong
+                }).ToList()
+            };
+            return prop;
         }
 
         public async Task<Property> PropertyEntityAsync(string id)
@@ -228,23 +263,7 @@ namespace RealEstate.Services
             if (entity == null)
                 return default;
 
-            var viewModel = new PropertyViewModel(entity, false).Instance?
-                .R8Include(model =>
-                {
-                    model.Facilities = model.Entity?.PropertyFacilities.Select(propEntity =>
-                        new PropertyFacilityViewModel(propEntity, false).Instance?
-                            .R8Include(x => x.Facility = new FacilityViewModel(x.Entity?.Facility, false)).ShowBasedOn(b => b.Facility)).R8ToList();
-                    model.Features = model.Entity?.PropertyFeatures.Select(propEntity =>
-                        new PropertyFeatureViewModel(propEntity, false).Instance?
-                            .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance).ShowBasedOn(b => b.Feature)).R8ToList();
-                    model.District = new DistrictViewModel(model.Entity?.District, false).Instance;
-                    model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
-                    model.PropertyOwnerships = model.Entity?.PropertyOwnerships.Select(propEntity =>
-                        new PropertyOwnershipViewModel(propEntity, false).Instance?.R8Include(x =>
-                                x.Ownerships = propEntity.Ownerships.Select(c => new OwnershipViewModel(c, false).Instance?
-                                    .R8Include(v => v.Contact = new ContactViewModel(v.Entity?.Contact, false).Instance).ShowBasedOn(b => b.Contact)).R8ToList())
-                            .ShowBasedOn(b => b.Ownerships)).R8ToList();
-                });
+            var viewModel = _mapService.Map(entity, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
             if (viewModel == null)
                 return default;
 
@@ -266,13 +285,13 @@ namespace RealEstate.Services
                 }).ToList(),
                 CategoryId = viewModel.Category?.Id,
                 //                Latitude = viewModel.Geolocation?.Latitude ?? 0,
+                //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
                 PropertyFeatures = viewModel.Features?.Select(x => new FeatureJsonValueViewModel
                 {
                     Id = x.Feature?.Id,
                     Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
-                //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
                 Number = viewModel.Number,
                 Street = viewModel.Street,
                 Flat = viewModel.Flat,
@@ -335,8 +354,12 @@ namespace RealEstate.Services
                     PropertyOwnershipId = propertyOwnership.Id,
                 },
                 (inDb, inModel) => inDb.ContactId == inModel.ContactId,
-                query => query.PropertyOwnershipId == propertyOwnership.Id,
-                (inDb, inModel) => inDb.PropertyOwnershipId = propertyOwnership.Id,
+                (inDb, inModel) => inDb.PropertyOwnershipId == propertyOwnership.Id && inDb.Dong == inModel.Dong,
+                (inDb, inModel) =>
+                {
+                    inDb.PropertyOwnershipId = propertyOwnership.Id;
+                    inDb.Dong = inModel.Dong;
+                },
                 null,
                 false).ConfigureAwait(false);
 

@@ -1,5 +1,10 @@
-﻿using RealEstate.Base;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using RealEstate.Base;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.Component
 {
@@ -35,5 +40,64 @@ namespace RealEstate.Services.ViewModels.Component
         public string SubmitId => $"{ModelName}_Submit";
         public string FormId => $"{ModelName}_Form";
         public string JsCodeOnSuccess { get; set; }
+
+        public List<ContactViewModel> OwnershipList { get; set; }
+        public List<FacilityViewModel> FacilityList { get; set; }
+        public List<FeatureViewModel> FeaturesList { get; set; }
+        public List<CategoryViewModel> Categories { get; set; }
+        public List<DistrictViewModel> Districts { get; set; }
+        public string OwnershipSelectorTitle { get; set; }
+        public string FacilitySelectorTitle { get; set; }
+        public string FeaturesSelectorTitle { get; set; }
+
+        public JsonSelectorComponentModel FeatureSelector => new JsonSelectorComponentModel
+        {
+            IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
+            NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
+            ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
+            ModelName = ModelName,
+            ItemName = PropertyFeatures.Name,
+            Json = nameof(PropertyFeaturesJson),
+            Title = FeaturesSelectorTitle,
+            ScriptKey = "propertyFeaturesScript",
+            SelectListItems = FeaturesList?.Select(x => new SelectListItem
+            {
+                Text = x.Name,
+                Value = x.Id,
+            }).SelectFirstItem(),
+        };
+
+        public JsonSelectorComponentModel FacilitySelector => new JsonSelectorComponentModel
+        {
+            IdProperty = PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id),
+            NameProperty = PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name),
+            ModelName = ModelName,
+            ItemName = PropertyFacilities.Name,
+            Json = nameof(PropertyFacilitiesJson),
+            Title = FacilitySelectorTitle,
+            ScriptKey = "propertyFacilitiesScript",
+            SelectListItems = FacilityList?.Select(x => new SelectListItem
+            {
+                Text = x.Name,
+                Value = x.Id,
+            }).SelectFirstItem(),
+        };
+
+        public JsonSelectorComponentModel OwnershipSelector => new JsonSelectorComponentModel
+        {
+            IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.ContactId),
+            NameProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name),
+            ValueProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong),
+            ModelName = ModelName,
+            ItemName = Ownerships.Name,
+            Json = nameof(Model.OwnershipsJson),
+            Title = OwnershipSelectorTitle,
+            ScriptKey = "propertyOwnersScript",
+            SelectListItems = OwnershipList?.Select(x => new SelectListItem
+            {
+                Text = $"{x.Name} • {x.Mobile}",
+                Value = x.Id,
+            }).SelectFirstItem(),
+        };
     }
 }

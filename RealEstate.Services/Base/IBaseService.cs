@@ -22,7 +22,7 @@ namespace RealEstate.Services.Base
         UserViewModel CurrentUser();
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentList,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, bool> validator,
+            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator,
             Action<TSource, TModel> onUpdate,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
@@ -78,7 +78,6 @@ namespace RealEstate.Services.Base
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _accessor;
         private readonly DbSet<User> _users;
-        private readonly DbSet<Log> _logs;
 
         public BaseService(
             IUnitOfWork unitOfWork,
@@ -88,7 +87,6 @@ namespace RealEstate.Services.Base
             _unitOfWork = unitOfWork;
             _accessor = accessor;
             _users = _unitOfWork.Set<User>();
-            _logs = _unitOfWork.Set<Log>();
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel) where TQuery : BaseEntity where TOutput : class
@@ -238,7 +236,7 @@ namespace RealEstate.Services.Base
         }
 
         public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentList,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, bool> validator, Action<TSource, TModel> onUpdate, Role[] allowedRoles, bool save) where TSource : BaseEntity
+            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator, Action<TSource, TModel> onUpdate, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null) return StatusEnum.UserIsNull;
@@ -266,7 +264,8 @@ namespace RealEstate.Services.Base
                 }
                 else
                 {
-                    if (validator?.Invoke(source) == true)
+                    var isValid = validator?.Invoke(source, model) == true;
+                    if (isValid)
                         continue;
 
                     onUpdate.Invoke(source, model);

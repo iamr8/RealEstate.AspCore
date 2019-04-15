@@ -14,6 +14,15 @@ namespace RealEstate.Services.Database.Configuration
                 .WithOne(x => x.Deal)
                 .HasForeignKey(x => x.DealId)
                 .IsRequired();
+
+            builder.HasOne(x => x.Item)
+                .WithMany(x => x.Deals)
+                .HasForeignKey(x => x.ItemId)
+                .IsRequired();
+
+            builder.HasMany(x => x.Applicants)
+                .WithOne(x => x.Deal)
+                .HasForeignKey(x => x.DealId);
         }
     }
 }

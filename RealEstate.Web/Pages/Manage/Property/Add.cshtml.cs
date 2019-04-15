@@ -27,7 +27,6 @@ namespace RealEstate.Web.Pages.Manage.Property
         [BindProperty]
         public PropertyInputViewModel NewProperty { get; set; }
 
-        [ViewData]
         public string PageTitle { get; set; }
 
         [TempData]

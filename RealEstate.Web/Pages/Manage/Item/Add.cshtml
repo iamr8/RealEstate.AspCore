@@ -1,18 +1,27 @@
 ﻿@page
 @model AddModel
 @{
-    var itemCategoriesList = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
-    var itemCategories = itemCategoriesList?.Select(x => new SelectListItem
+    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
+    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
+
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
+
+    var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
+    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+
+    var itemCategoriesList = itemCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
     var itemFeatureSelector = new JsonSelectorComponentModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
+        ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
         ModelName = nameof(Model.NewItem),
         ItemName = nameof(Model.NewItem.ItemFeatures),
         Json = nameof(Model.NewItem.ItemFeaturesJson),
@@ -40,24 +49,35 @@
             SearchId = $"{propertySelectorName}_Search",
             SearchResultId = $"{propertySelectorName}_Searches",
             ScriptKey = "propertySelector",
-            PropertyId = nameof(Model.NewItem.PropertyId)
+            PropertyId = $"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}"
         },
         PropertyCreator = new PropertyCreatorComponentModel
         {
             ModelName = propertyCreatorModelName,
-            PropertyId = nameof(Model.NewItem.PropertyId),
+            PropertyId = $"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}",
             ScriptKey = "propertyCreator",
+            OwnershipSelectorTitle = SharedLocalizer["Owners"],
+            FacilitySelectorTitle = SharedLocalizer["PropertyFacilities"],
+            FeaturesSelectorTitle = SharedLocalizer["PropertyFeatures"],
+            OwnershipList = ownerships,
+            FacilityList = propertyFacilities,
+            FeaturesList = propertyFeatures,
+            Categories = propertyCategories,
+            Districts = districts,
             PersonCreator = new PersonCreatorComponentModel
             {
                 ModelName = personCreatorModelName,
-            }
+            },
         }
     };
 }
 
-<div class="col-12" id="searcher">
-    <vc:property-selector-complex model="@propertySelector" />
-</div>
+@if (Model.NewItem == null || Model.NewItem.IsNew)
+{
+    <div class="col-12" id="searcher">
+        <vc:property-selector-complex model="@propertySelector" />
+    </div>
+}
 <form method="post" class="widget" id="NewItem">
     <widget-header title="@Model.PageTitle" />
     <input asp-for="NewItem.PropertyId" />
@@ -82,7 +102,7 @@
         <div class="row justify-content-center align-items-center">
             <div class="col-12 margin-bottomed">
                 <label asp-for="NewItem.CategoryId" class="control-label"></label>
-                <select asp-items="itemCategories" asp-for="NewItem.CategoryId" class="form-control"></select>
+                <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="form-control"></select>
                 <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
             </div>
         </div>
@@ -112,9 +132,99 @@
 @section Scripts
     {
     <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
-    <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
-    <script asp-paste-key="propertyFeaturesScript"></script>
-    <script asp-paste-key="propertyFacilitiesScript"></script>
-    <script asp-paste-key="propertyOwnersScript"></script>
-    <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
+    @if (Model.NewItem == null || Model.NewItem.IsNew)
+    {
+        <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
+        <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
+        <script asp-paste-key="propertyFeaturesScript"></script>
+        <script asp-paste-key="propertyFacilitiesScript"></script>
+        <script asp-paste-key="propertyOwnersScript"></script>
+        <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
+    }
+
+    <script>
+        $(document).ready(function() {
+
+            var pendingRequest = null;
+
+            const propertyIdElement = $("#@($"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}")");
+            const searchInput = $("#@propertySelector.PropertySelector.SearchId");
+
+            const newItemWrapper = $("#NewItem");
+            const searchWrapper = $("#searcher");
+            const propertyInfoWrapper = $("#NewItem_PropertyInfo");
+
+            $(propertyIdElement).change(function() {
+
+                $(searchInput).val("");
+                const currentPropertyId = $(propertyIdElement).val();
+                console.log("Selected propertyId", currentPropertyId);
+
+                if (currentPropertyId === null || currentPropertyId === "") {
+                    $(newItemWrapper).fadeOut(function() {
+                        $(searchWrapper).fadeIn();
+                    });
+                } else {
+                    pendingRequest = $.ajax({
+                        type: 'GET',
+                        data: { id: currentPropertyId },
+                        url: '@Url.Action("PropertyAsync", "Detail")',
+                        beforeSend: function() {
+                            if (pendingRequest != null) {
+                                pendingRequest.abort();
+                            }
+                        },
+                        success: function(response) {
+                            $(searchWrapper).fadeOut(function() {
+                                const addressElement = $(".address", propertyInfoWrapper);
+                                const districtElement = $(".district", propertyInfoWrapper);
+                                const categoryElement = $(".category", propertyInfoWrapper);
+                                const descriptionElement = $(".description", propertyInfoWrapper);
+
+                                const idValue = response
+                                    .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Id));
+                                const addressValue = response
+                                    .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Address));
+                                const districtValue = response
+                                    .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.District));
+                                const categoryValue = response
+                                    .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Category));
+                                const descriptionValue = response
+                                    .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Description));
+
+                                $(addressElement).html(addressValue);
+                                $(addressElement).attr("href",
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyId=${idValue
+                                    }`);
+
+                                $(districtElement).html(districtValue);
+                                $(districtElement).attr("href",
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.District)}/Index")?districtName=${
+                                    districtValue}`);
+
+                                $(categoryElement).html(categoryValue);
+                                $(categoryElement).attr("href",
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyCat=${
+                                    categoryValue}`);
+
+                                if (descriptionValue === "")
+                                    $(descriptionElement).addClass("d-none");
+                                else {
+                                    $(descriptionElement).removeClass("d-none");
+                                    $(descriptionElement).html(descriptionValue);
+                                }
+
+                                $(newItemWrapper).fadeIn();
+                            });
+                        },
+                        error: function(e) {
+
+                        }
+                    });
+                }
+            });
+
+            $(propertyIdElement).trigger("change");
+        });
+    </script>
 }

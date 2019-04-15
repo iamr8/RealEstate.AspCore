@@ -38,14 +38,17 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IMapService _mapService;
         private readonly DbSet<District> _districts;
 
         public LocationService(
             IUnitOfWork unitOfWork,
+            IMapService mapService,
             IBaseService baseService
             )
         {
             _unitOfWork = unitOfWork;
+            _mapService = mapService;
             _baseService = baseService;
             _districts = _unitOfWork.Set<District>();
         }
@@ -56,7 +59,7 @@ namespace RealEstate.Services
             query = query.Filtered();
 
             var districts = await query.ToListAsync().ConfigureAwait(false);
-            return districts.Select(x => new DistrictViewModel(x, false).Instance).ToList();
+            return _mapService.Map(districts, false);
         }
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
@@ -70,7 +73,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new DistrictViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
@@ -152,8 +155,8 @@ namespace RealEstate.Services
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new DistrictViewModel(model, false);
-            if (viewModel.Instance == null)
+            var viewModel = _mapService.Map(model, false);
+            if (viewModel == null)
                 return default;
 
             var result = new DistrictInputViewModel

@@ -8,7 +8,7 @@ namespace RealEstate.Services.Database.Tables
         public Item()
         {
             ItemFeatures = new HashSet<ItemFeature>();
-            ItemRequests = new HashSet<ItemRequest>();
+            Deals = new HashSet<Deal>();
         }
 
         public string Description { get; set; }
@@ -19,6 +19,6 @@ namespace RealEstate.Services.Database.Tables
         public virtual Category Category { get; set; }
         public virtual Property Property { get; set; }
         public virtual ICollection<ItemFeature> ItemFeatures { get; set; }
-        public virtual ICollection<ItemRequest> ItemRequests { get; set; }
+        public virtual ICollection<Deal> Deals { get; set; }
     }
 }

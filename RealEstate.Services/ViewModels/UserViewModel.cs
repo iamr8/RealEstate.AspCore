@@ -29,7 +29,6 @@ namespace RealEstate.Services.ViewModels
             Instance = new UserViewModel
             {
                 Entity = entity,
-
                 Role = entity.Role,
                 FirstName = entity.FirstName,
                 LastName = entity.LastName,
@@ -68,5 +67,6 @@ namespace RealEstate.Services.ViewModels
         public List<SmsViewModel> Smses { get; set; }
         public List<PermissionViewModel> Permissions { get; set; }
         public List<FixedSalaryViewModel> FixedSalaries { get; set; }
+        public List<ReminderViewModel> Reminders { get; set; }
     }
 }

@@ -5,7 +5,7 @@
     <div class="row justify-content-center align-items-center">
         <div class="col-12">
             <div class="widget mini-widget">
-                <widget-header title="@SharedLocalizer["NewOwner"]" />
+                <widget-header title="@SharedLocalizer["NewContact"]" />
                 <section class="container-fluid">
                     <div class="row justify-content-center align-items-center">
                         <div class="col-12 col-md-4 margin-bottomed">
@@ -99,13 +99,10 @@
                                     responseStatus === @((int)StatusEnum.PartialSuccess)) {
                                     $(newFormStatus).html("@Html.Raw(StatusEnum.Success.GetDisplayName())");
 
-                                    @if (!string.IsNullOrEmpty(Model.JsCodeOnSuccess))
-                                    {
-                                        <text>
-                                            @Html.Raw(Model.JsCodeOnSuccess)
-                                        </text>
-                                    }
-
+                                    @*const option = document.createElement("option");
+                                        $(option).val(responseId).html(responseName);
+                                        $("#@{Model.}").prepend(option);
+                                        $("#{propertyCreator.OwnershipsJson.Id}").trigger("change");*@
                                 }
                             }
                         });

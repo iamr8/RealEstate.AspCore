@@ -5,6 +5,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System.Collections.Generic;
 using System.Linq;
+using RealEstate.Base.Enums;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -25,7 +26,7 @@ namespace RealEstate.Services.ViewModels
             {
                 Entity = entity,
                 Description = entity.Description,
-                IsRequested = entity.ItemRequests?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.IsReject == false,
+                IsRequested = entity.Deals?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Status == DealStatusEnum.Requested,
                 Id = entity.Id,
                 Logs = entity.GetLogs()
             };

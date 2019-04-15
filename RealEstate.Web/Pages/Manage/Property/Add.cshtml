@@ -1,26 +1,59 @@
 ﻿@page
 @model AddModel
 @{
+    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+    var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
+    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+
     var propertyCreator = new PropertyCreatorComponentModel
     {
+        OwnershipSelectorTitle = SharedLocalizer["Owners"],
+        FacilitySelectorTitle = SharedLocalizer["PropertyFacilities"],
+        FeaturesSelectorTitle = SharedLocalizer["PropertyFeatures"],
+        OwnershipList = ownerships,
+        FacilityList = propertyFacilities,
+        FeaturesList = propertyFeatures,
+        Categories = propertyCategories,
+        Districts = districts,
+
         ModelName = nameof(Model.NewProperty),
         PropertyId = $"{nameof(Model.NewProperty)}_{nameof(Model.NewProperty.Id)}",
         ScriptKey = "propertyCreator",
         Model = Model.NewProperty,
+
         PersonCreator = new PersonCreatorComponentModel
         {
             ModelName = $"{ nameof(Model.NewProperty)}_NewPerson",
         },
     };
+    propertyCreator.JsCodeOnSuccess = "const option = document.createElement(\"option\");\r\n"
+                                                          + "$(option).val(responseId).html(responseName);\r\n"
+                                                          + $"$(\"#{propertyCreator.OwnershipSelector.SelectId}\").prepend(option);\r\n"
+                                                          + $"$(\"#{propertyCreator.OwnershipsJson.Id}\").trigger(\"change\");\r\n";
 }
 
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-            <form method="post" id="@propertyCreator.PersonCreator.FormId">
-                <vc:person-creator model="@propertyCreator.PersonCreator" />
-            </form>
+            <div id="accordion">
+                <div class="card">
+                    <div class="card-header">
+                        <a class="card-link" data-toggle="collapse" href="#collapseOne">
+                            @SharedLocalizer["NewContact"]
+                        </a>
+                    </div>
+                    <div id="collapseOne" class="collapse" data-parent="#accordion">
+                        <div class="card-body">
+                            <form method="post" id="@propertyCreator.PersonCreator.FormId">
+                                <vc:person-creator model="@propertyCreator.PersonCreator" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <form method="post" id="@propertyCreator.FormId">
                 <vc:property-creator model="@propertyCreator" />

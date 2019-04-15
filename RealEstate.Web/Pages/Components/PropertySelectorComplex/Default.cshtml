@@ -6,6 +6,11 @@
 
     var propertyCreatorId = "PCtor";
 
+    Model.PropertyCreator.PersonCreator.JsCodeOnSuccess = "const option = document.createElement(\"option\");\r\n"
+                                          + "$(option).val(responseId).html(responseName);\r\n"
+                                          + $"$({Model.PropertyCreator.OwnershipSelector.SelectId}).prepend(option);\r\n"
+                                          + $"$({Model.PropertyCreator.OwnershipsJson.Id}).trigger(\"change\");\r\n";
+
     <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link active" data-toggle="tab" href="#@propertySelectorTab">@SharedLocalizer["SelectProperty"]</a>
@@ -29,9 +34,22 @@
                     <h6>@SharedLocalizer["IfYouWantToCreateProperty"]</h6>
                 </div>
             </div>
-            <form method="post" id="@Model.PropertyCreator.PersonCreator.FormId">
-                <vc:person-creator model="@Model.PropertyCreator.PersonCreator" />
-            </form>
+            <div id="accordion" class="margin-bottomed">
+                <div class="card">
+                    <div class="card-header">
+                        <a class="card-link" data-toggle="collapse" href="#collapseOne">
+                            @SharedLocalizer["NewContact"]
+                        </a>
+                    </div>
+                    <div id="collapseOne" class="collapse" data-parent="#accordion">
+                        <div class="card-body">
+                            <form method="post" id="@Model.PropertyCreator.PersonCreator.FormId">
+                                <vc:person-creator model="@Model.PropertyCreator.PersonCreator" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <form method="post" id="@Model.PropertyCreator.FormId">
                 <vc:property-creator model="@Model.PropertyCreator" />

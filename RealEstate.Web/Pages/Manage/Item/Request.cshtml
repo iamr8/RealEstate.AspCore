@@ -1,0 +1,84 @@
+﻿@page
+@model RequestModel
+@{
+    var contactsList = await ContactService.ListJsonAsync().ConfigureAwait(false);
+    var contactSelector = new JsonSelectorComponentModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
+        ModelName = nameof(Model.NewItemRequest),
+        ItemName = nameof(Model.NewItemRequest.Contacts),
+        Json = nameof(Model.NewItemRequest.ContactsJson),
+        Title = SharedLocalizer["Applicants"],
+        ScriptKey = "propertyFeaturesScript",
+        SelectListItems = contactsList?.Select(x => new SelectListItem
+        {
+            Text = !string.IsNullOrEmpty(x.ApplicantId) ? $"* {x.Name}" : x.Name,
+            Value = x.ContactId
+        }).SelectFirstItem()
+    };
+
+    var personCreator = new PersonCreatorComponentModel
+    {
+        ModelName = $"{nameof(Model.NewItemRequest)}_NewApplicant",
+    };
+}
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <section class="container-fluid">
+            <div id="accordion">
+                <div class="card">
+                    <div class="card-header">
+                        <a class="card-link" data-toggle="collapse" href="#collapseOne">
+                            @SharedLocalizer["NewContact"]
+                        </a>
+                    </div>
+                    <div id="collapseOne" class="collapse" data-parent="#accordion">
+                        <div class="card-body">
+                            <form method="post">
+                                <vc:person-creator model="@personCreator" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form method="post">
+
+                <input asp-for="NewItemRequest.ItemId" class="form-control" rows="3" />
+                <hr />
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <input asp-for="NewItemRequest.ContactsJson" />
+                        <vc:json-selector model="@contactSelector" />
+                    </div>
+                </div>
+                <hr />
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12 margin-bottomed">
+                        <label asp-for="NewItemRequest.Description" class="control-label"></label>
+                        <textarea asp-for="NewItemRequest.Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="NewItemRequest.Description" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="row justify-content-center align-items-center">
+                    <div asp-validation-summary="All" class="col-12 text-danger text-center">
+                        @Model.Status
+                    </div>
+                </div>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <input type="submit" class="btn btn-success btn-block btn-sm" value="@SharedLocalizer["Submit"]">
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <script asp-paste-key="@personCreator.ScriptKey"></script>
+    <script asp-paste-key="@contactSelector.ScriptKey"></script>
+
+}

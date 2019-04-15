@@ -826,6 +826,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to درخواست معامله.
+        /// </summary>
+        public static string ItemRequest {
+            get {
+                return ResourceManager.GetString("ItemRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to درخواست های معامله.
         /// </summary>
         public static string ItemRequests {
@@ -1281,6 +1290,15 @@ namespace RealEstate.Resources {
         public static string PropertyCategory {
             get {
                 return ResourceManager.GetString("PropertyCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مشخصات ملک.
+        /// </summary>
+        public static string PropertyDetail {
+            get {
+                return ResourceManager.GetString("PropertyDetail", resourceCulture);
             }
         }
         

@@ -81,11 +81,15 @@
                                         }
                                         @if (item.Flat > 0)
                                         {
-                                            <span class="text-gray">@SharedLocalizer["Flat"]: </span>@item.Flat
+                                            <span class="text-gray">@SharedLocalizer["FlatNumber"]: </span>@item.Flat
                                         }
                                     </b>
 
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category?.Name</a>
+                                    @if (item.CurrentPropertyOwnership?.Ownerships.Sum(x => x.Dong) != 6)
+                                    {
+                                        <span class="badge badge-dark">خطا در ثبت تعداد دانگ ها</span>
+                                    }
                                 </span>
                                 @if (item.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {

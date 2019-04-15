@@ -45,23 +45,24 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IMapService _mapService;
         private readonly DbSet<User> _users;
-        private readonly DbSet<Log> _logs;
         private readonly DbSet<FixedSalary> _fixedSalaries;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUnitOfWork unitOfWork,
+            IMapService mapService,
             IBaseService baseService,
             IHttpContextAccessor httpContextAccessor
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _mapService = mapService;
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
-            _logs = _unitOfWork.Set<Log>();
             _fixedSalaries = _unitOfWork.Set<FixedSalary>();
         }
 
@@ -76,17 +77,8 @@ namespace RealEstate.Services
             if (model == null)
                 return default;
 
-            var viewModel = new UserViewModel(model, false).Instance?.R8Include(x =>
-             {
-                 x.ItemCategories = x.Entity?.UserItemCategories.Select(c =>
-                     new UserItemCategoryViewModel(c, false).Instance?
-                         .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance)).R8ToList();
-                 x.PropertyCategories = x.Entity?.UserPropertyCategories.Select(c =>
-                     new UserPropertyCategoryViewModel(c, false).Instance?
-                         .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance)).R8ToList();
-                 x.FixedSalaries = x.Entity?.FixedSalaries.Select(c => new FixedSalaryViewModel(c, false).Instance).R8ToList();
-             });
-            if (viewModel?.Instance == null)
+            var viewModel = _mapService.Map(model, false);
+            if (viewModel == null)
                 return default;
 
             var result = new UserInputViewModel
@@ -164,15 +156,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new UserViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance?.R8Include(x =>
-                {
-                    x.ItemCategories = x.Entity?.UserItemCategories.Select(c =>
-                        new UserItemCategoryViewModel(c, false).Instance?
-                            .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance).ShowBasedOn(b => b.Category)).R8ToList();
-                    x.PropertyCategories = x.Entity?.UserPropertyCategories.Select(c =>
-                        new UserPropertyCategoryViewModel(c, false).Instance?
-                            .R8Include(v => v.Category = new CategoryViewModel(v.Entity?.Category, false).Instance).ShowBasedOn(b => b.Category)).R8ToList();
-                })).ConfigureAwait(false);
+                item => _mapService.Map(item, false)).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;

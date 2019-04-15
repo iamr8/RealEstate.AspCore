@@ -73,7 +73,7 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-
+        private readonly IMapService _mapService;
         private readonly DbSet<UserPropertyCategory> _userPropertyCategories;
         private readonly DbSet<UserItemCategory> _userItemCategories;
         private readonly DbSet<Category> _categories;
@@ -82,10 +82,12 @@ namespace RealEstate.Services
 
         public FeatureService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService
+            IBaseService baseService,
+            IMapService mapService
             )
         {
             _unitOfWork = unitOfWork;
+            _mapService = mapService;
             _baseService = baseService;
             _userPropertyCategories = _unitOfWork.Set<UserPropertyCategory>();
             _userItemCategories = _unitOfWork.Set<UserItemCategory>();
@@ -104,7 +106,9 @@ namespace RealEstate.Services
                 .Include(x => x.PropertyFeatures);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new FeatureViewModel(model, false);
+            var viewModel = _mapService.Map(model, false);
+            if (viewModel == null)
+                return default;
 
             var result = new FeatureInputViewModel
             {
@@ -124,8 +128,8 @@ namespace RealEstate.Services
                 .Include(x => x.PropertyFacilities);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new FacilityViewModel(model, false);
-            if (viewModel.Instance == null)
+            var viewModel = _mapService.Map(model, false);
+            if (viewModel == null)
                 return default;
 
             var result = new FacilityInputViewModel
@@ -143,8 +147,8 @@ namespace RealEstate.Services
 
             var query = _categories.Where(x => x.Id == id);
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = new CategoryViewModel(model, false);
-            if (viewModel?.Instance == null)
+            var viewModel = _mapService.Map(model, false);
+            if (viewModel == null)
                 return default;
 
             var result = new CategoryInputViewModel
@@ -383,7 +387,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new FeatureViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
@@ -400,7 +404,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new FacilityViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
@@ -429,7 +433,7 @@ namespace RealEstate.Services
             query = query.Filtered();
 
             var features = await query.ToListAsync().ConfigureAwait(false);
-            return features.Select(x => new FacilityViewModel(x, false).Instance).R8ToList();
+            return _mapService.Map(features, false);
         }
 
         public async Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type)
@@ -441,7 +445,7 @@ namespace RealEstate.Services
                 query = query.Where(x => x.Type == type);
 
             var features = await query.ToListAsync().ConfigureAwait(false);
-            return features.Select(x => new FeatureViewModel(x, false).Instance).R8ToList();
+            return _mapService.Map(features, false);
         }
 
         public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
@@ -464,7 +468,7 @@ namespace RealEstate.Services
                     models = models.Where(x => x.Type == searchModel.Type);
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new CategoryViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
@@ -499,7 +503,7 @@ namespace RealEstate.Services
             }
 
             var categories = await query.ToListAsync().ConfigureAwait(false);
-            return categories.Select(x => new CategoryViewModel(x, false).Instance).R8ToList();
+            return categories.Select(x => _mapService.Map(x, false)).R8ToList();
         }
     }
 }

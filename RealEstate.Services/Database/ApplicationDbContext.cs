@@ -34,7 +34,6 @@ namespace RealEstate.Services.Database
         public virtual DbSet<FixedSalary> FixedSalary { get; set; }
         public virtual DbSet<Item> Item { get; set; }
         public virtual DbSet<ItemFeature> ItemFeature { get; set; }
-        public virtual DbSet<ItemRequest> ItemRequest { get; set; }
         public virtual DbSet<Ownership> Ownership { get; set; }
         public virtual DbSet<Payment> Payment { get; set; }
         public virtual DbSet<Permission> Permission { get; set; }

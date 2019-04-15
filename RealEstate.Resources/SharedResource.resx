@@ -762,4 +762,10 @@
   <data name="Ownership" xml:space="preserve">
     <value>مالکیت</value>
   </data>
+  <data name="ItemRequest" xml:space="preserve">
+    <value>درخواست معامله</value>
+  </data>
+  <data name="PropertyDetail" xml:space="preserve">
+    <value>مشخصات ملک</value>
+  </data>
 </root>

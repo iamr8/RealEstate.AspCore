@@ -1,79 +1,151 @@
-﻿using RealEstate.Base.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.Database;
+using RealEstate.Services.Database.Tables;
+using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
-using Beneficiary = RealEstate.Services.Database.Tables.Beneficiary;
-using Deal = RealEstate.Services.Database.Tables.Deal;
-using DealPayment = RealEstate.Services.Database.Tables.DealPayment;
-using IUnitOfWork = RealEstate.Services.Database.IUnitOfWork;
 
 namespace RealEstate.Services
 {
     public interface IDealService
     {
-        Task<(StatusEnum, Deal)> DealAddAsync(DealInputViewModel model, string itemRequestId, bool save);
+        Task<PaginationViewModel<DealViewModel>> RequestListAsync(int pageNo);
+
+        Task<(StatusEnum, Deal)> RequestAsync(ItemRequestInputViewModel model, bool save);
     }
 
     public class DealService : IDealService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IMapService _mapService;
+        private readonly IContactService _contactService;
+        private readonly IItemService _itemService;
+        private readonly DbSet<Applicant> _applicants;
+        private readonly DbSet<Contact> _contacts;
+        private readonly DbSet<Deal> _deals;
 
         public DealService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService
+            IBaseService baseService,
+            IItemService itemService,
+            IMapService mapService,
+            IContactService contactService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _mapService = mapService;
+            _contactService = contactService;
+            _itemService = itemService;
+            _applicants = _unitOfWork.Set<Applicant>();
+            _contacts = _unitOfWork.Set<Contact>();
+            _deals = _unitOfWork.Set<Deal>();
         }
 
-        public async Task<(StatusEnum, Deal)> DealAddAsync(DealInputViewModel model, string itemRequestId, bool save)
+        public async Task<PaginationViewModel<DealViewModel>> RequestListAsync(int pageNo)
+        {
+            var query = _deals as IQueryable<Deal>;
+
+            var dd = from request in query
+                     let applicants = (from applicant in request.Applicants
+                                       let contact = applicant.Contact
+                                       let applicantFeatures = (from applicantFeature in applicant.ApplicantFeatures
+                                                                let features = applicantFeature.Feature
+                                                                select applicantFeature)
+                                       select applicant)
+                     let item = request.Item
+                     let itemCategory = item.Category
+                     let property = item.Property
+                     let propertyOwnerships = (from propertyOwnership in property.PropertyOwnerships
+                                               let ownerships = (from ownership in propertyOwnership.Ownerships
+                                                                 let ownershipContact = ownership.Contact
+                                                                 select ownership)
+                                               select propertyOwnership)
+                     where request.Status == DealStatusEnum.Requested
+                     select request;
+
+            var result = await _baseService.PaginateAsync(dd, pageNo,
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))).ConfigureAwait(false);
+            return result;
+        }
+
+        public async Task<(StatusEnum, Deal)> RequestAsync(ItemRequestInputViewModel model, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Deal>(StatusEnum.ModelIsNull, null);
 
-            var (dealAddStatus, newDeal) = await _baseService.AddAsync(new Deal
+            if (model?.Contacts?.Any() != true)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ApplicantsEmpty, null);
+
+            var (requestAddStatus, newRequest) = await _baseService.AddAsync(new Deal
             {
                 Description = model.Description,
-                ItemRequestId = itemRequestId,
-            }, new[]
-                {
-                    Role.SuperAdmin
-                },
-                false).ConfigureAwait(false);
+                ItemId = model.ItemId,
+                Status = DealStatusEnum.Requested
+            }, null, false).ConfigureAwait(false);
+            if (requestAddStatus != StatusEnum.Success)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemRequestIsNull, null);
 
-            var syncBeneficiaries = await _baseService.SyncAsync(
-                newDeal.Beneficiaries,
-                model.Beneficiaries,
-                beneficiary => new Beneficiary
-                {
-                    CommissionPercent = beneficiary.CommissionPercent,
-                    DealId = newDeal.Id,
-                    TipPercent = beneficiary.TipPercent,
-                    UserId = beneficiary.UserId
-                }, (currentBeneficiary, newBeneficiary) => currentBeneficiary.UserId == newBeneficiary.UserId, new[]
-                {
-                    Role.SuperAdmin
-                }, false).ConfigureAwait(false);
+            await SyncApplicantsAsync(newRequest, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newRequest, save).ConfigureAwait(false);
+        }
 
-            var syncPayments = await _baseService.SyncAsync(
-                newDeal.DealPayments,
-                model.DealPayments,
-                payment => new DealPayment
-                {
-                    CommissionPrice = payment.Commission,
-                    DealId = newDeal.Id,
-                    PayDate = payment.PayDate,
-                    Text = payment.Text,
-                    TipPrice = payment.Tip
-                }, (currentPayment, newPayment) => currentPayment.Id == newPayment.Id, new[]
-                {
-                    Role.SuperAdmin
-                }, false).ConfigureAwait(false);
+        public async Task<StatusEnum> SyncApplicantsAsync(Deal deal, ItemRequestInputViewModel model, bool save)
+        {
+            var allowedContacts = await _contactService.ListJsonAsync().ConfigureAwait(false);
+            if (allowedContacts?.Any() != true)
+                return StatusEnum.ContactIsNull;
 
-            return await _baseService.SaveChangesAsync(newDeal, save).ConfigureAwait(false);
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null) return StatusEnum.UserIsNull;
+
+            var mustBeLeft = deal.Applicants.Where(ent => model.Contacts.Any(mdl => ent.ContactId == mdl.ContactId)).ToList();
+            var mustBeRemoved = deal.Applicants.Where(x => !mustBeLeft.Contains(x)).ToList();
+            if (mustBeRemoved.Count > 0)
+            {
+                foreach (var redundant in mustBeRemoved)
+                {
+                    await _baseService.UpdateAsync(redundant,
+                        () => redundant.DealId = null, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                }
+            }
+
+            if (model.Contacts?.Any() != true)
+                return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+
+            foreach (var contact in model.Contacts)
+            {
+                var source = deal.Applicants.FirstOrDefault(ent => ent.ContactId == contact.ContactId);
+                if (source == null)
+                {
+                    var cnt = await _contacts.FirstOrDefaultAsync(x => x.Id == contact.ContactId).ConfigureAwait(false);
+                    if (cnt == null)
+                        continue;
+
+                    var (applicantAddStatus, newApplicant) = await _contactService.ApplicantAddAsync(new ApplicantInputViewModel
+                    {
+                        Address = cnt.Address,
+                        Mobile = cnt.MobileNumber,
+                        Name = cnt.Name,
+                        Phone = cnt.PhoneNumber,
+                        Type = ApplicantTypeEnum.Applicant
+                    }, deal.Id, false).ConfigureAwait(false);
+                }
+                else
+                {
+                    var applicant = await _applicants.FirstOrDefaultAsync(x => x.Id == contact.ApplicantId).ConfigureAwait(false);
+                    await _baseService.UpdateAsync(applicant,
+                        () => applicant.DealId = deal.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                }
+            }
+
+            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
     }
 }

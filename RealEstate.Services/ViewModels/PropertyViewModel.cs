@@ -1,5 +1,6 @@
 ﻿using JetBrains.Annotations;
 using Newtonsoft.Json;
+using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -31,7 +32,7 @@ namespace RealEstate.Services.ViewModels
                 Number = entity.Number,
                 Floor = entity.Floor,
                 Flat = entity.Flat,
-                Deals = entity.Items?.Sum(x => x.ItemRequests.Count(c => c.Deal?.Id != null)) ?? 0,
+                Deals = entity.Items?.Sum(x => x.Deals.Count(c => c.Status == DealStatusEnum.Finished)) ?? 0,
                 Description = entity.Description,
                 Logs = entity.GetLogs()
             };

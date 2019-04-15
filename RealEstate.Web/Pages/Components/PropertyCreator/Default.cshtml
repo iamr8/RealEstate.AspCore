@@ -1,83 +1,23 @@
 ﻿@model PropertyCreatorComponentModel
 @{
-    var districtsList = await LocationService.DistrictListAsync().ConfigureAwait(false);
-    var districts = districtsList?.Select(x => new SelectListItem
+    var districts = Model.Districts?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var propertyCategoriesList = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
-    var propertyCategories = propertyCategoriesList?.Select(x => new SelectListItem
+    var propertyCategories = Model.Categories?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
-    var featureSelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
-        ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
-        ModelName = Model.ModelName,
-        ItemName = Model.PropertyFeatures.Name,
-        Json = nameof(Model.PropertyFeaturesJson),
-        Title = SharedLocalizer["PropertyFeatures"],
-        ScriptKey = "propertyFeaturesScript",
-        SelectListItems = features?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
-    };
-
-    var facilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
-    var facilitiesSelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name),
-        ModelName = Model.ModelName,
-        ItemName = Model.PropertyFacilities.Name,
-        Json = nameof(Model.PropertyFacilitiesJson),
-        Title = SharedLocalizer["PropertyFacilities"],
-        ScriptKey = "propertyFacilitiesScript",
-        SelectListItems = facilities?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
-    };
-
-    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
-    var ownershipsSelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.ContactId),
-        NameProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name),
-        ValueProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong),
-        ModelName = Model.ModelName,
-        ItemName = Model.Ownerships.Name,
-        Json = nameof(Model.OwnershipsJson),
-        Title = SharedLocalizer["Owners"],
-        ScriptKey = "propertyOwnersScript",
-        SelectListItems = ownerships?.Select(x => new SelectListItem
-        {
-            Text = $"{x.Name} • {x.Mobile}",
-            Value = x.Id,
-        }).SelectFirstItem(),
-
-    };
-
-    Model.PersonCreator.JsCodeOnSuccess = "const option = document.createElement(\"option\");\r\n"
-                                          + "$(option).val(responseId).html(responseName);\r\n"
-                                          + $"$({ownershipsSelector.SelectId}).prepend(option);\r\n"
-                                          + $"$({Model.OwnershipsJson.Id}).trigger(\"change\");\r\n";
 }
 <input asp-for="@Model.Model.Id" id="@Model.Id.Id" name="@Model.Id.Name" value="@Model.Model.Id" class="form-control" />
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
         <input asp-for="@Model.Model.OwnershipsJson" id="@Model.OwnershipsJson.Id" name="@Model.OwnershipsJson.Name" value="@Model.Model.OwnershipsJson" class="form-control" />
-        <vc:json-selector model="@ownershipsSelector" />
+        <vc:json-selector model="@Model.OwnershipSelector" />
     </div>
 </div>
 <hr />
@@ -128,13 +68,13 @@
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
         <input asp-for="@Model.Model.PropertyFeaturesJson" id="@Model.PropertyFeaturesJson.Id" name="@Model.PropertyFeaturesJson.Name" value="@Model.Model.PropertyFeaturesJson" class="form-control" />
-        <vc:json-selector model="@featureSelector" />
+        <vc:json-selector model="@Model.FeatureSelector" />
     </div>
 </div>
 <div class="row justify-content-center align-items-center">
     <div class="col-12 margin-bottomed">
         <input asp-for="@Model.Model.PropertyFacilitiesJson" id="@Model.PropertyFacilitiesJson.Id" name="@Model.PropertyFacilitiesJson.Name" value="@Model.Model.PropertyFacilitiesJson" class="form-control" />
-        <vc:json-selector model="@facilitiesSelector" />
+        <vc:json-selector model="@Model.FacilitySelector" />
     </div>
 </div>
 

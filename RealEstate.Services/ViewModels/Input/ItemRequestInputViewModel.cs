@@ -8,21 +8,24 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
-    public class ItemRequestInputViewModel : BaseInputViewModel
+    public class ItemRequestInputViewModel
     {
         [HiddenInput]
         [Display(ResourceType = typeof(SharedResource), Name = "Deal")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string ItemId { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Description")]
         public string Description { get; set; }
 
-        public string ApplicantsJson { get; private set; }
+        [HiddenInput]
+        [Required]
+        public string ContactsJson { get; set; }
 
-        public List<ApplicantJsonViewModel> Applicants
+        public List<ApplicantJsonViewModel> Contacts
         {
-            get => ApplicantsJson.JsonGetAccessor<List<ApplicantJsonViewModel>>();
-            set => ApplicantsJson = value.JsonSetAccessor();
+            get => ContactsJson.JsonGetAccessor<List<ApplicantJsonViewModel>>();
+            set => ContactsJson = value.JsonSetAccessor();
         }
     }
 }

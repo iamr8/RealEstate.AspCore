@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
@@ -16,8 +17,6 @@ namespace RealEstate.Services
 {
     public interface IItemService
     {
-        Task<(StatusEnum, ItemRequest)> ItemRequestAddAsync(ItemRequestInputViewModel model, bool save);
-
         Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel);
 
         Task<StatusEnum> ItemRemoveAsync(string id);
@@ -28,9 +27,7 @@ namespace RealEstate.Services
 
         Task<ItemInputViewModel> ItemInputAsync(string id);
 
-        Task<(StatusEnum, ItemRequest)> ItemRequestRejectAsync(string itemRequestId, bool save);
-
-        Task<ItemRequest> ItemRequestEntityAsync(string id);
+        Task<ItemViewModel> ItemAsync(string id);
 
         Task<(StatusEnum, Item)> ItemAddAsync(ItemInputViewModel model, bool save);
     }
@@ -40,23 +37,36 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IContactService _contactService;
-        private readonly DbSet<ItemRequest> _itemRequests;
+        private readonly IMapService _mapService;
+        private readonly IFeatureService _featureService;
+        private readonly IPropertyService _propertyService;
+        private readonly DbSet<Deal> _itemRequests;
         private readonly DbSet<Item> _items;
+        private readonly DbSet<Ownership> _ownerships;
+        private readonly DbSet<Contact> _contacts;
 
         public ItemService(
             IBaseService baseService,
             IUnitOfWork unitOfWork,
+            IMapService mapService,
+            IFeatureService featureService,
+            IPropertyService propertyService,
             IContactService contactService
             )
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
+            _mapService = mapService;
+            _featureService = featureService;
             _contactService = contactService;
-            _itemRequests = _unitOfWork.Set<ItemRequest>();
+            _propertyService = propertyService;
+            _itemRequests = _unitOfWork.Set<Deal>();
             _items = _unitOfWork.Set<Item>();
+            _ownerships = _unitOfWork.Set<Ownership>();
+            _contacts = _unitOfWork.Set<Contact>();
         }
 
-        public async Task<ItemRequest> ItemRequestEntityAsync(string id)
+        public async Task<Deal> ItemRequestAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -67,16 +77,30 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
-            var models = _items as IQueryable<Item>;
-            models.Include(x => x.ItemRequests);
+            var query = _items.AsQueryable().MarkAsNoTracking();
+            query = query.Include(item => item.Deals);
+            query = query.Include(item => item.Category);
+            query = query.Include(item => item.ItemFeatures)
+                .ThenInclude(itemFeature => itemFeature.Feature);
+
+            query = query.Include(item => item.Property.PropertyOwnerships)
+                .ThenInclude(propertyOwnership => propertyOwnership.Ownerships)
+                .ThenInclude(ownership => ownership.Contact);
+            query = query.Include(item => item.Property.Category);
+            query = query.Include(item => item.Property.District);
+
+            query = query.Where(x => x.Deals.Count == 0
+                                                 || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
+
+            query = query.Where(x => x.Deals.Count == 0
+                                 || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
 
             if (searchModel != null)
             {
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => new ItemViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)).Instance).ConfigureAwait(false);
-
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
+                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))).ConfigureAwait(false);
             return result;
         }
 
@@ -84,19 +108,24 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await ItemEntityAsync(id).ConfigureAwait(false);
+            var models = _items as IQueryable<Item>;
+            models = models.Include(x => x.Deals);
+
+            models = models.Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature);
+
+            models = models.Include(x => x.Category);
+
+            models = models.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact);
+
+            var entity = await models.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null)
                 return default;
 
-            var viewModel = new ItemViewModel(entity, false).Instance?
-                .R8Include(model =>
-                {
-                    model.Category = new CategoryViewModel(model.Entity?.Category, false).Instance;
-                    model.Features = model.Entity?.ItemFeatures.Select(propEntity =>
-                        new ItemFeatureViewModel(propEntity, false).Instance?
-                            .R8Include(x => x.Feature = new FeatureViewModel(x.Entity?.Feature, false).Instance)).R8ToList();
-                    model.Property = new PropertyViewModel(model.Entity?.Property, false).Instance;
-                });
+            var viewModel = _mapService.Map(entity, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
             if (viewModel == null)
                 return default;
 
@@ -114,6 +143,35 @@ namespace RealEstate.Services
                 PropertyId = viewModel.Property?.Id
             };
             return result;
+        }
+
+        public async Task<ItemViewModel> ItemAsync(string id)
+        {
+            var query = _items as IQueryable<Item>;
+            query = query.Include(x => x.Deals);
+
+            query = query.Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature);
+
+            query = query.Include(x => x.Category);
+
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Contact);
+
+            query = query.Where(x => x.Deals.Count == 0
+                                     || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
+
+            var model = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            if (model == null)
+                return default;
+
+            var viewModel = _mapService.Map(model, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
+            if (viewModel == null)
+                return default;
+
+            return viewModel;
         }
 
         public async Task<Item> ItemEntityAsync(string id)
@@ -141,42 +199,6 @@ namespace RealEstate.Services
                 .ConfigureAwait(false);
 
             return result;
-        }
-
-        public async Task<(StatusEnum, ItemRequest)> ItemRequestRejectAsync(string itemRequestId, bool save)
-        {
-            if (string.IsNullOrEmpty(itemRequestId))
-                return new ValueTuple<StatusEnum, ItemRequest>(StatusEnum.ParamIsNull, null);
-
-            var itemRequest = await ItemRequestEntityAsync(itemRequestId).ConfigureAwait(false);
-            var updateStatus = await _baseService.UpdateAsync(itemRequest,
-                () => itemRequest.IsReject = true,
-                new[]
-                {
-                    Role.Admin, Role.SuperAdmin
-                }, save, StatusEnum.ItemRequestIsNull).ConfigureAwait(false);
-            return updateStatus;
-        }
-
-        public async Task<(StatusEnum, ItemRequest)> ItemRequestAddAsync(ItemRequestInputViewModel model, bool save)
-        {
-            if (model == null)
-                return new ValueTuple<StatusEnum, ItemRequest>(StatusEnum.ModelIsNull, null);
-
-            if (model.Applicants?.Any() != true)
-                return new ValueTuple<StatusEnum, ItemRequest>(StatusEnum.ApplicantIsNull, null);
-
-            var (itemAddStatus, newItemRequest) = await _baseService.AddAsync(new ItemRequest
-            {
-                ItemId = model.ItemId,
-                IsReject = false,
-                Description = model.Description,
-            }, null, false);
-
-            foreach (var applicant in model.Applicants)
-                await _contactService.ApplicantPlugItemRequestAsync(applicant.Id, newItemRequest.Id, false).ConfigureAwait(false);
-
-            return await _baseService.SaveChangesAsync(newItemRequest, save).ConfigureAwait(false);
         }
 
         public Task<(StatusEnum, Item)> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save)

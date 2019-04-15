@@ -20,6 +20,7 @@ using RealEstate.Services.Database;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.Tracker;
 using System;
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -47,20 +48,23 @@ namespace RealEstate.Web
                 options.UseLazyLoadingProxies();
                 options.ConfigureWarnings(config =>
                 {
-                    config.Ignore(CoreEventId.DetachedLazyLoadingWarning);
-                    config.Ignore(CoreEventId.LazyLoadOnDisposedContextWarning);
-                    //                    config.Throw(CoreEventId.IncludeIgnoredWarning);
+                    config.Log(CoreEventId.IncludeIgnoredWarning);
+                    config.Log(CoreEventId.NavigationIncluded);
+                    config.Log(CoreEventId.NavigationLazyLoading);
+                    config.Log(CoreEventId.DetachedLazyLoadingWarning);
+                    config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
                 });
                 options.UseSqlServer(connectionStrings,
-                        optionsBuilder =>
-                        {
-                            optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
-                            optionsBuilder.UseNetTopologySuite();
-                            optionsBuilder.EnableRetryOnFailure();
-                            optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
-                        });
+                    optionsBuilder =>
+                    {
+                        optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
+                        optionsBuilder.UseNetTopologySuite();
+                        optionsBuilder.EnableRetryOnFailure();
+                        optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
+                    });
                 options.EnableSensitiveDataLogging();
-            }).AddEntityFrameworkProxies();
+            })
+            .AddEntityFrameworkProxies();
 
             services.AddCors();
 

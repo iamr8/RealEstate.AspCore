@@ -51,8 +51,6 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-                    var lastOwnership = item.Property.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
-
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
@@ -85,26 +83,30 @@
                                         }
                                     </a>
                                     <span class="badge badge-danger">@item.Category?.Name</span>
-                                    @if (lastOwnership?.Ownerships?.Any() == true)
-                                    {
-                                        foreach (var ownership in lastOwnership.Ownerships)
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
+                                </span>
+                                @if (item.Property.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var ownership in item.Property.CurrentPropertyOwnership.Ownerships)
                                         {
                                             <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
                                         }
-                                    }
-                                    @if (item.Features?.Any() == true)
-                                    {
-                                        <div class="d-md-inline-block mt-1 mt-md-0">
-                                            @foreach (var spec in item.Features)
-                                            {
-                                                <text>
-                                                    <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
-                                                </text>
-                                            }
-                                        </div>
+                                    </span>
+                                }
 
-                                    }
-                                </span>
+                                @if (item.Features?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var spec in item.Features)
+                                        {
+                                            <text>
+                                                <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
+                                            </text>
+                                        }
+                                    </span>
+
+                                }
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {
                                     <span class="text-gray text-justify description">
@@ -113,17 +115,13 @@
                                 }
                             </div>
                             <div class="button">
-                                @if (item.IsRequested)
+                                @if (!item.IsRequested)
                                 {
-                                    <span class="btn btn-sm btn-secondary">@SharedLocalizer["UpdatedDealStatus"]</span>
-                                }
-                                else
-                                {
-                                    <a asp-page="/@nameof(Manage)/@nameof(Item)/Request" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["UpdateDealStatus"]</a>
+                                    <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["ItemRequest"]</a>
                                 }
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-page="/@nameof(Manage)/@nameof(Item)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>
