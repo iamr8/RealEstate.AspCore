@@ -76,9 +76,8 @@ namespace RealEstate.Base.Enums
         PropertyOwnershipNotUpdated,
         ItemRequestIsNull,
 
-        SmsTemplateIdIsNull,
         RecipientIsNull,
-        SmsTemplateIsNull,
+        TemplateIsNull,
         TokensCountMismatch,
         UnexpectedError,
         TokenIsNull,

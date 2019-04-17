@@ -2,6 +2,7 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -43,7 +44,6 @@ namespace RealEstate.Services
         private readonly IBaseService _baseService;
         private readonly IContactService _contactService;
         private readonly IFeatureService _featureService;
-        private readonly IMapService _mapService;
         private readonly ILocationService _locationService;
         private readonly DbSet<Property> _properties;
         private readonly DbSet<PropertyOwnership> _propertyOwnerships;
@@ -51,7 +51,6 @@ namespace RealEstate.Services
         public PropertyService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IMapService mapService,
             IFeatureService featureService,
             ILocationService locationService,
             IContactService contactService
@@ -60,7 +59,6 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _locationService = locationService;
-            _mapService = mapService;
             _featureService = featureService;
             _contactService = contactService;
             _properties = _unitOfWork.Set<Property>();
@@ -193,7 +191,20 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                    item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin)))
+                    item =>
+                    {
+                        return new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin), property =>
+                        {
+                            property.GetCategory();
+                            property.GetPropertyOwnerships(action: propertyOwnership =>
+                            {
+                                propertyOwnership.GetOwnerships(action: ownership =>
+                                {
+                                    ownership.GetContact();
+                                });
+                            });
+                        });
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -260,10 +271,7 @@ namespace RealEstate.Services
                 .ThenInclude(x => x.Contact);
 
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            if (entity == null)
-                return default;
-
-            var viewModel = _mapService.Map(entity, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
+            var viewModel = entity?.Into<Property, PropertyViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -278,7 +286,7 @@ namespace RealEstate.Services
                     Mobile = x.Contact?.Mobile,
                     Dong = x.Dong
                 }).ToList(),
-                PropertyFacilities = viewModel.Facilities?.Select(x => new FacilityJsonViewModel
+                PropertyFacilities = viewModel.PropertyFacilities?.Select(x => new FacilityJsonViewModel
                 {
                     Id = x.Facility?.Id,
                     Name = x.Facility?.Name
@@ -286,7 +294,7 @@ namespace RealEstate.Services
                 CategoryId = viewModel.Category?.Id,
                 //                Latitude = viewModel.Geolocation?.Latitude ?? 0,
                 //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
-                PropertyFeatures = viewModel.Features?.Select(x => new FeatureJsonValueViewModel
+                PropertyFeatures = viewModel.PropertyFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
                     Id = x.Feature?.Id,
                     Name = x.Feature?.Name,

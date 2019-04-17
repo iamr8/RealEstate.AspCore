@@ -1,9 +1,9 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
@@ -11,35 +11,37 @@ namespace RealEstate.Services.ViewModels
     public class PaymentViewModel : BaseLogViewModel<Payment>
     {
         [JsonIgnore]
-        public Payment Entity { get; private set; }
+        private readonly Payment _entity;
 
-        [CanBeNull]
-        public readonly PaymentViewModel Instance;
-
-        public PaymentViewModel(Payment entity, bool includeDeleted) : base(entity)
+        public PaymentViewModel(Payment entity, bool includeDeleted, Action<PaymentViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new PaymentViewModel
-            {
-                Entity = entity,
-                Value = entity.Value,
-                Id = entity.Id,
-                Text = entity.Text,
-                Type = entity.Type,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public PaymentViewModel()
+        public double Value => _entity.Value;
+
+        public string Text => _entity.Text;
+
+        public PaymentTypeEnum Type => _entity.Type;
+
+        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
         {
+            User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public double Value { get; set; }
+        public void GetPicture(bool includeDeleted, Action<PictureViewModel> action = null)
+        {
+            Pictures = _entity?.Pictures.Into(includeDeleted, action);
+        }
 
-        public string Text { get; set; }
-        public PaymentTypeEnum Type { get; set; }
-        public List<PictureViewModel> Pictures { get; set; }
+        public UserViewModel User { get; private set; }
+
+        public List<PictureViewModel> Pictures { get; private set; }
     }
 }

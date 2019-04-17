@@ -1,39 +1,53 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class PictureViewModel : BaseLogViewModel<Picture>
     {
         [JsonIgnore]
-        public Picture Entity { get; private set; }
+        private readonly Picture _entity;
 
-        [CanBeNull]
-        public readonly PictureViewModel Instance;
-
-        public PictureViewModel(Picture entity, bool includeDeleted) : base(entity)
+        public PictureViewModel(Picture entity, bool includeDeleted, Action<PictureViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new PictureViewModel
-            {
-                Entity = entity,
-                File = entity.File,
-                Id = entity.Id,
-                Text = entity.Text,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public PictureViewModel()
+        public string File => _entity.File;
+        public string Text => _entity.Text;
+
+        public void GetDeal(bool includeDeleted, Action<DealViewModel> action = null)
         {
+            Deal = _entity?.Deal.Into(includeDeleted, action);
         }
 
-        public string File { get; set; }
-        public string Text { get; set; }
+        public void GetPayment(bool includeDeleted, Action<PaymentViewModel> action = null)
+        {
+            Payment = _entity?.Payment.Into(includeDeleted, action);
+        }
+
+        public void GetProperty(bool includeDeleted, Action<PropertyViewModel> action = null)
+        {
+            Property = _entity?.Property.Into(includeDeleted, action);
+        }
+
+        public void GetDealPayment(bool includeDeleted, Action<DealPaymentViewModel> action = null)
+        {
+            DealPayment = _entity?.DealPayment.Into(includeDeleted, action);
+        }
+
+        public DealViewModel Deal { get; private set; }
+        public PaymentViewModel Payment { get; private set; }
+        public PropertyViewModel Property { get; private set; }
+        public DealPaymentViewModel DealPayment { get; private set; }
     }
 }

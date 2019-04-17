@@ -7,8 +7,8 @@ namespace RealEstate.Services.Database.Tables
     {
         public Item()
         {
-            ItemFeatures = new HashSet<ItemFeature>();
-            Deals = new HashSet<Deal>();
+//            ItemFeatures = new HashSet<ItemFeature>();
+//            Deals = new HashSet<Deal>();
         }
 
         public string Description { get; set; }

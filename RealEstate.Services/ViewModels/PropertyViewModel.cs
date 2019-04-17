@@ -1,9 +1,8 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
-using RealEstate.Base.Enums;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -12,55 +11,83 @@ namespace RealEstate.Services.ViewModels
     public class PropertyViewModel : BaseLogViewModel<Property>
     {
         [JsonIgnore]
-        public Property Entity { get; set; }
+        private readonly Property _entity;
 
-        [CanBeNull]
-        public readonly PropertyViewModel Instance;
-
-        public PropertyViewModel(Property entity, bool includeDeleted) : base(entity)
+        public PropertyViewModel(Property entity, bool includeDeleted, Action<PropertyViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new PropertyViewModel
-            {
-                Entity = entity,
-                Street = entity.Street,
-                Id = entity.Id,
-                Alley = entity.Alley,
-                BuildingName = entity.BuildingName,
-                Number = entity.Number,
-                Floor = entity.Floor,
-                Flat = entity.Flat,
-                Deals = entity.Items?.Sum(x => x.Deals.Count(c => c.Status == DealStatusEnum.Finished)) ?? 0,
-                Description = entity.Description,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public PropertyViewModel()
+        public string Street => _entity.Street;
+
+        public string Alley => _entity.Alley;
+
+        public string BuildingName => _entity.BuildingName;
+        public string Number => _entity.Number;
+        public int Floor => _entity.Floor;
+        public int Flat => _entity.Flat;
+
+        public string Description => _entity.Description;
+
+        public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
+            Category = _entity?.Category.Into(includeDeleted, action);
         }
 
-        public string Street { get; set; }
+        public void GetItems(bool includeDeleted = false, Action<ItemViewModel> action = null)
+        {
+            Items = _entity?.Items.Into(includeDeleted, action);
+        }
 
-        public string Alley { get; set; }
+        public void GetDistrict(bool includeDeleted = false, Action<DistrictViewModel> action = null)
+        {
+            District = _entity?.District.Into(includeDeleted, action);
+        }
 
-        public string BuildingName { get; set; }
-        public string Number { get; set; }
-        public int Floor { get; set; }
-        public int Flat { get; set; }
-        public int Deals { get; set; }
-        public string Description { get; set; }
-        public CategoryViewModel Category { get; set; }
-        public GeolocationViewModel Geolocation { get; set; }
+        public void GetPropertyOwnerships(bool includeDeleted = false, Action<PropertyOwnershipViewModel> action = null)
+        {
+            PropertyOwnerships = _entity?.PropertyOwnerships.Into(includeDeleted, action);
+        }
 
-        public DistrictViewModel District { get; set; }
-        public List<ItemViewModel> Items { get; set; }
-        public List<PropertyOwnershipViewModel> PropertyOwnerships { get; set; }
+        public void GetPropertyFeatures(bool includeDeleted = false, Action<PropertyFeatureViewModel> action = null)
+        {
+            PropertyFeatures = _entity?.PropertyFeatures.Into(includeDeleted, action);
+        }
+
+        public void GetPropertyFacilities(bool includeDeleted = false, Action<PropertyFacilityViewModel> action = null)
+        {
+            PropertyFacilities = _entity?.PropertyFacilities.Into(includeDeleted, action);
+        }
+
+        public void GetPictures(bool includeDeleted = false, Action<PictureViewModel> action = null)
+        {
+            Pictures = _entity?.Pictures.Into(includeDeleted, action);
+        }
+
+        public CategoryViewModel Category { get; private set; }
+
+        public GeolocationViewModel Geolocation => _entity.Geolocation != null
+            ? new GeolocationViewModel
+            {
+                Latitude = _entity.Geolocation.Y,
+                Longitude = _entity.Geolocation.X,
+                Point = _entity.Geolocation
+            }
+            : default;
+
+        public List<ItemViewModel> Items { get; private set; }
+
+        public DistrictViewModel District { get; private set; }
+        public List<PropertyOwnershipViewModel> PropertyOwnerships { get; private set; }
         public PropertyOwnershipViewModel CurrentPropertyOwnership => PropertyOwnerships?.OrderByDescending(x => x.DateTime).FirstOrDefault();
-        public List<PictureViewModel> Pictures { get; set; }
-        public List<PropertyFacilityViewModel> Facilities { get; set; }
-        public List<PropertyFeatureViewModel> Features { get; set; }
+        public List<PictureViewModel> Pictures { get; private set; }
+        public List<PropertyFacilityViewModel> PropertyFacilities { get; private set; }
+        public List<PropertyFeatureViewModel> PropertyFeatures { get; private set; }
     }
 }

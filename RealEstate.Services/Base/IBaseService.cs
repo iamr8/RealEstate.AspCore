@@ -326,8 +326,8 @@ namespace RealEstate.Services.Base
                 Address = claims.Find(x => x.Type == ClaimTypes.StreetAddress)?.Value,
                 Phone = claims.Find(x => x.Type == ClaimTypes.HomePhone)?.Value,
                 CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
-                PropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<UserPropertyCategoryViewModel>>(),
-                ItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<UserItemCategoryViewModel>>(),
+                UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<UserPropertyCategoryViewModel>>(),
+                UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<UserItemCategoryViewModel>>(),
             };
             return result;
         }

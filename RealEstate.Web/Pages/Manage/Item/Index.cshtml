@@ -95,10 +95,10 @@
                                     </span>
                                 }
 
-                                @if (item.Features?.Any() == true)
+                                @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var spec in item.Features)
+                                        @foreach (var spec in item.ItemFeatures)
                                         {
                                             <text>
                                                 <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>

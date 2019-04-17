@@ -45,8 +45,6 @@ namespace RealEstate.Services.Database
         public virtual DbSet<PropertyOwnership> PropertyOwnership { get; set; }
         public virtual DbSet<Reminder> Reminder { get; set; }
         public virtual DbSet<Sms> Sms { get; set; }
-        public virtual DbSet<SmsTemplate> SmsTemplate { get; set; }
-
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<UserItemCategory> UserItemCategory { get; set; }
         public virtual DbSet<UserPropertyCategory> UserPropertyCategory { get; set; }

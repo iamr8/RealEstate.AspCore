@@ -2,6 +2,7 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.ViewModels;
@@ -23,7 +24,6 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly IContactService _contactService;
         private readonly IItemService _itemService;
         private readonly DbSet<Applicant> _applicants;
@@ -34,13 +34,11 @@ namespace RealEstate.Services
             IUnitOfWork unitOfWork,
             IBaseService baseService,
             IItemService itemService,
-            IMapService mapService,
             IContactService contactService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
             _contactService = contactService;
             _itemService = itemService;
             _applicants = _unitOfWork.Set<Applicant>();
@@ -50,28 +48,16 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<DealViewModel>> RequestListAsync(int pageNo)
         {
-            var query = _deals as IQueryable<Deal>;
+            var query = _deals.AsQueryable();
+            query = query.Where(x => x.Status == DealStatusEnum.Requested);
 
-            var dd = from request in query
-                     let applicants = (from applicant in request.Applicants
-                                       let contact = applicant.Contact
-                                       let applicantFeatures = (from applicantFeature in applicant.ApplicantFeatures
-                                                                let features = applicantFeature.Feature
-                                                                select applicantFeature)
-                                       select applicant)
-                     let item = request.Item
-                     let itemCategory = item.Category
-                     let property = item.Property
-                     let propertyOwnerships = (from propertyOwnership in property.PropertyOwnerships
-                                               let ownerships = (from ownership in propertyOwnership.Ownerships
-                                                                 let ownershipContact = ownership.Contact
-                                                                 select ownership)
-                                               select propertyOwnership)
-                     where request.Status == DealStatusEnum.Requested
-                     select request;
-
-            var result = await _baseService.PaginateAsync(dd, pageNo,
-                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, pageNo,
+                item => item.Into<Deal, DealViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetItem(false,
+                        act2 => act2.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetContact()))));
+                    act.GetApplicants(false, act6 => act6.GetContact());
+                })).ConfigureAwait(false);
             return result;
         }
 

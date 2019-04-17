@@ -1,8 +1,8 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -11,35 +11,32 @@ namespace RealEstate.Services.ViewModels
         private string _value;
 
         [JsonIgnore]
-        public ItemFeature Entity { get; private set; }
+        private readonly ItemFeature _entity;
 
-        [CanBeNull]
-        public readonly ItemFeatureViewModel Instance;
-
-        public ItemFeatureViewModel(ItemFeature entity, bool includeDeleted) : base(entity)
+        public ItemFeatureViewModel(ItemFeature entity, bool includeDeleted, Action<ItemFeatureViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new ItemFeatureViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Value = entity.Value,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public ItemFeatureViewModel()
+        public string Value => _entity.Value.FixCurrency();
+
+        public void GetItem(bool includeDeleted = false, Action<ItemViewModel> action = null)
         {
+            Item = _entity?.Item.Into(includeDeleted, action);
         }
 
-        public string Value
+        public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)
         {
-            get => _value.FixCurrency();
-            set => _value = value;
+            Feature = _entity?.Feature.Into(includeDeleted, action);
         }
 
-        public FeatureViewModel Feature { get; set; }
+        public ItemViewModel Item { get; private set; }
+        public FeatureViewModel Feature { get; private set; }
     }
 }

@@ -85,19 +85,19 @@
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
-                                @if (item.ItemCategories?.Any() == true || item.PropertyCategories?.Any() == true)
+                                @if (item.UserItemCategories?.Any() == true || item.UserPropertyCategories?.Any() == true)
                                 {
                                 <span>
-                                    @if (item.ItemCategories?.Any() == true)
+                                    @if (item.UserItemCategories?.Any() == true)
                                     {
-                                        foreach (var category in item.ItemCategories)
+                                        foreach (var category in item.UserItemCategories)
                                         {
                                             <span class="badge badge-success">@category.Category.Name</span>
                                         }
                                     }
-                                    @if (item.PropertyCategories?.Any() == true)
+                                    @if (item.UserPropertyCategories?.Any() == true)
                                     {
-                                        foreach (var category in item.PropertyCategories)
+                                        foreach (var category in item.UserPropertyCategories)
                                         {
                                             <span class="badge badge-primary">@category.Category.Name</span>
                                         }

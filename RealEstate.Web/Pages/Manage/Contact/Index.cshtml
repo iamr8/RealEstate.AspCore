@@ -23,10 +23,6 @@
                                     </b>
 
                                     <a href="tel:@item.Mobile" class="badge badge-primary">@item.Mobile</a>
-                                    @if (item.Ownerships.Count > 0)
-                                    {
-                                        <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-contactId="@item.Id" class="badge badge-secondary">@item.Ownerships.Count @SharedLocalizer["Ownership"]</a>
-                                    }
                                 </span>
                             </div>
                             <div class="button">

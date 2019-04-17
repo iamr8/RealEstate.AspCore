@@ -1,4 +1,5 @@
-﻿<nav-button page="@(User.Identity.IsAuthenticated ? typeof(Manage.IndexModel).Page() : "/Index")" icon="~/icons/statistics.svg" subject="@(User.Identity.IsAuthenticated ? SharedLocalizer["Statistics"] : SharedLocalizer["HomePage"])" />
+﻿@using RealEstate.Web.Pages.Manage.DealRequest
+<nav-button page="@(User.Identity.IsAuthenticated ? typeof(Manage.IndexModel).Page() : "/Index")" icon="~/icons/statistics.svg" subject="@(User.Identity.IsAuthenticated ? SharedLocalizer["Statistics"] : SharedLocalizer["HomePage"])" />
 @* <nav-button page="/@nameof(Manage)/@nameof(Manage.Notification)/Index" icon="~/icons/notification.svg" subject="@SharedLocalizer["Notifications"]"></nav-button> *@
 
 @if (User.Identity.IsAuthenticated)
@@ -15,7 +16,7 @@
     {
         <nav-button icon="~/icons/property.svg" subject="@SharedLocalizer["Deals"]">
             <nav-button page="@typeof(Manage.Deal.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
-            <nav-button page="@typeof(Manage.ItemRequest.IndexModel).Page()" icon="~/icons/dealstatus.svg" subject="@SharedLocalizer["ItemRequests"]" />
+            <nav-button page="@typeof(Manage.DealRequest.IndexModel).Page()" icon="~/icons/dealstatus.svg" subject="@SharedLocalizer["ItemRequests"]" />
         </nav-button>
     }
 

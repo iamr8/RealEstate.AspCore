@@ -45,7 +45,6 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly DbSet<User> _users;
         private readonly DbSet<FixedSalary> _fixedSalaries;
 
@@ -53,14 +52,12 @@ namespace RealEstate.Services
 
         public UserService(
             IUnitOfWork unitOfWork,
-            IMapService mapService,
             IBaseService baseService,
             IHttpContextAccessor httpContextAccessor
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
             _fixedSalaries = _unitOfWork.Set<FixedSalary>();
@@ -74,10 +71,12 @@ namespace RealEstate.Services
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            if (model == null)
-                return default;
-
-            var viewModel = _mapService.Map(model, false);
+            var viewModel = model?.Into<User, UserViewModel>(false, act =>
+            {
+                act.GetUserItemCategories(false, act2 => act2.GetCategory());
+                act.GetUserPropertyCategories(false, act2 => act2.GetCategory());
+                act.GetFixedSalaries();
+            });
             if (viewModel == null)
                 return default;
 
@@ -91,17 +90,17 @@ namespace RealEstate.Services
                 Username = viewModel.Username,
                 Address = viewModel.Address,
                 Phone = viewModel.Phone,
-                UserItemCategories = viewModel.ItemCategories.Select(x => new UserItemCategoryJsonViewModel
+                UserItemCategories = viewModel.UserItemCategories?.Select(x => new UserItemCategoryJsonViewModel
                 {
                     Id = x.Id,
                     Name = x.Category?.Name
                 }).ToList(),
-                UserPropertyCategories = viewModel.PropertyCategories.Select(x => new UserPropertyCategoryJsonViewModel
+                UserPropertyCategories = viewModel.UserPropertyCategories?.Select(x => new UserPropertyCategoryJsonViewModel
                 {
                     Id = x.Id,
                     Name = x.Category?.Name
                 }).ToList(),
-                FixedSalary = viewModel.FixedSalaries.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
+                FixedSalary = viewModel.FixedSalaries?.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
                 Id = viewModel.Id
             };
             return result;
@@ -156,7 +155,7 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => _mapService.Map(item, false)).ConfigureAwait(false);
+                item => item.Into<User, UserViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -352,12 +351,12 @@ namespace RealEstate.Services
             if (userDb.LastLog()?.Type == LogTypeEnum.Delete)
                 return StatusEnum.Deactivated;
 
-            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryViewModel
+            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
             {
                 Id = category.Id,
-                Name = category.Category.Name
+                Name = category.Category.Name,
             });
-            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(category => new CategoryViewModel
+            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(category => new CategoryJsonViewModel
             {
                 Id = category.Id,
                 Name = category.Category.Name

@@ -10,7 +10,7 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;
 
-namespace RealEstate.Web.Pages.Manage.ItemRequest
+namespace RealEstate.Web.Pages.Manage.DealRequest
 {
     public class IndexModel : PageModel
     {

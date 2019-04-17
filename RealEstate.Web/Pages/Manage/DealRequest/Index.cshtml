@@ -45,27 +45,30 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Item.Property.Id" target="_blank">
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Item?.Property?.Id" target="_blank">
                                         @SharedLocalizer["PropertyDetail"]
                                     </a>
                                 </span>
-                                @if (item.Item.Property.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                @if (item.Item?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {
-                                    <span>
-                                        @foreach (var ownership in item.Item.Property.CurrentPropertyOwnership.Ownerships)
-                                        {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
-                                        }
-                                    </span>
+
+                                <span>
+                                    @SharedLocalizer["Owners"]:
+                                    @foreach (var ownership in item.Item.Property.CurrentPropertyOwnership.Ownerships)
+                                    {
+                                        <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
+                                    }
+                                </span>
                                 }
                                 @if (item.Applicants?.Any() == true)
                                 {
-                                    <span>
-                                        @foreach (var applicant in item.Applicants)
-                                        {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-warning">@applicant.Contact.Name &mdash; @applicant.Contact.Mobile</a>
-                                        }
-                                    </span>
+                                <span>
+                                    @SharedLocalizer["Applicants"]:
+                                    @foreach (var applicant in item.Applicants)
+                                    {
+                                        <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Contact.Name &mdash; @applicant.Contact.Mobile</a>
+                                    }
+                                </span>
                                 }
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {

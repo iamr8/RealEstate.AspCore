@@ -1,44 +1,37 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
     public class FeatureViewModel : BaseLogViewModel<Feature>
     {
         [JsonIgnore]
-        public Feature Entity { get; private set; }
+        private readonly Feature _entity;
 
-        [CanBeNull]
-        public readonly FeatureViewModel Instance;
-
-        public FeatureViewModel()
-        {
-        }
-
-        public FeatureViewModel(Feature entity, bool includeDeleted) : base(entity)
+        public FeatureViewModel(Feature entity, bool includeDeleted, Action<FeatureViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new FeatureViewModel
-            {
-                Entity = entity,
-                Name = entity.Name,
-                Type = entity.Type,
-                Id = entity.Id,
-                Properties = entity.PropertyFeatures?.Count ?? 0,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
         }
 
-        public string Name { get; set; }
+        public string Name => _entity.Name;
 
-        public FeatureTypeEnum Type { get; set; }
+        public FeatureTypeEnum Type => _entity.Type;
 
-        public int Properties { get; set; }
+        public void GetPropertyFeatures(bool includeDeleted, Action<PropertyFeatureViewModel> action = null)
+        {
+            PropertyFeatures = _entity?.PropertyFeatures.Into(includeDeleted, action);
+        }
+
+        public List<PropertyFeatureViewModel> PropertyFeatures { get; private set; }
     }
 }

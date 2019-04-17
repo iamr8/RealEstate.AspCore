@@ -180,10 +180,11 @@ namespace RealEstate.Base
         {
             Error = (serializer, err) => err.ErrorContext.Handled = true,
             DefaultValueHandling = DefaultValueHandling.Populate,
-            ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             ObjectCreationHandling = ObjectCreationHandling.Replace,
             ContractResolver = new NullToEmptyContractResolver(),
-            Formatting = Formatting.Indented
+            Formatting = Formatting.Indented,
+            PreserveReferencesHandling = PreserveReferencesHandling.Objects
         };
     }
 }

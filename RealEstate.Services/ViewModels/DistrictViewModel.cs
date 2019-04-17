@@ -1,40 +1,35 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
     public class DistrictViewModel : BaseLogViewModel<District>
     {
         [JsonIgnore]
-        public District Entity { get; private set; }
+        private readonly District _entity;
 
-        [CanBeNull]
-        public readonly DistrictViewModel Instance;
-
-        public DistrictViewModel(District entity, bool includeDeleted) : base(entity)
+        public DistrictViewModel(District entity, bool includeDeleted, Action<DistrictViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new DistrictViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Name = entity.Name,
-                Properties = entity.Properties?.Count ?? 0,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public DistrictViewModel()
+        public string Name => _entity.Name;
+
+        public void GetProperties(bool includeDeleted, Action<PropertyViewModel> action = null)
         {
+            Properties = _entity?.Properties.Into(includeDeleted, action);
         }
 
-        public string Name { get; set; }
-
-        public int Properties { get; set; }
+        public List<PropertyViewModel> Properties { get; private set; }
     }
 }

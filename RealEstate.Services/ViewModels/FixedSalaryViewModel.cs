@@ -1,38 +1,34 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class FixedSalaryViewModel : BaseLogViewModel<FixedSalary>
     {
         [JsonIgnore]
-        public FixedSalary Entity { get; private set; }
+        private readonly FixedSalary _entity;
 
-        [CanBeNull]
-        public readonly FixedSalaryViewModel Instance;
-
-        public FixedSalaryViewModel(FixedSalary entity, bool includeDeleted) : base(entity)
+        public FixedSalaryViewModel(FixedSalary entity, bool includeDeleted, Action<FixedSalaryViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new FixedSalaryViewModel
-            {
-                Entity = entity,
-                Value = entity.Value,
-                Id = entity.Id,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public FixedSalaryViewModel()
+        public double Value => _entity.Value;
+
+        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
         {
+            User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public double Value { get; set; }
-        public UserViewModel User { get; set; }
+        public UserViewModel User { get; private set; }
     }
 }

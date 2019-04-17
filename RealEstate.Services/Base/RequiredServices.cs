@@ -10,7 +10,7 @@ namespace RealEstate.Services.Base
             // Base
             service.AddScoped<IBaseService, BaseService>();
             service.AddScoped<IFileHandler, FileHandler>();
-            service.AddScoped<IMapService, MapService>();
+//            service.AddScoped<IMapService, MapService>();
 
             // Sms Provider
             service.AddScoped<IKavehNegarProvider, KavehNegarProvider>();

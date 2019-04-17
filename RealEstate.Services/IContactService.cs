@@ -2,6 +2,7 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -67,7 +68,6 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
 
         private readonly DbSet<Database.Tables.Contact> _contacts;
         private readonly DbSet<Database.Tables.Applicant> _applicants;
@@ -75,14 +75,12 @@ namespace RealEstate.Services
 
         public ContactService(
             IUnitOfWork unitOfWork,
-            IMapService mapService,
             IBaseService baseService
 
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _mapService = mapService;
 
             _contacts = _unitOfWork.Set<Database.Tables.Contact>();
             _applicants = _unitOfWork.Set<Database.Tables.Applicant>();
@@ -166,7 +164,7 @@ namespace RealEstate.Services
             query = query.WhereItIsPublic();
 
             var contacts = await query.ToListAsync().ConfigureAwait(false);
-            return contacts.Select(x => _mapService.Map(x, false)).R8ToList();
+            return contacts.Into<Contact, ContactViewModel>();
         }
 
         public async Task<Applicant> ApplicantEntityAsync(string id, bool includeContact = true, bool includeApplicantFeatures = true, bool includeItemRequest = true)
@@ -205,7 +203,7 @@ namespace RealEstate.Services
             var entity = await OwnershipEntityAsync(id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = _mapService.Map(entity, false);
+            var viewModel = entity.Into<Ownership, OwnershipViewModel>(false, act => act.GetContact());
             if (viewModel == null)
                 return default;
 
@@ -290,11 +288,18 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var model = await ApplicantEntityAsync(id).ConfigureAwait(false);
-            if (model == null)
+            var entity = await ApplicantEntityAsync(id).ConfigureAwait(false);
+            if (entity == null)
                 return default;
 
-            var viewModel = _mapService.Map(model, false);
+            var viewModel = entity.Into<Applicant, ApplicantViewModel>(false, act =>
+            {
+                act.GetContact();
+                act.GetApplicantFeatures(false, act2 =>
+                {
+                    act2.GetFeature();
+                });
+            });
             if (viewModel == null)
                 return default;
 
@@ -320,8 +325,7 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
         {
             var models = _applicants as IQueryable<Applicant>;
-            models = models.Include(x => x.ApplicantFeatures)
-                .ThenInclude(x => x.Applicant);
+            models = models.Include(x => x.ApplicantFeatures);
             models = models.Include(x => x.Contact);
 
             if (searchModel != null)
@@ -329,7 +333,14 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => _mapService.Map(item, false)).ConfigureAwait(false);
+                item => item.Into<Applicant, ApplicantViewModel>(false, act =>
+                {
+                    act.GetContact();
+                    act.GetApplicantFeatures(false, act2 =>
+                    {
+                        act2.GetFeature();
+                    });
+                })).ConfigureAwait(false);
 
             return result;
         }
@@ -346,7 +357,11 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
+                item => item.Into<Contact, ContactViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetApplicants(false, act2 => act2.GetContact());
+                    act.GetOwnerships(false, act2 => act2.GetContact());
+                })
             ).ConfigureAwait(false);
 
             return result;

@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -10,31 +9,27 @@ namespace RealEstate.Services.ViewModels
     public class ReminderViewModel : BaseLogViewModel<Reminder>
     {
         [JsonIgnore]
-        public Reminder Entity { get; private set; }
+        private readonly Reminder _entity;
 
-        [CanBeNull]
-        public readonly ReminderViewModel Instance;
-
-        public ReminderViewModel()
-        {
-        }
-
-        public ReminderViewModel(Reminder entity, bool includeDeleted) : base(entity)
+        public ReminderViewModel(Reminder entity, bool includeDeleted, Action<ReminderViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new ReminderViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Logs = entity.GetLogs(),
-                AlarmTime = entity.AlarmTime,
-                Text = entity.Text
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public string Text { get; set; }
-        public DateTime AlarmTime { get; set; }
+        public string Text => _entity.Text;
+        public DateTime AlarmTime => _entity.AlarmTime;
+
+        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
+        {
+            User = _entity?.User.Into(includeDeleted, action);
+        }
+
+        public UserViewModel User { get; private set; }
     }
 }

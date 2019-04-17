@@ -1,8 +1,8 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -11,35 +11,32 @@ namespace RealEstate.Services.ViewModels
         private string _value;
 
         [JsonIgnore]
-        public ApplicantFeature Entity { get; private set; }
+        private readonly ApplicantFeature _entity;
 
-        [CanBeNull]
-        public readonly ApplicantFeatureViewModel Instance;
-
-        public ApplicantFeatureViewModel()
-        {
-        }
-
-        public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted) : base(entity)
+        public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted, Action<ApplicantFeatureViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new ApplicantFeatureViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Value = entity.Value,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public string Value
+        public string Value => _entity.Value.FixCurrency();
+
+        public void GetApplicant(bool includeDeleted = false, Action<ApplicantViewModel> action = null)
         {
-            get => _value.FixCurrency();
-            set => _value = value;
+            Applicant = _entity?.Applicant.Into(includeDeleted, action);
         }
 
-        public FeatureViewModel Feature { get; set; }
+        public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)
+        {
+            Feature = _entity?.Feature.Into(includeDeleted, action);
+        }
+
+        public ApplicantViewModel Applicant { get; private set; }
+        public FeatureViewModel Feature { get; private set; }
     }
 }

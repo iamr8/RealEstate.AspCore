@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -11,31 +10,31 @@ namespace RealEstate.Services.ViewModels
     public class PropertyOwnershipViewModel : BaseLogViewModel<PropertyOwnership>
     {
         [JsonIgnore]
-        public PropertyOwnership Entity { get; set; }
+        private readonly PropertyOwnership _entity;
 
-        [CanBeNull]
-        public readonly PropertyOwnershipViewModel Instance;
-
-        public PropertyOwnershipViewModel(PropertyOwnership entity, bool includeDeleted) : base(entity)
+        public PropertyOwnershipViewModel(PropertyOwnership entity, bool includeDeleted, Action<PropertyOwnershipViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new PropertyOwnershipViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                DateTime = entity.DateTime,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public PropertyOwnershipViewModel()
+        public void GetOwnerships(bool includeDeleted = false, Action<OwnershipViewModel> action = null)
         {
+            Ownerships = _entity?.Ownerships.Into(includeDeleted, action);
         }
 
-        public DateTime DateTime { get; set; }
-        public List<OwnershipViewModel> Ownerships { get; set; }
-        public PropertyViewModel Property { get; set; }
+        public void GetProperty(bool includeDeleted = false, Action<PropertyViewModel> action = null)
+        {
+            Property = _entity?.Property.Into(includeDeleted, action);
+        }
+
+        public DateTime DateTime => _entity.DateTime;
+        public PropertyViewModel Property { get; private set; }
+        public List<OwnershipViewModel> Ownerships { get; private set; }
     }
 }

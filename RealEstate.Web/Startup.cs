@@ -20,7 +20,6 @@ using RealEstate.Services.Database;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.Tracker;
 using System;
-using System.Diagnostics;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
@@ -45,7 +44,15 @@ namespace RealEstate.Web
             var connectionStrings = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseLazyLoadingProxies();
+                options.UseLazyLoadingProxies()
+                    .UseSqlServer(connectionStrings,
+                        optionsBuilder =>
+                        {
+                            optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
+                            optionsBuilder.UseNetTopologySuite();
+                            optionsBuilder.EnableRetryOnFailure();
+                            optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
+                        });
                 options.ConfigureWarnings(config =>
                 {
                     config.Log(CoreEventId.IncludeIgnoredWarning);
@@ -53,18 +60,11 @@ namespace RealEstate.Web
                     config.Log(CoreEventId.NavigationLazyLoading);
                     config.Log(CoreEventId.DetachedLazyLoadingWarning);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
+                    config.Log(RelationalEventId.QueryClientEvaluationWarning);
                 });
-                options.UseSqlServer(connectionStrings,
-                    optionsBuilder =>
-                    {
-                        optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
-                        optionsBuilder.UseNetTopologySuite();
-                        optionsBuilder.EnableRetryOnFailure();
-                        optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
-                    });
-                options.EnableSensitiveDataLogging();
-            })
-            .AddEntityFrameworkProxies();
+                //                options.EnableSensitiveDataLogging();
+            });
+            //            .AddEntityFrameworkProxies();
 
             services.AddCors();
 
@@ -125,6 +125,7 @@ namespace RealEstate.Web
                         options.SerializerSettings.ObjectCreationHandling = settings.ObjectCreationHandling;
                         options.SerializerSettings.ContractResolver = settings.ContractResolver;
                         options.SerializerSettings.Formatting = settings.Formatting;
+                        options.SerializerSettings.PreserveReferencesHandling = settings.PreserveReferencesHandling;
                     }
                 );
 
@@ -220,9 +221,14 @@ namespace RealEstate.Web
             else
             {
                 app.UseExceptionHandler("/Error");
-                app.UseStatusCodePages();
             }
 
+            app.UseStatusCodePages(async context =>
+            {
+                var statusCode = context.HttpContext.Response.StatusCode;
+                if (statusCode == 404)
+                    context.HttpContext.Response.Redirect("/Error");
+            });
             //app.UseRouting(routes =>
             //{
             //    routes.MapHub<DynamicChat>("/dynamic");

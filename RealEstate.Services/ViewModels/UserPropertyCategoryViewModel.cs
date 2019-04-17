@@ -1,36 +1,38 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class UserPropertyCategoryViewModel : BaseLogViewModel<UserPropertyCategory>
     {
         [JsonIgnore]
-        public UserPropertyCategory Entity { get; private set; }
+        private readonly UserPropertyCategory _entity;
 
-        [CanBeNull]
-        public readonly UserPropertyCategoryViewModel Instance;
-
-        public UserPropertyCategoryViewModel(UserPropertyCategory entity, bool includeDeleted) : base(entity)
+        public UserPropertyCategoryViewModel(UserPropertyCategory entity, bool includeDeleted, Action<UserPropertyCategoryViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new UserPropertyCategoryViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public UserPropertyCategoryViewModel()
+        public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
+            User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public CategoryViewModel Category { get; set; }
+        public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
+        {
+            Category = _entity?.Category.Into(includeDeleted, action);
+        }
+
+        public UserViewModel User { get; private set; }
+        public CategoryViewModel Category { get; private set; }
     }
 }

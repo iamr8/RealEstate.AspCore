@@ -1,8 +1,8 @@
-﻿using EFSecondLevelCache.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.ViewModels;
@@ -37,7 +37,6 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IContactService _contactService;
-        private readonly IMapService _mapService;
         private readonly IFeatureService _featureService;
         private readonly IPropertyService _propertyService;
         private readonly DbSet<Deal> _itemRequests;
@@ -48,7 +47,6 @@ namespace RealEstate.Services
         public ItemService(
             IBaseService baseService,
             IUnitOfWork unitOfWork,
-            IMapService mapService,
             IFeatureService featureService,
             IPropertyService propertyService,
             IContactService contactService
@@ -56,7 +54,6 @@ namespace RealEstate.Services
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
-            _mapService = mapService;
             _featureService = featureService;
             _contactService = contactService;
             _propertyService = propertyService;
@@ -66,32 +63,9 @@ namespace RealEstate.Services
             _contacts = _unitOfWork.Set<Contact>();
         }
 
-        public async Task<Deal> ItemRequestAsync(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return default;
-
-            var entity = await _itemRequests.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            return entity;
-        }
-
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
-            var query = _items.AsQueryable().MarkAsNoTracking();
-            query = query.Include(item => item.Deals);
-            query = query.Include(item => item.Category);
-            query = query.Include(item => item.ItemFeatures)
-                .ThenInclude(itemFeature => itemFeature.Feature);
-
-            query = query.Include(item => item.Property.PropertyOwnerships)
-                .ThenInclude(propertyOwnership => propertyOwnership.Ownerships)
-                .ThenInclude(ownership => ownership.Contact);
-            query = query.Include(item => item.Property.Category);
-            query = query.Include(item => item.Property.District);
-
-            query = query.Where(x => x.Deals.Count == 0
-                                                 || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
-
+            var query = _items.AsQueryable();
             query = query.Where(x => x.Deals.Count == 0
                                  || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
 
@@ -100,7 +74,21 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))).ConfigureAwait(false);
+                item => item.Into<Item, ItemViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    var itemId = item.Id;
+                    act.GetDeals();
+                    act.GetCategory();
+                    act.GetItemFeatures(false, act2 => act2.GetFeature());
+                    act.GetProperty(false, act3 =>
+                    {
+                        act3.GetPropertyOwnerships(true, act4 => act4.GetOwnerships(false, act5 => act5.GetContact()));
+                        act3.GetPropertyFacilities(false, act4 => act4.GetFacility());
+                        act3.GetPropertyFeatures(false, act4 => act4.GetFeature());
+                        act3.GetCategory();
+                        act3.GetDistrict();
+                    });
+                })).ConfigureAwait(false);
             return result;
         }
 
@@ -109,23 +97,27 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id)) return default;
 
             var models = _items as IQueryable<Item>;
-            models = models.Include(x => x.Deals);
+            //models = models.Include(x => x.Deals);
 
-            models = models.Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature);
+            //models = models.Include(x => x.ItemFeatures)
+            //    .ThenInclude(x => x.Feature);
 
-            models = models.Include(x => x.Category);
+            //models = models.Include(x => x.Category);
 
-            models = models.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
+            //models = models.Include(x => x.Property)
+            //    .ThenInclude(x => x.PropertyOwnerships)
+            //    .ThenInclude(x => x.Ownerships)
+            //    .ThenInclude(x => x.Contact);
 
             var entity = await models.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            if (entity == null)
-                return default;
+            var viewModel = entity?.Into<Item, ItemViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+            {
+                act.GetDeals();
+                act.GetCategory();
+                act.GetItemFeatures(false, act2 => act2.GetFeature());
+                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetContact())));
+            });
 
-            var viewModel = _mapService.Map(entity, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
             if (viewModel == null)
                 return default;
 
@@ -134,7 +126,7 @@ namespace RealEstate.Services
                 Id = viewModel.Id,
                 Description = viewModel.Description,
                 CategoryId = viewModel.Category?.Id,
-                ItemFeatures = viewModel.Features?.Select(x => new FeatureJsonValueViewModel
+                ItemFeatures = viewModel.ItemFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
                     Id = x.Feature?.Id,
                     Name = x.Feature?.Name,
@@ -163,11 +155,15 @@ namespace RealEstate.Services
             query = query.Where(x => x.Deals.Count == 0
                                      || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
 
-            var model = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            if (model == null)
-                return default;
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity?.Into<Item, ItemViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+            {
+                act.GetDeals();
+                act.GetCategory();
+                act.GetItemFeatures(false, act2 => act2.GetFeature());
+                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetContact())));
+            });
 
-            var viewModel = _mapService.Map(model, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin));
             if (viewModel == null)
                 return default;
 

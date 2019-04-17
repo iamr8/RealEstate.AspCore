@@ -14,10 +14,6 @@ namespace RealEstate.Services.Database.Configuration
                 .WithMany(x => x.Smses)
                 .HasForeignKey(x => x.ContactId);
 
-            builder.HasOne(x => x.SmsTemplate)
-                .WithMany(x => x.Smses)
-                .HasForeignKey(x => x.SmsTemplateId);
-
             builder.HasOne(x => x.User)
                 .WithMany(x => x.Smses)
                 .HasForeignKey(x => x.UserId);

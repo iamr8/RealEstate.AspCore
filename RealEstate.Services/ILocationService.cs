@@ -2,6 +2,7 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -38,17 +39,14 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IMapService _mapService;
         private readonly DbSet<District> _districts;
 
         public LocationService(
             IUnitOfWork unitOfWork,
-            IMapService mapService,
             IBaseService baseService
             )
         {
             _unitOfWork = unitOfWork;
-            _mapService = mapService;
             _baseService = baseService;
             _districts = _unitOfWork.Set<District>();
         }
@@ -59,7 +57,7 @@ namespace RealEstate.Services
             query = query.Filtered();
 
             var districts = await query.ToListAsync().ConfigureAwait(false);
-            return _mapService.Map(districts, false);
+            return districts.Into<District, DistrictViewModel>();
         }
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
@@ -73,7 +71,7 @@ namespace RealEstate.Services
                     models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
             }
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => _mapService.Map(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
+                item => item.Into<District, DistrictViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
@@ -155,7 +153,7 @@ namespace RealEstate.Services
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = _mapService.Map(model, false);
+            var viewModel = model.Into<District, DistrictViewModel>();
             if (viewModel == null)
                 return default;
 

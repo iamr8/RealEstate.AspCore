@@ -1,41 +1,42 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class BeneficiaryViewModel : BaseLogViewModel<Beneficiary>
     {
         [JsonIgnore]
-        public Beneficiary Entity { get; private set; }
+        private readonly Beneficiary _entity;
 
-        [CanBeNull]
-        public readonly BeneficiaryViewModel Instance;
-
-        public BeneficiaryViewModel(Beneficiary entity, bool includeDeleted) : base(entity)
+        public BeneficiaryViewModel(Beneficiary entity, bool includeDeleted, Action<BeneficiaryViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new BeneficiaryViewModel
-            {
-                Entity = entity,
-                TipPercent = entity.TipPercent,
-                CommissionPercent = entity.CommissionPercent,
-                Id = entity.Id,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public BeneficiaryViewModel()
+        public int TipPercent => _entity.TipPercent;
+
+        public int CommissionPercent => _entity.CommissionPercent;
+
+        public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
+            User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public int TipPercent { get; set; }
+        public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
+        {
+            Deal = _entity?.Deal.Into(includeDeleted, action);
+        }
 
-        public int CommissionPercent { get; set; }
-        public UserViewModel User { get; set; }
+        public UserViewModel User { get; private set; }
+        public DealViewModel Deal { get; private set; }
     }
 }

@@ -1,46 +1,57 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using RealEstate.Base.Enums;
 
 namespace RealEstate.Services.ViewModels
 {
     public class ItemViewModel : BaseLogViewModel<Item>
     {
         [JsonIgnore]
-        public Item Entity { get; private set; }
+        private readonly Item _entity;
 
-        [CanBeNull]
-        public readonly ItemViewModel Instance;
-
-        public ItemViewModel(Item entity, bool includeDeleted) : base(entity)
+        public ItemViewModel(Item entity, bool includeDeleted, Action<ItemViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new ItemViewModel
-            {
-                Entity = entity,
-                Description = entity.Description,
-                IsRequested = entity.Deals?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Status == DealStatusEnum.Requested,
-                Id = entity.Id,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public ItemViewModel()
+        public string Description => _entity.Description;
+
+        public bool IsRequested => _entity.Deals?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Status == DealStatusEnum.Requested;
+
+        public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
+            Category = _entity?.Category.Into(includeDeleted, action);
         }
 
-        public string Description { get; set; }
+        public void GetProperty(bool includeDeleted = false, Action<PropertyViewModel> action = null)
+        {
+            Property = _entity?.Property.Into(includeDeleted, action);
+        }
 
-        public bool IsRequested { get; set; }
-        public CategoryViewModel Category { get; set; }
-        public PropertyViewModel Property { get; set; }
-        public List<ItemFeatureViewModel> Features { get; set; }
+        public void GetItemFeatures(bool includeDeleted = false, Action<ItemFeatureViewModel> action = null)
+        {
+            ItemFeatures = _entity?.ItemFeatures.Into(includeDeleted, action);
+        }
+
+        public void GetDeals(bool includeDeleted = false, Action<DealViewModel> action = null)
+        {
+            Deals = _entity?.Deals?.Into(includeDeleted, action);
+        }
+
+        public CategoryViewModel Category { get; private set; }
+        public PropertyViewModel Property { get; private set; }
+        public List<ItemFeatureViewModel> ItemFeatures { get; private set; }
+        public List<DealViewModel> Deals { get; private set; }
     }
 }

@@ -43,7 +43,6 @@
                                         @item.Name
                                     </b>
                                     <span class="badge badge-primary">@item.Type.GetDisplayName()</span>
-                                    <span class="badge badge-secondary">@(item.Type == CategoryTypeEnum.Item ? item.Properties?.Count ?? 0 : item.Items?.Count ?? 0) @(item.Type == CategoryTypeEnum.Item ? SharedLocalizer["Item"] : SharedLocalizer["Property"])</span>
                                 </span>
                             </div>
                             <div class="button">

@@ -1,45 +1,40 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class PropertyFeatureViewModel : BaseLogViewModel<PropertyFeature>
     {
-        private string _value;
-
         [JsonIgnore]
-        public PropertyFeature Entity { get; private set; }
+        private readonly PropertyFeature _entity;
 
-        [CanBeNull]
-        public readonly PropertyFeatureViewModel Instance;
-
-        public PropertyFeatureViewModel(PropertyFeature entity, bool includeDeleted) : base(entity)
+        public PropertyFeatureViewModel(PropertyFeature entity, bool includeDeleted, Action<PropertyFeatureViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new PropertyFeatureViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Value = entity.Value,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public PropertyFeatureViewModel()
+        public string Value => _entity.Value;
+
+        public void GetProperty(bool includeDeleted = false, Action<PropertyViewModel> action = null)
         {
+            Property = _entity?.Property.Into(includeDeleted, action);
         }
 
-        public string Value
+        public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)
         {
-            get => _value.FixCurrency();
-            set => _value = value;
+            Feature = _entity?.Feature.Into(includeDeleted, action);
         }
 
+        public PropertyViewModel Property { get; private set; }
         public FeatureViewModel Feature { get; set; }
     }
 }

@@ -1,41 +1,40 @@
-﻿using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.ViewModels
 {
     public class OwnershipViewModel : BaseLogViewModel<Ownership>
     {
-        public OwnershipViewModel()
-        {
-        }
-
         [JsonIgnore]
-        public Ownership Entity { get; private set; }
+        private readonly Ownership _entity;
 
-        [CanBeNull]
-        public readonly OwnershipViewModel Instance;
-
-        public OwnershipViewModel(Ownership entity, bool includeDeleted) : base(entity)
+        public OwnershipViewModel(Ownership entity, bool includeDeleted, Action<OwnershipViewModel> action = null) : base(entity)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            Instance = new OwnershipViewModel
-            {
-                Entity = entity,
-                Id = entity.Id,
-                Description = entity.Description,
-                Dong = entity.Dong,
-                Logs = entity.GetLogs()
-            };
+            _entity = entity;
+            Id = entity.Id;
+            Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
-        public string Description { get; set; }
-        public int Dong { get; set; }
-        public ContactViewModel Contact { get; set; }
-        public PropertyViewModel Property { get; set; }
+        public void GetContact(bool includeDeleted = false, Action<ContactViewModel> action = null)
+        {
+            Contact = _entity?.Contact.Into(includeDeleted, action);
+        }
+
+        public void GetPropertyOwnership(bool includeDeleted = false, Action<PropertyOwnershipViewModel> action = null)
+        {
+            PropertyOwnership = _entity?.PropertyOwnership.Into(includeDeleted, action);
+        }
+
+        public string Description => _entity.Description;
+        public int Dong => _entity.Dong;
+        public ContactViewModel Contact { get; private set; }
+        public PropertyOwnershipViewModel PropertyOwnership { get; private set; }
     }
 }
