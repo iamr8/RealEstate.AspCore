@@ -6,12 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class UserPropertyCategoryViewModel : BaseLogViewModel<UserPropertyCategory>
+    public class UserPropertyCategoryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly UserPropertyCategory _entity;
 
-        public UserPropertyCategoryViewModel(UserPropertyCategory entity, bool includeDeleted, Action<UserPropertyCategoryViewModel> action = null) : base(entity)
+        public UserPropertyCategoryViewModel(UserPropertyCategory entity, bool includeDeleted, Action<UserPropertyCategoryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

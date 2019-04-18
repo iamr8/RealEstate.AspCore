@@ -8,7 +8,7 @@ namespace RealEstate.Services.ViewModels.Json
         public int Dong { get; set; }
 
         [JsonProperty("id")]
-        public string ContactId { get; set; }
+        public string CustomerId { get; set; }
 
         [JsonProperty("own")]
         public string Name { get; set; }

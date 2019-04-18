@@ -56,7 +56,7 @@
                                     @SharedLocalizer["Owners"]:
                                     @foreach (var ownership in item.Item.Property.CurrentPropertyOwnership.Ownerships)
                                     {
-                                        <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
+                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
                                     }
                                 </span>
                                 }
@@ -66,7 +66,7 @@
                                     @SharedLocalizer["Applicants"]:
                                     @foreach (var applicant in item.Applicants)
                                     {
-                                        <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Contact.Name &mdash; @applicant.Contact.Mobile</a>
+                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
                                     }
                                 </span>
                                 }

@@ -4,7 +4,7 @@
     var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
     var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
     var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
-    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
+    var ownerships = await CustomerService.CustomerListAsync().ConfigureAwait(false);
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
 
     var propertyCreator = new PropertyCreatorComponentModel

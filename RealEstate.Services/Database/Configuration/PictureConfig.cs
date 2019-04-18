@@ -20,6 +20,10 @@ namespace RealEstate.Services.Database.Configuration
             builder.HasOne(x => x.Deal)
                 .WithMany(x => x.Pictures)
                 .HasForeignKey(x => x.DealId);
+
+            builder.HasOne(x => x.Employee)
+                .WithMany(x => x.Pictures)
+                .HasForeignKey(x => x.EmployeeId);
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using RealEstate.Base;
 using RealEstate.Base.Enums;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace RealEstate.Services.Database.Base
     {
         public string Id { get; set; }
 
-        public DateTime DateTime { get; set; }
+        //        public DateTime DateTime { get; set; }
 
         public string Audit { get; set; }
 

@@ -6,12 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class FixedSalaryViewModel : BaseLogViewModel<FixedSalary>
+    public class FixedSalaryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly FixedSalary _entity;
 
-        public FixedSalaryViewModel(FixedSalary entity, bool includeDeleted, Action<FixedSalaryViewModel> action = null) : base(entity)
+        public FixedSalaryViewModel(FixedSalary entity, bool includeDeleted, Action<FixedSalaryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -24,11 +24,11 @@ namespace RealEstate.Services.ViewModels
 
         public double Value => _entity.Value;
 
-        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
+        public void GetEmployee(bool includeDeleted, Action<EmployeeViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            Employee = _entity?.Employee.Into(includeDeleted, action);
         }
 
-        public UserViewModel User { get; private set; }
+        public EmployeeViewModel Employee { get; private set; }
     }
 }

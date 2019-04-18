@@ -2,6 +2,7 @@
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,6 +10,57 @@ namespace RealEstate.Services.Extensions
 {
     public static class QueryFilterExtensions
     {
+        public static TModel Into<TEntity, TModel>(this TEntity model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        {
+            if (model == null)
+                return default;
+
+            var ty = Activator.CreateInstance(typeof(TModel), model, includeDeleted, action) as TModel;
+            return ty;
+        }
+
+        public static IOrderedEnumerable<TSource> OrderDescendingByCreationDateTime<TSource>(this ICollection<TSource> sources) where TSource : BaseEntity
+        {
+            var source = sources.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime);
+            return source;
+        }
+
+        public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> sources) where TSource : BaseEntity
+        {
+            var source = sources.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime);
+            return source;
+        }
+
+        public static IOrderedEnumerable<TModel> OrderDescendingByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
+        {
+            var source = sources.OrderByDescending(x => x.Logs.Create.DateTime);
+            return source;
+        }
+
+        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = model
+                .Select(entity => entity.Into(includeDeleted, action))
+                .Where(x => x != null)
+                .R8ToList();
+            return result;
+        }
+
+        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        {
+            if (model?.Any() != true)
+                return default;
+
+            var result = model
+                .Select(entity => entity.Into(includeDeleted, action))
+                .Where(x => x != null)
+                .R8ToList();
+            return result;
+        }
+
         public static IQueryable<TEntity> Filtered<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity
         {
             var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
@@ -32,8 +84,6 @@ namespace RealEstate.Services.Extensions
                 return default;
 
             var processedLog = new LogViewModel();
-            var users = new List<LogUserViewModel>();
-
             var create = logs.Find(x => x.Type == LogTypeEnum.Create);
             var modifies = logs.OrderByDescending(x => x.DateTime).Where(x => x.Type == LogTypeEnum.Modify || x.Type == LogTypeEnum.Undelete).ToList();
             var deletes = logs.OrderByDescending(x => x.DateTime).Where(x => x.Type == LogTypeEnum.Delete).ToList();
@@ -52,22 +102,13 @@ namespace RealEstate.Services.Extensions
             logsList = logsList.OrderByDescending(x => x.DateTime).ToList();
             foreach (var log in logsList)
             {
-                var alreadyAddedUser = users.Find(x => x.Id == log.UserId);
-                if (alreadyAddedUser == null)
-                {
-                    users.Add(new LogUserViewModel
-                    {
-                        Mobile = log.UserMobile,
-                        FullName = log.UserFullName,
-                        Id = log.UserId,
-                    });
-                }
-
                 var mustBeAdded = new LogDetailViewModel
                 {
                     Type = log.Type,
                     DateTime = log.DateTime,
-                    User = users.Find(x => x.Id == log.UserId)
+                    UserId = log.UserId,
+                    UserMobile = log.UserMobile,
+                    UserFullName = log.UserFullName
                 };
 
                 switch (log.Type)

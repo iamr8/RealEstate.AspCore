@@ -8,12 +8,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class PaymentViewModel : BaseLogViewModel<Payment>
+    public class PaymentViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Payment _entity;
 
-        public PaymentViewModel(Payment entity, bool includeDeleted, Action<PaymentViewModel> action = null) : base(entity)
+        public PaymentViewModel(Payment entity, bool includeDeleted, Action<PaymentViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -30,9 +30,9 @@ namespace RealEstate.Services.ViewModels
 
         public PaymentTypeEnum Type => _entity.Type;
 
-        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
+        public void GetEmployee(bool includeDeleted, Action<EmployeeViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            Employee = _entity?.Employee.Into(includeDeleted, action);
         }
 
         public void GetPicture(bool includeDeleted, Action<PictureViewModel> action = null)
@@ -40,7 +40,7 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
-        public UserViewModel User { get; private set; }
+        public EmployeeViewModel Employee { get; private set; }
 
         public List<PictureViewModel> Pictures { get; private set; }
     }

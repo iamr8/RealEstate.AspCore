@@ -8,12 +8,12 @@ using System.Linq;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class PropertyViewModel : BaseLogViewModel<Property>
+    public class PropertyViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Property _entity;
 
-        public PropertyViewModel(Property entity, bool includeDeleted, Action<PropertyViewModel> action = null) : base(entity)
+        public PropertyViewModel(Property entity, bool includeDeleted, Action<PropertyViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -72,20 +72,13 @@ namespace RealEstate.Services.ViewModels
 
         public CategoryViewModel Category { get; private set; }
 
-        public GeolocationViewModel Geolocation => _entity.Geolocation != null
-            ? new GeolocationViewModel
-            {
-                Latitude = _entity.Geolocation.Y,
-                Longitude = _entity.Geolocation.X,
-                Point = _entity.Geolocation
-            }
-            : default;
+        public GeolocationViewModel Geolocation => new GeolocationViewModel(_entity.Geolocation);
 
         public List<ItemViewModel> Items { get; private set; }
 
         public DistrictViewModel District { get; private set; }
         public List<PropertyOwnershipViewModel> PropertyOwnerships { get; private set; }
-        public PropertyOwnershipViewModel CurrentPropertyOwnership => PropertyOwnerships?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+        public PropertyOwnershipViewModel CurrentPropertyOwnership => PropertyOwnerships?.OrderDescendingByCreationDateTime().FirstOrDefault();
         public List<PictureViewModel> Pictures { get; private set; }
         public List<PropertyFacilityViewModel> PropertyFacilities { get; private set; }
         public List<PropertyFeatureViewModel> PropertyFeatures { get; private set; }

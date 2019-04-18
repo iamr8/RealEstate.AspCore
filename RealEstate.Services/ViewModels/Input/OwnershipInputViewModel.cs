@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
-    public class OwnershipInputViewModel : ContactInputViewModel
+    public class OwnershipInputViewModel : CustomerInputViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Dong")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]

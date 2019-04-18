@@ -8,15 +8,15 @@ namespace RealEstate.Web.Controllers
     [ApiController]
     public class DetailController : ControllerBase
     {
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
 
         public DetailController(
-            IContactService contactService,
+            ICustomerService customerService,
             IPropertyService propertyService
             )
         {
-            _contactService = contactService;
+            _customerService = customerService;
             _propertyService = propertyService;
         }
 
@@ -26,7 +26,7 @@ namespace RealEstate.Web.Controllers
             if (string.IsNullOrEmpty(id))
                 return new JsonResult(null);
 
-            var models = await _contactService.OwnershipJsonAsync(id).ConfigureAwait(false);
+            var models = await _customerService.OwnershipJsonAsync(id).ConfigureAwait(false);
             return new JsonResult(models);
         }
 

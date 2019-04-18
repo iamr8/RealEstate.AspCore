@@ -9,9 +9,9 @@ namespace RealEstate.Services.Database.Configuration
         public override void Configure(EntityTypeBuilder<Payment> builder)
         {
             base.Configure(builder);
-            builder.HasOne(x => x.User)
+            builder.HasOne(x => x.Employee)
                 .WithMany(x => x.Payments)
-                .HasForeignKey(x => x.UserId)
+                .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
         }
     }

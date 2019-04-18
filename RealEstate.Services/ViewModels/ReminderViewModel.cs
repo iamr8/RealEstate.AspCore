@@ -6,12 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class ReminderViewModel : BaseLogViewModel<Reminder>
+    public class ReminderViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Reminder _entity;
 
-        public ReminderViewModel(Reminder entity, bool includeDeleted, Action<ReminderViewModel> action = null) : base(entity)
+        public ReminderViewModel(Reminder entity, bool includeDeleted, Action<ReminderViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -25,7 +25,7 @@ namespace RealEstate.Services.ViewModels
         public string Text => _entity.Text;
         public DateTime AlarmTime => _entity.AlarmTime;
 
-        public void GetUser(bool includeDeleted, Action<UserViewModel> action = null)
+        public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
             User = _entity?.User.Into(includeDeleted, action);
         }

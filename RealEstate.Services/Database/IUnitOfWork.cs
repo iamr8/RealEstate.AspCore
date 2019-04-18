@@ -18,20 +18,20 @@ namespace RealEstate.Services.Database
 
         TEntity Update<TEntity>(TEntity entity) where TEntity : class;
 
-        TEntity Update<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
+        TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;
 
         //        TEntity Update<TEntity>(TEntity entity, string userId) where TEntity : class;
-        TEntity UnDelete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
+        TEntity UnDelete<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;
 
         void Delete<TEntity>(TEntity entity) where TEntity : class;
 
         TEntity Add<TEntity>(TEntity entity) where TEntity : class;
 
-        TEntity Add<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
+        TEntity Add<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;
 
         //        TEntity Add<TEntity>(TEntity entity, string userId) where TEntity : class;
 
-        TEntity Delete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity;
+        TEntity Delete<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;
 
         //        TEntity UnDelete<TEntity>(TEntity entity, string userId) where TEntity : class;
 

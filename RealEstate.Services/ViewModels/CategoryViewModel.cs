@@ -8,12 +8,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class CategoryViewModel : BaseLogViewModel<Category>
+    public class CategoryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Category _entity;
 
-        public CategoryViewModel(Category entity, bool includeDeleted, Action<CategoryViewModel> action = null) : base(entity)
+        public CategoryViewModel(Category entity, bool includeDeleted, Action<CategoryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

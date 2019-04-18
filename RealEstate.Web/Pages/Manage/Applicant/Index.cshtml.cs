@@ -14,14 +14,14 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 {
     public class IndexModel : PageModel
     {
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
-            IContactService contactService,
+            ICustomerService customerService,
             IStringLocalizer<SharedResource> sharedLocalizer)
         {
-            _contactService = contactService;
+            _customerService = customerService;
             _localizer = sharedLocalizer;
         }
 
@@ -42,7 +42,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
             };
 
             Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;
-            List = await _contactService.ApplicantListAsync(SearchInput).ConfigureAwait(false);
+            List = await _customerService.ApplicantListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

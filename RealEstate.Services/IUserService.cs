@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -28,8 +27,6 @@ namespace RealEstate.Services
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
 
-        Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string userId, bool save);
-
         Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
 
         Task<bool> IsUserValidAsync(List<Claim> claims);
@@ -45,14 +42,17 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IPaymentService _paymentService;
+        private readonly IEmployeeService _employeeService;
         private readonly DbSet<User> _users;
-        private readonly DbSet<FixedSalary> _fixedSalaries;
 
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
+            IPaymentService paymentService,
+            IEmployeeService employeeService,
             IHttpContextAccessor httpContextAccessor
             )
         {
@@ -60,7 +60,8 @@ namespace RealEstate.Services
             _baseService = baseService;
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
-            _fixedSalaries = _unitOfWork.Set<FixedSalary>();
+            _employeeService = employeeService;
+            _paymentService = paymentService;
         }
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
@@ -75,21 +76,22 @@ namespace RealEstate.Services
             {
                 act.GetUserItemCategories(false, act2 => act2.GetCategory());
                 act.GetUserPropertyCategories(false, act2 => act2.GetCategory());
-                act.GetFixedSalaries();
+                act.GetEmployee();
+                //                act.GetFixedSalaries();
             });
             if (viewModel == null)
                 return default;
 
             var result = new UserInputViewModel
             {
-                Role = viewModel.Role,
-                FirstName = viewModel.FirstName,
-                LastName = viewModel.LastName,
-                Mobile = viewModel.Mobile,
+                //                Role = viewModel.Role,
+                //                FirstName = viewModel.FirstName,
+                //                LastName = viewModel.LastName,
+                //                Mobile = viewModel.Mobile,
                 Password = viewModel.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption),
                 Username = viewModel.Username,
-                Address = viewModel.Address,
-                Phone = viewModel.Phone,
+                //                Address = viewModel.Address,
+                //                Phone = viewModel.Phone,
                 UserItemCategories = viewModel.UserItemCategories?.Select(x => new UserItemCategoryJsonViewModel
                 {
                     Id = x.Id,
@@ -100,8 +102,9 @@ namespace RealEstate.Services
                     Id = x.Id,
                     Name = x.Category?.Name
                 }).ToList(),
-                FixedSalary = viewModel.FixedSalaries?.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
-                Id = viewModel.Id
+                //                FixedSalary = viewModel.FixedSalaries?.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
+                Id = viewModel.Id,
+                EmployeeId = viewModel.Employee?.Id
             };
             return result;
         }
@@ -119,7 +122,7 @@ namespace RealEstate.Services
                 {
                     Id = user.Id,
                     UserId = user.Id,
-                    UserFullName = $"{user.LastName}، {user.FirstName}",
+                    UserFullName = $"{user.Employee?.LastName}، {user.Employee?.FirstName}",
                 };
                 result.Add(item);
             }
@@ -128,49 +131,41 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
         {
-            var models = _users as IQueryable<User>;
+            var models = _users.AsQueryable();
 
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Username))
                     models = models.Where(x => EF.Functions.Like(x.Username, searchModel.Username.LikeExpression()));
 
-                if (!string.IsNullOrEmpty(searchModel.FirstName))
-                    models = models.Where(x => EF.Functions.Like(x.FirstName, searchModel.FirstName.LikeExpression()));
+                //if (!string.IsNullOrEmpty(searchModel.FirstName))
+                //    models = models.Where(x => EF.Functions.Like(x.Employee.FirstName, searchModel.FirstName.LikeExpression()));
 
-                if (!string.IsNullOrEmpty(searchModel.LastName))
-                    models = models.Where(x => EF.Functions.Like(x.LastName, searchModel.LastName.LikeExpression()));
+                //if (!string.IsNullOrEmpty(searchModel.LastName))
+                //    models = models.Where(x => EF.Functions.Like(x.Employee.LastName, searchModel.LastName.LikeExpression()));
 
-                if (!string.IsNullOrEmpty(searchModel.Mobile))
-                    models = models.Where(x => EF.Functions.Like(x.Mobile, searchModel.Mobile.LikeExpression()));
+                //if (!string.IsNullOrEmpty(searchModel.Mobile))
+                //    models = models.Where(x => EF.Functions.Like(x.Employee.Mobile, searchModel.Mobile.LikeExpression()));
 
-                if (!string.IsNullOrEmpty(searchModel.Address))
-                    models = models.Where(x => EF.Functions.Like(x.Address, searchModel.Address.LikeExpression()));
+                //if (!string.IsNullOrEmpty(searchModel.Address))
+                //    models = models.Where(x => EF.Functions.Like(x.Employee.Address, searchModel.Address.LikeExpression()));
 
-                if (searchModel.Role != null)
-                    models = models.Where(x => x.Role == searchModel.Role);
+                //                if (searchModel.Role != null)
+                //                    models = models.Where(x => x.Role == searchModel.Role);
 
                 if (!string.IsNullOrEmpty(searchModel.UserId))
                     models = models.Where(x => x.Id == searchModel.UserId);
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<User, UserViewModel>()).ConfigureAwait(false);
+                item => item.Into<User, UserViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetEmployee();
+                })).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
 
-            var superAdmin = result.Items.Find(x => x.Username == "admin" && x.Role == Role.SuperAdmin);
-            if (superAdmin?.Logs?.Last() == null)
-                return result;
-
-            //            var tempLogs = superAdmin.Logs;
-            //            var creationTrack = tempLogs.Create;
-            //            if (creationTrack == null)
-            //                return result;
-
-            //            tempLogs.Create = null;
-            //            superAdmin.Logs = tempLogs;
             return result;
         }
 
@@ -195,13 +190,13 @@ namespace RealEstate.Services
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
-                    entity.Address = model.Address;
-                    entity.FirstName = model.FirstName;
-                    entity.LastName = model.LastName;
-                    entity.Mobile = model.Mobile;
+                    //                    entity.Address = model.Address;
+                    //                    entity.FirstName = model.FirstName;
+                    //                    entity.LastName = model.LastName;
+                    //                    entity.Mobile = model.Mobile;
                     entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
-                    entity.Phone = model.Phone;
-                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
+                    //                    entity.Phone = model.Phone;
+                    //                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
                 }, new[]
                 {
                     Role.SuperAdmin
@@ -237,7 +232,7 @@ namespace RealEstate.Services
                 null,
                 false).ConfigureAwait(false);
 
-            await FixedSalarySyncAsync(model.FixedSalary, user.Id, false).ConfigureAwait(false);
+            //            await _paymentService.FixedSalarySyncAsync(model.FixedSalary, user.Id, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
@@ -255,14 +250,14 @@ namespace RealEstate.Services
 
             var (userAddStatus, newUser) = await _baseService.AddAsync(new User
             {
-                Role = model.Role,
-                Address = model.Address,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
+                //                Role = model.Role,
+                //                Address = model.Address,
+                //                FirstName = model.FirstName,
+                //                LastName = model.LastName,
                 Username = model.Username,
-                Phone = model.Phone,
+                //                Phone = model.Phone,
                 Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption),
-                Mobile = model.Mobile
+                //                Mobile = model.Mobile
             }, new[]
             {
                 Role.SuperAdmin
@@ -270,24 +265,6 @@ namespace RealEstate.Services
 
             await SyncAsync(newUser, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newUser, save).ConfigureAwait(false);
-        }
-
-        public async Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string userId, bool save)
-        {
-            if (value <= 0 || string.IsNullOrEmpty(userId))
-                return new ValueTuple<StatusEnum, FixedSalary>(StatusEnum.ParamIsNull, null);
-
-            var findSalary = await _fixedSalaries.OrderByDescending(x => x.DateTime).FirstOrDefaultAsync(x => x.UserId == userId && x.Value == value)
-                .ConfigureAwait(false);
-            if (findSalary != null)
-                return new ValueTuple<StatusEnum, FixedSalary>(StatusEnum.AlreadyExists, findSalary);
-
-            var addStatus = await _baseService.AddAsync(new FixedSalary
-            {
-                UserId = userId,
-                Value = value
-            }, null, save).ConfigureAwait(false);
-            return addStatus;
         }
 
         public async Task<bool> IsUserValidAsync(List<Claim> claims)
@@ -298,12 +275,8 @@ namespace RealEstate.Services
             var foundUser = await (from user in models
                                    where user.Id == currentUser.Id
                                    where user.Username == currentUser.Username
-                                   where user.Mobile == currentUser.Mobile
-                                   where user.Role == currentUser.Role
                                    where user.Password == currentUser.EncryptedPassword
-                                   where user.FirstName == currentUser.FirstName
-                                   where user.LastName == currentUser.LastName
-                                   where user.Phone == currentUser.Phone
+                                   where user.EmployeeId == currentUser.EmployeeId
                                    select user).FirstOrDefaultAsync().ConfigureAwait(false);
             return foundUser != null;
         }
@@ -348,8 +321,12 @@ namespace RealEstate.Services
                 return StatusEnum.WrongPassword;
             }
 
-            if (userDb.LastLog()?.Type == LogTypeEnum.Delete)
+            if (userDb.IsDeleted)
                 return StatusEnum.Deactivated;
+
+            var employee = userDb.Employee;
+            if (employee == null)
+                return StatusEnum.EmployeeIsNull;
 
             var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
             {
@@ -366,14 +343,13 @@ namespace RealEstate.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, userDb.Id),
                 new Claim(ClaimTypes.Name, userDb.Username),
-                new Claim(ClaimTypes.MobilePhone, userDb.Mobile),
-                new Claim(ClaimTypes.Role, userDb.Role.ToString()),
+                new Claim(ClaimTypes.MobilePhone, userDb.Employee.Mobile),
                 new Claim(ClaimTypes.Hash,userDb.Password),
-                new Claim("FirstName",userDb.FirstName),
-                new Claim("LastName",userDb.LastName),
-                new Claim(ClaimTypes.HomePhone, userDb.Phone),
-                new Claim(ClaimTypes.StreetAddress, userDb.Address),
-                new Claim("CreationDateTime",userDb.DateTime.ToString("G")),
+                new Claim("FirstName",userDb.Employee.FirstName),
+                new Claim("LastName",userDb.Employee.LastName),
+                new Claim(ClaimTypes.HomePhone, userDb.Employee.Phone),
+                new Claim(ClaimTypes.StreetAddress, userDb.Employee.Address),
+                new Claim("EmployeeId", userDb.Employee.Id),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),
             };

@@ -6,14 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class ApplicantFeatureViewModel : BaseLogViewModel<ApplicantFeature>
+    public class ApplicantFeatureViewModel : BaseLogViewModel
     {
-        private string _value;
-
         [JsonIgnore]
         private readonly ApplicantFeature _entity;
 
-        public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted, Action<ApplicantFeatureViewModel> action = null) : base(entity)
+        public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted, Action<ApplicantFeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

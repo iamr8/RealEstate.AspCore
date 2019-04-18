@@ -6,6 +6,6 @@
         <b>@SharedLocalizer[Model.Type.GetDisplayName()]:</b>
         @Model.DateTime.GregorianToPersian(false, true)
         @SharedLocalizer["By"]
-        <a asp-page="@typeof(IndexModel).Page()" asp-route-userId="@Model.User.Id" target="_blank">@Model.User.FullName</a>
+        <a asp-page="@typeof(IndexModel).Page()" asp-route-userId="@Model.UserId" target="_blank">@Model.UserFullName</a>
     </text>
 }

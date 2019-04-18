@@ -7,12 +7,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class SmsViewModel : BaseLogViewModel<Sms>
+    public class SmsViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Sms _entity;
 
-        public SmsViewModel(Sms entity, bool includeDeleted, Action<SmsViewModel> action = null) : base(entity)
+        public SmsViewModel(Sms entity, bool includeDeleted, Action<SmsViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -30,17 +30,17 @@ namespace RealEstate.Services.ViewModels
         public SmsProvider Provider => _entity.Provider;
         public string StatusJson => _entity.StatusJson;
 
-        public void GetContact(bool includeDeleted = false, Action<ContactViewModel> action = null)
+        public void GetCustomer(bool includeDeleted = false, Action<CustomerViewModel> action = null)
         {
-            Contact = _entity?.Contact.Into(includeDeleted, action);
+            Customer = _entity?.Customer.Into(includeDeleted, action);
         }
 
-        public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
+        public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            Employee = _entity?.Employee.Into(includeDeleted, action);
         }
 
-        public UserViewModel User { get; private set; }
-        public ContactViewModel Contact { get; private set; }
+        public EmployeeViewModel Employee { get; private set; }
+        public CustomerViewModel Customer { get; private set; }
     }
 }

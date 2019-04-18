@@ -6,12 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class OwnershipViewModel : BaseLogViewModel<Ownership>
+    public class OwnershipViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Ownership _entity;
 
-        public OwnershipViewModel(Ownership entity, bool includeDeleted, Action<OwnershipViewModel> action = null) : base(entity)
+        public OwnershipViewModel(Ownership entity, bool includeDeleted, Action<OwnershipViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -22,9 +22,9 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public void GetContact(bool includeDeleted = false, Action<ContactViewModel> action = null)
+        public void GetCustomer(bool includeDeleted = false, Action<CustomerViewModel> action = null)
         {
-            Contact = _entity?.Contact.Into(includeDeleted, action);
+            Customer = _entity?.Customer.Into(includeDeleted, action);
         }
 
         public void GetPropertyOwnership(bool includeDeleted = false, Action<PropertyOwnershipViewModel> action = null)
@@ -34,7 +34,7 @@ namespace RealEstate.Services.ViewModels
 
         public string Description => _entity.Description;
         public int Dong => _entity.Dong;
-        public ContactViewModel Contact { get; private set; }
+        public CustomerViewModel Customer { get; private set; }
         public PropertyOwnershipViewModel PropertyOwnership { get; private set; }
     }
 }

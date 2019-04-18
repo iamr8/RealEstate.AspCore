@@ -12,29 +12,29 @@ namespace RealEstate.Web.Controllers
     [ApiController]
     public class AddController : ControllerBase
     {
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AddController(
-            IContactService contactService,
+            ICustomerService customerService,
             IPropertyService propertyService,
             IStringLocalizer<SharedResource> localizer)
         {
-            _contactService = contactService;
+            _customerService = customerService;
             _propertyService = propertyService;
             _localizer = localizer;
         }
 
-        [Route("contact/addItem"), HttpPost]
-        public async Task<IActionResult> ContactAsync([FromForm] ContactInputViewModel model)
+        [Route("customer/addItem"), HttpPost]
+        public async Task<IActionResult> CustomerAsync([FromForm] CustomerInputViewModel model)
         {
-            var (status, newContact) = await _contactService.ContactAddAsync(model, false, true).ConfigureAwait(false);
+            var (status, newCustomer) = await _customerService.CustomerAddAsync(model, false, true).ConfigureAwait(false);
             return new JsonResult(new JsonStatusValueViewModel
             {
                 Status = status,
-                Id = newContact?.Id,
-                Name = newContact != null ? $"{newContact.Name} • {newContact.MobileNumber}" : null
+                Id = newCustomer?.Id,
+                Name = newCustomer != null ? $"{newCustomer.Name} • {newCustomer.MobileNumber}" : null
             });
         }
 

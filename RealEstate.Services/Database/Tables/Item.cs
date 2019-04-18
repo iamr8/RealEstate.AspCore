@@ -5,11 +5,11 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Item : BaseEntity
     {
-        public Item()
-        {
-//            ItemFeatures = new HashSet<ItemFeature>();
-//            Deals = new HashSet<Deal>();
-        }
+        //        public Item()
+        //        {
+        //            ItemFeatures = new HashSet<ItemFeature>();
+        //            Deals = new HashSet<Deal>();
+        //        }
 
         public string Description { get; set; }
 

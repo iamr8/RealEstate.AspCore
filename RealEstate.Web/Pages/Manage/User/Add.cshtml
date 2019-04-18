@@ -53,13 +53,8 @@
                     <input asp-for="NewUser.Password" class="form-control" />
                     <span asp-validation-for="NewUser.Password" class="text-danger"></span>
                 </div>
-                <div class="col-xs-12 col-sm margin-bottomed">
-                    <label asp-for="NewUser.Role" class="control-label"></label>
-                    <select asp-items="@roles" asp-for="NewUser.Role" class="form-control"></select>
-                    <span asp-validation-for="NewUser.Role" class="text-danger"></span>
-                </div>
             </div>
-            <div class="row justify-content-center align-items-center">
+            @*<div class="row justify-content-center align-items-center">
                 <div class="col-xs-12 col-sm-4 margin-bottomed">
                     <label asp-for="NewUser.Mobile" class="control-label"></label>
                     <input asp-for="NewUser.Mobile" class="form-control" />
@@ -95,7 +90,7 @@
                     <input asp-for="NewUser.FixedSalary" class="form-control" />
                     <span asp-validation-for="NewUser.FixedSalary" class="text-danger"></span>
                 </div>
-            </div>
+            </div>*@
             <hr />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">

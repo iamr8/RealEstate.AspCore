@@ -1,20 +1,20 @@
 ﻿@page
 @model RequestModel
 @{
-    var contactsList = await ContactService.ListJsonAsync().ConfigureAwait(false);
+    var contactsList = await CustomerService.ListJsonAsync().ConfigureAwait(false);
     var contactSelector = new JsonSelectorComponentModel
     {
         IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
         ModelName = nameof(Model.NewItemRequest),
-        ItemName = nameof(Model.NewItemRequest.Contacts),
-        Json = nameof(Model.NewItemRequest.ContactsJson),
+        ItemName = nameof(Model.NewItemRequest.Customers),
+        Json = nameof(Model.NewItemRequest.CustomerJson),
         Title = SharedLocalizer["Applicants"],
         ScriptKey = "propertyFeaturesScript",
         SelectListItems = contactsList?.Select(x => new SelectListItem
         {
             Text = !string.IsNullOrEmpty(x.ApplicantId) ? $"* {x.Name}" : x.Name,
-            Value = x.ContactId
+            Value = x.CustomerId
         }).SelectFirstItem()
     };
 
@@ -49,7 +49,7 @@
                 <hr />
                 <div class="row justify-content-center align-items-center">
                     <div class="col-12">
-                        <input asp-for="NewItemRequest.ContactsJson" />
+                        <input asp-for="NewItemRequest.CustomerJson" />
                         <vc:json-selector model="@contactSelector" />
                     </div>
                 </div>

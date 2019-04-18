@@ -9,8 +9,8 @@ namespace RealEstate.Services.Database.Tables
         public int Dong { get; set; }
         public string Description { get; set; }
         public string PropertyOwnershipId { get; set; }
-        public string ContactId { get; set; }
+        public string CustomerId { get; set; }
         public virtual PropertyOwnership PropertyOwnership { get; set; }
-        public virtual Contact Contact { get; set; }
+        public virtual Customer Customer { get; set; }
     }
 }

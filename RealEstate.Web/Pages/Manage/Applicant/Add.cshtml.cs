@@ -13,15 +13,15 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 {
     public class AddModel : PageModel
     {
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AddModel(
-            IContactService contactService,
+            ICustomerService customerService,
             IStringLocalizer<SharedResource> sharedLocalizer
             )
         {
-            _contactService = contactService;
+            _customerService = customerService;
             _localizer = sharedLocalizer;
         }
 
@@ -41,7 +41,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                var model = await _contactService.ApplicantInputAsync(id).ConfigureAwait(false);
+                var model = await _customerService.ApplicantInputAsync(id).ConfigureAwait(false);
                 if (model == null)
                     return RedirectToPage(typeof(Applicant.IndexModel).Page());
 
@@ -58,7 +58,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _contactService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _customerService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
             ApplicantStatus = finalStatus.GetDisplayName();

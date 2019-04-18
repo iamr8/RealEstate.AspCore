@@ -4,26 +4,11 @@ using RealEstate.Base.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using BaseEntity = RealEstate.Services.Database.Base.BaseEntity;
 
 namespace RealEstate.Services.BaseLog
 {
-    public class BaseLogViewModel<TEntity> : BaseViewModel where TEntity : BaseEntity
+    public class BaseLogViewModel : BaseViewModel
     {
-        [JsonIgnore]
-        private readonly TEntity _entity;
-
-        protected BaseLogViewModel(TEntity entity)
-        {
-            _entity = entity;
-            if (_entity == null)
-                return;
-        }
-
-        public BaseLogViewModel()
-        {
-        }
-
         [JsonIgnore]
         public LogViewModel Logs { get; set; }
 
@@ -62,15 +47,10 @@ namespace RealEstate.Services.BaseLog
     {
         public LogTypeEnum Type { get; set; }
         public DateTime DateTime { get; set; }
-        public LogUserViewModel User { get; set; }
-    }
+        public string UserId { get; set; }
 
-    public class LogUserViewModel
-    {
-        public string Id { get; set; }
+        public string UserFullName { get; set; }
 
-        public string FullName { get; set; }
-
-        public string Mobile { get; set; }
+        public string UserMobile { get; set; }
     }
 }

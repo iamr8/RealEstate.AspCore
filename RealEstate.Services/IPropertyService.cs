@@ -2,7 +2,6 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -42,7 +41,7 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IFeatureService _featureService;
         private readonly ILocationService _locationService;
         private readonly DbSet<Property> _properties;
@@ -53,14 +52,14 @@ namespace RealEstate.Services
             IBaseService baseService,
             IFeatureService featureService,
             ILocationService locationService,
-            IContactService contactService
+            ICustomerService customerService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _locationService = locationService;
             _featureService = featureService;
-            _contactService = contactService;
+            _customerService = customerService;
             _properties = _unitOfWork.Set<Property>();
             _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
         }
@@ -104,7 +103,7 @@ namespace RealEstate.Services
                 .Include(x => x.District)
                 .Include(x => x.PropertyOwnerships)
                 .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
+                .ThenInclude(x => x.Customer);
 
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null)
@@ -120,18 +119,6 @@ namespace RealEstate.Services
                 return default;
 
             var query = _properties as IQueryable<Property>;
-            query = query.Include(x => x.Items)
-                .Include(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility)
-                .Include(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.District)
-                .Include(x => x.Category)
-                .Include(x => x.District)
-                .Include(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
-
             query = query.Where(x => EF.Functions.Like(x.Id, searchTerm.LikeExpression())
                                      || EF.Functions.Like(x.Street, searchTerm.LikeExpression())
                                      || EF.Functions.Like(x.Alley, searchTerm.LikeExpression())
@@ -158,18 +145,7 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<PropertyViewModel>> PropertyListAsync(PropertySearchViewModel searchModel)
         {
-            var models = _properties as IQueryable<Property>;
-            models = models.Include(x => x.Items)
-                .Include(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility)
-                .Include(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.District)
-                .Include(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact)
-                .Include(x => x.Category);
-
+            var models = _properties.AsQueryable();
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Id))
@@ -196,13 +172,7 @@ namespace RealEstate.Services
                         return new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin), property =>
                         {
                             property.GetCategory();
-                            property.GetPropertyOwnerships(action: propertyOwnership =>
-                            {
-                                propertyOwnership.GetOwnerships(action: ownership =>
-                                {
-                                    ownership.GetContact();
-                                });
-                            });
+                            property.GetPropertyOwnerships(false, propertyOwnership => propertyOwnership.GetOwnerships(false, ownership => ownership.GetCustomer()));
                         });
                     })
                 .ConfigureAwait(false);
@@ -212,7 +182,7 @@ namespace RealEstate.Services
 
         private PropertyJsonViewModel MapJson(Property property)
         {
-            var lastPropOwnership = property.PropertyOwnerships.OrderByDescending(x => x.DateTime).FirstOrDefault();
+            var lastPropOwnership = property.PropertyOwnerships.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastPropOwnership == null)
                 return default;
 
@@ -236,9 +206,9 @@ namespace RealEstate.Services
                 }).ToList(),
                 Ownerships = lastPropOwnership.Ownerships.Select(x => new OwnershipJsonViewModel
                 {
-                    ContactId = x.Contact?.Id,
-                    Name = x.Contact?.Name,
-                    Mobile = x.Contact?.MobileNumber,
+                    CustomerId = x.Customer?.Id,
+                    Name = x.Customer?.Name,
+                    Mobile = x.Customer?.MobileNumber,
                     Dong = x.Dong
                 }).ToList()
             };
@@ -268,7 +238,7 @@ namespace RealEstate.Services
                 .Include(x => x.Category)
                 .Include(x => x.PropertyOwnerships)
                 .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
+                .ThenInclude(x => x.Customer);
 
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             var viewModel = entity?.Into<Property, PropertyViewModel>();
@@ -281,9 +251,9 @@ namespace RealEstate.Services
                 Description = viewModel.Description,
                 Ownerships = viewModel.CurrentPropertyOwnership?.Ownerships?.Select(x => new OwnershipJsonViewModel
                 {
-                    ContactId = x.Contact?.Id,
-                    Name = x.Contact?.Name,
-                    Mobile = x.Contact?.Mobile,
+                    CustomerId = x.Customer?.Id,
+                    Name = x.Customer?.Name,
+                    Mobile = x.Customer?.Mobile,
                     Dong = x.Dong
                 }).ToList(),
                 PropertyFacilities = viewModel.PropertyFacilities?.Select(x => new FacilityJsonViewModel
@@ -357,11 +327,11 @@ namespace RealEstate.Services
                 model.Ownerships,
                 ownership => new Ownership
                 {
-                    ContactId = ownership.ContactId,
+                    CustomerId = ownership.CustomerId,
                     Dong = ownership.Dong,
                     PropertyOwnershipId = propertyOwnership.Id,
                 },
-                (inDb, inModel) => inDb.ContactId == inModel.ContactId,
+                (inDb, inModel) => inDb.CustomerId == inModel.CustomerId,
                 (inDb, inModel) => inDb.PropertyOwnershipId == propertyOwnership.Id && inDb.Dong == inModel.Dong,
                 (inDb, inModel) =>
                 {
@@ -423,7 +393,7 @@ namespace RealEstate.Services
                 .Include(x => x.Category)
                 .Include(x => x.PropertyOwnerships)
                 .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
+                .ThenInclude(x => x.Customer);
             var entity = await query.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,
                 () =>

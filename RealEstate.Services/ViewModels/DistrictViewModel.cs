@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class DistrictViewModel : BaseLogViewModel<District>
+    public class DistrictViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly District _entity;
 
-        public DistrictViewModel(District entity, bool includeDeleted, Action<DistrictViewModel> action = null) : base(entity)
+        public DistrictViewModel(District entity, bool includeDeleted, Action<DistrictViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

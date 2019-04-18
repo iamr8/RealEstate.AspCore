@@ -11,9 +11,6 @@ namespace RealEstate.Services.Database.Configuration
             base.Configure(builder);
             builder.HasIndex(x => x.Username)
                 .IsUnique();
-
-            builder.HasIndex(x => x.Mobile)
-                .IsUnique();
         }
     }
 }

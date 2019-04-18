@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class PropertyOwnershipViewModel : BaseLogViewModel<PropertyOwnership>
+    public class PropertyOwnershipViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly PropertyOwnership _entity;
 
-        public PropertyOwnershipViewModel(PropertyOwnership entity, bool includeDeleted, Action<PropertyOwnershipViewModel> action = null) : base(entity)
+        public PropertyOwnershipViewModel(PropertyOwnership entity, bool includeDeleted, Action<PropertyOwnershipViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -33,7 +33,6 @@ namespace RealEstate.Services.ViewModels
             Property = _entity?.Property.Into(includeDeleted, action);
         }
 
-        public DateTime DateTime => _entity.DateTime;
         public PropertyViewModel Property { get; private set; }
         public List<OwnershipViewModel> Ownerships { get; private set; }
     }

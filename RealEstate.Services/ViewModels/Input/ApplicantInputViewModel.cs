@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
-    public class ApplicantInputViewModel : ContactInputViewModel
+    public class ApplicantInputViewModel : CustomerInputViewModel
     {
         [Required]
         [Display(ResourceType = typeof(SharedResource), Name = "Type")]

@@ -20,12 +20,12 @@ namespace RealEstate.Services.ViewModels.Input
 
         [HiddenInput]
         [Required]
-        public string ContactsJson { get; set; }
+        public string CustomerJson { get; set; }
 
-        public List<ApplicantJsonViewModel> Contacts
+        public List<ApplicantJsonViewModel> Customers
         {
-            get => ContactsJson.JsonGetAccessor<List<ApplicantJsonViewModel>>();
-            set => ContactsJson = value.JsonSetAccessor();
+            get => CustomerJson.JsonGetAccessor<List<ApplicantJsonViewModel>>();
+            set => CustomerJson = value.JsonSetAccessor();
         }
     }
 }

@@ -5,7 +5,7 @@ namespace RealEstate.Services.ViewModels.Json
     public class ApplicantJsonViewModel
     {
         [JsonProperty("id")]
-        public string ContactId { get; set; }
+        public string CustomerId { get; set; }
 
         [JsonProperty("api")]
         public string ApplicantId { get; set; }

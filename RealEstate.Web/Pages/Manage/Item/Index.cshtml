@@ -90,7 +90,7 @@
                                     <span>
                                         @foreach (var ownership in item.Property.CurrentPropertyOwnership.Ownerships)
                                         {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Contact.Name &mdash; @ownership.Contact.Mobile</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
                                         }
                                     </span>
                                 }

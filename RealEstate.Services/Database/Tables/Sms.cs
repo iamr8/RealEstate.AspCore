@@ -11,9 +11,9 @@ namespace RealEstate.Services.Database.Tables
         public string Text { get; set; }
         public SmsProvider Provider { get; set; }
         public string StatusJson { get; set; }
-        public string ContactId { get; set; }
-        public string UserId { get; set; }
-        public virtual Contact Contact { get; set; }
-        public virtual User User { get; set; }
+        public string CustomerId { get; set; }
+        public string EmployeeId { get; set; }
+        public virtual Customer Customer { get; set; }
+        public virtual Employee Employee { get; set; }
     }
 }

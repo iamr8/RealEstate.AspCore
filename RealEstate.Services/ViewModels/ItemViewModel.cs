@@ -9,12 +9,12 @@ using System.Linq;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class ItemViewModel : BaseLogViewModel<Item>
+    public class ItemViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Item _entity;
 
-        public ItemViewModel(Item entity, bool includeDeleted, Action<ItemViewModel> action = null) : base(entity)
+        public ItemViewModel(Item entity, bool includeDeleted, Action<ItemViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -27,7 +27,7 @@ namespace RealEstate.Services.ViewModels
 
         public string Description => _entity.Description;
 
-        public bool IsRequested => _entity.Deals?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Status == DealStatusEnum.Requested;
+        public bool IsRequested => _entity.Deals?.LastOrDefault()?.Status == DealStatusEnum.Requested;
 
         public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {

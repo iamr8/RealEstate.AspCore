@@ -1,12 +1,20 @@
 ﻿using GeoAPI.Geometries;
-using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class GeolocationViewModel 
+    public class GeolocationViewModel
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
-        public IPoint Point { get; set; }
+        public GeolocationViewModel(IPoint point)
+        {
+            if (point == null)
+                return;
+
+            Point = point;
+        }
+
+        public double Latitude => Point.Y;
+        public double Longitude => Point.X;
+
+        public IPoint Point { get; }
     }
 }

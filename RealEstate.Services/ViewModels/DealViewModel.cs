@@ -8,12 +8,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class DealViewModel : BaseLogViewModel<Deal>
+    public class DealViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Deal _entity;
 
-        public DealViewModel(Deal entity, bool includeDeleted, Action<DealViewModel> action = null) : base(entity)
+        public DealViewModel(Deal entity, bool includeDeleted, Action<DealViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -52,10 +52,16 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
+        public void GetChecks(bool includeDeleted, Action<CheckViewModel> action = null)
+        {
+            Checks = _entity?.Checks.Into(includeDeleted, action);
+        }
+
         public ItemViewModel Item { get; private set; }
         public List<ApplicantViewModel> Applicants { get; private set; }
         public List<DealPaymentViewModel> DealPayments { get; private set; }
         public List<BeneficiaryViewModel> Beneficiaries { get; private set; }
         public List<PictureViewModel> Pictures { get; private set; }
+        public List<CheckViewModel> Checks { get; private set; }
     }
 }

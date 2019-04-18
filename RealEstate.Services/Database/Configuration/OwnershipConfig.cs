@@ -9,9 +9,9 @@ namespace RealEstate.Services.Database.Configuration
         public override void Configure(EntityTypeBuilder<Ownership> builder)
         {
             base.Configure(builder);
-            builder.HasOne(x => x.Contact)
+            builder.HasOne(x => x.Customer)
                 .WithMany(x => x.Ownerships)
-                .HasForeignKey(x => x.ContactId)
+                .HasForeignKey(x => x.CustomerId)
                 .IsRequired();
 
             builder.HasOne(x => x.PropertyOwnership)

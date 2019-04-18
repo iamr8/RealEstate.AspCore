@@ -25,19 +25,29 @@ namespace RealEstate.Services.Database
         public virtual DbSet<ApplicantFeature> ApplicantFeature { get; set; }
 
         public virtual DbSet<Beneficiary> Beneficiary { get; set; }
-        public virtual DbSet<Contact> Contact { get; set; }
+        public virtual DbSet<Customer> Customer { get; set; }
+        public virtual DbSet<Check> Check { get; set; }
         public virtual DbSet<Deal> Deal { get; set; }
         public virtual DbSet<DealPayment> DealPayment { get; set; }
         public virtual DbSet<District> District { get; set; }
+        public virtual DbSet<Division> Division { get; set; }
+        public virtual DbSet<Employee> Employee { get; set; }
+        public virtual DbSet<EmployeeDivision> EmployeeDivision { get; set; }
+        public virtual DbSet<EmployeeStatus> EmployeeStatus { get; set; }
+
         public virtual DbSet<Facility> Facility { get; set; }
         public virtual DbSet<Feature> Feature { get; set; }
         public virtual DbSet<FixedSalary> FixedSalary { get; set; }
+        public virtual DbSet<Insurance> Insurance { get; set; }
         public virtual DbSet<Item> Item { get; set; }
         public virtual DbSet<ItemFeature> ItemFeature { get; set; }
+        public virtual DbSet<Leave> Leave { get; set; }
+        public virtual DbSet<ManagementPercent> ManagementPercent { get; set; }
+
         public virtual DbSet<Ownership> Ownership { get; set; }
         public virtual DbSet<Payment> Payment { get; set; }
-        public virtual DbSet<Permission> Permission { get; set; }
         public virtual DbSet<Picture> Picture { get; set; }
+        public virtual DbSet<Presence> Presence { get; set; }
         public virtual DbSet<Property> Property { get; set; }
         public virtual DbSet<Category> Category { get; set; }
         public virtual DbSet<PropertyFacility> PropertyFacility { get; set; }
@@ -100,7 +110,7 @@ namespace RealEstate.Services.Database
         //    AddTrack(entity, userId, LogTypeEnum.Modify);
         //    return entity;
         //}
-        public TEntity Update<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity
+        public TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity
         {
             AddTrack(entity, user, LogTypeEnum.Modify);
             return entity;
@@ -112,7 +122,7 @@ namespace RealEstate.Services.Database
             return entity;
         }
 
-        private void AddTrack<TEntity>(TEntity model, UserViewModel user, LogTypeEnum type) where TEntity : BaseEntity
+        private void AddTrack<TEntity>(TEntity model, CurrentUserViewModel user, LogTypeEnum type) where TEntity : BaseEntity
         {
             if (user == null)
                 return;
@@ -152,7 +162,7 @@ namespace RealEstate.Services.Database
         //    Add(track);
         //}
 
-        public TEntity Add<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity
+        public TEntity Add<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity
         {
             var model = Add(entity);
             AddTrack(entity, user, LogTypeEnum.Create);
@@ -170,7 +180,7 @@ namespace RealEstate.Services.Database
             Entry(entity).State = EntityState.Deleted;
         }
 
-        public TEntity Delete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity
+        public TEntity Delete<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity
         {
             AddTrack(entity, user, LogTypeEnum.Delete);
             return entity;
@@ -182,7 +192,7 @@ namespace RealEstate.Services.Database
             return model.Entity;
         }
 
-        public TEntity UnDelete<TEntity>(TEntity entity, UserViewModel user) where TEntity : BaseEntity
+        public TEntity UnDelete<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity
         {
             AddTrack(entity, user, LogTypeEnum.Undelete);
             return entity;

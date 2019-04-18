@@ -35,21 +35,12 @@ namespace RealEstate.Web.Pages.Manage.User
         [ViewData]
         public string PageTitle => _localizer["Users"];
 
-        public async Task OnGetAsync(string pageNo, string userName, string userFirst, string userLast,
-            string userMobile, string userAddress, string password, string role, string userId)
+        public async Task OnGetAsync(string pageNo, string userName, string userId)
         {
             SearchInput = new UserSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
-                Address = userAddress,
-                Mobile = userMobile,
                 Username = userName,
-                FirstName = userFirst,
-                LastName = userLast,
-                Password = password,
-                Role = (Role?)(string.IsNullOrEmpty(role)
-                    ? (System.Enum)null
-                    : role.To<Role>()),
                 UserId = userId
             };
 

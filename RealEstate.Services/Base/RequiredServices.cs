@@ -10,13 +10,13 @@ namespace RealEstate.Services.Base
             // Base
             service.AddScoped<IBaseService, BaseService>();
             service.AddScoped<IFileHandler, FileHandler>();
-//            service.AddScoped<IMapService, MapService>();
+            //            service.AddScoped<IMapService, MapService>();
 
             // Sms Provider
             service.AddScoped<IKavehNegarProvider, KavehNegarProvider>();
 
             // Services Implementation
-            service.AddScoped<IContactService, ContactService>();
+            service.AddScoped<ICustomerService, CustomerService>();
             service.AddScoped<IDealService, DealService>();
             service.AddScoped<IFeatureService, FeatureService>();
             service.AddScoped<IItemService, ItemService>();
@@ -26,6 +26,7 @@ namespace RealEstate.Services.Base
             service.AddScoped<IPropertyService, PropertyService>();
             service.AddScoped<ISmsService, SmsService>();
             service.AddScoped<IUserService, UserService>();
+            service.AddScoped<IEmployeeService, EmployeeService>();
         }
     }
 }

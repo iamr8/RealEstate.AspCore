@@ -8,12 +8,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class FeatureViewModel : BaseLogViewModel<Feature>
+    public class FeatureViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly Feature _entity;
 
-        public FeatureViewModel(Feature entity, bool includeDeleted, Action<FeatureViewModel> action = null) : base(entity)
+        public FeatureViewModel(Feature entity, bool includeDeleted, Action<FeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
@@ -21,6 +21,7 @@ namespace RealEstate.Services.ViewModels
             _entity = entity;
             Id = entity.Id;
             Logs = entity.GetLogs();
+            action?.Invoke(this);
         }
 
         public string Name => _entity.Name;

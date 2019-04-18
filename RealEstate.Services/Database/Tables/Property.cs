@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using RealEstate.Services.BaseLog;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -41,7 +42,7 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }
 
         [NotMapped]
-        public PropertyOwnership CurrentOwnership => PropertyOwnerships?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+        public PropertyOwnership CurrentOwnership => PropertyOwnerships?.LastOrDefault();
 
         public virtual ICollection<Item> Items { get; set; }
 

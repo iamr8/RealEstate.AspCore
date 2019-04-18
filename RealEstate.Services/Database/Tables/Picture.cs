@@ -17,5 +17,9 @@ namespace RealEstate.Services.Database.Tables
         public virtual Deal Deal { get; set; }
         public string DealPaymentId { get; set; }
         public virtual DealPayment DealPayment { get; set; }
+        public string CheckId { get; set; }
+        public virtual Check Check { get; set; }
+        public string EmployeeId { get; set; }
+        public virtual Employee Employee { get; set; }
     }
 }

@@ -19,7 +19,7 @@ namespace RealEstate.Services.Base
 {
     public interface IBaseService
     {
-        UserViewModel CurrentUser();
+        CurrentUserViewModel CurrentUser();
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentList,
             List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator,
@@ -31,7 +31,7 @@ namespace RealEstate.Services.Base
         TModel Map<TSource, TModel>(TSource query,
             TModel entity) where TSource : class where TModel : class;
 
-        Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<UserViewModel, TSource> entity,
+        Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
         Task<(StatusEnum, TSource)> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
@@ -70,7 +70,7 @@ namespace RealEstate.Services.Base
 
         Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
 
-        UserViewModel CurrentUser(List<Claim> claims);
+        CurrentUserViewModel CurrentUser(List<Claim> claims);
     }
 
     public class BaseService : IBaseService
@@ -98,10 +98,7 @@ namespace RealEstate.Services.Base
             if (currentUser == null)
                 return default;
 
-            //            if (IsAllowed(allowedRolesToIncludeDeleted))
-            //                query = query.IgnoreQueryFilters();
-
-            query = query.OrderByDescending(x => x.DateTime);
+            query = query.OrderDescendingByCreationDateTime();
 
             var pagingQuery = page > 1
                 ? query.Skip(pageSize * (page - 1))
@@ -139,7 +136,7 @@ namespace RealEstate.Services.Base
 
         private HttpContext HttpContext => _accessor.HttpContext;
 
-        public UserViewModel CurrentUser()
+        public CurrentUserViewModel CurrentUser()
         {
             var context = HttpContext;
             var users = context?.User;
@@ -159,7 +156,7 @@ namespace RealEstate.Services.Base
             return await AddAsync(entity, allowedRoles, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<UserViewModel, TSource> entity,
+        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
@@ -311,14 +308,14 @@ namespace RealEstate.Services.Base
             return await SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public UserViewModel CurrentUser(List<Claim> claims)
+        public CurrentUserViewModel CurrentUser(List<Claim> claims)
         {
             if (claims.Count == 0) return null;
-            var result = new UserViewModel
+            var result = new CurrentUserViewModel
             {
                 Username = claims.Find(x => x.Type == ClaimTypes.Name)?.Value,
                 Mobile = claims.Find(x => x.Type == ClaimTypes.MobilePhone)?.Value,
-                Role = claims.Find(x => x.Type == ClaimTypes.Role)?.Value.To<Role>() ?? Role.User,
+                //                Role = claims.Find(x => x.Type == ClaimTypes.Role)?.Value.To<Role>() ?? Role.User,
                 EncryptedPassword = claims.Find(x => x.Type == ClaimTypes.Hash)?.Value,
                 Id = claims.Find(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
                 FirstName = claims.Find(x => x.Type == "FirstName")?.Value,
@@ -328,6 +325,7 @@ namespace RealEstate.Services.Base
                 CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
                 UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<UserPropertyCategoryViewModel>>(),
                 UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<UserItemCategoryViewModel>>(),
+                EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,
             };
             return result;
         }
@@ -390,8 +388,7 @@ namespace RealEstate.Services.Base
                                 || x.Value is IPoint
                                 || x.Value is DateTime
                                 || x.Value is Enum)
-                    .Where(x => x.Key != nameof(entity.Id)
-                                && x.Key != nameof(entity.DateTime))
+                    .Where(x => x.Key != nameof(entity.Id))
                     .ToList();
                 foreach (var (keyAfterChanges, valueAfterChanges) in needTypes)
                 {

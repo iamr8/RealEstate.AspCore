@@ -7,12 +7,12 @@ using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class DealPaymentViewModel : BaseLogViewModel<DealPayment>
+    public class DealPaymentViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly DealPayment _entity;
 
-        public DealPaymentViewModel(DealPayment entity, bool includeDeleted, Action<DealPaymentViewModel> action = null) : base(entity)
+        public DealPaymentViewModel(DealPayment entity, bool includeDeleted, Action<DealPaymentViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

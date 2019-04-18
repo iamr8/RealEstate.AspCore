@@ -12,6 +12,7 @@ using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services
 {
@@ -36,38 +37,38 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IFeatureService _featureService;
         private readonly IPropertyService _propertyService;
         private readonly DbSet<Deal> _itemRequests;
         private readonly DbSet<Item> _items;
         private readonly DbSet<Ownership> _ownerships;
-        private readonly DbSet<Contact> _contacts;
+        private readonly DbSet<Customer> _customers;
 
         public ItemService(
             IBaseService baseService,
             IUnitOfWork unitOfWork,
             IFeatureService featureService,
             IPropertyService propertyService,
-            IContactService contactService
+            ICustomerService customerService
             )
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
             _featureService = featureService;
-            _contactService = contactService;
+            _customerService = customerService;
             _propertyService = propertyService;
             _itemRequests = _unitOfWork.Set<Deal>();
             _items = _unitOfWork.Set<Item>();
             _ownerships = _unitOfWork.Set<Ownership>();
-            _contacts = _unitOfWork.Set<Contact>();
+            _customers = _unitOfWork.Set<Customer>();
         }
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
             var query = _items.AsQueryable();
             query = query.Where(x => x.Deals.Count == 0
-                                 || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
+                                 || x.Deals.LastOrDefault().Status != DealStatusEnum.Finished);
 
             if (searchModel != null)
             {
@@ -82,7 +83,7 @@ namespace RealEstate.Services
                     act.GetItemFeatures(false, act2 => act2.GetFeature());
                     act.GetProperty(false, act3 =>
                     {
-                        act3.GetPropertyOwnerships(true, act4 => act4.GetOwnerships(false, act5 => act5.GetContact()));
+                        act3.GetPropertyOwnerships(true, act4 => act4.GetOwnerships(false, act5 => act5.GetCustomer()));
                         act3.GetPropertyFacilities(false, act4 => act4.GetFacility());
                         act3.GetPropertyFeatures(false, act4 => act4.GetFeature());
                         act3.GetCategory();
@@ -115,7 +116,7 @@ namespace RealEstate.Services
                 act.GetDeals();
                 act.GetCategory();
                 act.GetItemFeatures(false, act2 => act2.GetFeature());
-                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetContact())));
+                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetCustomer())));
             });
 
             if (viewModel == null)
@@ -150,10 +151,10 @@ namespace RealEstate.Services
             query = query.Include(x => x.Property)
                 .ThenInclude(x => x.PropertyOwnerships)
                 .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Contact);
+                .ThenInclude(x => x.Customer);
 
             query = query.Where(x => x.Deals.Count == 0
-                                     || x.Deals.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished);
+                                     || x.Deals.LastOrDefault().Status != DealStatusEnum.Finished);
 
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             var viewModel = entity?.Into<Item, ItemViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
@@ -161,7 +162,7 @@ namespace RealEstate.Services
                 act.GetDeals();
                 act.GetCategory();
                 act.GetItemFeatures(false, act2 => act2.GetFeature());
-                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetContact())));
+                act.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetCustomer())));
             });
 
             if (viewModel == null)

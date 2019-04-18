@@ -13,7 +13,7 @@ namespace RealEstate.Web.Controllers
         private readonly IFeatureService _featureService;
         private readonly IUserService _userService;
         private readonly ILocationService _locationService;
-        private readonly IContactService _contactService;
+        private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
         private readonly IItemService _itemService;
 
@@ -21,14 +21,14 @@ namespace RealEstate.Web.Controllers
             IUserService userService,
             IFeatureService featureService,
             ILocationService locationService,
-            IContactService contactService,
+            ICustomerService customerService,
             IPropertyService propertyService,
             IItemService itemService
 
             )
         {
             _userService = userService;
-            _contactService = contactService;
+            _customerService = customerService;
             _locationService = locationService;
             _featureService = featureService;
             _propertyService = propertyService;
@@ -75,11 +75,11 @@ namespace RealEstate.Web.Controllers
             });
         }
 
-        [Route("contact/remove")]
-        public async Task<IActionResult> ContactAsync(string id)
+        [Route("customer/remove")]
+        public async Task<IActionResult> CustomerAsync(string id)
         {
-            var model = await _contactService.ContactRemoveAsync(id).ConfigureAwait(false);
-            return RedirectToPage(typeof(Pages.Manage.Contact.IndexModel).Page(), new
+            var model = await _customerService.CustomerRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Customer.IndexModel).Page(), new
             {
                 status = (int)model
             });
@@ -88,7 +88,7 @@ namespace RealEstate.Web.Controllers
         [Route("applicant/remove")]
         public async Task<IActionResult> ApplicantAsync(string id)
         {
-            var model = await _contactService.ApplicantRemoveAsync(id).ConfigureAwait(false);
+            var model = await _customerService.ApplicantRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Applicant.IndexModel).Page(), new
             {
                 status = (int)model

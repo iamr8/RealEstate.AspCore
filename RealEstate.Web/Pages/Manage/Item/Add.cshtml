@@ -8,7 +8,7 @@
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
 
     var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
-    var ownerships = await ContactService.ContactListAsync().ConfigureAwait(false);
+    var ownerships = await CustomerService.CustomerListAsync().ConfigureAwait(false);
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
 
     var itemCategoriesList = itemCategories?.Select(x => new SelectListItem

@@ -6,12 +6,12 @@ using System;
 
 namespace RealEstate.Services.ViewModels
 {
-    public class PropertyFeatureViewModel : BaseLogViewModel<PropertyFeature>
+    public class PropertyFeatureViewModel : BaseLogViewModel
     {
         [JsonIgnore]
         private readonly PropertyFeature _entity;
 
-        public PropertyFeatureViewModel(PropertyFeature entity, bool includeDeleted, Action<PropertyFeatureViewModel> action = null) : base(entity)
+        public PropertyFeatureViewModel(PropertyFeature entity, bool includeDeleted, Action<PropertyFeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;

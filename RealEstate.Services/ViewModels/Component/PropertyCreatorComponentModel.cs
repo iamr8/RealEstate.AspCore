@@ -41,7 +41,7 @@ namespace RealEstate.Services.ViewModels.Component
         public string FormId => $"{ModelName}_Form";
         public string JsCodeOnSuccess { get; set; }
 
-        public List<ContactViewModel> OwnershipList { get; set; }
+        public List<CustomerViewModel> OwnershipList { get; set; }
         public List<FacilityViewModel> FacilityList { get; set; }
         public List<FeatureViewModel> FeaturesList { get; set; }
         public List<CategoryViewModel> Categories { get; set; }
@@ -85,7 +85,7 @@ namespace RealEstate.Services.ViewModels.Component
 
         public JsonSelectorComponentModel OwnershipSelector => new JsonSelectorComponentModel
         {
-            IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.ContactId),
+            IdProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.CustomerId),
             NameProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name),
             ValueProperty = PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong),
             ModelName = ModelName,

@@ -17,32 +17,12 @@
                         <section class="container-fluid margin-bottomed">
                             <div class="row">
                                 <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.UserId"></label>
+                                    <input asp-for="SearchInput.UserId" class="form-control" />
+                                </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
                                     <label class="control-label" asp-for="SearchInput.Username"></label>
                                     <input asp-for="SearchInput.Username" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Password"></label>
-                                    <input asp-for="SearchInput.Password" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.FirstName"></label>
-                                    <input asp-for="SearchInput.FirstName" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.LastName"></label>
-                                    <input asp-for="SearchInput.LastName" class="form-control" />
-                                </div>
-                                <div class="col-12 col-lg-6 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Address"></label>
-                                    <input asp-for="SearchInput.Address" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Mobile"></label>
-                                    <input asp-for="SearchInput.Mobile" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Role"></label>
-                                    <select asp-items="roles" asp-for="SearchInput.Role" class="form-control"></select>
                                 </div>
                             </div>
                         </section>
@@ -73,36 +53,36 @@
                                     <b class="title">
                                         @item.Username
                                     </b>
-                                    <span class="badge badge-primary">@item.FirstName، @item.LastName</span>
-                                    @if (!string.IsNullOrEmpty(item.Mobile))
+                                    <span class="badge badge-primary">@item.Employee.FirstName، @item.Employee.LastName</span>
+                                    @if (!string.IsNullOrEmpty(item.Employee.Mobile))
                                     {
-                                        <span class="badge badge-secondary">@item.Mobile</span>
+                                        <span class="badge badge-secondary">@item.Employee.Mobile</span>
                                     }
                                     <span class="badge badge-warning"><b>@SharedLocalizer["Password"]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
-                                    @if (!string.IsNullOrEmpty(item.Address))
+                                    @if (!string.IsNullOrEmpty(item.Employee.Address))
                                     {
-                                        <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Address</span>
+                                        <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
                                 @if (item.UserItemCategories?.Any() == true || item.UserPropertyCategories?.Any() == true)
                                 {
-                                <span>
-                                    @if (item.UserItemCategories?.Any() == true)
-                                    {
-                                        foreach (var category in item.UserItemCategories)
+                                    <span>
+                                        @if (item.UserItemCategories?.Any() == true)
                                         {
-                                            <span class="badge badge-success">@category.Category.Name</span>
+                                            foreach (var category in item.UserItemCategories)
+                                            {
+                                                <span class="badge badge-success">@category.Category.Name</span>
+                                            }
                                         }
-                                    }
-                                    @if (item.UserPropertyCategories?.Any() == true)
-                                    {
-                                        foreach (var category in item.UserPropertyCategories)
+                                        @if (item.UserPropertyCategories?.Any() == true)
                                         {
-                                            <span class="badge badge-primary">@category.Category.Name</span>
+                                            foreach (var category in item.UserPropertyCategories)
+                                            {
+                                                <span class="badge badge-primary">@category.Category.Name</span>
+                                            }
                                         }
-                                    }
-                                </span>
+                                    </span>
                                 }
                             </div><div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))

@@ -102,7 +102,7 @@
                                     <span>
                                         @foreach (var owner in item.CurrentPropertyOwnership.Ownerships)
                                         {
-                                            <a asp-page="@typeof(Contact.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Contact.Name - @owner.Contact?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Customer.Name - @owner.Customer?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
                                         }
                                     </span>
                                 }
