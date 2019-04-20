@@ -7,7 +7,7 @@ namespace RealEstate.Services.Database.Tables
     public class Division : BaseEntity
     {
         [Required]
-        public string Subject { get; set; }
+        public string Name { get; set; }
 
         public virtual ICollection<EmployeeDivision> EmployeeDivisions { get; set; }
     }

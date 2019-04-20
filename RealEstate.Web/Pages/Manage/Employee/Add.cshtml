@@ -1,0 +1,84 @@
+﻿@page
+@model AddModel
+@{
+    var divisions = await DivisionService.ListAsync().ConfigureAwait(false);
+    var divisionsSelector = new JsonSelectorComponentModel
+    {
+        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        ModelName = nameof(Model.NewEmployee),
+        ItemName = nameof(Model.NewEmployee.Divisions),
+        Json = nameof(Model.NewEmployee.DivisionsJson),
+        Title = SharedLocalizer["Divisions"],
+        ScriptKey = "divisionsScript",
+        SelectListItems = divisions?.Select(x => new SelectListItem
+        {
+            Text = x.Name,
+            Value = x.Id,
+        }).SelectFirstItem(),
+    };
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewEmployee.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewEmployee.FirstName" class="control-label"></label>
+                    <input asp-for="NewEmployee.FirstName" class="form-control" />
+                    <span asp-validation-for="NewEmployee.FirstName" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewEmployee.LastName" class="control-label"></label>
+                    <input asp-for="NewEmployee.LastName" class="form-control" />
+                    <span asp-validation-for="NewEmployee.LastName" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-4 margin-bottomed">
+                    <label asp-for="NewEmployee.Mobile" class="control-label"></label>
+                    <input asp-for="NewEmployee.Mobile" class="form-control" />
+                    <span asp-validation-for="NewEmployee.Mobile" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm-3 margin-bottomed">
+                    <label asp-for="NewEmployee.FixedSalary" class="control-label"></label>
+                    <input asp-for="NewEmployee.FixedSalary" class="form-control" />
+                    <span asp-validation-for="NewEmployee.FixedSalary" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-3 margin-bottomed">
+                    <label asp-for="NewEmployee.Phone" class="control-label"></label>
+                    <input asp-for="NewEmployee.Phone" class="form-control"/>
+                    <span asp-validation-for="NewEmployee.Phone" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-sm-6 margin-bottomed">
+                    <label asp-for="NewEmployee.Address" class="control-label"></label>
+                    <input asp-for="NewEmployee.Address" class="form-control"/>
+                    <span asp-validation-for="NewEmployee.Address" class="text-danger"></span>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <input asp-for="NewEmployee.DivisionsJson" />
+                    <vc:json-selector model="@divisionsSelector" />
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.EmployeeStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>
+@section Scripts
+{
+    <script asp-paste-key="@divisionsSelector.ScriptKey"></script>
+}

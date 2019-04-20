@@ -286,6 +286,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to چک ها.
+        /// </summary>
+        public static string Checks {
+            get {
+                return ResourceManager.GetString("Checks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to درصد کمیسیون.
         /// </summary>
         public static string CommissionPercent {
@@ -520,6 +529,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to تقسیم بندی ها.
+        /// </summary>
+        public static string Divisions {
+            get {
+                return ResourceManager.GetString("Divisions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to دانگ.
         /// </summary>
         public static string Dong {
@@ -583,6 +601,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ویرایش کارمند.
+        /// </summary>
+        public static string EditEmployee {
+            get {
+                return ResourceManager.GetString("EditEmployee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ویرایش امکان.
         /// </summary>
         public static string EditFacility {
@@ -615,6 +642,24 @@ namespace RealEstate.Resources {
         public static string EditUser {
             get {
                 return ResourceManager.GetString("EditUser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to کارمند.
+        /// </summary>
+        public static string Employee {
+            get {
+                return ResourceManager.GetString("Employee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to کارمندان.
+        /// </summary>
+        public static string Employees {
+            get {
+                return ResourceManager.GetString("Employees", resourceCulture);
             }
         }
         
@@ -696,6 +741,15 @@ namespace RealEstate.Resources {
         public static string FirstName {
             get {
                 return ResourceManager.GetString("FirstName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to حقوق ثابت.
+        /// </summary>
+        public static string FixedSalary {
+            get {
+                return ResourceManager.GetString("FixedSalary", resourceCulture);
             }
         }
         
@@ -871,6 +925,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مرخصی ها.
+        /// </summary>
+        public static string Leaves {
+            get {
+                return ResourceManager.GetString("Leaves", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to لیست.
         /// </summary>
         public static string List {
@@ -1029,6 +1092,15 @@ namespace RealEstate.Resources {
         public static string NewDistrict {
             get {
                 return ResourceManager.GetString("NewDistrict", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to کارمند جدید.
+        /// </summary>
+        public static string NewEmployee {
+            get {
+                return ResourceManager.GetString("NewEmployee", resourceCulture);
             }
         }
         
@@ -1258,6 +1330,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to حضور و غیاب ها.
+        /// </summary>
+        public static string Presences {
+            get {
+                return ResourceManager.GetString("Presences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to قیمت هر متر.
         /// </summary>
         public static string PricePerMeter {
@@ -1362,6 +1443,15 @@ namespace RealEstate.Resources {
         public static string Rejected {
             get {
                 return ResourceManager.GetString("Rejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to یادآوری ها.
+        /// </summary>
+        public static string Reminders {
+            get {
+                return ResourceManager.GetString("Reminders", resourceCulture);
             }
         }
         
@@ -1497,6 +1587,15 @@ namespace RealEstate.Resources {
         public static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to پیامک ها.
+        /// </summary>
+        public static string Smses {
+            get {
+                return ResourceManager.GetString("Smses", resourceCulture);
             }
         }
         

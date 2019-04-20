@@ -15,6 +15,7 @@ namespace RealEstate.Web.Controllers
         private readonly ILocationService _locationService;
         private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
+        private readonly IDivisionService _divisionService;
         private readonly IItemService _itemService;
 
         public RemoveController(
@@ -22,6 +23,7 @@ namespace RealEstate.Web.Controllers
             IFeatureService featureService,
             ILocationService locationService,
             ICustomerService customerService,
+            IDivisionService divisionService,
             IPropertyService propertyService,
             IItemService itemService
 
@@ -32,6 +34,7 @@ namespace RealEstate.Web.Controllers
             _locationService = locationService;
             _featureService = featureService;
             _propertyService = propertyService;
+            _divisionService = divisionService;
             _itemService = itemService;
         }
 
@@ -40,6 +43,16 @@ namespace RealEstate.Web.Controllers
         {
             var model = await _featureService.FacilityRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Facility.IndexModel).Page(), new
+            {
+                status = (int)model
+            });
+        }
+
+        [Route("division/remove")]
+        public async Task<IActionResult> DivisionAsync(string id)
+        {
+            var model = await _divisionService.RemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Division.IndexModel).Page(), new
             {
                 status = (int)model
             });

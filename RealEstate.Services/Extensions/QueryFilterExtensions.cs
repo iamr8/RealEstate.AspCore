@@ -5,11 +5,18 @@ using RealEstate.Services.Database.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace RealEstate.Services.Extensions
 {
     public static class QueryFilterExtensions
     {
+        public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
+        {
+            var source = entities.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+            return source;
+        }
+
         public static TModel Into<TEntity, TModel>(this TEntity model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
         {
             if (model == null)
@@ -19,32 +26,94 @@ namespace RealEstate.Services.Extensions
             return ty;
         }
 
+        public static IQueryable<TSource> SearchBy<TSource>(this IQueryable<TSource> source, object condition, Expression<Func<TSource, object>> expression) where TSource : BaseEntity
+        {
+            if (condition == null)
+                return source;
+
+            var hasValue = false;
+            if (condition is string conditionString)
+            {
+                hasValue = !string.IsNullOrEmpty(conditionString);
+            }
+
+            if (hasValue)
+                source = source.Where(x => expression.Compile().Invoke(x) == condition);
+
+            return source;
+        }
+
         public static IOrderedEnumerable<TSource> OrderDescendingByCreationDateTime<TSource>(this ICollection<TSource> sources) where TSource : BaseEntity
         {
-            var source = sources.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime);
+            var source = sources
+                .OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+
             return source;
         }
 
-        public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> sources) where TSource : BaseEntity
-        {
-            var source = sources.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime);
-            return source;
-        }
+        // query.Where(x => x.Deals.OrderDescendingByCreationDateTime().FirstOrDefault().Status != DealStatusEnum.Finished);
 
+        //var sourceConstantExpression = (ConstantExpression)entities.Expression;
+        //var sourceQueryProvider = entities.Provider; // EntityQueryProvider.
+
+        //// Expression<Func<Product, bool>> predicateExpression = product => product.Name.Length > 10;
+        //var productParameterExpression = Expression.Parameter(typeof(TSource), "entity");
+        //var predicateExpression = Expression.Lambda<Func<TSource, bool>>(
+        //    body: Expression.GreaterThan(
+        //        left: Expression.Property(
+        //            expression: Expression.Property(
+        //                expression: productParameterExpression, propertyName: "Audit"),
+        //            propertyName: nameof(string.Length)),
+        //        right: Expression.Constant(10)),
+        //    parameters: productParameterExpression);
+
+        //// IQueryable<Product> whereQueryable = sourceQueryable.Where(predicateExpression);
+        //Func<IQueryable<TSource>, Expression<Func<TSource, bool>>, IQueryable<TSource>> whereMethod =
+        //    Queryable.Where;
+        //var whereCallExpression = Expression.Call(
+        //    method: whereMethod.Method,
+        //    arg0: sourceConstantExpression,
+        //    arg1: Expression.Quote(predicateExpression));
+        //var whereQueryable = sourceQueryProvider
+        //    .CreateQuery<TSource>(whereCallExpression); // EntityQueryable<Product>.
+        //var whereQueryProvider = whereQueryable.Provider; // EntityQueryProvider.
+
+        //// Expression<Func<Product, string>> selectorExpression = product => product.Name;
+        //var selectorExpression = Expression.Lambda<Func<TSource, string>>(
+        //    body: Expression.Property(productParameterExpression, "Audit"),
+        //    parameters: productParameterExpression);
+
+        //// IQueryable<string> selectQueryable = whereQueryable.Select(selectorExpression);
+        //Func<IQueryable<TSource>, Expression<Func<TSource, string>>, IQueryable<string>> selectMethod =
+        //    Queryable.Select;
+        //var selectCallExpression = Expression.Call(
+        //    method: selectMethod.Method,
+        //    arg0: whereCallExpression,
+        //    arg1: Expression.Quote(selectorExpression));
+        //var selectQueryable = whereQueryProvider
+        //    .CreateQuery<string>(selectCallExpression); // EntityQueryable<Product>/DbQuery<Product>.
+
+        //using (IEnumerator<string> iterator = selectQueryable.GetEnumerator()) // Execute query.
+        //{
+        //    while (iterator.MoveNext())
+        //    {
+        //        //                    iterator.Current.WriteLine();
+        //    }
+        //}
         public static IOrderedEnumerable<TModel> OrderDescendingByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
         {
             var source = sources.OrderByDescending(x => x.Logs.Create.DateTime);
             return source;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
                 .Select(entity => entity.Into(includeDeleted, action))
-                .Where(x => x != null)
+                .Where(x => x?.Id != null)
                 .R8ToList();
             return result;
         }

@@ -2,9 +2,9 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
@@ -12,7 +12,6 @@ using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services
 {
@@ -67,17 +66,18 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
             var query = _items.AsQueryable();
-            query = query.Where(x => x.Deals.Count == 0
-                                 || x.Deals.LastOrDefault().Status != DealStatusEnum.Finished);
+            query = query.Where(x => x.Deals.OrderDescendingByCreationDateTime().FirstOrDefault().Status != DealStatusEnum.Finished);
 
             if (searchModel != null)
             {
+                query = query.SearchBy(searchModel.CategoryId, x => x.CategoryId);
+                query = query.SearchBy(searchModel.Address, x => x.Property.Address);
+                //query = query.SearchBy(searchModel.Owner, x=>x.Property.PropertyOwnerships.Any());
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Item, ItemViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
-                    var itemId = item.Id;
                     act.GetDeals();
                     act.GetCategory();
                     act.GetItemFeatures(false, act2 => act2.GetFeature());

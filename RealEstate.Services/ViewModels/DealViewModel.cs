@@ -24,8 +24,8 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Description => _entity.Description;
-        public DealStatusEnum Status => _entity.Status;
+        public string Description => _entity?.Description;
+        public DealStatusEnum Status => _entity?.Status ?? DealStatusEnum.Rejected;
 
         public void GetItem(bool includeDeleted, Action<ItemViewModel> action = null)
         {

@@ -23,7 +23,7 @@ namespace RealEstate.Services
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
-        Task<(StatusEnum, User)> CategoryAddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
+        Task<(StatusEnum, User)> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
 
@@ -84,14 +84,9 @@ namespace RealEstate.Services
 
             var result = new UserInputViewModel
             {
-                //                Role = viewModel.Role,
-                //                FirstName = viewModel.FirstName,
-                //                LastName = viewModel.LastName,
-                //                Mobile = viewModel.Mobile,
+                Role = viewModel.Role,
                 Password = viewModel.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption),
                 Username = viewModel.Username,
-                //                Address = viewModel.Address,
-                //                Phone = viewModel.Phone,
                 UserItemCategories = viewModel.UserItemCategories?.Select(x => new UserItemCategoryJsonViewModel
                 {
                     Id = x.Id,
@@ -138,20 +133,8 @@ namespace RealEstate.Services
                 if (!string.IsNullOrEmpty(searchModel.Username))
                     models = models.Where(x => EF.Functions.Like(x.Username, searchModel.Username.LikeExpression()));
 
-                //if (!string.IsNullOrEmpty(searchModel.FirstName))
-                //    models = models.Where(x => EF.Functions.Like(x.Employee.FirstName, searchModel.FirstName.LikeExpression()));
-
-                //if (!string.IsNullOrEmpty(searchModel.LastName))
-                //    models = models.Where(x => EF.Functions.Like(x.Employee.LastName, searchModel.LastName.LikeExpression()));
-
-                //if (!string.IsNullOrEmpty(searchModel.Mobile))
-                //    models = models.Where(x => EF.Functions.Like(x.Employee.Mobile, searchModel.Mobile.LikeExpression()));
-
-                //if (!string.IsNullOrEmpty(searchModel.Address))
-                //    models = models.Where(x => EF.Functions.Like(x.Employee.Address, searchModel.Address.LikeExpression()));
-
-                //                if (searchModel.Role != null)
-                //                    models = models.Where(x => x.Role == searchModel.Role);
+                if (searchModel.Role != null)
+                    models = models.Where(x => x.Role == searchModel.Role);
 
                 if (!string.IsNullOrEmpty(searchModel.UserId))
                     models = models.Where(x => x.Id == searchModel.UserId);
@@ -190,13 +173,8 @@ namespace RealEstate.Services
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 () =>
                 {
-                    //                    entity.Address = model.Address;
-                    //                    entity.FirstName = model.FirstName;
-                    //                    entity.LastName = model.LastName;
-                    //                    entity.Mobile = model.Mobile;
                     entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
-                    //                    entity.Phone = model.Phone;
-                    //                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
+                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
                 }, new[]
                 {
                     Role.SuperAdmin
@@ -236,7 +214,7 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, User)> CategoryAddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
+        public Task<(StatusEnum, User)> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
         {
             return update
                 ? UpdateAsync(model, save)
@@ -352,6 +330,7 @@ namespace RealEstate.Services
                 new Claim("EmployeeId", userDb.Employee.Id),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),
+                new Claim(ClaimTypes.Role, userDb.Role.ToString())
             };
 
             var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);

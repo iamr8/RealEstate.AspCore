@@ -25,7 +25,7 @@ namespace RealEstate.Services.Database
             var division = new Division
             {
                 Id = Guid.NewGuid().ToString(),
-                Subject = "املاک",
+                Name = "املاک",
                 Audits = audits
             };
 
@@ -62,6 +62,7 @@ namespace RealEstate.Services.Database
                 Username = "admin",
                 Password = "123456".Cipher(CryptologyExtension.CypherMode.Encryption),
                 EmployeeId = employee.Id,
+                Role = Role.SuperAdmin,
                 Audits = audits
             };
             modelBuilder.Entity<Division>().HasData(division);

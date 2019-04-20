@@ -53,44 +53,12 @@
                     <input asp-for="NewUser.Password" class="form-control" />
                     <span asp-validation-for="NewUser.Password" class="text-danger"></span>
                 </div>
-            </div>
-            @*<div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewUser.Mobile" class="control-label"></label>
-                    <input asp-for="NewUser.Mobile" class="form-control" />
-                    <span asp-validation-for="NewUser.Mobile" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewUser.FirstName" class="control-label"></label>
-                    <input asp-for="NewUser.FirstName" class="form-control" />
-                    <span asp-validation-for="NewUser.FirstName" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewUser.LastName" class="control-label"></label>
-                    <input asp-for="NewUser.LastName" class="form-control" />
-                    <span asp-validation-for="NewUser.LastName" class="text-danger"></span>
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <label asp-for="NewUser.Role" class="control-label"></label>
+                    <select asp-for="NewUser.Role" asp-items="roles" class="form-control"></select>
+                    <span asp-validation-for="NewUser.Role" class="text-danger"></span>
                 </div>
             </div>
-            <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewUser.Phone" class="control-label"></label>
-                    <input asp-for="NewUser.Phone" class="form-control" />
-                    <span asp-validation-for="NewUser.Phone" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-sm-8 margin-bottomed">
-                    <label asp-for="NewUser.Address" class="control-label"></label>
-                    <input asp-for="NewUser.Address" class="form-control" />
-                    <span asp-validation-for="NewUser.Address" class="text-danger"></span>
-                </div>
-            </div>
-            <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewUser.FixedSalary" class="control-label"></label>
-                    <input asp-for="NewUser.FixedSalary" class="form-control" />
-                    <span asp-validation-for="NewUser.FixedSalary" class="text-danger"></span>
-                </div>
-            </div>*@
             <hr />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">

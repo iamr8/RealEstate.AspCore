@@ -5,6 +5,7 @@ using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -85,6 +86,7 @@ namespace RealEstate.Services.ViewModels
         public List<UserViewModel> Users { get; private set; }
         public List<EmployeeStatusViewModel> EmployeeStatuses { get; private set; }
         public List<FixedSalaryViewModel> FixedSalaries { get; private set; }
+        public FixedSalaryViewModel CurrentFixedSalary => FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
         public List<PaymentViewModel> Payments { get; private set; }
         public List<ManagementPercentViewModel> ManagementPercents { get; private set; }
         public List<LeaveViewModel> Leaves { get; private set; }

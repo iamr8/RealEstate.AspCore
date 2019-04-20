@@ -6,8 +6,8 @@
     <RootNamespace>RealEstate.Web</RootNamespace>
     <AssemblyName>RealEstate.Web</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.645</AssemblyVersion>
-    <FileVersion>1.0.0.645</FileVersion>
+    <AssemblyVersion>1.0.0.722</AssemblyVersion>
+    <FileVersion>1.0.0.722</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -48,7 +48,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.1" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="WebMarkupMin.AspNetCore2" Version="2.5.0" />

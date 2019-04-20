@@ -1,7 +1,7 @@
-﻿using RealEstate.Services.Database.Base;
+﻿using RealEstate.Base.Enums;
+using RealEstate.Services.Database.Base;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using RealEstate.Base.Enums;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -36,6 +36,5 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
         public virtual ICollection<Reminder> Reminders { get; set; }
-        public virtual ICollection<Check> Checks { get; set; }
     }
 }

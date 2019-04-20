@@ -16,7 +16,6 @@ namespace RealEstate.Services.ViewModels
         public string Address { get; set; }
         public string Phone { get; set; }
         public string EmployeeId { get; set; }
-        public DateTime CreationDateTime { get; set; }
         public List<UserItemCategoryViewModel> UserItemCategories { get; set; }
         public List<UserPropertyCategoryViewModel> UserPropertyCategories { get; set; }
     }

@@ -24,6 +24,10 @@
                                     <label class="control-label" asp-for="SearchInput.Username"></label>
                                     <input asp-for="SearchInput.Username" class="form-control" />
                                 </div>
+                                <div class="col-6 col-lg-3 margin-bottomed">
+                                    <label class="control-label" asp-for="SearchInput.Username"></label>
+                                    <select asp-for="SearchInput.Role" asp-items="roles" class="form-control"></select>
+                                </div>
                             </div>
                         </section>
                         <widget-footer>
@@ -64,6 +68,8 @@
                                         <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
+                                    <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id" class="badge badge-danger">مشخصات کارمند</a>
+
                                 </span>
                                 @if (item.UserItemCategories?.Any() == true || item.UserPropertyCategories?.Any() == true)
                                 {

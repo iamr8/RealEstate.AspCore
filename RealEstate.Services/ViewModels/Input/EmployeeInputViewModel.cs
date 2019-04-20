@@ -1,7 +1,10 @@
 ﻿using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
+using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -32,7 +35,19 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Phone { get; set; }
 
-        [Required]
+        [Display(ResourceType = typeof(SharedResource), Name = "FixedSalary")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public double FixedSalary { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Divisions")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        [HiddenInput]
+        public string DivisionsJson { get; set; }
+
+        public List<DivisionJsonViewModel> Divisions
+        {
+            get => DivisionsJson.JsonGetAccessor<List<DivisionJsonViewModel>>();
+            set => DivisionsJson = value.JsonSetAccessor();
+        }
     }
 }

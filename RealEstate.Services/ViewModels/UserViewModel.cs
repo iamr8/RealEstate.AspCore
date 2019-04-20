@@ -55,11 +55,6 @@ namespace RealEstate.Services.ViewModels
             Reminders = _entity?.Reminders.Into(includeDeleted, action);
         }
 
-        public void GetChecks(bool includeDeleted = false, Action<CheckViewModel> action = null)
-        {
-            Checks = _entity?.Checks.Into(includeDeleted, action);
-        }
-
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
             Employee = _entity?.Employee.Into(includeDeleted, action);
@@ -71,6 +66,5 @@ namespace RealEstate.Services.ViewModels
         public List<BeneficiaryViewModel> Beneficiaries { get; private set; }
         public List<ReminderViewModel> Reminders { get; private set; }
         public EmployeeViewModel Employee { get; private set; }
-        public List<CheckViewModel> Checks { get; private set; }
     }
 }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
+using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
@@ -19,6 +20,10 @@ namespace RealEstate.Services.ViewModels.Input
         [Display(ResourceType = typeof(SharedResource), Name = "Password")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Password { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Role")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        public Role Role { get; set; }
 
         [Required]
         public string EmployeeId { get; set; }

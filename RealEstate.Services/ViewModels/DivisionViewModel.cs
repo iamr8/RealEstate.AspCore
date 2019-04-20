@@ -28,7 +28,7 @@ namespace RealEstate.Services.ViewModels
             EmployeeDivisions = _entity?.EmployeeDivisions.Into(includeDeleted, action);
         }
 
-        public string Subject => _entity.Subject;
+        public string Name => _entity.Name;
         public List<EmployeeDivisionViewModel> EmployeeDivisions { get; private set; }
     }
 }

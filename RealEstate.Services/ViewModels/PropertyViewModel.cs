@@ -24,14 +24,14 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Street => _entity.Street;
+        public string Street => _entity?.Street;
 
-        public string Alley => _entity.Alley;
+        public string Alley => _entity?.Alley;
 
-        public string BuildingName => _entity.BuildingName;
-        public string Number => _entity.Number;
-        public int Floor => _entity.Floor;
-        public int Flat => _entity.Flat;
+        public string BuildingName => _entity?.BuildingName;
+        public string Number => _entity?.Number;
+        public int Floor => _entity?.Floor ?? 0;
+        public int Flat => _entity?.Flat ?? 0;
 
         public string Description => _entity.Description;
 

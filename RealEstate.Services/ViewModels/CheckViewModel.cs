@@ -39,13 +39,13 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
-        public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
+        public void GetReminder(bool includeDeleted = false, Action<ReminderViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            Reminder = _entity?.Reminder.Into(includeDeleted, action);
         }
 
         public DealViewModel Deal { get; private set; }
-        public UserViewModel User { get; private set; }
+        public ReminderViewModel Reminder { get; private set; }
         public List<PictureViewModel> Pictures { get; private set; }
     }
 }

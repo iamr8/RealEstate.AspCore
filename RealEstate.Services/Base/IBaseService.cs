@@ -1,6 +1,7 @@
 ﻿using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -91,15 +92,22 @@ namespace RealEstate.Services.Base
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel) where TQuery : BaseEntity where TOutput : class
         {
-            page = page <= 1 ? 1 : page;
-            const int pageSize = 10;
+            var output = new PaginationViewModel<TOutput>();
+
+            if (query is EntityQueryable<TQuery>)
+                return output;
+
+            if (query?.Any() != true)
+                return output;
 
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return default;
+                return output;
+
+            page = page <= 1 ? 1 : page;
+            const int pageSize = 10;
 
             query = query.OrderDescendingByCreationDateTime();
-
             var pagingQuery = page > 1
                 ? query.Skip(pageSize * (page - 1))
                 : query;
@@ -108,7 +116,8 @@ namespace RealEstate.Services.Base
                 .ConfigureAwait(false);
             var count = await query.CountAsync().ConfigureAwait(false);
 
-            if (entities == null) return default;
+            if (entities == null)
+                return output;
 
             var viewList = new List<TOutput>();
             foreach (var entity in entities)
@@ -120,7 +129,6 @@ namespace RealEstate.Services.Base
                 viewList.Add(m);
             }
 
-            var output = new PaginationViewModel<TOutput>();
             var outputType = output.GetType();
 
             var pagesProperty = outputType.GetProperty(nameof(output.Pages));
@@ -315,14 +323,13 @@ namespace RealEstate.Services.Base
             {
                 Username = claims.Find(x => x.Type == ClaimTypes.Name)?.Value,
                 Mobile = claims.Find(x => x.Type == ClaimTypes.MobilePhone)?.Value,
-                //                Role = claims.Find(x => x.Type == ClaimTypes.Role)?.Value.To<Role>() ?? Role.User,
+                Role = claims.Find(x => x.Type == ClaimTypes.Role)?.Value.To<Role>() ?? Role.User,
                 EncryptedPassword = claims.Find(x => x.Type == ClaimTypes.Hash)?.Value,
                 Id = claims.Find(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
                 FirstName = claims.Find(x => x.Type == "FirstName")?.Value,
                 LastName = claims.Find(x => x.Type == "LastName")?.Value,
                 Address = claims.Find(x => x.Type == ClaimTypes.StreetAddress)?.Value,
                 Phone = claims.Find(x => x.Type == ClaimTypes.HomePhone)?.Value,
-                CreationDateTime = DateTime.Parse(claims.Find(x => x.Type == "CreationDateTime")?.Value),
                 UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<UserPropertyCategoryViewModel>>(),
                 UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<UserItemCategoryViewModel>>(),
                 EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,

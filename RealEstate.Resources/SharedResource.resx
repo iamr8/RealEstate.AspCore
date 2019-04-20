@@ -768,4 +768,37 @@
   <data name="PropertyDetail" xml:space="preserve">
     <value>مشخصات ملک</value>
   </data>
+  <data name="Checks" xml:space="preserve">
+    <value>چک ها</value>
+  </data>
+  <data name="Divisions" xml:space="preserve">
+    <value>تقسیم بندی ها</value>
+  </data>
+  <data name="Employee" xml:space="preserve">
+    <value>کارمند</value>
+  </data>
+  <data name="Employees" xml:space="preserve">
+    <value>کارمندان</value>
+  </data>
+  <data name="Leaves" xml:space="preserve">
+    <value>مرخصی ها</value>
+  </data>
+  <data name="Presences" xml:space="preserve">
+    <value>حضور و غیاب ها</value>
+  </data>
+  <data name="Reminders" xml:space="preserve">
+    <value>یادآوری ها</value>
+  </data>
+  <data name="Smses" xml:space="preserve">
+    <value>پیامک ها</value>
+  </data>
+  <data name="EditEmployee" xml:space="preserve">
+    <value>ویرایش کارمند</value>
+  </data>
+  <data name="FixedSalary" xml:space="preserve">
+    <value>حقوق ثابت</value>
+  </data>
+  <data name="NewEmployee" xml:space="preserve">
+    <value>کارمند جدید</value>
+  </data>
 </root>

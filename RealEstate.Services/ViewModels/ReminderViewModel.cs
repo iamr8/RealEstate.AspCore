@@ -3,6 +3,7 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -30,6 +31,12 @@ namespace RealEstate.Services.ViewModels
             User = _entity?.User.Into(includeDeleted, action);
         }
 
+        public void GetChecks(bool includeDeleted = false, Action<CheckViewModel> action = null)
+        {
+            Checks = _entity?.Checks.Into(includeDeleted, action);
+        }
+
         public UserViewModel User { get; private set; }
+        public List<CheckViewModel> Checks { get; private set; }
     }
 }

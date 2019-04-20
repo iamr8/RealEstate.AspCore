@@ -12,9 +12,9 @@ namespace RealEstate.Services.Database.Tables
         public string Price { get; set; }
         public string Description { get; set; }
         public string DealId { get; set; }
-        public string UserId { get; set; }
+        public string ReminderId { get; set; }
         public virtual Deal Deal { get; set; }
-        public virtual User User { get; set; }
+        public virtual Reminder Reminder { get; set; }
         public virtual ICollection<Picture> Pictures { get; set; }
     }
 }

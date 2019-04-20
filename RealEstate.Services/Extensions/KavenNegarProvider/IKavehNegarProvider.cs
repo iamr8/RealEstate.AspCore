@@ -124,7 +124,7 @@ namespace RealEstate.Services.Extensions.KavenNegarProvider
     public class KavehNegarProvider : IKavehNegarProvider
     {
         private const string ApiPath = "https://api.kavenegar.com/v1/{0}/{1}/{2}.{3}";
-        private const string SmsNumber = "123";
+        private const string SmsNumber = "10002020505050";
         private const string ApiKey = "7759476A5352684A4D653867304B4E61376A393851534F46567375506445366B";
 
         private string GetApiPath(string _base, string method, string output)

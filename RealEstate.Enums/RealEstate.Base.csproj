@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.122</AssemblyVersion>
-    <FileVersion>1.0.0.122</FileVersion>
+    <AssemblyVersion>1.0.0.130</AssemblyVersion>
+    <FileVersion>1.0.0.130</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,7 +16,7 @@
     <PackageReference Include="BouncyCastle.NetCore" Version="1.8.5" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.1" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
   </ItemGroup>
 

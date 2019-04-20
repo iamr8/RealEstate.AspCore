@@ -24,9 +24,9 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Name => _entity.Name;
+        public string Name => _entity?.Name;
 
-        public CategoryTypeEnum Type => _entity.Type;
+        public CategoryTypeEnum Type => _entity?.Type ?? CategoryTypeEnum.Property;
 
         public void GetItems(bool includeDeleted, Action<ItemViewModel> action = null)
         {

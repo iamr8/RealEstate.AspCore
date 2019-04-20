@@ -59,7 +59,7 @@ namespace RealEstate.Web.Pages.Manage.User
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _userService.CategoryAddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _userService.AddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
             UserStatus = finalStatus.GetDisplayName();

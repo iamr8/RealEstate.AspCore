@@ -63,7 +63,7 @@ namespace RealEstate.Services.Database
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            //            modelBuilder.SeedDatabase();
+            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }

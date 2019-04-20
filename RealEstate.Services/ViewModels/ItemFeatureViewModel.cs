@@ -24,7 +24,7 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Value => _entity.Value.FixCurrency();
+        public string Value => _entity?.Value?.FixCurrency();
 
         public void GetItem(bool includeDeleted = false, Action<ItemViewModel> action = null)
         {

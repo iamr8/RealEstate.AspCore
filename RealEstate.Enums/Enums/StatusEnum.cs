@@ -82,6 +82,8 @@ namespace RealEstate.Base.Enums
         UnexpectedError,
         TokenIsNull,
         IdIsNull,
-        EmployeeIsNull
+        EmployeeIsNull,
+        DivisionIdIsNull,
+        NameIsNull
     }
 }

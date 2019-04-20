@@ -13,9 +13,9 @@ namespace RealEstate.Services.Database.Configuration
                 .WithMany(x => x.Checks)
                 .HasForeignKey(x => x.DealId);
 
-            builder.HasOne(x => x.User)
+            builder.HasOne(x => x.Reminder)
                 .WithMany(x => x.Checks)
-                .HasForeignKey(x => x.UserId);
+                .HasForeignKey(x => x.ReminderId);
 
             builder.HasMany(x => x.Pictures)
                 .WithOne(x => x.Check)

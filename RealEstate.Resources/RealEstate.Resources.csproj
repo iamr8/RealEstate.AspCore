@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AssemblyVersion>1.0.0.56</AssemblyVersion>
-    <FileVersion>1.0.0.56</FileVersion>
+    <AssemblyVersion>1.0.0.63</AssemblyVersion>
+    <FileVersion>1.0.0.63</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.2" />
   </ItemGroup>
 
   <ItemGroup>
