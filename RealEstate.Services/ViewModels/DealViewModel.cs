@@ -24,15 +24,13 @@ namespace RealEstate.Services.ViewModels
         }
 
         public string Description => _entity?.Description;
+        public decimal TipPrice => _entity?.TipPrice ?? 0;
+        public decimal CommissionPrice => _entity?.CommissionPrice ?? 0;
+        public string Barcode => _entity?.Barcode;
 
         public void GetDealRequest(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
             DealRequest = _entity?.DealRequest.Into(includeDeleted, action);
-        }
-
-        public void GetDealPayments(bool includeDeleted = false, Action<DealPaymentViewModel> action = null)
-        {
-            DealPayments = _entity?.DealPayments.Into(includeDeleted, action).ShowBasedOn(x => x.Deal);
         }
 
         public void GetBeneficiaries(bool includeDeleted = false, Action<BeneficiaryViewModel> action = null)
@@ -45,15 +43,14 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
-        public void GetChecks(bool includeDeleted = false, Action<CheckViewModel> action = null)
+        public void GetReminders(bool includeDeleted = false, Action<ReminderViewModel> action = null)
         {
-            Checks = _entity?.Checks.Into(includeDeleted, action);
+            Reminders = _entity?.Reminders.Into(includeDeleted, action);
         }
 
         public DealRequestViewModel DealRequest { get; private set; }
-        public List<DealPaymentViewModel> DealPayments { get; private set; }
+        public List<ReminderViewModel> Reminders { get; private set; }
         public List<BeneficiaryViewModel> Beneficiaries { get; private set; }
         public List<PictureViewModel> Pictures { get; private set; }
-        public List<CheckViewModel> Checks { get; private set; }
     }
 }

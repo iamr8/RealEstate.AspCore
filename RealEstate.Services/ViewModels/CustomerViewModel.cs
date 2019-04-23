@@ -39,13 +39,7 @@ namespace RealEstate.Services.ViewModels
             Applicants = _entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
-        public void GetSmses(bool includeDeleted = false, Action<SmsViewModel> action = null)
-        {
-            Smses = _entity?.Smses.Into(includeDeleted, action);
-        }
-
         public List<OwnershipViewModel> Ownerships { get; private set; }
-        public List<SmsViewModel> Smses { get; private set; }
         public List<ApplicantViewModel> Applicants { get; private set; }
     }
 }

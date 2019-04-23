@@ -68,7 +68,8 @@ namespace RealEstate.Services.Base
             where TEntity : BaseEntity;
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save)
+            List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
+            bool save)
             where TSource : BaseEntity;
 
         Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
@@ -282,7 +283,7 @@ namespace RealEstate.Services.Base
         }
 
         public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
+            List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
@@ -308,7 +309,7 @@ namespace RealEstate.Services.Base
                 var source = currentListEntities?.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
                 if (source == null)
                 {
-                    var newItem = newEntity.Invoke(model);
+                    var newItem = newEntity.Invoke(model, currentUser);
                     await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
                 }
                 else

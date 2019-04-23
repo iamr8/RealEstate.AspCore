@@ -8,13 +8,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Customer : BaseEntity
     {
-        public Customer()
-        {
-            Applicants = new HashSet<Applicant>();
-            Ownerships = new HashSet<Ownership>();
-            Smses = new HashSet<Sms>();
-        }
-
         [Required]
         public string MobileNumber { get; set; }
 
@@ -32,6 +25,5 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Applicant> Applicants { get; set; }
 
         public virtual ICollection<Ownership> Ownerships { get; set; }
-        public virtual ICollection<Sms> Smses { get; set; }
     }
 }

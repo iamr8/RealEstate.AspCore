@@ -30,7 +30,7 @@ namespace RealEstate.Services.ViewModels
 
         public PaymentTypeEnum Type => _entity.Type;
 
-        public void GetEmployee(bool includeDeleted, Action<EmployeeViewModel> action = null)
+        public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
             Employee = _entity?.Employee.Into(includeDeleted, action);
         }
@@ -40,8 +40,26 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
+        public void GetCheckout(bool includeDeleted = false, Action<PaymentViewModel> action = null)
+        {
+            Checkout = _entity?.Checkout.Into(includeDeleted, action);
+        }
+
+        public void GetPayments(bool includeDeleted = false, Action<PaymentViewModel> action = null)
+        {
+            Payments = _entity?.Payments.Into(includeDeleted, action);
+        }
+
+        public void GetSms(bool includeDeleted = false, Action<SmsViewModel> action = null)
+        {
+            Sms = _entity?.Sms.Into(includeDeleted, action);
+        }
+
         public EmployeeViewModel Employee { get; private set; }
 
         public List<PictureViewModel> Pictures { get; private set; }
+        public PaymentViewModel Checkout { get; private set; }
+        public List<PaymentViewModel> Payments { get; private set; }
+        public SmsViewModel Sms { get; private set; }
     }
 }

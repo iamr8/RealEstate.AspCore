@@ -1,6 +1,4 @@
-﻿using JetBrains.Annotations;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
@@ -12,9 +10,11 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class DealInputViewModel : BaseInputViewModel
     {
-        private string _dealPaymentsJson;
+        private string _remindersJson;
         private string _beneficiaryJson;
-
+        public string Barcode { get; set; }
+        public decimal Commission { get; set; }
+        public decimal Tip { get; set; }
         public string ItemId { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
@@ -22,16 +22,16 @@ namespace RealEstate.Services.ViewModels.Input
 
         [HiddenInput]
         [Required]
-        public string DealPaymentsJson
+        public string RemindersJson
         {
-            get => _dealPaymentsJson;
-            set => _dealPaymentsJson = value.JsonSetAccessor();
+            get => _remindersJson;
+            set => _remindersJson = value.JsonSetAccessor();
         }
 
-        public List<DealPaymentJsonViewModel> DealPayments
+        public List<ReminderJsonViewModel> Reminders
         {
-            get => DealPaymentsJson.JsonGetAccessor<List<DealPaymentJsonViewModel>>();
-            set => DealPaymentsJson = value.JsonSetAccessor();
+            get => RemindersJson.JsonGetAccessor<List<ReminderJsonViewModel>>();
+            set => RemindersJson = value.JsonSetAccessor();
         }
 
         [HiddenInput]

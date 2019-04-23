@@ -1,5 +1,49 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Payment.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+@{
+    var types = SelectItemExtensions.ToSelectList<PaymentTypeEnum>();
+    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+    var emploo = employees?.Select(x => new SelectListItem
+    {
+        Text = $"{x.FirstName} {x.LastName}",
+        Value = x.Id
+    }).SelectFirstItem();
+
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewPayment.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <label asp-for="NewPayment.EmployeeId" class="control-label"></label>
+                    <select asp-for="NewPayment.EmployeeId" asp-items="emploo" class="form-control"></select>
+                    <span asp-validation-for="NewPayment.EmployeeId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewPayment.Value" class="control-label"></label>
+                    <input asp-for="NewPayment.Value" class="form-control" />
+                    <span asp-validation-for="NewPayment.Value" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewPayment.Text" class="control-label"></label>
+                    <input asp-for="NewPayment.Text" class="form-control" />
+                    <span asp-validation-for="NewPayment.Text" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.PaymentStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

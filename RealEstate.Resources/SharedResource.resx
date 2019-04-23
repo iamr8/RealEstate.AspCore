@@ -891,4 +891,28 @@
   <data name="Insurance" xml:space="preserve">
     <value>بیمه</value>
   </data>
+  <data name="Advance" xml:space="preserve">
+    <value>مساعده</value>
+  </data>
+  <data name="Beneficiary" xml:space="preserve">
+    <value>ذینفع</value>
+  </data>
+  <data name="Forfeit" xml:space="preserve">
+    <value>جریمه</value>
+  </data>
+  <data name="Gift" xml:space="preserve">
+    <value>هدیه</value>
+  </data>
+  <data name="Remain" xml:space="preserve">
+    <value>مانده حساب</value>
+  </data>
+  <data name="Salary" xml:space="preserve">
+    <value>حقوق</value>
+  </data>
+  <data name="NewPayment" xml:space="preserve">
+    <value>پرداخت جدید</value>
+  </data>
+  <data name="Payments" xml:space="preserve">
+    <value>پرداخت ها</value>
+  </data>
 </root>

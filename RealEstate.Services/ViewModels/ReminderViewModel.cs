@@ -25,18 +25,27 @@ namespace RealEstate.Services.ViewModels
 
         public string Description => _entity.Description;
         public DateTime Date => _entity.Date;
+        public string CheckBank => _entity.CheckBank;
+        public string CheckNumber => _entity.CheckNumber;
+        public decimal Price => _entity.Price;
+
+        public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
+        {
+            Deal = _entity?.Deal.Into(includeDeleted, action);
+        }
 
         public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
             User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public void GetChecks(bool includeDeleted = false, Action<CheckViewModel> action = null)
+        public void GetPictures(bool includeDeleted = false, Action<PictureViewModel> action = null)
         {
-            Checks = _entity?.Checks.Into(includeDeleted, action);
+            Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
+        public DealViewModel Deal { get; private set; }
         public UserViewModel User { get; private set; }
-        public List<CheckViewModel> Checks { get; private set; }
+        public List<PictureViewModel> Pictures { get; private set; }
     }
 }

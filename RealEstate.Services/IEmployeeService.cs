@@ -508,7 +508,7 @@ namespace RealEstate.Services
             var result = await _baseService.SyncAsync(
                 employee.EmployeeDivisions,
                 model.Divisions,
-                division => new EmployeeDivision
+                (division, currentUser) => new EmployeeDivision
                 {
                     DivisionId = division.Id,
                     EmployeeId = employee.Id

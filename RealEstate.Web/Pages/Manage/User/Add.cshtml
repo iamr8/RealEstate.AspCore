@@ -61,6 +61,10 @@
                     </div>
                 </div>
             }
+            else
+            { 
+                <input type="hidden" asp-for="NewUser.EmployeeId" />
+            }
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {

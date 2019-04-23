@@ -6,8 +6,8 @@
     <RootNamespace>RealEstate.Web</RootNamespace>
     <AssemblyName>RealEstate.Web</AssemblyName>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.882</AssemblyVersion>
-    <FileVersion>1.0.0.882</FileVersion>
+    <AssemblyVersion>1.0.0.905</AssemblyVersion>
+    <FileVersion>1.0.0.905</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

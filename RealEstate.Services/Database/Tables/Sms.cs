@@ -1,5 +1,6 @@
 ﻿using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -11,9 +12,7 @@ namespace RealEstate.Services.Database.Tables
         public string Text { get; set; }
         public SmsProvider Provider { get; set; }
         public string StatusJson { get; set; }
-        public string CustomerId { get; set; }
-        public string EmployeeId { get; set; }
-        public virtual Customer Customer { get; set; }
-        public virtual Employee Employee { get; set; }
+        public virtual ICollection<DealRequest> DealRequests { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; }
     }
 }

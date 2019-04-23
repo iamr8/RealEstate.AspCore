@@ -13,6 +13,10 @@ namespace RealEstate.Services.Database.Configuration
                 .WithMany(x => x.Reminders)
                 .HasForeignKey(x => x.UserId)
                 .IsRequired();
+
+            builder.HasMany(x => x.Pictures)
+                .WithOne(x => x.Reminder)
+                .HasForeignKey(x => x.ReminderId);
         }
     }
 }

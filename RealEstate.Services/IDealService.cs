@@ -84,7 +84,8 @@ namespace RealEstate.Services
                     {
                         act.GetBeneficiaries(false, act2 => act2.GetUser(false, act3 => act3.GetEmployee()));
                         act.GetDealRequest();
-                        act.GetDealPayments();
+                        act.GetPictures();
+                        act.GetReminders();
                     });
                     if (viewModel == null)
                         return default;
@@ -102,14 +103,15 @@ namespace RealEstate.Services
                             CommissionPercent = x.CommissionPercent
                         }).ToList(),
                         ItemId = entity.Id,
-                        DealPayments = viewModel.DealPayments.Select(x => new DealPaymentJsonViewModel
+                        Reminders = viewModel.Reminders.Select(x => new ReminderJsonViewModel
                         {
                             Id = x.Id,
-                            Text = x.Text,
-                            PayDate = x.PayDate,
-                            Commission = x.Commission,
-                            Tip = x.Tip
-                        }).ToList()
+                            Description = x.Description,
+                            Date = x.Date.GregorianToPersian(true),
+                        }).ToList(),
+                        Tip = viewModel.TipPrice,
+                        Commission = viewModel.CommissionPrice,
+                        Barcode = viewModel.Barcode
                     };
 
                     return result;
@@ -142,15 +144,17 @@ namespace RealEstate.Services
         public async Task<StatusEnum> SyncAsync(Deal deal, DealInputViewModel model, bool save)
         {
             await _baseService.SyncAsync(
-                deal.DealPayments,
-                model.DealPayments,
-                dealPayment => new DealPayment
+                deal.Reminders,
+                model.Reminders,
+                (reminder, currentUser) => new Reminder
                 {
                     DealId = deal.Id,
-                    CommissionPrice = dealPayment.Commission,
-                    PayDate = dealPayment.PayDate,
-                    Text = dealPayment.Text,
-                    TipPrice = dealPayment.Tip,
+                    CheckBank = reminder.CheckBank,
+                    CheckNumber = reminder.CheckNumber,
+                    Date = reminder.Date.PersianToGregorian(),
+                    Description = reminder.Description,
+                    Price = reminder.Price,
+                    UserId = currentUser.Id,
                 },
                 (inDb, inModel) => inDb.DealId == inModel.Id,
                 null, false).ConfigureAwait(false);
@@ -158,7 +162,7 @@ namespace RealEstate.Services
             await _baseService.SyncAsync(
                 deal.Beneficiaries,
                 model.Beneficiaries,
-                beneficiary => new Beneficiary
+                (beneficiary, currentUser) => new Beneficiary
                 {
                     CommissionPercent = beneficiary.CommissionPercent,
                     TipPercent = beneficiary.TipPercent,

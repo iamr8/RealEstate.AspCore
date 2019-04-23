@@ -21,7 +21,11 @@ namespace RealEstate.Services
 
         Task<StatusEnum> ManagementPercentRemoveAsync(string id);
 
+        Task<PaginationViewModel<PaymentViewModel>> PaymentListAsync(PaymentSearchViewModel searchModel);
+
         Task<ManagementPercentInputViewModel> ManagementPercentInputAsync(string id);
+
+        Task<(StatusEnum, Payment)> PaymentAddAsync(PaymentInputViewModel model, bool save, PaymentTypeEnum type = PaymentTypeEnum.Salary);
 
         Task<PaginationViewModel<ManagementPercentViewModel>> ManagementPercentListAsync(ManagementPercentSearchViewModel searchModel);
 
@@ -33,6 +37,7 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly DbSet<FixedSalary> _fixedSalaries;
+        private readonly DbSet<Payment> _payments;
         private readonly DbSet<Employee> _employees;
         private readonly DbSet<ManagementPercent> _managementPercents;
 
@@ -45,7 +50,26 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _fixedSalaries = _unitOfWork.Set<FixedSalary>();
             _employees = _unitOfWork.Set<Employee>();
+            _payments = _unitOfWork.Set<Payment>();
             _managementPercents = _unitOfWork.Set<ManagementPercent>();
+        }
+
+        public async Task<(StatusEnum, Payment)> PaymentAddAsync(PaymentInputViewModel model, bool save, PaymentTypeEnum type = PaymentTypeEnum.Salary)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Payment>(StatusEnum.ModelIsNull, null);
+
+            var addStatus = await _baseService.AddAsync(new Payment
+            {
+                Type = type,
+                EmployeeId = model.EmployeeId,
+                Value = model.Value,
+                Text = model.Text,
+            }, new[]
+            {
+                Role.SuperAdmin, Role.Admin
+            }, save).ConfigureAwait(false);
+            return addStatus;
         }
 
         public async Task<StatusEnum> ManagementPercentRemoveAsync(string id)
@@ -139,6 +163,21 @@ namespace RealEstate.Services
                 })
             ).ConfigureAwait(false);
 
+            return result;
+        }
+
+        public async Task<PaginationViewModel<PaymentViewModel>> PaymentListAsync(PaymentSearchViewModel searchModel)
+        {
+            var models = _payments.AsQueryable();
+
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => item.Into<Payment, PaymentViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetPayments();
+                    act.GetCheckout();
+                    act.GetEmployee();
+                })
+            ).ConfigureAwait(false);
             return result;
         }
 

@@ -32,7 +32,13 @@ namespace RealEstate.Services.ViewModels
             Deal = _entity?.Deal.Into(includeDeleted, action);
         }
 
+        public void GetSms(bool includeDeleted, Action<SmsViewModel> action = null)
+        {
+            Sms = _entity?.Sms.Into(includeDeleted, action);
+        }
+
         public ItemViewModel Item { get; private set; }
         public DealViewModel Deal { get; private set; }
+        public SmsViewModel Sms { get; private set; }
     }
 }

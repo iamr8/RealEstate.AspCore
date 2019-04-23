@@ -178,7 +178,7 @@ namespace RealEstate.Services
             var syncItemFeature = await _baseService.SyncAsync(
                 user.UserItemCategories,
                 model.UserItemCategories,
-                itemCategory => new UserItemCategory
+                (itemCategory, currentUser) => new UserItemCategory
                 {
                     UserId = user.Id,
                     CategoryId = itemCategory.Id
@@ -190,7 +190,7 @@ namespace RealEstate.Services
             var syncPropertyFeature = await _baseService.SyncAsync(
                 user.UserPropertyCategories,
                 model.UserPropertyCategories,
-                propertyCategory => new UserPropertyCategory
+                (propertyCategory, currentUser) => new UserPropertyCategory
                 {
                     UserId = user.Id,
                     CategoryId = propertyCategory.Id

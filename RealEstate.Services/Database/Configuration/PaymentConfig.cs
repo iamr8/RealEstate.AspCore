@@ -13,6 +13,10 @@ namespace RealEstate.Services.Database.Configuration
                 .WithMany(x => x.Payments)
                 .HasForeignKey(x => x.EmployeeId)
                 .IsRequired();
+
+            builder.HasOne(x => x.Checkout)
+                .WithMany(x => x.Payments)
+                .HasForeignKey(x => x.CheckoutId);
         }
     }
 }

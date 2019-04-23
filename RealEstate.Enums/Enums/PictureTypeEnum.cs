@@ -2,9 +2,10 @@
 {
     public enum PictureTypeEnum
     {
-        DealPayment,
+        Reminder,
         Property,
         PaymentId,
-        Deal
+        Deal,
+        Employee
     }
 }

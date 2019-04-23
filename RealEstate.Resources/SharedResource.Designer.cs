@@ -133,6 +133,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مساعده.
+        /// </summary>
+        public static string Advance {
+            get {
+                return ResourceManager.GetString("Advance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to کوچه.
         /// </summary>
         public static string Alley {
@@ -219,6 +228,15 @@ namespace RealEstate.Resources {
         public static string AreYouSureToDoThisRequest {
             get {
                 return ResourceManager.GetString("AreYouSureToDoThisRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ذینفع.
+        /// </summary>
+        public static string Beneficiary {
+            get {
+                return ResourceManager.GetString("Beneficiary", resourceCulture);
             }
         }
         
@@ -898,6 +916,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to جریمه.
+        /// </summary>
+        public static string Forfeit {
+            get {
+                return ResourceManager.GetString("Forfeit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to از.
         /// </summary>
         public static string From {
@@ -921,6 +948,15 @@ namespace RealEstate.Resources {
         public static string FromHour {
             get {
                 return ResourceManager.GetString("FromHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to هدیه.
+        /// </summary>
+        public static string Gift {
+            get {
+                return ResourceManager.GetString("Gift", resourceCulture);
             }
         }
         
@@ -1312,6 +1348,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to پرداخت جدید.
+        /// </summary>
+        public static string NewPayment {
+            get {
+                return ResourceManager.GetString("NewPayment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to حضور و غیاب جدید.
         /// </summary>
         public static string NewPresence {
@@ -1452,6 +1497,15 @@ namespace RealEstate.Resources {
         public static string Password {
             get {
                 return ResourceManager.GetString("Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to پرداخت ها.
+        /// </summary>
+        public static string Payments {
+            get {
+                return ResourceManager.GetString("Payments", resourceCulture);
             }
         }
         
@@ -1663,6 +1717,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مانده حساب.
+        /// </summary>
+        public static string Remain {
+            get {
+                return ResourceManager.GetString("Remain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to یادآوری.
         /// </summary>
         public static string Reminder {
@@ -1722,6 +1785,15 @@ namespace RealEstate.Resources {
         public static string Role {
             get {
                 return ResourceManager.GetString("Role", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to حقوق.
+        /// </summary>
+        public static string Salary {
+            get {
+                return ResourceManager.GetString("Salary", resourceCulture);
             }
         }
         

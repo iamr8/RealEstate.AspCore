@@ -29,6 +29,5 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Leave> Leaves { get; set; }
         public virtual ICollection<Presence> Presences { get; set; }
         public virtual ICollection<EmployeeDivision> EmployeeDivisions { get; set; }
-        public virtual ICollection<Sms> Smses { get; set; }
     }
 }

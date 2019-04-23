@@ -42,11 +42,6 @@ namespace RealEstate.Services.ViewModels
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
-        public void GetSmses(bool includeDeleted = false, Action<SmsViewModel> action = null)
-        {
-            Smses = _entity?.Smses.Into(includeDeleted, action);
-        }
-
         public void GetPayments(bool includeDeleted = false, Action<PaymentViewModel> action = null)
         {
             Payments = _entity?.Payments.Into(includeDeleted, action);
@@ -101,7 +96,6 @@ namespace RealEstate.Services.ViewModels
         public List<LeaveViewModel> Leaves { get; private set; }
         public List<PresenceViewModel> Presences { get; private set; }
         public List<EmployeeDivisionViewModel> EmployeeDivisions { get; private set; }
-        public List<SmsViewModel> Smses { get; private set; }
         public UserViewModel CurrentUser => Users?.OrderDescendingByCreationDateTime().FirstOrDefault();
     }
 }

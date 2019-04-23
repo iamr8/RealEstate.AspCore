@@ -26,9 +26,7 @@ namespace RealEstate.Services.Database
 
         public virtual DbSet<Beneficiary> Beneficiary { get; set; }
         public virtual DbSet<Customer> Customer { get; set; }
-        public virtual DbSet<Check> Check { get; set; }
         public virtual DbSet<Deal> Deal { get; set; }
-        public virtual DbSet<DealPayment> DealPayment { get; set; }
         public virtual DbSet<DealRequest> DealRequest { get; set; }
         public virtual DbSet<District> District { get; set; }
         public virtual DbSet<Division> Division { get; set; }
@@ -64,7 +62,7 @@ namespace RealEstate.Services.Database
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
-            modelBuilder.SeedDatabase();
+//            modelBuilder.SeedDatabase();
 
             base.OnModelCreating(modelBuilder);
         }

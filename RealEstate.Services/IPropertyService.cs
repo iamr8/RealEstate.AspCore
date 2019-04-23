@@ -326,7 +326,7 @@ namespace RealEstate.Services
             await _baseService.SyncAsync(
                 property.PropertyFeatures.ToList(),
                 model.PropertyFeatures,
-                feature => new PropertyFeature
+                (feature, currentUser) => new PropertyFeature
                 {
                     PropertyId = property.Id,
                     FeatureId = feature.Id,
@@ -338,7 +338,7 @@ namespace RealEstate.Services
             await _baseService.SyncAsync(
                 property.PropertyFacilities.ToList(),
                 model.PropertyFacilities,
-                facility => new PropertyFacility
+                (facility, currentUser) => new PropertyFacility
                 {
                     PropertyId = property.Id,
                     FacilityId = facility.Id

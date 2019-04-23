@@ -17,6 +17,7 @@ namespace RealEstate.Services
     public interface IReminderService
     {
         Task<ReminderInputViewModel> ReminderInputAsync(string id);
+
         Task<StatusEnum> ReminderRemoveAsync(string id);
 
         Task<(StatusEnum, Reminder)> ReminderAddOrUpdateAsync(ReminderInputViewModel model, bool update, bool save);
@@ -29,7 +30,6 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly DbSet<Reminder> _reminders;
-        private readonly DbSet<Check> _checks;
 
         public ReminderService(
             IUnitOfWork unitOfWork,
@@ -40,7 +40,6 @@ namespace RealEstate.Services
             _baseService = baseService;
 
             _reminders = _unitOfWork.Set<Reminder>();
-            _checks = _unitOfWork.Set<Check>();
         }
 
         public async Task<ReminderInputViewModel> ReminderInputAsync(string id)
@@ -134,14 +133,7 @@ namespace RealEstate.Services
             var models = _reminders.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<Reminder, ReminderViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
-                {
-                    act.GetChecks(false, act2 =>
-                    {
-                        act2.GetDeal();
-                        act2.GetPictures();
-                    });
-                })
+                item => item.Into<Reminder, ReminderViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;

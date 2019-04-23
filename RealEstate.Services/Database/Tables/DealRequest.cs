@@ -9,8 +9,9 @@ namespace RealEstate.Services.Database.Tables
 
         public string ItemId { get; set; }
         public string DealId { get; set; }
+        public string SmsId { get; set; }
         public virtual Item Item { get; set; }
-
+        public virtual Sms Sms { get; set; }
         public virtual Deal Deal { get; set; }
     }
 }

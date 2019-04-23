@@ -40,26 +40,20 @@ namespace RealEstate.Services.ViewModels
             Property = _entity?.Property.Into(includeDeleted, action);
         }
 
-        public void GetDealPayment(bool includeDeleted = false, Action<DealPaymentViewModel> action = null)
-        {
-            DealPayment = _entity?.DealPayment.Into(includeDeleted, action);
-        }
-
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
             Employee = _entity?.Employee.Into(includeDeleted, action);
         }
 
-        public void GetCheck(bool includeDeleted = false, Action<CheckViewModel> action = null)
+        public void GetReminder(bool includeDeleted = false, Action<ReminderViewModel> action = null)
         {
-            Check = _entity?.Check.Into(includeDeleted, action);
+            Reminder = _entity?.Reminder.Into(includeDeleted, action);
         }
 
         public DealViewModel Deal { get; private set; }
         public PaymentViewModel Payment { get; private set; }
         public PropertyViewModel Property { get; private set; }
-        public DealPaymentViewModel DealPayment { get; private set; }
+        public ReminderViewModel Reminder { get; private set; }
         public EmployeeViewModel Employee { get; private set; }
-        public CheckViewModel Check { get; private set; }
     }
 }

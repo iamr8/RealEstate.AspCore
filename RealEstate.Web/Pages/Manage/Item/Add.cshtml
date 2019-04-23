@@ -131,21 +131,12 @@
 
 @section Scripts
     {
-    <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
-
-    <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
-    <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
-    <script asp-paste-key="propertyFeaturesScript"></script>
-    <script asp-paste-key="propertyFacilitiesScript"></script>
-    <script asp-paste-key="propertyOwnersScript"></script>
-    <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
-
     <script>
         $(document).ready(function() {
 
             var pendingRequest = null;
 
-            const propertyIdElement = $("#@($"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}")");
+            const currentPropertyIdElement = $("#@($"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}")");
             const searchInput = $("#@propertySelector.PropertySelector.SearchId");
             const resetPropertyIdSelector = "#NewItem_ResetProperty";
 
@@ -156,14 +147,14 @@
             $(document).on("click",
                 resetPropertyIdSelector,
                 function (e) {
-                    $(propertyIdElement).val("").trigger("change");
+                    $(currentPropertyIdElement).val("").trigger("change");
 
                 });
 
-            $(propertyIdElement).change(function() {
+            $(currentPropertyIdElement).change(function() {
 
                 $(searchInput).val("");
-                const currentPropertyId = $(propertyIdElement).val();
+                const currentPropertyId = $(currentPropertyIdElement).val();
                 console.log("Selected propertyId", currentPropertyId);
 
                 if (currentPropertyId === null || currentPropertyId === "") {
@@ -227,7 +218,16 @@
                 }
             });
 
-            $(propertyIdElement).trigger("change");
+            $(currentPropertyIdElement).trigger("change");
         });
     </script>
+    <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
+
+    <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
+    <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
+    <script asp-paste-key="propertyFeaturesScript"></script>
+    <script asp-paste-key="propertyFacilitiesScript"></script>
+    <script asp-paste-key="propertyOwnersScript"></script>
+    <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
+
 }

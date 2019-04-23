@@ -4,6 +4,8 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -30,17 +32,19 @@ namespace RealEstate.Services.ViewModels
         public SmsProvider Provider => _entity.Provider;
         public string StatusJson => _entity.StatusJson;
 
-        public void GetCustomer(bool includeDeleted = false, Action<CustomerViewModel> action = null)
+        public void GetDealRequests(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
-            Customer = _entity?.Customer.Into(includeDeleted, action);
+            DealRequests = _entity?.DealRequests.Into(includeDeleted, action);
         }
 
-        public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
+        public void GetPayments(bool includeDeleted = false, Action<PaymentViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Payments = _entity?.Payments.Into(includeDeleted, action);
         }
 
-        public EmployeeViewModel Employee { get; private set; }
-        public CustomerViewModel Customer { get; private set; }
+        private List<DealRequestViewModel> DealRequests { get; set; }
+        public DealRequestViewModel CurrentDealRequest => DealRequests?.OrderDescendingByCreationDateTime().FirstOrDefault();
+        private List<PaymentViewModel> Payments { get; set; }
+        public PaymentViewModel CurrentPayment => Payments?.OrderDescendingByCreationDateTime().FirstOrDefault();
     }
 }

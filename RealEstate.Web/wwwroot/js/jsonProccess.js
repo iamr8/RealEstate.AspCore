@@ -1,12 +1,4 @@
-﻿function removeButtonEvent(jsonElement, thisItem) {
-    const keyId = $(thisItem).attr("data-id");
-    const jsonValue = $.parseJSON($(jsonElement).val());
-    const index = jsonValue.findIndex(prop => prop.k === keyId);
-    removeJson(jsonElement, index);
-    $(thisItem).remove();
-}
-
-function toggleResultShown(searchElement, event) {
+﻿function toggleResultShown(searchElement, event) {
     const hasFocus = $(searchElement).is(event.target);
     if (!hasFocus && $(searchElement).has(event.target).length === 0) {
         $(searchElement).addClass('d-none');
@@ -49,6 +41,7 @@ function removeJson(jsonElement, index) {
     const jsonString = $(jsonElement).val();
     const json = $.parseJSON(jsonString);
 
+    console.log("IndexToDelete:", index);
     json.splice(index, 1);
     $(jsonElement).val(JSON.stringify(json)).trigger("change");
 }

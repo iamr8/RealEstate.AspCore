@@ -201,15 +201,6 @@ namespace RealEstate.Services
             if (!string.IsNullOrEmpty(mobile))
                 query = query.Where(x => x.MobileNumber == mobile);
 
-            if (includeApplicants)
-                query = query.Include(x => x.Applicants);
-
-            if (includeOwnerships)
-                query = query.Include(x => x.Ownerships);
-
-            if (includeSmses)
-                query = query.Include(x => x.Smses);
-
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
         }
@@ -435,7 +426,7 @@ namespace RealEstate.Services
             var syncFeaturesStatus = await _baseService.SyncAsync(
                             updatedApplicant.ApplicantFeatures,
                             model.ApplicantFeatures,
-                            feature => new ApplicantFeature
+                            (feature, currentUser) => new ApplicantFeature
                             {
                                 ApplicantId = updatedApplicant.Id,
                                 FeatureId = feature.Id,
@@ -482,7 +473,7 @@ namespace RealEstate.Services
             var syncFeaturesStatus = await _baseService.SyncAsync(
                 newApplicant.ApplicantFeatures,
                 model.ApplicantFeatures,
-                feature => new ApplicantFeature
+                (feature, currentUser) => new ApplicantFeature
                 {
                     ApplicantId = newApplicant.Id,
                     FeatureId = feature.Id,

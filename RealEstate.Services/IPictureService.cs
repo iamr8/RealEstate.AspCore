@@ -46,9 +46,10 @@ namespace RealEstate.Services
             var newPicture = await _baseService.AddAsync(new Picture
             {
                 PropertyId = type == PictureTypeEnum.Property ? targetId : null,
-                DealPaymentId = type == PictureTypeEnum.DealPayment ? targetId : null,
+                ReminderId = type == PictureTypeEnum.Reminder ? targetId : null,
                 PaymentId = type == PictureTypeEnum.PaymentId ? targetId : null,
                 DealId = type == PictureTypeEnum.Deal ? targetId : null,
+                EmployeeId = type == PictureTypeEnum.Employee ? targetId : null,
                 Text = model.Text,
                 File = file.File,
             }, null, save).ConfigureAwait(false);

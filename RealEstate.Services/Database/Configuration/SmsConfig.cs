@@ -10,13 +10,13 @@ namespace RealEstate.Services.Database.Configuration
         {
             base.Configure(builder);
 
-            builder.HasOne(x => x.Customer)
-                .WithMany(x => x.Smses)
-                .HasForeignKey(x => x.CustomerId);
+            builder.HasMany(x => x.DealRequests)
+                .WithOne(x => x.Sms)
+                .HasForeignKey(x => x.SmsId);
 
-            builder.HasOne(x => x.Employee)
-                .WithMany(x => x.Smses)
-                .HasForeignKey(x => x.EmployeeId);
+            builder.HasMany(x => x.Payments)
+                .WithOne(x => x.Sms)
+                .HasForeignKey(x => x.SmsId);
         }
     }
 }

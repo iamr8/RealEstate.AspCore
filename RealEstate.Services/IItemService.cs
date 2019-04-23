@@ -381,7 +381,7 @@ namespace RealEstate.Services
             var syncFeatures = await _baseService.SyncAsync(
                 newItem.ItemFeatures,
                 model.ItemFeatures,
-                feature => new ItemFeature
+                (feature, currentUser) => new ItemFeature
                 {
                     FeatureId = feature.Id,
                     Value = feature.Value,

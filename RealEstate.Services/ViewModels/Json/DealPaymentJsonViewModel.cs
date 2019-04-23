@@ -1,10 +1,9 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels.Json
 {
-    public class DealPaymentJsonViewModel : BaseViewModel
+    public class ReminderJsonViewModel : BaseViewModel
     {
         [JsonProperty("tp")]
         public decimal Tip { get; set; }
@@ -13,9 +12,18 @@ namespace RealEstate.Services.ViewModels.Json
         public decimal Commission { get; set; }
 
         [JsonProperty("pd")]
-        public DateTime PayDate { get; set; }
+        public string Date { get; set; }
 
-        [JsonProperty("txt")]
-        public string Text { get; set; }
+        [JsonProperty("chb")]
+        public string CheckBank { get; set; }
+
+        [JsonProperty("chn")]
+        public string CheckNumber { get; set; }
+
+        [JsonProperty("pr")]
+        public decimal Price { get; set; }
+
+        [JsonProperty("desc")]
+        public string Description { get; set; }
     }
 }

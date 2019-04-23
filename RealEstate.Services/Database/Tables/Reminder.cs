@@ -13,8 +13,15 @@ namespace RealEstate.Services.Database.Tables
         [Required]
         public DateTime Date { get; set; }
 
+        public string CheckBank { get; set; }
+
+        public string CheckNumber { get; set; }
+
+        public decimal Price { get; set; }
         public string UserId { get; set; }
-        public virtual ICollection<Check> Checks { get; set; }
+        public string DealId { get; set; }
+        public virtual ICollection<Picture> Pictures { get; set; }
         public virtual User User { get; set; }
+        public virtual Deal Deal { get; set; }
     }
 }
