@@ -1,5 +1,33 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Reminder.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewReminder.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewReminder.Description" class="control-label"></label>
+                    <input asp-for="NewReminder.Description" class="form-control" />
+                    <span asp-validation-for="NewReminder.Description" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewReminder.Date" class="control-label"></label>
+                    <input asp-for="NewReminder.Date" class="form-control" />
+                    <span asp-validation-for="NewReminder.Date" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.ReminderStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

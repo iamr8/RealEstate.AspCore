@@ -68,16 +68,13 @@
             {
                 ModelName = personCreatorModelName,
             },
-        }
+        },
     };
 }
 
-@if (Model.NewItem == null || Model.NewItem.IsNew)
-{
-    <div class="col-12" id="searcher">
-        <vc:property-selector-complex model="@propertySelector" />
-    </div>
-}
+<div class="col-12" id="searcher">
+    <vc:property-selector-complex model="@propertySelector" />
+</div>
 <form method="post" class="widget" id="NewItem">
     <widget-header title="@Model.PageTitle" />
     <input asp-for="NewItem.PropertyId" />
@@ -94,9 +91,12 @@
                     </span>
                     <span class="text-gray text-justify description"></span>
                 </div>
-                <div class="button">
-                    <a href="#" class="btn btn-sm btn-danger" id="NewItem_ResetProperty">@SharedLocalizer["ResetSelection"]</a>
-                </div>
+                @if (Model.NewItem == null || Model.NewItem.IsNew)
+                {
+                    <div class="button">
+                        <a href="#" class="btn btn-sm btn-danger" id="NewItem_ResetProperty">@SharedLocalizer["ResetSelection"]</a>
+                    </div>
+                }
             </div>
         </div>
         <div class="row justify-content-center align-items-center">
@@ -132,15 +132,13 @@
 @section Scripts
     {
     <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
-    @if (Model.NewItem == null || Model.NewItem.IsNew)
-    {
-        <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
-        <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
-        <script asp-paste-key="propertyFeaturesScript"></script>
-        <script asp-paste-key="propertyFacilitiesScript"></script>
-        <script asp-paste-key="propertyOwnersScript"></script>
-        <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
-    }
+
+    <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
+    <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
+    <script asp-paste-key="propertyFeaturesScript"></script>
+    <script asp-paste-key="propertyFacilitiesScript"></script>
+    <script asp-paste-key="propertyOwnersScript"></script>
+    <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
 
     <script>
         $(document).ready(function() {
@@ -149,10 +147,18 @@
 
             const propertyIdElement = $("#@($"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}")");
             const searchInput = $("#@propertySelector.PropertySelector.SearchId");
+            const resetPropertyIdSelector = "#NewItem_ResetProperty";
 
             const newItemWrapper = $("#NewItem");
             const searchWrapper = $("#searcher");
             const propertyInfoWrapper = $("#NewItem_PropertyInfo");
+
+            $(document).on("click",
+                resetPropertyIdSelector,
+                function (e) {
+                    $(propertyIdElement).val("").trigger("change");
+
+                });
 
             $(propertyIdElement).change(function() {
 
@@ -194,18 +200,15 @@
 
                                 $(addressElement).html(addressValue);
                                 $(addressElement).attr("href",
-                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyId=${idValue
-                                    }`);
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyId=${idValue}`);
 
                                 $(districtElement).html(districtValue);
                                 $(districtElement).attr("href",
-                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.District)}/Index")?districtName=${
-                                    districtValue}`);
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.District)}/Index")?districtName=${districtValue}`);
 
                                 $(categoryElement).html(categoryValue);
                                 $(categoryElement).attr("href",
-                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyCat=${
-                                    categoryValue}`);
+                                    `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyCat=${categoryValue}`);
 
                                 if (descriptionValue === "")
                                     $(descriptionElement).addClass("d-none");

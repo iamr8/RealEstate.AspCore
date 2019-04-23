@@ -2,7 +2,7 @@
 
 namespace RealEstate.Services.ViewModels.Json
 {
-    public class ApplicantJsonViewModel
+    public class ItemCustomerJsonViewModel
     {
         [JsonProperty("id")]
         public string CustomerId { get; set; }

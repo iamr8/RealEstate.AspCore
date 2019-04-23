@@ -54,7 +54,7 @@ namespace RealEstate.Services
         public async Task<List<DistrictViewModel>> DistrictListAsync()
         {
             var query = _districts as IQueryable<District>;
-            query = query.Filtered();
+            query = query.WhereNotDeleted();
 
             var districts = await query.ToListAsync().ConfigureAwait(false);
             return districts.Into<District, DistrictViewModel>();
@@ -103,7 +103,7 @@ namespace RealEstate.Services
 
             var entity = await DistrictEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () => entity.Name = model.Name,
+                _ => entity.Name = model.Name,
                 new[]
                 {
                     Role.SuperAdmin

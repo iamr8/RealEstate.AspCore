@@ -20,14 +20,16 @@
         }).SelectFirstItem(),
     };
 
-    var personCreator = new CreatorComponentModel
+    var personCreator = new PersonCreatorComponentModel
     {
-        ModelName = nameof(Model.NewApplicant)
+        ModelName = nameof(Model.NewApplicant),
+        ScriptKey = "applicantCreatorScript",
+        
     };
 }
 <form method="post" class="col-12">
     <div class="widget">
-        <widget-header title="@Model.PageTitle"></widget-header>
+        <widget-header title="@Model.PageTitle" />
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
@@ -38,7 +40,7 @@
                 </div>
             </div>
             <hr />
-            @*<vc:person-creator model="@personCreator" />*@
+            <vc:person-creator model="@personCreator" />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">
                     <input asp-for="NewApplicant.ApplicantFeaturesJson" />

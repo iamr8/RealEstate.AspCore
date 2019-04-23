@@ -7,7 +7,9 @@ namespace RealEstate.Services.Extensions
     {
         public static IQueryable<Customer> WhereItIsPublic(this IQueryable<Customer> queryable)
         {
-            return queryable.Where(x => x.Applicants.Count == 0 || x.Ownerships.Count >= 0 || x.Applicants.Any(c => c.DealId != null));
+            return queryable.Where(x => x.Applicants.Count == 0
+                                        || x.Ownerships.Count >= 0
+                                        || x.Applicants.Any(c => c.Item.DealRequests.Any(v => v.DealId != null)));
         }
     }
 }

@@ -5,7 +5,6 @@ using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels
 {
@@ -83,17 +82,26 @@ namespace RealEstate.Services.ViewModels
             EmployeeDivisions = _entity?.EmployeeDivisions.Into(includeDeleted, action);
         }
 
+        public void GetInsurances(bool includeDeleted = false, Action<InsuranceViewModel> action = null)
+        {
+            Insurances = _entity?.Insurances.Into(includeDeleted, action);
+        }
+
         public List<UserViewModel> Users { get; private set; }
         public List<EmployeeStatusViewModel> EmployeeStatuses { get; private set; }
+        public EmployeeStatusViewModel CurrentEmployeeStatus => EmployeeStatuses?.OrderDescendingByCreationDateTime().FirstOrDefault();
+        public List<PictureViewModel> Pictures { get; private set; }
         public List<FixedSalaryViewModel> FixedSalaries { get; private set; }
         public FixedSalaryViewModel CurrentFixedSalary => FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
         public List<PaymentViewModel> Payments { get; private set; }
         public List<ManagementPercentViewModel> ManagementPercents { get; private set; }
+        public List<InsuranceViewModel> Insurances { get; private set; }
+        public InsuranceViewModel CurrentInsurance => Insurances?.OrderDescendingByCreationDateTime().FirstOrDefault();
+
         public List<LeaveViewModel> Leaves { get; private set; }
         public List<PresenceViewModel> Presences { get; private set; }
         public List<EmployeeDivisionViewModel> EmployeeDivisions { get; private set; }
         public List<SmsViewModel> Smses { get; private set; }
         public UserViewModel CurrentUser => Users?.OrderDescendingByCreationDateTime().FirstOrDefault();
-        public List<PictureViewModel> Pictures { get; private set; }
     }
 }

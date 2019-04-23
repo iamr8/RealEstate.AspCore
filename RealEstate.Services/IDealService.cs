@@ -1,24 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services
 {
     public interface IDealService
     {
-        Task<PaginationViewModel<DealViewModel>> RequestListAsync(int pageNo);
+        Task<(StatusEnum, Deal)> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Deal)> RequestAsync(ItemRequestInputViewModel model, bool save);
+        Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save);
+
+        Task<DealInputViewModel> DealInputAsync(string itemId);
     }
 
     public class DealService : IDealService
@@ -30,6 +31,8 @@ namespace RealEstate.Services
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Customer> _customers;
         private readonly DbSet<Deal> _deals;
+        private readonly DbSet<Item> _items;
+        private readonly DbSet<DealRequest> _dealRequests;
 
         public DealService(
             IUnitOfWork unitOfWork,
@@ -45,94 +48,154 @@ namespace RealEstate.Services
             _applicants = _unitOfWork.Set<Applicant>();
             _customers = _unitOfWork.Set<Customer>();
             _deals = _unitOfWork.Set<Deal>();
+            _items = _unitOfWork.Set<Item>();
+            _dealRequests = _unitOfWork.Set<DealRequest>();
         }
 
-        public async Task<PaginationViewModel<DealViewModel>> RequestListAsync(int pageNo)
+        public async Task<DealInputViewModel> DealInputAsync(string itemId)
         {
-            var query = _deals.AsQueryable();
-            query = query.Where(x => x.Status == DealStatusEnum.Requested);
+            if (string.IsNullOrEmpty(itemId)) return default;
 
-            var result = await _baseService.PaginateAsync(query, pageNo,
-                item => item.Into<Deal, DealViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
-                {
-                    act.GetItem(false,
-                        act2 => act2.GetProperty(false, act3 => act3.GetPropertyOwnerships(false, act4 => act4.GetOwnerships(false, act5 => act5.GetCustomer()))));
-                    act.GetApplicants(false, act6 => act6.GetCustomer());
-                })).ConfigureAwait(false);
-            return result;
+            var query = from item in _items
+                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+                        let lastRequest = requests.FirstOrDefault()
+                        where requests.Any() && (lastRequest.Status == DealStatusEnum.Requested || lastRequest.Status == DealStatusEnum.Finished)
+                        where item.Id == itemId
+                        select item;
+            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            if (entity == null)
+                return default;
+
+            var alreadyFinished = entity.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault();
+            switch (alreadyFinished?.Status)
+            {
+                case DealStatusEnum.Requested:
+                    var result1 = new DealInputViewModel
+                    {
+                        ItemId = entity.Id
+                    };
+                    return result1;
+
+                case DealStatusEnum.Rejected:
+                case null:
+                case DealStatusEnum.Finished:
+                default:
+                    var viewModel = alreadyFinished?.Deal?.Into<Deal, DealViewModel>(false, act =>
+                    {
+                        act.GetBeneficiaries(false, act2 => act2.GetUser(false, act3 => act3.GetEmployee()));
+                        act.GetDealRequest();
+                        act.GetDealPayments();
+                    });
+                    if (viewModel == null)
+                        return default;
+
+                    var result = new DealInputViewModel
+                    {
+                        Id = viewModel.Id,
+                        Description = viewModel.Description,
+                        Beneficiaries = viewModel.Beneficiaries?.Select(x => new BeneficiaryJsonViewModel
+                        {
+                            Id = x.Id,
+                            UserId = x.User.Id,
+                            UserFullName = $"{x.User.Employee.FirstName} • {x.User.Employee.LastName}",
+                            TipPercent = x.TipPercent,
+                            CommissionPercent = x.CommissionPercent
+                        }).ToList(),
+                        ItemId = entity.Id,
+                        DealPayments = viewModel.DealPayments.Select(x => new DealPaymentJsonViewModel
+                        {
+                            Id = x.Id,
+                            Text = x.Text,
+                            PayDate = x.PayDate,
+                            Commission = x.Commission,
+                            Tip = x.Tip
+                        }).ToList()
+                    };
+
+                    return result;
+            }
         }
 
-        public async Task<(StatusEnum, Deal)> RequestAsync(ItemRequestInputViewModel model, bool save)
+        public async Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Deal>(StatusEnum.ModelIsNull, null);
 
-            if (model?.Customers?.Any() != true)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ApplicantsEmpty, null);
+            if (string.IsNullOrEmpty(model.ItemId))
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemIsNull, null);
 
-            var (requestAddStatus, newRequest) = await _baseService.AddAsync(new Deal
+            var item = await _items.FirstOrDefaultAsync(x => x.Id == model.ItemId).ConfigureAwait(false);
+            if (item == null)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemIsNull, null);
+
+            var (addStatus, newDeal) = await _baseService.AddAsync(new Deal
             {
                 Description = model.Description,
-                ItemId = model.ItemId,
-                Status = DealStatusEnum.Requested
-            }, null, false).ConfigureAwait(false);
-            if (requestAddStatus != StatusEnum.Success)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemRequestIsNull, null);
+            },
+                null,
+                false).ConfigureAwait(false);
 
-            await SyncApplicantsAsync(newRequest, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(newRequest, save).ConfigureAwait(false);
+            await SyncAsync(newDeal, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newDeal, save).ConfigureAwait(false);
         }
 
-        public async Task<StatusEnum> SyncApplicantsAsync(Deal deal, ItemRequestInputViewModel model, bool save)
+        public async Task<StatusEnum> SyncAsync(Deal deal, DealInputViewModel model, bool save)
         {
-            var allowedCustomers = await _customerService.ListJsonAsync().ConfigureAwait(false);
-            if (allowedCustomers?.Any() != true)
-                return StatusEnum.CustomerIsNull;
-
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null) return StatusEnum.UserIsNull;
-
-            var mustBeLeft = deal.Applicants.Where(ent => model.Customers.Any(mdl => ent.CustomerId == mdl.CustomerId)).ToList();
-            var mustBeRemoved = deal.Applicants.Where(x => !mustBeLeft.Contains(x)).ToList();
-            if (mustBeRemoved.Count > 0)
-            {
-                foreach (var redundant in mustBeRemoved)
+            await _baseService.SyncAsync(
+                deal.DealPayments,
+                model.DealPayments,
+                dealPayment => new DealPayment
                 {
-                    await _baseService.UpdateAsync(redundant,
-                        () => redundant.DealId = null, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
-                }
-            }
+                    DealId = deal.Id,
+                    CommissionPrice = dealPayment.Commission,
+                    PayDate = dealPayment.PayDate,
+                    Text = dealPayment.Text,
+                    TipPrice = dealPayment.Tip,
+                },
+                (inDb, inModel) => inDb.DealId == inModel.Id,
+                null, false).ConfigureAwait(false);
 
-            if (model.Customers?.Any() != true)
-                return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
-
-            foreach (var customr in model.Customers)
-            {
-                var source = deal.Applicants.FirstOrDefault(ent => ent.CustomerId == customr.CustomerId);
-                if (source == null)
+            await _baseService.SyncAsync(
+                deal.Beneficiaries,
+                model.Beneficiaries,
+                beneficiary => new Beneficiary
                 {
-                    var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customr.CustomerId).ConfigureAwait(false);
-                    if (cnt == null)
-                        continue;
-
-                    var (applicantAddStatus, newApplicant) = await _customerService.ApplicantAddAsync(new ApplicantInputViewModel
-                    {
-                        Address = cnt.Address,
-                        Mobile = cnt.MobileNumber,
-                        Name = cnt.Name,
-                        Phone = cnt.PhoneNumber,
-                        Type = ApplicantTypeEnum.Applicant
-                    }, deal.Id, false).ConfigureAwait(false);
-                }
-                else
-                {
-                    var applicant = await _applicants.FirstOrDefaultAsync(x => x.Id == customr.ApplicantId).ConfigureAwait(false);
-                    await _baseService.UpdateAsync(applicant,
-                        () => applicant.DealId = deal.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
-                }
-            }
-
+                    CommissionPercent = beneficiary.CommissionPercent,
+                    TipPercent = beneficiary.TipPercent,
+                    UserId = beneficiary.UserId,
+                    DealId = deal.Id
+                },
+                (inDb, inModel) => inDb.UserId == inModel.UserId,
+                null, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+        }
+
+        private async Task<(StatusEnum, Deal)> UpdateAsync(DealInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.IdIsNull, null);
+
+            var entity = await _deals.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var (updateStatus, updatedDeal) = await _baseService.UpdateAsync(entity,
+                _ => entity.Description = model.Description,
+                null,
+                false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+
+            if (updatedDeal == null)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealIsNull, null);
+
+            await SyncAsync(updatedDeal, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(updatedDeal, save).ConfigureAwait(false);
+        }
+
+        public Task<(StatusEnum, Deal)> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? UpdateAsync(model, save)
+                : AddAsync(model, save);
         }
     }
 }

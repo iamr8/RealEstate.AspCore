@@ -1,13 +1,13 @@
-﻿using RealEstate.Base.Enums;
-using RealEstate.Services.Database.Base;
+﻿using RealEstate.Services.Database.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.Database.Tables
 {
     public class Insurance : BaseEntity
     {
-        public string Price { get; set; }
-        public string Code { get; set; }
-        public InsuranceStatusEnum Status { get; set; }
+        [Required]
+        public double Price { get; set; }
+
         public string EmployeeId { get; set; }
         public virtual Employee Employee { get; set; }
     }

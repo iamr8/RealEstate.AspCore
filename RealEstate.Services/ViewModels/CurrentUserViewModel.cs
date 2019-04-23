@@ -1,6 +1,6 @@
 ﻿using RealEstate.Base;
 using RealEstate.Base.Enums;
-using System;
+using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
@@ -16,7 +16,8 @@ namespace RealEstate.Services.ViewModels
         public string Address { get; set; }
         public string Phone { get; set; }
         public string EmployeeId { get; set; }
-        public List<UserItemCategoryViewModel> UserItemCategories { get; set; }
-        public List<UserPropertyCategoryViewModel> UserPropertyCategories { get; set; }
+        public List<DivisionJsonViewModel> EmployeeDivisions { get; set; }
+        public List<CategoryJsonViewModel> UserItemCategories { get; set; }
+        public List<CategoryJsonViewModel> UserPropertyCategories { get; set; }
     }
 }

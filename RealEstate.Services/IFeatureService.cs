@@ -2,7 +2,6 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -250,7 +249,7 @@ namespace RealEstate.Services
 
             var entity = await FeatureEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () =>
+                _ =>
                 {
                     entity.Type = model.Type;
                     entity.Name = model.Name;
@@ -271,7 +270,7 @@ namespace RealEstate.Services
 
             var entity = await FacilityEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () => entity.Name = model.Name,
+                _ => entity.Name = model.Name,
                 new[]
                 {
                     Role.SuperAdmin
@@ -289,7 +288,7 @@ namespace RealEstate.Services
 
             var entity = await CategoryEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () =>
+                _ =>
                 {
                     entity.Type = model.Type;
                     entity.Name = model.Name;
@@ -370,18 +369,12 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel)
         {
-            var models = _features as IQueryable<Feature>;
-            models = models.Include(x => x.ApplicantFeatures);
-            models = models.Include(x => x.ItemFeatures);
-            models = models.Include(x => x.PropertyFeatures);
+            var models = _features.AsQueryable();
 
             if (searchModel != null)
             {
-                if (!string.IsNullOrEmpty(searchModel.Name))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
-
-                if (searchModel.Type != null)
-                    models = models.Where(x => x.Type == searchModel.Type);
+                models = models.SearchBy(searchModel.Name, x => x.Name);
+                models = models.SearchBy(searchModel.Type, x => x.Type);
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
@@ -428,7 +421,7 @@ namespace RealEstate.Services
         public async Task<List<FacilityViewModel>> FacilityListAsync()
         {
             var query = _facilities as IQueryable<Facility>;
-            query = query.Filtered();
+            query = query.WhereNotDeleted();
 
             var facilities = await query.ToListAsync().ConfigureAwait(false);
             return facilities.Into<Facility, FacilityViewModel>();
@@ -437,7 +430,7 @@ namespace RealEstate.Services
         public async Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type)
         {
             var query = _features as IQueryable<Feature>;
-            query = query.Filtered();
+            query = query.WhereNotDeleted();
 
             if (type != null)
                 query = query.Where(x => x.Type == type);
@@ -475,7 +468,7 @@ namespace RealEstate.Services
         public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege)
         {
             var query = _categories as IQueryable<Category>;
-            query = query.Filtered();
+            query = query.WhereNotDeleted();
 
             if (category != null)
             {

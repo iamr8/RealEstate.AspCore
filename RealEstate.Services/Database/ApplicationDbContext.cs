@@ -29,6 +29,7 @@ namespace RealEstate.Services.Database
         public virtual DbSet<Check> Check { get; set; }
         public virtual DbSet<Deal> Deal { get; set; }
         public virtual DbSet<DealPayment> DealPayment { get; set; }
+        public virtual DbSet<DealRequest> DealRequest { get; set; }
         public virtual DbSet<District> District { get; set; }
         public virtual DbSet<Division> Division { get; set; }
         public virtual DbSet<Employee> Employee { get; set; }
@@ -73,14 +74,55 @@ namespace RealEstate.Services.Database
             return base.Set<TEntity>();
         }
 
-        public void Detach<TEntity>(TEntity entity) where TEntity : class
+        public void Detach<TEntity>(bool isNew = false) where TEntity : class
         {
-            var entries = ChangeTracker.Entries();
-            var entry = entries.FirstOrDefault(e => e.Entity == entity);
-            if (entry == null)
+            var entries = ChangeTracker.Entries().ToList();
+            if (entries.Count == 0)
                 return;
 
-            Entry(entity).State = EntityState.Detached;
+            foreach (var entry in ChangeTracker.Entries<TEntity>())
+            {
+                if (entry.Entity == null)
+                    continue;
+
+                if (!isNew)
+                {
+                    if (entry.State == EntityState.Modified
+                        || entry.State == EntityState.Deleted)
+                    {
+                        Entry(entry.Entity).State = EntityState.Unchanged;
+                    }
+                }
+                else
+                {
+                    if (entry.State == EntityState.Added)
+                        Entry(entry.Entity).State = EntityState.Detached;
+                }
+            }
+        }
+
+        public void Detach(bool isNew = false)
+        {
+            var entries = ChangeTracker.Entries().ToList();
+            if (entries.Count == 0)
+                return;
+
+            foreach (var entry in ChangeTracker.Entries())
+            {
+                if (!isNew)
+                {
+                    if (entry.State == EntityState.Modified
+                        || entry.State == EntityState.Deleted)
+                    {
+                        Entry(entry.Entity).State = EntityState.Unchanged;
+                    }
+                }
+                else
+                {
+                    if (entry.State == EntityState.Added)
+                        Entry(entry.Entity).State = EntityState.Detached;
+                }
+            }
         }
 
         public override int SaveChanges()

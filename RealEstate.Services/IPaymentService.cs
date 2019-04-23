@@ -1,19 +1,30 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Input;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.BaseLog;
-using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services
 {
     public interface IPaymentService
     {
         //Task<(StatusEnum, Payment)> PaymentAddAsync(PaymentInputViewModel model, bool save);
+        Task<(StatusEnum, ManagementPercent)> ManagementPercentAddOrUpdateAsync(ManagementPercentInputViewModel model, bool update, bool save);
+
+        Task<StatusEnum> ManagementPercentRemoveAsync(string id);
+
+        Task<ManagementPercentInputViewModel> ManagementPercentInputAsync(string id);
+
+        Task<PaginationViewModel<ManagementPercentViewModel>> ManagementPercentListAsync(ManagementPercentSearchViewModel searchModel);
+
         Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string employeeId, bool save);
     }
 
@@ -22,6 +33,8 @@ namespace RealEstate.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly DbSet<FixedSalary> _fixedSalaries;
+        private readonly DbSet<Employee> _employees;
+        private readonly DbSet<ManagementPercent> _managementPercents;
 
         public PaymentService(
             IBaseService baseService,
@@ -31,6 +44,122 @@ namespace RealEstate.Services
             _baseService = baseService;
             _unitOfWork = unitOfWork;
             _fixedSalaries = _unitOfWork.Set<FixedSalary>();
+            _employees = _unitOfWork.Set<Employee>();
+            _managementPercents = _unitOfWork.Set<ManagementPercent>();
+        }
+
+        public async Task<StatusEnum> ManagementPercentRemoveAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return StatusEnum.ParamIsNull;
+
+            var user = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(user,
+                    new[]
+                    {
+                        Role.SuperAdmin, Role.Admin
+                    },
+                    true,
+                    true)
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public Task<(StatusEnum, ManagementPercent)> ManagementPercentAddOrUpdateAsync(ManagementPercentInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? ManagementPercentUpdateAsync(model, save)
+                : ManagementPercentAddAsync(model, save);
+        }
+
+        public async Task<(StatusEnum, ManagementPercent)> ManagementPercentUpdateAsync(ManagementPercentInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.IdIsNull, null);
+
+            if (string.IsNullOrEmpty(model.EmployeeId))
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.EmployeeIsNull, null);
+
+            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId).ConfigureAwait(false);
+            if (employee == null)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.EmployeeIsNull, null);
+
+            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            if (entity == null)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.ManagemenetPercentIsNull, null);
+
+            var updateStatus = await _baseService.UpdateAsync(entity,
+                _ =>
+                {
+                    entity.EmployeeId = model.EmployeeId;
+                    entity.Percent = model.Percent;
+                }, null, save, StatusEnum.ManagemenetPercentIsNull).ConfigureAwait(false);
+            return updateStatus;
+        }
+
+        public async Task<ManagementPercentInputViewModel> ManagementPercentInputAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return default;
+
+            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity.Into<ManagementPercent, ManagementPercentViewModel>(false, act =>
+            {
+                act.GetEmployee();
+            });
+            if (viewModel == null)
+                return default;
+
+            var result = new ManagementPercentInputViewModel
+            {
+                Id = viewModel.Id,
+                EmployeeId = viewModel.Employee?.Id,
+                Percent = viewModel.Percent
+            };
+
+            return result;
+        }
+
+        public async Task<PaginationViewModel<ManagementPercentViewModel>> ManagementPercentListAsync(ManagementPercentSearchViewModel searchModel)
+        {
+            var models = _managementPercents.AsQueryable();
+
+            if (searchModel != null)
+            {
+                models = models.SearchBy(searchModel.Percent, x => x.Percent);
+            }
+
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => item.Into<ManagementPercent, ManagementPercentViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetEmployee();
+                })
+            ).ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<(StatusEnum, ManagementPercent)> ManagementPercentAddAsync(ManagementPercentInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.ModelIsNull, null);
+
+            if (string.IsNullOrEmpty(model.EmployeeId))
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.EmployeeIsNull, null);
+
+            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId).ConfigureAwait(false);
+            if (employee == null)
+                return new ValueTuple<StatusEnum, ManagementPercent>(StatusEnum.EmployeeIsNull, null);
+
+            var addStatus = await _baseService.AddAsync(new ManagementPercent
+            {
+                EmployeeId = model.EmployeeId,
+                Percent = model.Percent
+            }, null, save).ConfigureAwait(false);
+            return addStatus;
         }
 
         public async Task<(StatusEnum, FixedSalary)> FixedSalarySyncAsync(double value, string employeeId, bool save)

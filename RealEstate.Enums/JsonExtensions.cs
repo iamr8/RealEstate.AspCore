@@ -27,6 +27,14 @@ namespace RealEstate.Base
             return json;
         }
 
+        public static string JsonSetAccessor(this string json)
+        {
+            if (string.IsNullOrEmpty(json) || json == "null")
+                return "[]";
+
+            return json;
+        }
+
         public static TModel JsonGetAccessor<TModel>(this string json)
         {
             return string.IsNullOrEmpty(json)

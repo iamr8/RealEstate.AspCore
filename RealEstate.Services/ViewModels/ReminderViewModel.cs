@@ -23,8 +23,8 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Text => _entity.Text;
-        public DateTime AlarmTime => _entity.AlarmTime;
+        public string Description => _entity.Description;
+        public DateTime Date => _entity.Date;
 
         public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {

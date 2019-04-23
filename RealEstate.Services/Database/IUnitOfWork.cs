@@ -14,7 +14,9 @@ namespace RealEstate.Services.Database
 
         Task<int> SaveChangesAsync();
 
-        void Detach<TEntity>(TEntity entity) where TEntity : class;
+        void Detach(bool isNew = false);
+
+        void Detach<TEntity>(bool isNew = false) where TEntity : class;
 
         TEntity Update<TEntity>(TEntity entity) where TEntity : class;
 

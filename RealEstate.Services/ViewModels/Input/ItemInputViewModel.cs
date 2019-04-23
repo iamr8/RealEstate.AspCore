@@ -10,6 +10,8 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class ItemInputViewModel : BaseInputViewModel
     {
+        private string _itemFeaturesJson;
+
         [Display(ResourceType = typeof(SharedResource), Name = "Property")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [HiddenInput]
@@ -20,7 +22,11 @@ namespace RealEstate.Services.ViewModels.Input
         public string CategoryId { get; set; }
 
         [HiddenInput]
-        public string ItemFeaturesJson { get; set; }
+        public string ItemFeaturesJson
+        {
+            get => _itemFeaturesJson;
+            set => _itemFeaturesJson = value.JsonSetAccessor();
+        }
 
         public List<FeatureJsonValueViewModel> ItemFeatures
         {

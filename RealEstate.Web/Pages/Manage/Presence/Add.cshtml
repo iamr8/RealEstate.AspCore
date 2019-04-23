@@ -1,5 +1,57 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Presence.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+
+@{
+    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+    var emploo = employees?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = $"{x.FirstName} {x.LastName}",
+        Selected = Model.NewPresence?.EmployeeId == x.Id
+    });
+
+    var statuses = SelectItemExtensions.ToSelectList<PresenseStatusEnum>(PresenseStatusEnum.Start);
+}
+<form method="post" class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle"></widget-header>
+        <input asp-for="NewPresence.Id" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+
+                <div class="col-12 margin-bottomed">
+                    <label asp-for="NewPresence.EmployeeId" class="control-label"></label>
+                    <select asp-items="emploo" asp-for="NewPresence.EmployeeId" class="form-control"></select>
+                    <span asp-validation-for="NewPresence.EmployeeId" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md-4 margin-bottomed">
+                    <label asp-for="NewPresence.Status" class="control-label"></label>
+                    <select asp-items="statuses" asp-for="NewPresence.Status" class="form-control"></select>
+                    <span asp-validation-for="NewPresence.Status" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-md-4 margin-bottomed">
+                    <label asp-for="NewPresence.Date" class="control-label"></label>
+                    <input asp-for="NewPresence.Date" class="form-control"/>
+                    <span asp-validation-for="NewPresence.Date" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-md-4 margin-bottomed">
+                    <label asp-for="NewPresence.Time" class="control-label"></label>
+                    <input asp-for="NewPresence.Time" class="form-control"/>
+                    <span asp-validation-for="NewPresence.Time" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.PresenceStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </div>
+</form>

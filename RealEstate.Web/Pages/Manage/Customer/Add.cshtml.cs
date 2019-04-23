@@ -45,11 +45,11 @@ namespace RealEstate.Web.Pages.Manage.Customer
                     return RedirectToPage(typeof(Applicant.IndexModel).Page());
 
                 NewApplicant = model;
-                PageTitle = _localizer["EditApplicant"];
+                PageTitle = _localizer["EditCustomer"];
             }
             else
             {
-                PageTitle = _localizer["NewApplicant"];
+                PageTitle = _localizer["NewCustomer"];
             }
             return Page();
         }

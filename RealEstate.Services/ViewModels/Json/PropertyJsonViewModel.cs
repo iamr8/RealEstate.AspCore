@@ -26,7 +26,7 @@ namespace RealEstate.Services.ViewModels.Json
         [JsonProperty("ftr")]
         public List<FeatureJsonValueViewModel> Features { get; set; }
 
-        [JsonProperty("psb")]
+        [JsonProperty("fcl")]
         public List<FacilityJsonViewModel> Facilities { get; set; }
     }
 }

@@ -45,30 +45,39 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Item?.Property?.Id" target="_blank">
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property?.Id" target="_blank">
                                         @SharedLocalizer["PropertyDetail"]
                                     </a>
                                 </span>
-                                @if (item.Item?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {
 
-                                <span>
-                                    @SharedLocalizer["Owners"]:
-                                    @foreach (var ownership in item.Item.Property.CurrentPropertyOwnership.Ownerships)
-                                    {
-                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
-                                    }
-                                </span>
+                                    <span>
+                                        @SharedLocalizer["Owners"]:
+                                        @foreach (var ownership in item.Property.CurrentPropertyOwnership.Ownerships)
+                                        {
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
+                                        }
+                                    </span>
                                 }
                                 @if (item.Applicants?.Any() == true)
                                 {
-                                <span>
-                                    @SharedLocalizer["Applicants"]:
-                                    @foreach (var applicant in item.Applicants)
-                                    {
-                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
-                                    }
-                                </span>
+                                    <span>
+                                        @SharedLocalizer["Applicants"]:
+                                        @foreach (var applicant in item.Applicants)
+                                        {
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
+                                        }
+                                    </span>
+                                }
+                                @if (item.ItemFeatures?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var feature in item.ItemFeatures)
+                                        {
+                                            <span class="badge badge-secondary">@feature.Feature?.Name &mdash; @feature.Value</span>
+                                        }
+                                    </span>
                                 }
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {
@@ -80,7 +89,8 @@
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    <a asp-page="@typeof(Deal.AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success">@SharedLocalizer["DealFinish"]</a>
+                                    <a asp-controller="Remove" asp-action="DealRequestAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@SharedLocalizer["Reject"]</a>
                                 }
                             </div>
                         </div>

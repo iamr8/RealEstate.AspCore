@@ -1,14 +1,14 @@
 ﻿@page
 @model RequestModel
 @{
-    var contactsList = await CustomerService.ListJsonAsync().ConfigureAwait(false);
+    var contactsList = await CustomerService.ListJsonAsync(Model.NewDealRequest.Id).ConfigureAwait(false);
     var contactSelector = new JsonSelectorComponentModel
     {
         IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
         NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
-        ModelName = nameof(Model.NewItemRequest),
-        ItemName = nameof(Model.NewItemRequest.Customers),
-        Json = nameof(Model.NewItemRequest.CustomerJson),
+        ModelName = nameof(Model.NewDealRequest),
+        ItemName = nameof(Model.NewDealRequest.Customers),
+        Json = nameof(Model.NewDealRequest.CustomerJson),
         Title = SharedLocalizer["Applicants"],
         ScriptKey = "propertyFeaturesScript",
         SelectListItems = contactsList?.Select(x => new SelectListItem
@@ -20,7 +20,7 @@
 
     var personCreator = new PersonCreatorComponentModel
     {
-        ModelName = $"{nameof(Model.NewItemRequest)}_NewApplicant",
+        ModelName = $"{nameof(Model.NewDealRequest)}_NewApplicant",
     };
 }
 <div class="col-12">
@@ -44,21 +44,20 @@
                 </div>
             </div>
             <form method="post">
-
-                <input asp-for="NewItemRequest.ItemId" class="form-control" rows="3" />
+                <input asp-for="NewDealRequest.Id" class="form-control" rows="3" />
                 <hr />
                 <div class="row justify-content-center align-items-center">
                     <div class="col-12">
-                        <input asp-for="NewItemRequest.CustomerJson" />
+                        <input asp-for="NewDealRequest.CustomerJson" />
                         <vc:json-selector model="@contactSelector" />
                     </div>
                 </div>
                 <hr />
                 <div class="row justify-content-center align-items-center">
                     <div class="col-12 margin-bottomed">
-                        <label asp-for="NewItemRequest.Description" class="control-label"></label>
-                        <textarea asp-for="NewItemRequest.Description" class="form-control" rows="3"></textarea>
-                        <span asp-validation-for="NewItemRequest.Description" class="text-danger"></span>
+                        <label asp-for="NewDealRequest.Description" class="control-label"></label>
+                        <textarea asp-for="NewDealRequest.Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="NewDealRequest.Description" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="row justify-content-center align-items-center">

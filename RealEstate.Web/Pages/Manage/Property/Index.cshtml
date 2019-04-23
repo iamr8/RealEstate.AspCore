@@ -4,7 +4,7 @@
     var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
     var categories = categorieslist?.Select(x => new SelectListItem
     {
-        Value = x.Id,
+        Value = x.Name,
         Text = x.Name
     }).ToList().AddNone();
 
@@ -13,41 +13,41 @@
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
+
+            <div class="col-12">
+                <form method="post" class="widget mini-widget bg-white">
+                    <widget-header title="@SharedLocalizer["Search"]"></widget-header>
+                    <section class="container-fluid margin-bottomed">
+                        <div class="row">
+                            <div class="col-12 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.Address"></label>
+                                <input asp-for="SearchInput.Address" class="form-control" />
+                            </div>
+                            <div class="col-12 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                <input asp-for="SearchInput.Owner" class="form-control" />
+                            </div>
+                            <div class="col-6 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.Category"></label>
+                                <select asp-items="categories" asp-for="SearchInput.Category" class="form-control"></select>
+                            </div>
+                            <div class="col-6 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.District"></label>
+                                <input asp-for="SearchInput.District" class="form-control" />
+                            </div>
+                        </div>
+                    </section>
+                    <widget-footer>
+                        <widget-footer-text></widget-footer-text>
+                        <widget-footer-button>
+                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
+                        </widget-footer-button>
+                    </widget-footer>
+                </form>
             </div>
             @if (Model.List.Items?.Any() == true)
             {
-                <div class="col-12">
-                    <form method="post" class="widget mini-widget bg-white">
-                        <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                        <section class="container-fluid margin-bottomed">
-                            <div class="row">
-                                <div class="col-12 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Address"></label>
-                                    <input asp-for="SearchInput.Address" class="form-control" />
-                                </div>
-                                <div class="col-12 col-lg-4 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                    <input asp-for="SearchInput.Owner" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-4 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Category"></label>
-                                    <select asp-items="categories" asp-for="SearchInput.Category" class="form-control"></select>
-                                </div>
-                                <div class="col-6 col-lg-4 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.District"></label>
-                                    <input asp-for="SearchInput.District" class="form-control" />
-                                </div>
-                            </div>
-                        </section>
-                        <widget-footer>
-                            <widget-footer-text></widget-footer-text>
-                            <widget-footer-button>
-                                <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                            </widget-footer-button>
-                        </widget-footer>
-                    </form>
-                </div>
+
                 foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";

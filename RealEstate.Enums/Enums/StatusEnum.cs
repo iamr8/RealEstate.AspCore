@@ -74,7 +74,7 @@ namespace RealEstate.Base.Enums
         PropertyOwnershipIsNull,
         OwnershipIsNull,
         PropertyOwnershipNotUpdated,
-        ItemRequestIsNull,
+        DealRequestIsNull,
 
         RecipientIsNull,
         TemplateIsNull,
@@ -84,6 +84,10 @@ namespace RealEstate.Base.Enums
         IdIsNull,
         EmployeeIsNull,
         DivisionIdIsNull,
-        NameIsNull
+        NameIsNull,
+        EntityIsNull,
+        DealIsNull,
+        ManagemenetPercentIsNull,
+        LeaveIsNull
     }
 }

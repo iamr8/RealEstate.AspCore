@@ -30,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
         public PaginationViewModel<CustomerViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Contacts"];
+        public string PageTitle => _localizer["Customers"];
 
         public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile)
         {

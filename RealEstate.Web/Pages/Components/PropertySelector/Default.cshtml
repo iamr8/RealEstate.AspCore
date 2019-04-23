@@ -30,7 +30,7 @@
             var pendingRequest = null;
             const searchInput = $("#@Model.SearchId");
             const searchInputResults = $("#@Model.SearchResultId");
-            const currentId = $("#@Model.PropertyId");
+            const currentPropertyId = $("#@Model.PropertyId");
 
              $(searchInput).on("paste keyup",
             delayOnRun(function() {
@@ -122,10 +122,10 @@
             $(document).on("click",
                 "#NewItem_Property .items > li:not(.template)",
                 function() {
-                    foundItemEvent(currentId, this);
+                    foundItemEvent(currentPropertyId, this);
                 });
 
-            $(currentId).trigger("change");
+            $(currentPropertyId).trigger("change");
 
         });
     </script>

@@ -1,14 +1,15 @@
 ﻿using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace RealEstate.Services.Base
     {
         CurrentUserViewModel CurrentUser();
 
-        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentList,
+        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
             List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator,
             Action<TSource, TModel> onUpdate,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
@@ -47,9 +48,10 @@ namespace RealEstate.Services.Base
         bool IsAllowed(params Role[] roles);
 
         Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
-            Action changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
+            Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
-        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel) where TQuery : BaseEntity where TOutput : class;
+        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel)
+            where TQuery : BaseEntity where TOutput : BaseLogViewModel;
 
         //        (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
         //            List<LogUserViewModel> users) where TSource : class where TModel : class;
@@ -90,15 +92,10 @@ namespace RealEstate.Services.Base
             _users = _unitOfWork.Set<User>();
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel) where TQuery : BaseEntity where TOutput : class
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel)
+            where TQuery : BaseEntity where TOutput : BaseLogViewModel
         {
             var output = new PaginationViewModel<TOutput>();
-
-            if (query is EntityQueryable<TQuery>)
-                return output;
-
-            if (query?.Any() != true)
-                return output;
 
             var currentUser = CurrentUser();
             if (currentUser == null)
@@ -137,7 +134,7 @@ namespace RealEstate.Services.Base
 
             pagesProperty.SetValue(output, NumberProcessorExtensions.RoundToUp((double)count / pageSize));
             pageProperty.SetValue(output, page);
-            itemsProperty.SetValue(output, viewList);
+            itemsProperty.SetValue(output, viewList.R8ToList());
 
             return output;
         }
@@ -240,20 +237,23 @@ namespace RealEstate.Services.Base
             return entity;
         }
 
-        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentList,
+        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
             List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator, Action<TSource, TModel> onUpdate, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
-            if (currentUser == null) return StatusEnum.UserIsNull;
+            if (currentUser == null)
+                return StatusEnum.UserIsNull;
 
-            var mustBeLeft = currentList.Where(ent => newList.Any(model => indentifier.Compile().Invoke(ent, model))).ToList();
-            var mustBeRemoved = currentList.Where(x => !mustBeLeft.Contains(x)).ToList();
-            if (mustBeRemoved.Count > 0)
+            if (currentListEntities?.Any() == true)
             {
-                foreach (var redundant in mustBeRemoved)
-                {
-                    await RemoveAsync(redundant, false, false, true).ConfigureAwait(false);
-                }
+                var mustBeLeft = new List<TSource>();
+                if (newList?.Any() == true)
+                    mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+
+                var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
+                if (mustBeRemoved.Count > 0)
+                    foreach (var redundant in mustBeRemoved)
+                        await RemoveAsync(redundant, false, false, true).ConfigureAwait(false);
             }
 
             if (newList?.Any() != true)
@@ -261,7 +261,7 @@ namespace RealEstate.Services.Base
 
             foreach (var model in newList)
             {
-                var source = currentList.FirstOrDefault(ent => indentifier.Compile().Invoke(ent, model));
+                var source = currentListEntities?.FirstOrDefault(ent => indentifier.Compile().Invoke(ent, model));
                 if (source == null)
                 {
                     var newItem = newEntity.Invoke(model);
@@ -269,8 +269,8 @@ namespace RealEstate.Services.Base
                 }
                 else
                 {
-                    var isValid = validator?.Invoke(source, model) == true;
-                    if (isValid)
+                    var noNeedChanges = validator?.Invoke(source, model) == true;
+                    if (noNeedChanges)
                         continue;
 
                     onUpdate.Invoke(source, model);
@@ -285,20 +285,27 @@ namespace RealEstate.Services.Base
             List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
-            if (currentUser == null) return StatusEnum.UserIsNull;
+            if (currentUser == null)
+                return StatusEnum.UserIsNull;
 
-            var mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
-            var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
-            if (mustBeRemoved.Count > 0)
-                foreach (var redundant in mustBeRemoved)
-                    await RemoveAsync(redundant, false, false).ConfigureAwait(false);
+            if (currentListEntities?.Any() == true)
+            {
+                var mustBeLeft = new List<TSource>();
+                if (newList?.Any() == true)
+                    mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+
+                var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
+                if (mustBeRemoved.Count > 0)
+                    foreach (var redundant in mustBeRemoved)
+                        await RemoveAsync(redundant, false, false).ConfigureAwait(false);
+            }
 
             if (newList?.Any() != true)
                 return await SaveChangesAsync(save).ConfigureAwait(false);
 
             foreach (var model in newList)
             {
-                var source = currentListEntities.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
+                var source = currentListEntities?.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
                 if (source == null)
                 {
                     var newItem = newEntity.Invoke(model);
@@ -306,7 +313,7 @@ namespace RealEstate.Services.Base
                 }
                 else
                 {
-                    if (source.LastLog().Type != LogTypeEnum.Delete)
+                    if (!source.IsDeleted)
                         continue;
 
                     _unitOfWork.UnDelete(source, currentUser);
@@ -330,9 +337,10 @@ namespace RealEstate.Services.Base
                 LastName = claims.Find(x => x.Type == "LastName")?.Value,
                 Address = claims.Find(x => x.Type == ClaimTypes.StreetAddress)?.Value,
                 Phone = claims.Find(x => x.Type == ClaimTypes.HomePhone)?.Value,
-                UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<UserPropertyCategoryViewModel>>(),
-                UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<UserItemCategoryViewModel>>(),
+                UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
+                UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
                 EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,
+                EmployeeDivisions = claims.Find(x => x.Type == "EmployeeDivisions")?.Value.JsonConversion<List<DivisionJsonViewModel>>(),
             };
             return result;
         }
@@ -368,7 +376,7 @@ namespace RealEstate.Services.Base
         }
 
         public async Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
-         Action changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
+         Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
@@ -381,7 +389,7 @@ namespace RealEstate.Services.Base
                 return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
 
             var tempEntityBeforeChanges = entity.GetProperties();
-            changes.Invoke();
+            changes.Invoke(currentUser);
             var tempEntityAfterChanges = entity.GetProperties();
 
             var changesIndicator = 0;
@@ -400,7 +408,7 @@ namespace RealEstate.Services.Base
                 foreach (var (keyAfterChanges, valueAfterChanges) in needTypes)
                 {
                     var propertyBeforeChanges = tempEntityBeforeChanges.FirstOrDefault(x => x.Key == keyAfterChanges);
-                    if (!propertyBeforeChanges.Value.Equals(valueAfterChanges))
+                    if (!propertyBeforeChanges.Value?.Equals(valueAfterChanges) == true)
                         changesIndicator++;
                 }
             }

@@ -30,7 +30,7 @@ namespace RealEstate.Services.ViewModels
 
         public void GetItems(bool includeDeleted, Action<ItemViewModel> action = null)
         {
-            Items = _entity?.Items.Into(includeDeleted, action);
+            Items = _entity?.Items.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
         }
 
         public void GetProperties(bool includeDeleted, Action<PropertyViewModel> action = null)

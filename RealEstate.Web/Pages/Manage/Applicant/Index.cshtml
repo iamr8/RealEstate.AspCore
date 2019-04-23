@@ -18,16 +18,16 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <b class="title">
-                                        @item.Customer.Name
-                                    </b>
+                                    <a class="title" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-customerId="@item.Customer.Id" target="_blank">
+                                        @item.Customer?.Name
+                                    </a>
                                     <span class="badge badge-secondary">@item.Type.GetDisplayName()</span>
                                     <a href="tel:@item.Customer?.Mobile" class="badge badge-primary">@item.Customer?.Mobile</a>
-                                    @if (!string.IsNullOrEmpty(item.Customer.Phone))
+                                    @if (!string.IsNullOrEmpty(item.Customer?.Phone))
                                     {
                                         <span class="badge badge-secondary">@item.Customer.Phone</span>
                                     }
-                                    @if (!string.IsNullOrEmpty(item.Customer.Address))
+                                    @if (!string.IsNullOrEmpty(item.Customer?.Address))
                                     {
                                         <span class="badge badge-warning">@item.Customer.Address</span>
                                     }

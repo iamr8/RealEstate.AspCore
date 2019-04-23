@@ -1,4 +1,5 @@
-﻿using RealEstate.Base;
+﻿using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
@@ -17,29 +18,63 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static TModel Into<TEntity, TModel>(this TEntity model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        public static TModel Into<TEntity, TModel>(this TEntity model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model == null)
+                return default;
+
+            var ignoreDeletedItems = !includeDeleted;
+            var currentDeleteState = model.IsDeleted;
+            if (ignoreDeletedItems && currentDeleteState)
                 return default;
 
             var ty = Activator.CreateInstance(typeof(TModel), model, includeDeleted, action) as TModel;
             return ty;
         }
 
-        public static IQueryable<TSource> SearchBy<TSource>(this IQueryable<TSource> source, object condition, Expression<Func<TSource, object>> expression) where TSource : BaseEntity
+        //public static IQueryable<TSource> SearchBy<TSource>(this IQueryable<TSource> source, string condition, Expression<Func<TSource, string>> expression) where TSource : BaseEntity
+        //{
+        //    if (condition == null)
+        //        return source;
+
+        //    source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x), condition.LikeExpression()));
+        //    return source;
+        //}
+        public static IQueryable<TSource> SearchBy<TSource, TType>(this IQueryable<TSource> source, TType condition, Expression<Func<TSource, TType>> expression) where TSource : BaseEntity
         {
             if (condition == null)
                 return source;
 
-            var hasValue = false;
-            if (condition is string conditionString)
+            if (condition is string condString)
             {
-                hasValue = !string.IsNullOrEmpty(conditionString);
+                if (string.IsNullOrEmpty(condString))
+                    return source;
+
+                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x).ToString(), condString.LikeExpression()));
             }
+            else
+            {
+                source = source.Where(x => expression.Compile().Invoke(x).Equals(condition));
+            }
+            return source;
+        }
 
-            if (hasValue)
-                source = source.Where(x => expression.Compile().Invoke(x) == condition);
+        public static IQueryable<TSource> SearchBy<TSource, TType>(this IQueryable<TSource> source, TType condition, Expression<Func<TSource, TType, bool>> expression) where TSource : BaseEntity
+        {
+            if (condition == null)
+                return source;
 
+            if (condition is string condString)
+            {
+                if (string.IsNullOrEmpty(condString))
+                    return source;
+
+                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x, condition).ToString(), condString.LikeExpression()));
+            }
+            else
+            {
+                source = source.Where(x => expression.Compile().Invoke(x, condition).Equals(condition));
+            }
             return source;
         }
 
@@ -106,7 +141,7 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : BaseLogViewModel
+        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
@@ -118,7 +153,7 @@ namespace RealEstate.Services.Extensions
             return result;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TModel : class
+        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
@@ -130,7 +165,7 @@ namespace RealEstate.Services.Extensions
             return result;
         }
 
-        public static IQueryable<TEntity> Filtered<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity
+        public static IQueryable<TEntity> WhereNotDeleted<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity
         {
             var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
                                                   || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);

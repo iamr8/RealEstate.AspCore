@@ -1,15 +1,17 @@
-﻿using RealEstate.Base;
+﻿using Microsoft.AspNetCore.Mvc;
+using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 
 namespace RealEstate.Services.ViewModels.Input
 {
     public class EmployeeInputViewModel : BaseInputViewModel
     {
+        private string _divisionsJson;
+
         [Display(ResourceType = typeof(SharedResource), Name = "FirstName")]
         [R8Validator(RegexPatterns.PersianText)]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
@@ -26,23 +28,29 @@ namespace RealEstate.Services.ViewModels.Input
         public string Mobile { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Address")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [R8Validator(RegexPatterns.SafeText)]
         public string Address { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "PhoneNumber")]
         [R8Validator(RegexPatterns.NumbersOnly)]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Phone { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "FixedSalary")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public double FixedSalary { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Insurance")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        public double Insurance { get; set; }
+
         [Display(ResourceType = typeof(SharedResource), Name = "Divisions")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [HiddenInput]
-        public string DivisionsJson { get; set; }
+        public string DivisionsJson
+        {
+            get => _divisionsJson;
+            set => _divisionsJson = value.JsonSetAccessor();
+        }
 
         public List<DivisionJsonViewModel> Divisions
         {

@@ -15,10 +15,8 @@ namespace RealEstate.Services.Database.Tables
         [Required]
         public string Mobile { get; set; }
 
-        [Required]
         public string Phone { get; set; }
 
-        [Required]
         public string Address { get; set; }
 
         public virtual ICollection<User> Users { get; set; }

@@ -18,6 +18,10 @@ namespace RealEstate.Services.Database.Configuration
                 .WithMany(x => x.Items)
                 .HasForeignKey(x => x.CategoryId)
                 .IsRequired();
+
+            builder.HasMany(x => x.Applicants)
+                .WithOne(x => x.Item)
+                .HasForeignKey(x => x.ItemId);
         }
     }
 }

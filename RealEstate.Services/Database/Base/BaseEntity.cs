@@ -10,8 +10,6 @@ namespace RealEstate.Services.Database.Base
     {
         public string Id { get; set; }
 
-        //        public DateTime DateTime { get; set; }
-
         public string Audit { get; set; }
 
         [NotMapped]

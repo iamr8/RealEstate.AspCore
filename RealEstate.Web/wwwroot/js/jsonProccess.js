@@ -54,11 +54,13 @@ function removeJson(jsonElement, index) {
 }
 
 function addJson(jsonElement, item, uniqueCheck) {
-    if ($(jsonElement).val() === "") {
+    if ($(jsonElement).val() === "" || $(jsonElement).val() === null) {
         $(jsonElement).val("[]");
     }
-    console.log(item);
+    console.log("item to AddToJson:", item);
+
     const jsonString = $(jsonElement).val();
+    console.log("jsonElement:", jsonElement, "jsonString:", jsonString);
 
     const json = $.parseJSON(jsonString);
     const found = json.findIndex(uniqueCheck) >= 0;

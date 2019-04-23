@@ -1,13 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.Extensions.KavenNegarProvider;
 using RealEstate.Services.Extensions.KavenNegarProvider.Response;
 using RealEstate.Services.Extensions.KavenNegarProvider.Response.ResultModels;
+using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +22,7 @@ namespace RealEstate.Services
 {
     public interface ISmsService
     {
+        Task<PaginationViewModel<SmsViewModel>> ListAsync(SmsSearchViewModel searchModel);
     }
 
     public class SmsService : ISmsService
@@ -40,6 +45,16 @@ namespace RealEstate.Services
         }
 
         public const string TemplateToken = "%%%";
+
+        public async Task<PaginationViewModel<SmsViewModel>> ListAsync(SmsSearchViewModel searchModel)
+        {
+            var models = _smses.AsQueryable();
+            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+                item => item.Into<Sms, SmsViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
+            ).ConfigureAwait(false);
+
+            return result;
+        }
 
         public async Task<(StatusEnum, List<Sms>)> SendAsync(string[] recipients, string template, params string[] tokens)
         {

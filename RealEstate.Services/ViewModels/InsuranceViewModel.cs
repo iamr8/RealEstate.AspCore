@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -23,9 +22,7 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Price => _entity.Price;
-        public string Code => _entity.Code;
-        public InsuranceStatusEnum Status => _entity.Status;
+        public double Price => _entity.Price;
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {

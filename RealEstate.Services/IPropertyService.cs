@@ -146,33 +146,26 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<PropertyViewModel>> PropertyListAsync(PropertySearchViewModel searchModel)
         {
             var models = _properties.AsQueryable();
-            if (searchModel != null)
-            {
-                if (!string.IsNullOrEmpty(searchModel.Id))
-                    models = models.Where(x => EF.Functions.Like(x.Id, searchModel.Id.LikeExpression()));
-
-                if (!string.IsNullOrEmpty(searchModel.Address))
-                    models = models.Where(x => EF.Functions.Like(x.Street, searchModel.Address.LikeExpression())
-                    || EF.Functions.Like(x.Alley, searchModel.Address.LikeExpression())
-                    || EF.Functions.Like(x.BuildingName, searchModel.Address.LikeExpression()));
-
-                if (!string.IsNullOrEmpty(searchModel.Category))
-                    models = models.Where(x => EF.Functions.Like(x.Category.Name, searchModel.Category.LikeExpression()));
-
-                if (!string.IsNullOrEmpty(searchModel.District))
-                    models = models.Where(x => EF.Functions.Like(x.District.Name, searchModel.District.LikeExpression()));
-
-                //                if (!string.IsNullOrEmpty(searchModel.Owner))
-                //                    models = models.Where(x => EF.Functions.Like(x.Category.Name, searchModel.Category.LikeExpression()));
-            }
+            models = models.SearchBy(searchModel?.Id, x => x.Id);
+            models = models.SearchBy(searchModel?.Category, x => x.Category.Name);
+            models = models.SearchBy(searchModel?.District, x => x.District.Name);
+            models = models.SearchBy(searchModel?.Address,
+                (x, y) => EF.Functions.Like(x.Street, y.LikeExpression())
+                          || EF.Functions.Like(x.Alley, y.LikeExpression())
+                          || EF.Functions.Like(x.BuildingName, y.LikeExpression()));
+            models = models.SearchBy(searchModel?.Owner, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.Name == y)));
+            models = models.SearchBy(searchModel?.OwnerMobile, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.MobileNumber == y)));
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                     item =>
                     {
-                        return new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin), property =>
+                        return new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                         {
-                            property.GetCategory();
-                            property.GetPropertyOwnerships(false, propertyOwnership => propertyOwnership.GetOwnerships(false, ownership => ownership.GetCustomer()));
+                            act.GetCategory();
+                            act.GetDistrict();
+                            act.GetPropertyOwnerships(false, act2 => act2.GetOwnerships(false, act3 => act3.GetCustomer()));
+                            act.GetPropertyFacilities(false, act4 => act4.GetFacility());
+                            act.GetPropertyFeatures(false, act5 => act5.GetFeature());
                         });
                     })
                 .ConfigureAwait(false);
@@ -220,7 +213,6 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var query = _properties as IQueryable<Property>;
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
         }
@@ -229,19 +221,15 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var query = _properties as IQueryable<Property>;
-            query = query.Include(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility)
-                .Include(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.District)
-                .Include(x => x.Category)
-                .Include(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
-
-            var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Into<Property, PropertyViewModel>();
+            var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity?.Into<Property, PropertyViewModel>(false, act =>
+            {
+                act.GetPropertyOwnerships(false, act2 => act2.GetOwnerships(false, act3 => act3.GetCustomer()));
+                act.GetPropertyFacilities(false, act4 => act4.GetFacility());
+                act.GetPropertyFeatures(false, act5 => act5.GetFeature());
+                act.GetCategory();
+                act.GetDistrict();
+            });
             if (viewModel == null)
                 return default;
 
@@ -304,17 +292,11 @@ namespace RealEstate.Services
             }, null, false).ConfigureAwait(false);
 
             if (propertyAddStatus != StatusEnum.Success)
-            {
-                _unitOfWork.Detach(newProperty);
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyIsNull, null);
-            }
 
             var (propertyOwnershipAddStatus, newPropertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false).ConfigureAwait(false);
             if (propertyOwnershipAddStatus != StatusEnum.Success)
-            {
-                _unitOfWork.Detach(newPropertyOwnership);
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
-            }
 
             await PropertySyncAsync(newProperty, newPropertyOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
@@ -323,7 +305,7 @@ namespace RealEstate.Services
         private async Task<StatusEnum> PropertySyncAsync(Property property, PropertyOwnership propertyOwnership, PropertyInputViewModel model, bool save)
         {
             await _baseService.SyncAsync(
-                propertyOwnership.Ownerships,
+                propertyOwnership.Ownerships.ToList(),
                 model.Ownerships,
                 ownership => new Ownership
                 {
@@ -342,7 +324,7 @@ namespace RealEstate.Services
                 false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
-                property.PropertyFeatures,
+                property.PropertyFeatures.ToList(),
                 model.PropertyFeatures,
                 feature => new PropertyFeature
                 {
@@ -354,7 +336,7 @@ namespace RealEstate.Services
                 null, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
-                property.PropertyFacilities,
+                property.PropertyFacilities.ToList(),
                 model.PropertyFacilities,
                 facility => new PropertyFacility
                 {
@@ -385,18 +367,9 @@ namespace RealEstate.Services
             if (model.Ownerships?.Any() != true)
                 return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
 
-            var query = _properties.Include(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility)
-                .Include(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.District)
-                .Include(x => x.Category)
-                .Include(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
-            var entity = await query.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _properties.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,
-                () =>
+                _ =>
                 {
                     entity.Alley = model.Alley;
                     entity.BuildingName = model.BuildingName;

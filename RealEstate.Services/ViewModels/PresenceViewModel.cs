@@ -24,9 +24,7 @@ namespace RealEstate.Services.ViewModels
         }
 
         public PresenseStatusEnum Status => _entity.Status;
-        public int Year => _entity.Year;
-        public int Month => _entity.Month;
-        public int Day => _entity.Day;
+        public DateTime Date => _entity.Date;
         public int Hour => _entity.Hour;
         public int Minute => _entity.Minute;
 

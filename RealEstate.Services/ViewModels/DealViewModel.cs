@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -25,40 +24,33 @@ namespace RealEstate.Services.ViewModels
         }
 
         public string Description => _entity?.Description;
-        public DealStatusEnum Status => _entity?.Status ?? DealStatusEnum.Rejected;
 
-        public void GetItem(bool includeDeleted, Action<ItemViewModel> action = null)
+        public void GetDealRequest(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
-            Item = _entity?.Item.Into(includeDeleted, action);
+            DealRequest = _entity?.DealRequest.Into(includeDeleted, action);
         }
 
-        public void GetApplicants(bool includeDeleted, Action<ApplicantViewModel> action = null)
+        public void GetDealPayments(bool includeDeleted = false, Action<DealPaymentViewModel> action = null)
         {
-            Applicants = _entity?.Applicants.Into(includeDeleted, action);
+            DealPayments = _entity?.DealPayments.Into(includeDeleted, action).ShowBasedOn(x => x.Deal);
         }
 
-        public void GetDealPayments(bool includeDeleted, Action<DealPaymentViewModel> action = null)
-        {
-            DealPayments = _entity?.DealPayments.Into(includeDeleted, action);
-        }
-
-        public void GetBeneficiaries(bool includeDeleted, Action<BeneficiaryViewModel> action = null)
+        public void GetBeneficiaries(bool includeDeleted = false, Action<BeneficiaryViewModel> action = null)
         {
             Beneficiaries = _entity?.Beneficiaries.Into(includeDeleted, action);
         }
 
-        public void GetPictures(bool includeDeleted, Action<PictureViewModel> action = null)
+        public void GetPictures(bool includeDeleted = false, Action<PictureViewModel> action = null)
         {
             Pictures = _entity?.Pictures.Into(includeDeleted, action);
         }
 
-        public void GetChecks(bool includeDeleted, Action<CheckViewModel> action = null)
+        public void GetChecks(bool includeDeleted = false, Action<CheckViewModel> action = null)
         {
             Checks = _entity?.Checks.Into(includeDeleted, action);
         }
 
-        public ItemViewModel Item { get; private set; }
-        public List<ApplicantViewModel> Applicants { get; private set; }
+        public DealRequestViewModel DealRequest { get; private set; }
         public List<DealPaymentViewModel> DealPayments { get; private set; }
         public List<BeneficiaryViewModel> Beneficiaries { get; private set; }
         public List<PictureViewModel> Pictures { get; private set; }

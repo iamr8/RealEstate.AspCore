@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MoreLinq;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
+using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -28,7 +30,7 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Database.Tables.Customer)> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string dealId, bool save);
+        Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save);
 
         Task<(StatusEnum, Ownership)> OwnershipAddAsync(Ownership model, bool save);
 
@@ -36,15 +38,13 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
-        Task<StatusEnum> CustomerPrivacyCheckAsync(string mobile);
-
         Task<(StatusEnum, Database.Tables.Customer)> CustomerUpdateAsync(CustomerInputViewModel model, bool save);
 
         Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel);
 
         Task<ApplicantInputViewModel> ApplicantInputAsync(string id);
 
-        Task<List<ApplicantJsonViewModel>> ListJsonAsync();
+        Task<List<ItemCustomerJsonViewModel>> ListJsonAsync(string itemId);
 
         Task<List<CustomerViewModel>> CustomerListAsync();
 
@@ -71,6 +71,7 @@ namespace RealEstate.Services
         private readonly DbSet<Database.Tables.Customer> _customers;
         private readonly DbSet<Database.Tables.Applicant> _applicants;
         private readonly DbSet<Ownership> _ownerships;
+        private readonly DbSet<Item> _items;
 
         public CustomerService(
             IUnitOfWork unitOfWork,
@@ -81,49 +82,108 @@ namespace RealEstate.Services
             _unitOfWork = unitOfWork;
             _baseService = baseService;
 
+            _items = _unitOfWork.Set<Item>();
             _customers = _unitOfWork.Set<Database.Tables.Customer>();
             _applicants = _unitOfWork.Set<Database.Tables.Applicant>();
             _ownerships = _unitOfWork.Set<Ownership>();
         }
 
-        public async Task<List<ApplicantJsonViewModel>> ListJsonAsync()
+        public async Task<List<ItemCustomerJsonViewModel>> ListJsonAsync(string itemId)
         {
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
                 return default;
 
-            var applicantsQuery = await _applicants.Where(x => x.UserId == currentUser.Id && x.DealId == null).ToListAsync().ConfigureAwait(false);
-            var customers = await _customers.WhereItIsPublic().ToListAsync().ConfigureAwait(false);
+            //var applicantsQuery = await _applicants
+            //    .Include(x => x.Item)
+            //    .Where(x => x.UserId == currentUser.Id
+            //                && (x.Item.Requestss.Count == 0 || x.Item.Requestss.OrderByDescending(c => c.DateTime).FirstOrDefault().Status != DealStatusEnum.Finished))
+            //    .ToListAsync().ConfigureAwait(false);
+            var customers = await _customers
+                .Where(x => x.Applicants.Count == 0
+                            || x.Ownerships.Count >= 0
+                            || x.Applicants.Any(c => c.Item.DealRequests.Any(v => v.DealId != null))
+                            || x.Applicants.Any(c => c.UserId == currentUser.Id))
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            var result = new List<ApplicantJsonViewModel>();
-            if (applicantsQuery?.Any() == true)
-                foreach (var applicant in applicantsQuery)
-                {
-                    var item = new ApplicantJsonViewModel
-                    {
-                        Name = applicant.Customer.Name,
-                        Mobile = applicant.Customer.MobileNumber,
-                        ApplicantId = applicant.Id,
-                        CustomerId = applicant.CustomerId
-                    };
-                    result.Add(item);
-                }
+            var result = new List<ItemCustomerJsonViewModel>();
+            //if (applicantsQuery?.Any() == true)
+            //    foreach (var applicant in applicantsQuery)
+            //    {
+            //        if (applicant.IsDeleted)
+            //            continue;
+
+            //        var itemCustomer = new ItemCustomerJsonViewModel
+            //        {
+            //            Name = applicant.Customer.Name,
+            //            Mobile = applicant.Customer.MobileNumber,
+            //            ApplicantId = applicant.Id,
+            //            CustomerId = applicant.CustomerId
+            //        };
+            //        result.Add(itemCustomer);
+            //    }
 
             if (customers?.Any() == true)
                 foreach (var customer in customers)
                 {
+                    if (customer.IsDeleted)
+                        continue;
+
                     var duplicate = result.Find(x => x.CustomerId == customer.Id);
                     if (duplicate != null)
                         continue;
 
-                    var item = new ApplicantJsonViewModel
+                    var applicants = customer.Applicants.Where(x => x.UserId == currentUser.Id).ToList();
+                    if (applicants?.Any() == true)
                     {
-                        Name = customer.Name,
-                        Mobile = customer.MobileNumber,
-                        CustomerId = customer.Id,
-                    };
-                    result.Add(item);
+                        foreach (var applicant in applicants)
+                        {
+                            var itemCustomer = new ItemCustomerJsonViewModel
+                            {
+                                Name = customer.Name,
+                                Mobile = customer.MobileNumber,
+                                CustomerId = customer.Id,
+                                ApplicantId = applicant.Id
+                            };
+                            result.Add(itemCustomer);
+                        }
+                    }
+                    else
+                    {
+                        var itemCustomer = new ItemCustomerJsonViewModel
+                        {
+                            Name = customer.Name,
+                            Mobile = customer.MobileNumber,
+                            CustomerId = customer.Id,
+                        };
+                        result.Add(itemCustomer);
+                    }
                 }
+
+            if (string.IsNullOrEmpty(itemId))
+                return result;
+
+            var item = await _items.FirstOrDefaultAsync(x => x.Id == itemId).ConfigureAwait(false);
+            if (item == null)
+                return result;
+
+            if (item.IsDeleted)
+                return result;
+
+            var owners = item.Property?.CurrentOwnership?.Ownerships;
+            if (owners?.Any() != true)
+                return result;
+
+            foreach (var ownership in owners)
+            {
+                var exist = result.Find(x => x.CustomerId == ownership.CustomerId);
+                if (exist == null)
+                    continue;
+
+                if (string.IsNullOrEmpty(exist.ApplicantId))
+                    result.Remove(exist);
+            }
 
             return result;
         }
@@ -156,11 +216,9 @@ namespace RealEstate.Services
 
         public async Task<List<CustomerViewModel>> CustomerListAsync()
         {
-            var query = _customers.AsQueryable();
-            query = query.Filtered();
-            query = query.Include(x => x.Ownerships)
-                .Include(x => x.Applicants);
-            query = query.WhereItIsPublic();
+            var query = _customers
+                .WhereNotDeleted()
+                .WhereItIsPublic();
 
             var customers = await query.ToListAsync().ConfigureAwait(false);
             return customers.Into<Customer, CustomerViewModel>();
@@ -241,33 +299,17 @@ namespace RealEstate.Services
             if (result != StatusEnum.Success)
                 return result;
 
-            var customers = await CustomerPrivacyCheckAsync(mobile).ConfigureAwait(false);
-            return customers;
+            return result;
         }
 
-        public async Task<StatusEnum> CustomerPrivacyCheckAsync(string mobile)
+        public async Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemId, bool save)
         {
-            var customer = await CustomerEntityAsync(null, mobile, true, false, false).ConfigureAwait(false);
-            if (customer == null)
-                return StatusEnum.CustomerIsNull;
-
-            if (customer.Applicants.Count > 0 && customer.Ownerships.Count == 0 && customer.Applicants.All(c => c.Deal == null))
-                return StatusEnum.Success;
-
-            var (updateStatus, updatedCustomer) = await _baseService.UpdateAsync(customer,
-                () => customer.IsPrivate = false,
-                null, true, StatusEnum.CustomerIsNull).ConfigureAwait(false);
-            return updateStatus;
-        }
-
-        public async Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string dealId, bool save)
-        {
-            if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(dealId))
-                return new ValueTuple<StatusEnum, Database.Tables.Applicant>(StatusEnum.ParamIsNull, null);
+            if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(itemId))
+                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ParamIsNull, null);
 
             var applicant = await ApplicantEntityAsync(applicantId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(applicant,
-                () => applicant.DealId = dealId,
+                currentUser => applicant.ItemId = itemId,
                 null, save, StatusEnum.ApplicantIsNull
             ).ConfigureAwait(false);
             return updateStatus;
@@ -277,17 +319,11 @@ namespace RealEstate.Services
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await ApplicantEntityAsync(id).ConfigureAwait(false);
-            if (entity == null)
-                return default;
-
-            var viewModel = entity.Into<Applicant, ApplicantViewModel>(false, act =>
+            var entity = await _applicants.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity?.Into<Applicant, ApplicantViewModel>(false, act =>
             {
                 act.GetCustomer();
-                act.GetApplicantFeatures(false, act2 =>
-                {
-                    act2.GetFeature();
-                });
+                act.GetApplicantFeatures(false, act2 => act2.GetFeature());
             });
             if (viewModel == null)
                 return default;
@@ -296,15 +332,15 @@ namespace RealEstate.Services
             {
                 Id = viewModel.Id,
                 Type = viewModel.Type,
-                Name = viewModel.Customer.Name,
+                Name = viewModel.Customer?.Name,
                 Description = viewModel.Description,
-                Address = viewModel.Customer.Address,
-                Mobile = viewModel.Customer.Mobile,
-                Phone = viewModel.Customer.Phone,
-                ApplicantFeatures = viewModel.ApplicantFeatures.Select(x => new FeatureJsonValueViewModel
+                Address = viewModel.Customer?.Address,
+                Mobile = viewModel.Customer?.Mobile,
+                Phone = viewModel.Customer?.Phone,
+                ApplicantFeatures = viewModel.ApplicantFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Id,
-                    Name = x.Feature.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
             };
@@ -313,36 +349,34 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
         {
-            var models = _applicants as IQueryable<Applicant>;
-            models = models.Include(x => x.ApplicantFeatures);
-            models = models.Include(x => x.Customer);
+            var models = _applicants.AsQueryable();
 
             if (searchModel != null)
             {
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<Applicant, ApplicantViewModel>(false, act =>
+                item => item.Into<Applicant, ApplicantViewModel>(_baseService.IsAllowed(Role.SuperAdmin), act =>
                 {
-                    act.GetCustomer();
-                    act.GetApplicantFeatures(false, act2 =>
-                    {
-                        act2.GetFeature();
-                    });
-                })).ConfigureAwait(false);
+                    act.GetCustomer(_baseService.IsAllowed(Role.SuperAdmin));
+                    act.GetApplicantFeatures(false, act2 => act2.GetFeature());
+                }).ShowBasedOn(x => x.Customer, _baseService.IsAllowed(Role.SuperAdmin))
+            ).ConfigureAwait(false);
 
             return result;
         }
 
         public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
         {
-            var models = _customers as IQueryable<Customer>;
-            models = models.Include(x => x.Applicants);
-            models = models.Include(x => x.Ownerships);
+            var models = _customers.AsQueryable();
             models = models.WhereItIsPublic();
 
             if (searchModel != null)
             {
+                models = models.SearchBy(searchModel.Id, x => x.Id);
+                models = models.SearchBy(searchModel.Address, x => x.Address);
+                models = models.SearchBy(searchModel.Mobile, x => x.MobileNumber);
+                models = models.SearchBy(searchModel.Name, x => x.Name);
             }
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
@@ -363,7 +397,7 @@ namespace RealEstate.Services
 
             var ownership = await OwnershipEntityAsync(ownerId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(ownership,
-                () => ownership.PropertyOwnershipId = propertyOwnershipId,
+                currentUser => ownership.PropertyOwnershipId = propertyOwnershipId,
                 null, save, StatusEnum.OwnershipIsNull
             ).ConfigureAwait(false);
             return updateStatus;
@@ -378,11 +412,11 @@ namespace RealEstate.Services
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.IdIsNull, null);
 
             var entity = await ApplicantEntityAsync(model.Id).ConfigureAwait(false);
-            if (entity?.Customer?.IsPrivate != true || entity.Deal != null)
+            if (entity?.Customer?.IsPublic == true || entity?.Item?.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status == DealStatusEnum.Finished)
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ApplicantIsNull, null);
 
             var (updateStatus, updatedApplicant) = await _baseService.UpdateAsync(entity,
-                () =>
+                currentUser =>
                 {
                     entity.Description = model.Description;
                     entity.Type = model.Type;
@@ -390,7 +424,7 @@ namespace RealEstate.Services
 
             var customer = updatedApplicant.Customer;
             var (updateCustomerStatus, updatedCustomer) = await _baseService.UpdateAsync(customer,
-                () =>
+                currentUser =>
                 {
                     customer.Address = model.Address;
                     customer.MobileNumber = model.Mobile;
@@ -412,7 +446,7 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(updatedApplicant, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string dealId, bool save)
+        public async Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save)
         {
             if (model == null)
                 return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ModelIsNull, null);
@@ -440,7 +474,7 @@ namespace RealEstate.Services
                 UserId = currentUser.Id,
                 Type = model.Type,
                 Description = model.Description,
-                DealId = !string.IsNullOrEmpty(dealId) ? dealId : null
+                ItemId = !string.IsNullOrEmpty(itemId) ? itemId : null
             },
                 null,
                 false).ConfigureAwait(false);
@@ -506,16 +540,11 @@ namespace RealEstate.Services
             var existing = await CustomerEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (existing != null)
             {
-                if (!existing.IsPrivate)
+                if (existing.IsPublic)
                     return new ValueTuple<StatusEnum, Customer>(StatusEnum.AlreadyExists, existing);
 
                 if (isForApplicantUse)
                     return new ValueTuple<StatusEnum, Customer>(StatusEnum.Success, existing);
-
-                var updateStatus = await _baseService.UpdateAsync(existing,
-                    () => existing.IsPrivate = false,
-                    null, save, StatusEnum.CustomerIsNull).ConfigureAwait(false);
-                return updateStatus;
             }
 
             var addStatus = await _baseService.AddAsync(new Customer
@@ -524,7 +553,6 @@ namespace RealEstate.Services
                 Name = model.Name,
                 Address = model.Address,
                 PhoneNumber = model.Phone,
-                IsPrivate = isForApplicantUse
             }, null, save).ConfigureAwait(false);
             return addStatus;
         }
@@ -553,7 +581,7 @@ namespace RealEstate.Services
 
             var entity = await CustomerEntityAsync(model.Id, null).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () => entity.MobileNumber = model.Mobile,
+                currentUser => entity.MobileNumber = model.Mobile,
                 null, save, StatusEnum.UserIsNull).ConfigureAwait(false);
             return updateStatus;
         }

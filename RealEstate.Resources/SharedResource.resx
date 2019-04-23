@@ -801,4 +801,94 @@
   <data name="NewEmployee" xml:space="preserve">
     <value>کارمند جدید</value>
   </data>
+  <data name="EditItem" xml:space="preserve">
+    <value>ویرایش مورد</value>
+  </data>
+  <data name="Customer" xml:space="preserve">
+    <value>مشتری</value>
+  </data>
+  <data name="Customers" xml:space="preserve">
+    <value>مشتریان</value>
+  </data>
+  <data name="EditCustomer" xml:space="preserve">
+    <value>ویرایش مشتری</value>
+  </data>
+  <data name="NewCustomer" xml:space="preserve">
+    <value>مشتری جدید</value>
+  </data>
+  <data name="Percent" xml:space="preserve">
+    <value>درصد</value>
+  </data>
+  <data name="EditManagementPercent" xml:space="preserve">
+    <value>ویرایش درصد مدیریت</value>
+  </data>
+  <data name="ManagementPercents" xml:space="preserve">
+    <value>درصدهای مدیریت</value>
+  </data>
+  <data name="NewManagementPercent" xml:space="preserve">
+    <value>درصد مدیریت جدید</value>
+  </data>
+  <data name="DealFinish" xml:space="preserve">
+    <value>اتمام معامله</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>از</value>
+  </data>
+  <data name="Reason" xml:space="preserve">
+    <value>دلیل</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>تا</value>
+  </data>
+  <data name="EditLeave" xml:space="preserve">
+    <value>ویرایش مرخصی</value>
+  </data>
+  <data name="NewLeave" xml:space="preserve">
+    <value>مرخصی جدید</value>
+  </data>
+  <data name="FromDate" xml:space="preserve">
+    <value>از تاریخ</value>
+  </data>
+  <data name="FromHour" xml:space="preserve">
+    <value>از ساعت</value>
+  </data>
+  <data name="ToDate" xml:space="preserve">
+    <value>تا تاریخ</value>
+  </data>
+  <data name="ToHour" xml:space="preserve">
+    <value>تا ساعت</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>تاریخ</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>زمان</value>
+  </data>
+  <data name="EndOfWork" xml:space="preserve">
+    <value>پایان کار</value>
+  </data>
+  <data name="StartWork" xml:space="preserve">
+    <value>آغاز به کار</value>
+  </data>
+  <data name="EditPresence" xml:space="preserve">
+    <value>ویرایش حضور و غیاب</value>
+  </data>
+  <data name="NewPresence" xml:space="preserve">
+    <value>حضور و غیاب جدید</value>
+  </data>
+  <data name="Presence" xml:space="preserve">
+    <value>حضور و غیاب</value>
+  </data>
+  <data name="EditReminder" xml:space="preserve">
+    <value>ویرایش یادآوری</value>
+  </data>
+  <data name="NewReminder" xml:space="preserve">
+    <value>یادآوری جدید</value>
+  </data>
+  <data name="Reminder" xml:space="preserve">
+    <value>یادآوری</value>
+  </data>
+  <data name="Insurance" xml:space="preserve">
+    <value>بیمه</value>
+  </data>
 </root>

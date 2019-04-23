@@ -11,13 +11,19 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class ApplicantInputViewModel : CustomerInputViewModel
     {
+        private string _applicantFeaturesJson;
+
         [Required]
         [Display(ResourceType = typeof(SharedResource), Name = "Type")]
         public ApplicantTypeEnum Type { get; set; }
 
         [HiddenInput]
         [Required]
-        public string ApplicantFeaturesJson { get; private set; }
+        public string ApplicantFeaturesJson
+        {
+            get => _applicantFeaturesJson;
+            set => _applicantFeaturesJson = value.JsonSetAccessor();
+        }
 
         public List<FeatureJsonValueViewModel> ApplicantFeatures
         {

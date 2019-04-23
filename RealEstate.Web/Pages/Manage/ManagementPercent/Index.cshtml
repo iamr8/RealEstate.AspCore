@@ -1,0 +1,75 @@
+﻿@page
+@model IndexModel
+
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle">
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewManagementPercent"]</a>
+        </widget-header>
+        <section class="container-fluid">
+
+            @if (Model.List.Items?.Any() == true)
+            {
+                @*<div class="row justify-content-center align-items-center margin-bottomed">
+                        <div class="col-12">
+                            <form method="post" class="widget mini-widget bg-white">
+                                <widget-header title="@SharedLocalizer["Search"]"></widget-header>
+                                <section class="container-fluid margin-bottomed">
+                                    <div class="row">
+                                        <div class="col-12 margin-bottomed">
+                                            <label class="control-label" asp-for="SearchInput.Name"></label>
+                                            <input asp-for="SearchInput.Name" class="form-control" />
+                                        </div>
+                                    </div>
+                                </section>
+                                <widget-footer>
+                                    <widget-footer-text></widget-footer-text>
+                                    <widget-footer-button>
+                                        <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
+                                    </widget-footer-button>
+                                </widget-footer>
+                            </form>
+                        </div>
+                    </div>*@
+
+                foreach (var item in Model.List.Items)
+                {
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    <div class="row justify-content-center itemShow @disabledClass">
+                        <div class="col-12 detail">
+                            <div class="info">
+                                <span>
+                                    <b class="title">
+                                        @item.Employee?.FirstName @item.Employee?.LastName
+                                    </b>
+                                    <span class="badge badge-primary">@item.Percent @SharedLocalizer["Percent"]</span>
+                                </span>
+                            </div>
+                            <div class="button">
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                {
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-controller="Remove" asp-action="ManagementPercentAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                }
+                            </div>
+                        </div>
+                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                        {
+                            <vc:log logs="@item.Logs"></vc:log>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="row justify-content-center align-items-center">
+                    <h5>
+                        @SharedLocalizer["NoItemToShow"]
+                    </h5>
+                </div>
+            }
+            <vc:pagination model="@Model.List"></vc:pagination>
+        </section>
+    </div>
+</div>

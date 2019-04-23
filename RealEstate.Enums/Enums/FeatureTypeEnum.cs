@@ -5,7 +5,7 @@ namespace RealEstate.Base.Enums
 {
     public enum FeatureTypeEnum
     {
-        [Display(ResourceType = typeof(SharedResource), Name = "Deal")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Item")]
         Item,
 
         [Display(ResourceType = typeof(SharedResource), Name = "Property")]

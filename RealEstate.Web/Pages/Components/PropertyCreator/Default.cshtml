@@ -111,7 +111,7 @@
             const newPropertyFacilities = $("#@Model.PropertyFacilitiesJson.Id");
             const newDescription = $("#@Model.Description.Id");
             const newFormStatus = $("#createPropertyStatus");
-           const newId = $("#@Model.Id.Id");
+            const currentPropertyId = $("#@Model.Id.Id");
 
               $(document).on("click",
             "#@Model.SubmitId",
@@ -131,7 +131,7 @@
                 const propertyFacilities = $(newPropertyFacilities).val();
                 const ownerships = $(newOwnerships).val();
                 const description = $(newDescription).val();
-                const id = $(newId).val();
+                const propertyId = $(currentPropertyId).val();
 
                 const children = $("[data-val='true']", newForm);
                 $.each(children,
@@ -154,7 +154,7 @@
                         @(nameof(Model.Model.PropertyFeaturesJson)): propertyFeatures,
                         @(nameof(Model.Model.PropertyFacilitiesJson)): propertyFacilities,
                         @(nameof(Model.Model.Description)): description,
-                        @(nameof(Model.Model.Id)): id
+                        @(nameof(Model.Model.Id)): propertyId
                     };
 
                     console.log(model);
@@ -173,6 +173,7 @@
                                     responseStatus === @((int)StatusEnum.PartialSuccess)) {
                                     $(newFormStatus).html("@Html.Raw(StatusEnum.Success.GetDisplayName())");
 
+                                    $(currentPropertyId).val(responseId).trigger("change");
                                     @if (!string.IsNullOrEmpty(Model.JsCodeOnSuccess))
                                     {
                                         <text>

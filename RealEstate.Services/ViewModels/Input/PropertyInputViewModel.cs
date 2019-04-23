@@ -10,6 +10,10 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class PropertyInputViewModel : BaseInputViewModel
     {
+        private string _ownershipsJson;
+        private string _propertyFeaturesJson;
+        private string _propertyFacilitiesJson;
+
         [Display(ResourceType = typeof(SharedResource), Name = "Street")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Street { get; set; }
@@ -40,11 +44,17 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string DistrictId { get; set; }
 
-        //        public double Latitude { get; set; }
-        //        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Owners")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [HiddenInput]
-        public string OwnershipsJson { get; set; }
+        public string OwnershipsJson
+        {
+            get => _ownershipsJson;
+            set => _ownershipsJson = value.JsonSetAccessor();
+        }
 
         public List<OwnershipJsonViewModel> Ownerships
         {
@@ -52,8 +62,13 @@ namespace RealEstate.Services.ViewModels.Input
             set => OwnershipsJson = value.JsonSetAccessor();
         }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "PropertyFeatures")]
         [HiddenInput]
-        public string PropertyFeaturesJson { get; set; }
+        public string PropertyFeaturesJson
+        {
+            get => _propertyFeaturesJson;
+            set => _propertyFeaturesJson = value.JsonSetAccessor();
+        }
 
         public List<FeatureJsonValueViewModel> PropertyFeatures
         {
@@ -61,8 +76,13 @@ namespace RealEstate.Services.ViewModels.Input
             set => PropertyFeaturesJson = value.JsonSetAccessor();
         }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "PropertyFacilities")]
         [HiddenInput]
-        public string PropertyFacilitiesJson { get; set; }
+        public string PropertyFacilitiesJson
+        {
+            get => _propertyFacilitiesJson;
+            set => _propertyFacilitiesJson = value.JsonSetAccessor();
+        }
 
         public List<FacilityJsonViewModel> PropertyFacilities
         {

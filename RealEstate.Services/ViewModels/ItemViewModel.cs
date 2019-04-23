@@ -25,9 +25,8 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Description => _entity.Description;
-
-        public bool IsRequested => _entity.Deals?.LastOrDefault()?.Status == DealStatusEnum.Requested;
+        public string Description => _entity?.Description;
+        public DealStatusEnum LastState => _entity?.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status ?? DealStatusEnum.Rejected;
 
         public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
@@ -44,14 +43,21 @@ namespace RealEstate.Services.ViewModels
             ItemFeatures = _entity?.ItemFeatures.Into(includeDeleted, action);
         }
 
-        public void GetDeals(bool includeDeleted = false, Action<DealViewModel> action = null)
+        public void GetDealRequests(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
-            Deals = _entity?.Deals?.Into(includeDeleted, action);
+            DealRequests = _entity?.DealRequests?.Into(includeDeleted, action);
         }
+
+        public void GetApplicants(bool includeDeleted, Action<ApplicantViewModel> action = null)
+        {
+            Applicants = _entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
+        }
+
+        public List<ApplicantViewModel> Applicants { get; private set; }
 
         public CategoryViewModel Category { get; private set; }
         public PropertyViewModel Property { get; private set; }
         public List<ItemFeatureViewModel> ItemFeatures { get; private set; }
-        public List<DealViewModel> Deals { get; private set; }
+        public List<DealRequestViewModel> DealRequests { get; private set; }
     }
 }

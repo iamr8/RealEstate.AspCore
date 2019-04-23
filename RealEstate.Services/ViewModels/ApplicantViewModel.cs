@@ -24,8 +24,8 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Description => _entity.Description;
-        public ApplicantTypeEnum Type => _entity.Type;
+        public string Description => _entity?.Description;
+        public ApplicantTypeEnum Type => _entity?.Type ?? ApplicantTypeEnum.Applicant;
 
         public void GetCustomer(bool includeDeleted = false, Action<CustomerViewModel> action = null)
         {
@@ -37,19 +37,19 @@ namespace RealEstate.Services.ViewModels
             User = _entity?.User.Into(includeDeleted, action);
         }
 
-        public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
+        public void GetItem(bool includeDeleted = false, Action<ItemViewModel> action = null)
         {
-            Deal = _entity?.Deal.Into(includeDeleted, action);
+            Item = _entity?.Item.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
         }
 
         public void GetApplicantFeatures(bool includeDeleted = false, Action<ApplicantFeatureViewModel> action = null)
         {
-            ApplicantFeatures = _entity?.ApplicantFeatures.Into(includeDeleted, action);
+            ApplicantFeatures = _entity?.ApplicantFeatures.Into(includeDeleted, action).ShowBasedOn(x => x.Feature);
         }
 
         public CustomerViewModel Customer { get; private set; }
         public UserViewModel User { get; private set; }
-        public DealViewModel Deal { get; private set; }
+        public ItemViewModel Item { get; private set; }
         public List<ApplicantFeatureViewModel> ApplicantFeatures { get; private set; }
     }
 }

@@ -20,6 +20,7 @@ namespace RealEstate.Services
         Task<(StatusEnum, Division)> UpdateAsync(DivisionInputViewModel model, bool save);
 
         Task<PaginationViewModel<DivisionViewModel>> ListAsync(DivisionSearchViewModel searchModel);
+
         Task<List<DivisionViewModel>> ListAsync();
 
         Task<StatusEnum> RemoveAsync(string id);
@@ -70,7 +71,7 @@ namespace RealEstate.Services
         public async Task<List<DivisionViewModel>> ListAsync()
         {
             var query = _divisions.AsQueryable();
-            query = query.Filtered();
+            query = query.WhereNotDeleted();
 
             var divisions = await query.ToListAsync().ConfigureAwait(false);
             return divisions.Into<Division, DivisionViewModel>();
@@ -121,7 +122,8 @@ namespace RealEstate.Services
 
             var entity = await EntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
-                () => entity.Name = model.Name, new[]
+                _ => entity.Name = model.Name,
+                new[]
                 {
                     Role.SuperAdmin
                 }, save, StatusEnum.UserIsNull).ConfigureAwait(false);

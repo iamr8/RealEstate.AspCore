@@ -1,5 +1,73 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Deal.AddModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model AddModel
+
+<div class="col-12">
+    <form method="post" class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 text-center">
+                    <h3>@SharedLocalizer["ChangeDealBeforeAccept"]</h3>
+                </div>
+                <div class="col-12">
+                    <a asp-page="@typeof(Item.AddModel).Page()" asp-route-id="@Model.NewDeal.ItemId" target="_blank" class="btn btn-warning btn-block">@SharedLocalizer["EditItem"]</a>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center itemShow">
+                <div class="col-12 detail">
+                    <div class="info">
+                        <span>
+                            <b class="title">
+                                @SharedLocalizer["DealFirstPerson"]:
+                            </b>
+                            @if (Model.ItemInfo?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                            {
+                                foreach (var ownership in Model.ItemInfo.Property.CurrentPropertyOwnership.Ownerships)
+                                {
+                                    <a target="_blank" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@ownership.Customer.Id" class="badge badge-danger">@ownership.Customer.Name</a>
+                                }
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center itemShow">
+                <div class="col-12 detail">
+                    <div class="info">
+                        <span>
+                            <b class="title">
+                                @SharedLocalizer["DealSecondPerson"]:
+                            </b>
+                            @if (Model.ItemInfo?.Applicants?.Any() == true)
+                            {
+                                foreach (var applicant in Model.ItemInfo.Applicants)
+                                {
+                                    <a target="_blank" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@applicant.Customer.Id" class="badge badge-danger">@applicant.Customer.Name</a>
+                                }
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 margin-bottomed">
+                    <label asp-for="NewDeal.Description" class="control-label"></label>
+                    <textarea asp-for="NewDeal.Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="NewDeal.Description" class="text-danger"></span>
+                </div>
+            </div>
+        </section>
+        <widget-footer>
+            <widget-footer-text>
+                <div asp-validation-summary="All">
+                    @Model.DealStatus
+                </div>
+            </widget-footer-text>
+            <widget-footer-button>
+                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
+            </widget-footer-button>
+        </widget-footer>
+    </form>
+</div>

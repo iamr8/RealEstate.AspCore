@@ -42,17 +42,25 @@
                 </div>
             </div>
             <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-sm-3 margin-bottomed">
+                <div class="col-xs-12 col-md-6 margin-bottomed">
                     <label asp-for="NewEmployee.FixedSalary" class="control-label"></label>
                     <input asp-for="NewEmployee.FixedSalary" class="form-control" />
                     <span asp-validation-for="NewEmployee.FixedSalary" class="text-danger"></span>
                 </div>
-                <div class="col-xs-12 col-sm-3 margin-bottomed">
+                <div class="col-xs-12 col-md-6 margin-bottomed">
+                    <label asp-for="NewEmployee.Insurance" class="control-label"></label>
+                    <input asp-for="NewEmployee.Insurance" class="form-control" />
+                    <span asp-validation-for="NewEmployee.Insurance" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+               
+                <div class="col-xs-12 col-md-6 margin-bottomed">
                     <label asp-for="NewEmployee.Phone" class="control-label"></label>
                     <input asp-for="NewEmployee.Phone" class="form-control"/>
                     <span asp-validation-for="NewEmployee.Phone" class="text-danger"></span>
                 </div>
-                <div class="col-xs-12 col-sm-6 margin-bottomed">
+                <div class="col-xs-12 col-md-6 margin-bottomed">
                     <label asp-for="NewEmployee.Address" class="control-label"></label>
                     <input asp-for="NewEmployee.Address" class="form-control"/>
                     <span asp-validation-for="NewEmployee.Address" class="text-danger"></span>

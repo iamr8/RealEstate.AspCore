@@ -7,19 +7,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class User : BaseEntity
     {
-        //public User()
-        //{
-        //    Beneficiaries = new HashSet<Beneficiary>();
-        //    Applicants = new HashSet<Applicant>();
-        //    UserItemCategories = new HashSet<UserItemCategory>();
-        //    UserPropertyCategories = new HashSet<UserPropertyCategory>();
-        //    Payments = new HashSet<Payment>();
-        //    Smses = new HashSet<Sms>();
-        //    Permissions = new HashSet<Permission>();
-        //    FixedSalaries = new HashSet<FixedSalary>();
-        //    Reminders = new HashSet<Reminder>();
-        //}
-
         [Required]
         public Role Role { get; set; }
 
@@ -36,5 +23,6 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
         public virtual ICollection<Reminder> Reminders { get; set; }
+
     }
 }

@@ -4,6 +4,13 @@
     var roles = SelectItemExtensions.ToSelectList(Role.User, role => role != Role.SuperAdmin);
     var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
+    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+
+    var emploo = employees?.Select(x => new SelectListItem
+    {
+        Text = $"{x.FirstName} {x.LastName}",
+        Value = x.Id
+    }).SelectFirstItem();
 
     var userPropertySelector = new JsonSelectorComponentModel
     {
@@ -19,12 +26,13 @@
             Text = x.Name,
             Value = x.Id,
         }).SelectFirstItem(),
+
     };
 
     var userItemSelector = new JsonSelectorComponentModel
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+        IdProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id),
+        NameProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name),
         ModelName = nameof(Model.NewUser),
         ItemName = nameof(Model.NewUser.UserItemCategories),
         Json = nameof(Model.NewUser.UserItemCategoriesJson),
@@ -35,6 +43,7 @@
             Text = x.Name,
             Value = x.Id,
         }).SelectFirstItem(),
+
     };
 }
 <form method="post" class="col-12">
@@ -42,33 +51,57 @@
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewUser.Id" />
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-sm margin-bottomed">
-                    <label asp-for="NewUser.Username" class="control-label"></label>
-                    <input asp-for="NewUser.Username" class="form-control" />
-                    <span asp-validation-for="NewUser.Username" class="text-danger"></span>
+            @if (Model.NewUser == null)
+            {
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-xs-12 col-sm margin-bottomed">
+                        <label asp-for="NewUser.EmployeeId" class="control-label"></label>
+                        <select asp-for="NewUser.EmployeeId" asp-items="emploo" class="form-control"></select>
+                        <span asp-validation-for="NewUser.EmployeeId" class="text-danger"></span>
+                    </div>
                 </div>
+            }
+            <div class="row justify-content-center align-items-center">
+                @if (Model.NewUser == null)
+                {
+                    <div class="col-xs-12 col-sm margin-bottomed">
+                        <label asp-for="NewUser.Username" class="control-label"></label>
+                        <input asp-for="NewUser.Username" class="form-control" />
+                        <span asp-validation-for="NewUser.Username" class="text-danger"></span>
+                    </div>
+                }
+                else
+                {
+                    <input asp-for="NewUser.Username" type="hidden" />
+                }
                 <div class="col-xs-12 col-sm margin-bottomed">
                     <label asp-for="NewUser.Password" class="control-label"></label>
                     <input asp-for="NewUser.Password" class="form-control" />
                     <span asp-validation-for="NewUser.Password" class="text-danger"></span>
                 </div>
-                <div class="col-xs-12 col-sm margin-bottomed">
-                    <label asp-for="NewUser.Role" class="control-label"></label>
-                    <select asp-for="NewUser.Role" asp-items="roles" class="form-control"></select>
-                    <span asp-validation-for="NewUser.Role" class="text-danger"></span>
-                </div>
+                @if (Model.NewUser?.Username != User.Identity.Name)
+                {
+                    <div class="col-xs-12 col-sm margin-bottomed">
+                        <label asp-for="NewUser.Role" class="control-label"></label>
+                        <select asp-for="NewUser.Role" asp-items="roles" class="form-control"></select>
+                        <span asp-validation-for="NewUser.Role" class="text-danger"></span>
+                    </div>
+                }
+                else
+                {
+                    <input asp-for="NewUser.Role" type="hidden" />
+                }
             </div>
             <hr />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">
-                    <input asp-for="NewUser.UserPropertyCategoriesJson" />
+                    <input asp-for="NewUser.UserPropertyCategoriesJson" value="@Model.NewUser?.UserPropertyCategoriesJson" />
                     <vc:json-selector model="@userPropertySelector" />
                 </div>
             </div>
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">
-                    <input asp-for="NewUser.UserItemCategoriesJson" />
+                    <input asp-for="NewUser.UserItemCategoriesJson" value="@Model.NewUser?.UserItemCategoriesJson" />
                     <vc:json-selector model="@userItemSelector" />
                 </div>
             </div>

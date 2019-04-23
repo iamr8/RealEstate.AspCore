@@ -62,14 +62,13 @@
                 const items = $("> .items", wrapperClass);
                 $(items).empty();
 
-                if ($(jsonInput).val() === "") {
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
                     $(jsonInput).val("[]");
                 }
+                const jsonObject = $.parseJSON(json);
 
-                const jsonString = $(jsonInput).val();
-                const json = $.parseJSON(jsonString);
-
-                $.each(json,
+                $.each(jsonObject,
                     (index, item) => {
 
                         const key = item.@Model.IdProperty;
@@ -110,11 +109,8 @@
 
                 $.each(selectInput.children(),
                     (index, item) => {
-                        const name = $(item).text();
                         const key = $(item).val();
-
-                        const i = json.findIndex(
-                            obj => obj.@Model.IdProperty === key);
+                        const i = jsonObject.findIndex(obj => obj.@Model.IdProperty === key);
                         if (i >= 0) {
                             $(item).addClass("hidden");
                         } else {

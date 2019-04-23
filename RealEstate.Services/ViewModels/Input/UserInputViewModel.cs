@@ -12,6 +12,9 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class UserInputViewModel : BaseInputViewModel
     {
+        private string _userPropertyCategoriesJson;
+        private string _userItemCategoriesJson;
+
         [Display(ResourceType = typeof(SharedResource), Name = "Username")]
         [R8Validator(RegexPatterns.EnglishText)]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
@@ -25,11 +28,16 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public Role Role { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Employee")]
         public string EmployeeId { get; set; }
 
         [HiddenInput]
-        public string UserPropertyCategoriesJson { get; private set; }
+        public string UserPropertyCategoriesJson
+        {
+            get => _userPropertyCategoriesJson;
+            set => _userPropertyCategoriesJson = value.JsonSetAccessor();
+        }
 
         public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories
         {
@@ -38,7 +46,11 @@ namespace RealEstate.Services.ViewModels.Input
         }
 
         [HiddenInput]
-        public string UserItemCategoriesJson { get; private set; }
+        public string UserItemCategoriesJson
+        {
+            get => _userItemCategoriesJson;
+            set => _userItemCategoriesJson = value.JsonSetAccessor();
+        }
 
         public List<UserItemCategoryJsonViewModel> UserItemCategories
         {

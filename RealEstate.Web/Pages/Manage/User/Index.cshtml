@@ -68,7 +68,6 @@
                                         <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
-                                    <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id" class="badge badge-danger">مشخصات کارمند</a>
 
                                 </span>
                                 @if (item.UserItemCategories?.Any() == true || item.UserPropertyCategories?.Any() == true)
@@ -90,7 +89,9 @@
                                         }
                                     </span>
                                 }
-                            </div><div class="button">
+                            </div>
+                            <div class="button">
+                                <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id" class="btn btn-sm btn-primary">مشخصات کارمند</a>
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>

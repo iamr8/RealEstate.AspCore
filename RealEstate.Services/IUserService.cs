@@ -106,7 +106,7 @@ namespace RealEstate.Services
 
         public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
         {
-            var users = await _users.Filtered().ToListAsync().ConfigureAwait(false);
+            var users = await _users.WhereNotDeleted().ToListAsync().ConfigureAwait(false);
             if (users?.Any() != true)
                 return default;
 
@@ -127,28 +127,17 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
         {
             var models = _users.AsQueryable();
-
-            if (searchModel != null)
-            {
-                if (!string.IsNullOrEmpty(searchModel.Username))
-                    models = models.Where(x => EF.Functions.Like(x.Username, searchModel.Username.LikeExpression()));
-
-                if (searchModel.Role != null)
-                    models = models.Where(x => x.Role == searchModel.Role);
-
-                if (!string.IsNullOrEmpty(searchModel.UserId))
-                    models = models.Where(x => x.Id == searchModel.UserId);
-            }
+            models = models.SearchBy(searchModel?.Role, x => x.Role);
+            models = models.SearchBy(searchModel?.UserId, x => x.Id);
+            models = models.SearchBy(searchModel?.Username, x => x.Username);
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                 item => item.Into<User, UserViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
                     act.GetEmployee();
+                    act.GetUserItemCategories(false, act2 => act2.GetCategory());
+                    act.GetUserPropertyCategories(false, act2 => act2.GetCategory());
                 })).ConfigureAwait(false);
-
-            if (result?.Items?.Any() != true)
-                return result;
-
             return result;
         }
 
@@ -171,10 +160,10 @@ namespace RealEstate.Services
 
             var entity = await EntityAsync(model.Id, null).ConfigureAwait(false);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
-                () =>
+                currentUser =>
                 {
                     entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
-                    entity.Role = entity.Role == Role.SuperAdmin ? Role.SuperAdmin : model.Role;
+                    if (currentUser.Id != entity.Id) entity.Role = model.Role;
                 }, new[]
                 {
                     Role.SuperAdmin
@@ -228,14 +217,9 @@ namespace RealEstate.Services
 
             var (userAddStatus, newUser) = await _baseService.AddAsync(new User
             {
-                //                Role = model.Role,
-                //                Address = model.Address,
-                //                FirstName = model.FirstName,
-                //                LastName = model.LastName,
                 Username = model.Username,
-                //                Phone = model.Phone,
                 Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption),
-                //                Mobile = model.Mobile
+                EmployeeId = model.EmployeeId
             }, new[]
             {
                 Role.SuperAdmin
@@ -249,7 +233,7 @@ namespace RealEstate.Services
         {
             var currentUser = _baseService.CurrentUser(claims);
 
-            var models = _users.Filtered();
+            var models = _users.WhereNotDeleted();
             var foundUser = await (from user in models
                                    where user.Id == currentUser.Id
                                    where user.Username == currentUser.Username
@@ -316,7 +300,11 @@ namespace RealEstate.Services
                 Id = category.Id,
                 Name = category.Category.Name
             });
-
+            var employeeDivisionsJson = userDb.Employee.EmployeeDivisions.JsonConversion(division => new DivisionJsonViewModel
+            {
+                Id = division.Id,
+                Name = division.Division.Name
+            });
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userDb.Id),
@@ -330,7 +318,8 @@ namespace RealEstate.Services
                 new Claim("EmployeeId", userDb.Employee.Id),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),
-                new Claim(ClaimTypes.Role, userDb.Role.ToString())
+                new Claim(ClaimTypes.Role, userDb.Role.ToString()),
+                new Claim("EmployeeDivisions", employeeDivisionsJson)
             };
 
             var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);

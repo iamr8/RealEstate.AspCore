@@ -30,10 +30,9 @@ namespace RealEstate.Web.Pages.Manage.Item
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
         public string ItemStatus { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -51,6 +50,8 @@ namespace RealEstate.Web.Pages.Manage.Item
             {
                 PageTitle = _localizer["NewItem"];
             }
+
+            ItemStatus = !string.IsNullOrEmpty(status) ? status.To<StatusEnum>().GetDisplayName() : null;
             return Page();
         }
 
@@ -62,14 +63,19 @@ namespace RealEstate.Web.Pages.Manage.Item
 
             ItemStatus = finalStatus.GetDisplayName();
             if (finalStatus != StatusEnum.Success || !NewItem.IsNew)
-                return Page();
+                return RedirectToPage(typeof(AddModel).Page(), new
+                {
+                    id = NewItem?.Id,
+                    status = finalStatus
+                });
 
             ModelState.Clear();
             NewItem = default;
 
             return RedirectToPage(typeof(AddModel).Page(), new
             {
-                id = NewItem?.Id
+                id = NewItem?.Id,
+                status = StatusEnum.Success
             });
         }
     }

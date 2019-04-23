@@ -26,7 +26,7 @@ namespace RealEstate.Services.ViewModels
 
         public void GetApplicant(bool includeDeleted = false, Action<ApplicantViewModel> action = null)
         {
-            Applicant = _entity?.Applicant.Into(includeDeleted, action);
+            Applicant = _entity?.Applicant.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
         public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)

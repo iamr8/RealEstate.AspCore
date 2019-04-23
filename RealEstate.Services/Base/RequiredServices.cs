@@ -27,6 +27,7 @@ namespace RealEstate.Services.Base
             service.AddScoped<IUserService, UserService>();
             service.AddScoped<IEmployeeService, EmployeeService>();
             service.AddScoped<IDivisionService, DivisionService>();
+            service.AddScoped<IReminderService, ReminderService>();
         }
     }
 }

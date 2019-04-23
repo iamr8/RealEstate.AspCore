@@ -11,7 +11,7 @@ using RealEstate.Services.Database;
 namespace RealEstate.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20190419141421_InitialDb")]
+    [Migration("20190422181719_InitialDb")]
     partial class InitialDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,9 +32,9 @@ namespace RealEstate.Web.Migrations
                     b.Property<string>("CustomerId")
                         .IsRequired();
 
-                    b.Property<string>("DealId");
-
                     b.Property<string>("Description");
+
+                    b.Property<string>("ItemId");
 
                     b.Property<int>("Type");
 
@@ -45,7 +45,7 @@ namespace RealEstate.Web.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.HasIndex("DealId");
+                    b.HasIndex("ItemId");
 
                     b.HasIndex("UserId");
 
@@ -118,6 +118,64 @@ namespace RealEstate.Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Category");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "c6992436-f6c6-4a2f-b57e-2fb81ac3ed44",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "خرید و فروش",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "ec4072f8-17c0-4b58-b612-e516640c9815",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "زمین",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "567d7eff-8a0c-4884-902e-3a12066bf65a",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "ویلایی",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "0e9aa361-67db-4ff2-9406-f619964d183b",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "مشارکت در ساخت",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "26fb3d49-2063-44e2-b537-d36ad1e99177",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "رهن و اجاره",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "611272f2-ad7b-42e2-ba1c-d5a28500a230",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "رهن کامل",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "93ca1b9d-56d2-4519-b076-ebfeb1a55067",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "آپارتمان",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "1812466e-880a-4f25-97a0-6ad728fc99a6",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "مغازه",
+                            Type = 1
+                        });
                 });
 
             modelBuilder.Entity("RealEstate.Services.Database.Tables.Check", b =>
@@ -159,8 +217,6 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("Audit");
 
-                    b.Property<bool>("IsPrivate");
-
                     b.Property<string>("MobileNumber")
                         .IsRequired();
 
@@ -185,14 +241,7 @@ namespace RealEstate.Web.Migrations
 
                     b.Property<string>("Description");
 
-                    b.Property<string>("ItemId")
-                        .IsRequired();
-
-                    b.Property<int>("Status");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ItemId");
 
                     b.ToTable("Deal");
                 });
@@ -222,6 +271,31 @@ namespace RealEstate.Web.Migrations
                     b.ToTable("DealPayment");
                 });
 
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.DealRequest", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Audit");
+
+                    b.Property<string>("DealId");
+
+                    b.Property<string>("ItemId")
+                        .IsRequired();
+
+                    b.Property<int>("Status");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DealId")
+                        .IsUnique()
+                        .HasFilter("[DealId] IS NOT NULL");
+
+                    b.HasIndex("ItemId");
+
+                    b.ToTable("DealRequest");
+                });
+
             modelBuilder.Entity("RealEstate.Services.Database.Tables.District", b =>
                 {
                     b.Property<string>("Id")
@@ -235,6 +309,44 @@ namespace RealEstate.Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("District");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "8c89e1fd-e3d3-4ff8-bac5-df33ebade352",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "زیتون کارمندی"
+                        },
+                        new
+                        {
+                            Id = "e902b808-5285-4e58-b5ac-fb9e2f711d06",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "زیتون کارگری"
+                        },
+                        new
+                        {
+                            Id = "1da89a67-308a-4d48-96da-bc90f243e837",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "باهنر"
+                        },
+                        new
+                        {
+                            Id = "6766f4b7-df3b-4ab6-a1c5-0c5268d1d727",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "کیان آباد"
+                        },
+                        new
+                        {
+                            Id = "d4530f24-618c-4dac-a331-eabfa0912be6",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "کیانپارس"
+                        },
+                        new
+                        {
+                            Id = "01767e17-ea8e-4723-a7fb-629b1f8c205d",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "ملیراه"
+                        });
                 });
 
             modelBuilder.Entity("RealEstate.Services.Database.Tables.Division", b =>
@@ -254,9 +366,15 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "367e88e5-2a1e-4552-b35c-06645509749c",
-                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-19T18:44:20.6282018+04:30\",\"t\":0}]",
+                            Id = "60d60d1e-b9c6-4eac-9388-2342de5e83f6",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
                             Name = "املاک"
+                        },
+                        new
+                        {
+                            Id = "4c373207-e9b4-41f6-a6e2-f78c4e69039b",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "کارواش"
                         });
                 });
 
@@ -292,9 +410,9 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "31c6281e-f3e6-4868-bc99-f1a9800fe770",
+                            Id = "9a20d296-12f6-4f07-b00c-5a0ec3b2db61",
                             Address = "باهنر",
-                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-19T18:44:20.6282018+04:30\",\"t\":0}]",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
                             FirstName = "هانی",
                             LastName = "موسی زاده",
                             Mobile = "09166000341",
@@ -326,10 +444,10 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "711a775f-a981-4799-a1c3-c1fdcba8054c",
-                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-19T18:44:20.6282018+04:30\",\"t\":0}]",
-                            DivisionId = "367e88e5-2a1e-4552-b35c-06645509749c",
-                            EmployeeId = "31c6281e-f3e6-4868-bc99-f1a9800fe770"
+                            Id = "037fe9ea-f8e2-4628-8b30-9a78298a1107",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            DivisionId = "60d60d1e-b9c6-4eac-9388-2342de5e83f6",
+                            EmployeeId = "9a20d296-12f6-4f07-b00c-5a0ec3b2db61"
                         });
                 });
 
@@ -354,9 +472,9 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "4acd6a31-12d9-41f9-9cc4-ced4295d4486",
-                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-19T18:44:20.6282018+04:30\",\"t\":0}]",
-                            EmployeeId = "31c6281e-f3e6-4868-bc99-f1a9800fe770",
+                            Id = "e5a9414f-5468-4f01-b845-501f07bb7a09",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            EmployeeId = "9a20d296-12f6-4f07-b00c-5a0ec3b2db61",
                             Status = 0
                         });
                 });
@@ -374,6 +492,38 @@ namespace RealEstate.Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Facility");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "cd1e4690-31f8-45ab-ae01-416caca98de8",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "سالن بدنسازی"
+                        },
+                        new
+                        {
+                            Id = "8861edff-f54a-4c16-90f2-05e546426a58",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "پارکینگ"
+                        },
+                        new
+                        {
+                            Id = "2e08b9ee-f9ae-4e5e-9f62-c4e234119b2c",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "آسانسور"
+                        },
+                        new
+                        {
+                            Id = "67eb9a22-a082-48df-96ef-26acd55578b7",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "سالن همایش"
+                        },
+                        new
+                        {
+                            Id = "4ec5b0c5-09e7-42bc-8112-f737d7e23cc5",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "آنتن مرکزی"
+                        });
                 });
 
             modelBuilder.Entity("RealEstate.Services.Database.Tables.Feature", b =>
@@ -391,6 +541,64 @@ namespace RealEstate.Web.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Feature");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "254b724f-47da-43b8-a610-19c366ba7bd4",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "بر زمین",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "e740fd67-f2d8-4155-9d14-6b1c73962286",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "قیمت نهایی",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "feefe3c2-a9b3-4c98-b530-6ebbb9d4a924",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "بودجه",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = "988b025f-a470-4abf-b417-cbdc9f7be6f0",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "متراژ",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "aea4ba65-59ca-4047-ab51-287f2cdcd548",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "پیش پرداخت",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = "b20e5e79-e855-49cd-8621-0cb2699783aa",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "قیمت هر متر",
+                            Type = 0
+                        },
+                        new
+                        {
+                            Id = "71e8168a-996f-4441-9c6e-2bc67596e760",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "تعداد خواب",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = "fe1ffe43-8b9d-4400-9297-f368ffa4602a",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            Name = "کرایه",
+                            Type = 2
+                        });
                 });
 
             modelBuilder.Entity("RealEstate.Services.Database.Tables.FixedSalary", b =>
@@ -829,9 +1037,9 @@ namespace RealEstate.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ed5cfeaa-05ed-4e7c-9bd1-751659b22e70",
-                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-19T18:44:20.6282018+04:30\",\"t\":0}]",
-                            EmployeeId = "31c6281e-f3e6-4868-bc99-f1a9800fe770",
+                            Id = "3cb11853-33dc-44b9-a2bc-6026bbbc9887",
+                            Audit = "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-22T22:47:17.5773362+04:30\",\"t\":0}]",
+                            EmployeeId = "9a20d296-12f6-4f07-b00c-5a0ec3b2db61",
                             Password = "YmAdyc6Ph9PNcJOLeira6w==",
                             Role = 2,
                             Username = "admin"
@@ -889,9 +1097,9 @@ namespace RealEstate.Web.Migrations
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
+                    b.HasOne("RealEstate.Services.Database.Tables.Item", "Item")
                         .WithMany("Applicants")
-                        .HasForeignKey("DealId");
+                        .HasForeignKey("ItemId");
 
                     b.HasOne("RealEstate.Services.Database.Tables.User", "User")
                         .WithMany("Applicants")
@@ -936,19 +1144,23 @@ namespace RealEstate.Web.Migrations
                         .HasForeignKey("ReminderId");
                 });
 
-            modelBuilder.Entity("RealEstate.Services.Database.Tables.Deal", b =>
-                {
-                    b.HasOne("RealEstate.Services.Database.Tables.Item", "Item")
-                        .WithMany("Deals")
-                        .HasForeignKey("ItemId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
             modelBuilder.Entity("RealEstate.Services.Database.Tables.DealPayment", b =>
                 {
                     b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
                         .WithMany("DealPayments")
                         .HasForeignKey("DealId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("RealEstate.Services.Database.Tables.DealRequest", b =>
+                {
+                    b.HasOne("RealEstate.Services.Database.Tables.Deal", "Deal")
+                        .WithOne("DealRequest")
+                        .HasForeignKey("RealEstate.Services.Database.Tables.DealRequest", "DealId");
+
+                    b.HasOne("RealEstate.Services.Database.Tables.Item", "Item")
+                        .WithMany("DealRequests")
+                        .HasForeignKey("ItemId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

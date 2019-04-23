@@ -394,6 +394,33 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مشتری.
+        /// </summary>
+        public static string Customer {
+            get {
+                return ResourceManager.GetString("Customer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مشتریان.
+        /// </summary>
+        public static string Customers {
+            get {
+                return ResourceManager.GetString("Customers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to تاریخ.
+        /// </summary>
+        public static string Date {
+            get {
+                return ResourceManager.GetString("Date", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to غیرفعالسازی.
         /// </summary>
         public static string Deactivate {
@@ -426,6 +453,15 @@ namespace RealEstate.Resources {
         public static string DealCategory {
             get {
                 return ResourceManager.GetString("DealCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to اتمام معامله.
+        /// </summary>
+        public static string DealFinish {
+            get {
+                return ResourceManager.GetString("DealFinish", resourceCulture);
             }
         }
         
@@ -583,6 +619,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ویرایش مشتری.
+        /// </summary>
+        public static string EditCustomer {
+            get {
+                return ResourceManager.GetString("EditCustomer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ویرایش قرارداد.
         /// </summary>
         public static string EditDeal {
@@ -628,11 +673,56 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ویرایش مورد.
+        /// </summary>
+        public static string EditItem {
+            get {
+                return ResourceManager.GetString("EditItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش مرخصی.
+        /// </summary>
+        public static string EditLeave {
+            get {
+                return ResourceManager.GetString("EditLeave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش درصد مدیریت.
+        /// </summary>
+        public static string EditManagementPercent {
+            get {
+                return ResourceManager.GetString("EditManagementPercent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش حضور و غیاب.
+        /// </summary>
+        public static string EditPresence {
+            get {
+                return ResourceManager.GetString("EditPresence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ویرایش ملک.
         /// </summary>
         public static string EditProperty {
             get {
                 return ResourceManager.GetString("EditProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ویرایش یادآوری.
+        /// </summary>
+        public static string EditReminder {
+            get {
+                return ResourceManager.GetString("EditReminder", resourceCulture);
             }
         }
         
@@ -660,6 +750,15 @@ namespace RealEstate.Resources {
         public static string Employees {
             get {
                 return ResourceManager.GetString("Employees", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to پایان کار.
+        /// </summary>
+        public static string EndOfWork {
+            get {
+                return ResourceManager.GetString("EndOfWork", resourceCulture);
             }
         }
         
@@ -799,6 +898,33 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to از.
+        /// </summary>
+        public static string From {
+            get {
+                return ResourceManager.GetString("From", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to از تاریخ.
+        /// </summary>
+        public static string FromDate {
+            get {
+                return ResourceManager.GetString("FromDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to از ساعت.
+        /// </summary>
+        public static string FromHour {
+            get {
+                return ResourceManager.GetString("FromHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to زمین.
         /// </summary>
         public static string Ground {
@@ -858,6 +984,15 @@ namespace RealEstate.Resources {
         public static string IfYouWantToCreateProperty {
             get {
                 return ResourceManager.GetString("IfYouWantToCreateProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to بیمه.
+        /// </summary>
+        public static string Insurance {
+            get {
+                return ResourceManager.GetString("Insurance", resourceCulture);
             }
         }
         
@@ -997,6 +1132,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to درصدهای مدیریت.
+        /// </summary>
+        public static string ManagementPercents {
+            get {
+                return ResourceManager.GetString("ManagementPercents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مساحت.
         /// </summary>
         public static string Measurement {
@@ -1078,6 +1222,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مشتری جدید.
+        /// </summary>
+        public static string NewCustomer {
+            get {
+                return ResourceManager.GetString("NewCustomer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to قرارداد جدید.
         /// </summary>
         public static string NewDeal {
@@ -1132,6 +1285,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مرخصی جدید.
+        /// </summary>
+        public static string NewLeave {
+            get {
+                return ResourceManager.GetString("NewLeave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to درصد مدیریت جدید.
+        /// </summary>
+        public static string NewManagementPercent {
+            get {
+                return ResourceManager.GetString("NewManagementPercent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مالک جدید.
         /// </summary>
         public static string NewOwner {
@@ -1141,11 +1312,29 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to حضور و غیاب جدید.
+        /// </summary>
+        public static string NewPresence {
+            get {
+                return ResourceManager.GetString("NewPresence", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ملک جدید.
         /// </summary>
         public static string NewProperty {
             get {
                 return ResourceManager.GetString("NewProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to یادآوری جدید.
+        /// </summary>
+        public static string NewReminder {
+            get {
+                return ResourceManager.GetString("NewReminder", resourceCulture);
             }
         }
         
@@ -1285,6 +1474,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to درصد.
+        /// </summary>
+        public static string Percent {
+            get {
+                return ResourceManager.GetString("Percent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شماره تماس.
         /// </summary>
         public static string PhoneNumber {
@@ -1326,6 +1524,15 @@ namespace RealEstate.Resources {
         public static string Presale {
             get {
                 return ResourceManager.GetString("Presale", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to حضور و غیاب.
+        /// </summary>
+        public static string Presence {
+            get {
+                return ResourceManager.GetString("Presence", resourceCulture);
             }
         }
         
@@ -1429,6 +1636,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دلیل.
+        /// </summary>
+        public static string Reason {
+            get {
+                return ResourceManager.GetString("Reason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to رد.
         /// </summary>
         public static string Reject {
@@ -1443,6 +1659,15 @@ namespace RealEstate.Resources {
         public static string Rejected {
             get {
                 return ResourceManager.GetString("Rejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to یادآوری.
+        /// </summary>
+        public static string Reminder {
+            get {
+                return ResourceManager.GetString("Reminder", resourceCulture);
             }
         }
         
@@ -1605,6 +1830,15 @@ namespace RealEstate.Resources {
         public static string Specifications {
             get {
                 return ResourceManager.GetString("Specifications", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to آغاز به کار.
+        /// </summary>
+        public static string StartWork {
+            get {
+                return ResourceManager.GetString("StartWork", resourceCulture);
             }
         }
         
@@ -1933,6 +2167,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to زمان.
+        /// </summary>
+        public static string Time {
+            get {
+                return ResourceManager.GetString("Time", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to درصد شیرینی.
         /// </summary>
         public static string TipPercent {
@@ -1947,6 +2190,33 @@ namespace RealEstate.Resources {
         public static string TipPrice {
             get {
                 return ResourceManager.GetString("TipPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to تا.
+        /// </summary>
+        public static string To {
+            get {
+                return ResourceManager.GetString("To", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to تا تاریخ.
+        /// </summary>
+        public static string ToDate {
+            get {
+                return ResourceManager.GetString("ToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to تا ساعت.
+        /// </summary>
+        public static string ToHour {
+            get {
+                return ResourceManager.GetString("ToHour", resourceCulture);
             }
         }
         
