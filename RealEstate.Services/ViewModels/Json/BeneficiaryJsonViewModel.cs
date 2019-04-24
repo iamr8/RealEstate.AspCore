@@ -3,7 +3,7 @@ using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels.Json
 {
-    public class BeneficiaryJsonViewModel : BaseViewModel
+    public class BeneficiaryJsonViewModel
     {
         [JsonProperty("k")]
         public string UserId { get; set; }

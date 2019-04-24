@@ -696,7 +696,7 @@
   <data name="DealsManagement" xml:space="preserve">
     <value>مدیریت قراردادها</value>
   </data>
-  <data name="ItemRequests" xml:space="preserve">
+  <data name="DealRequests" xml:space="preserve">
     <value>درخواست های معامله</value>
   </data>
   <data name="Management" xml:space="preserve">
@@ -761,9 +761,6 @@
   </data>
   <data name="Ownership" xml:space="preserve">
     <value>مالکیت</value>
-  </data>
-  <data name="ItemRequest" xml:space="preserve">
-    <value>درخواست معامله</value>
   </data>
   <data name="PropertyDetail" xml:space="preserve">
     <value>مشخصات ملک</value>
@@ -914,5 +911,20 @@
   </data>
   <data name="Payments" xml:space="preserve">
     <value>پرداخت ها</value>
+  </data>
+  <data name="Beneficiaries" xml:space="preserve">
+    <value>ذینفعان</value>
+  </data>
+  <data name="Bank" xml:space="preserve">
+    <value>بانک</value>
+  </data>
+  <data name="CheckNumber" xml:space="preserve">
+    <value>شماره چک</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>مبلغ</value>
+  </data>
+  <data name="DealRequest" xml:space="preserve">
+    <value>درخواست معامله</value>
   </data>
 </root>

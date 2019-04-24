@@ -117,7 +117,7 @@
                             <div class="button">
                                 @if (item.LastState != DealStatusEnum.Requested)
                                 {
-                                    <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["ItemRequest"]</a>
+                                    <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
                                 }
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {

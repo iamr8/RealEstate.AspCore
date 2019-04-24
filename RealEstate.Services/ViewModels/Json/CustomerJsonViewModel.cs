@@ -1,14 +1,12 @@
 ﻿using Newtonsoft.Json;
+using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels.Json
 {
-    public class CustomerJsonViewModel
+    public class CustomerJsonViewModel : BaseViewModel
     {
         [JsonProperty("ad")]
         public string Address { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
 
         [JsonProperty("desc")]
         public string Description { get; set; }

@@ -31,6 +31,10 @@
                                     {
                                         <span class="badge badge-warning">@item.Customer.Address</span>
                                     }
+                                    @if (item.Item != null)
+                                    {
+                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-id="@item.Item.Id" class="badge badge-danger">مشخصات مورد</a>
+                                    }
                                 </span>
                                 @if (item.ApplicantFeatures?.Any() == true)
                                 {

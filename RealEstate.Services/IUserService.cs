@@ -66,6 +66,38 @@ namespace RealEstate.Services
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
 
+        public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
+        {
+            var query = from user in _users
+                        let requests = user.Employee.EmployeeStatuses.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+                        let lastRequest = requests.FirstOrDefault()
+                        where !requests.Any() || lastRequest.Status == EmployeeStatusEnum.Start
+                        where user.Username != "admin"
+                        select user;
+            var models = await query.ToListAsync().ConfigureAwait(false);
+            if (models?.Any() != true)
+                return default;
+
+            var list = new List<UserViewModel>();
+            foreach (var user in models)
+            {
+                var item = user.Into<User, UserViewModel>(false, act =>
+                {
+                    act.GetEmployee();
+                });
+                list.Add(item);
+            }
+            if (list?.Any() != true)
+                return default;
+
+            var result = list.Select(x => new BeneficiaryJsonViewModel
+            {
+                UserId = x.Id,
+                UserFullName = $"{x.Employee?.LastName}، {x.Employee?.FirstName}",
+            }).ToList();
+            return result;
+        }
+
         public async Task<UserInputViewModel> FindInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -101,26 +133,6 @@ namespace RealEstate.Services
                 Id = viewModel.Id,
                 EmployeeId = viewModel.Employee?.Id
             };
-            return result;
-        }
-
-        public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
-        {
-            var users = await _users.WhereNotDeleted().ToListAsync().ConfigureAwait(false);
-            if (users?.Any() != true)
-                return default;
-
-            var result = new List<BeneficiaryJsonViewModel>();
-            foreach (var user in users)
-            {
-                var item = new BeneficiaryJsonViewModel
-                {
-                    Id = user.Id,
-                    UserId = user.Id,
-                    UserFullName = $"{user.Employee?.LastName}، {user.Employee?.FirstName}",
-                };
-                result.Add(item);
-            }
             return result;
         }
 

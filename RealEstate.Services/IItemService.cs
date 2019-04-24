@@ -11,6 +11,7 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.Search;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,6 +24,8 @@ namespace RealEstate.Services
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
         Task<StatusEnum> ItemRemoveAsync(string id);
+
+        Task<List<ItemOutJsonViewModel>> ItemListAsync();
 
         Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model);
 
@@ -51,6 +54,7 @@ namespace RealEstate.Services
         private readonly DbSet<Ownership> _ownerships;
         private readonly DbSet<Customer> _customers;
         private readonly DbSet<DealRequest> _dealRequests;
+        private readonly DbSet<Applicant> _applicants;
 
         public ItemService(
             IBaseService baseService,
@@ -66,6 +70,7 @@ namespace RealEstate.Services
             _customerService = customerService;
             _propertyService = propertyService;
             _itemRequests = _unitOfWork.Set<Deal>();
+            _applicants = _unitOfWork.Set<Applicant>();
             _items = _unitOfWork.Set<Item>();
             _ownerships = _unitOfWork.Set<Ownership>();
             _customers = _unitOfWork.Set<Customer>();
@@ -129,27 +134,37 @@ namespace RealEstate.Services
             if (model.Customers?.Any() != true)
                 return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
 
-            foreach (var customr in model.Customers)
+            foreach (var customer in model.Customers)
             {
-                var source = item.Applicants.FirstOrDefault(ent => ent.CustomerId == customr.CustomerId);
+                var source = item.Applicants.FirstOrDefault(ent => ent.CustomerId == customer.CustomerId);
                 if (source == null)
                 {
-                    var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customr.CustomerId).ConfigureAwait(false);
-                    if (cnt == null)
-                        continue;
-
-                    var (applicantAddStatus, newApplicant) = await _customerService.ApplicantAddAsync(new ApplicantInputViewModel
+                    var appli = await _applicants.FirstOrDefaultAsync(x => x.CustomerId == customer.CustomerId && x.UserId == currentUser.Id).ConfigureAwait(false);
+                    if (appli != null)
                     {
-                        Address = cnt.Address,
-                        Mobile = cnt.MobileNumber,
-                        Name = cnt.Name,
-                        Phone = cnt.PhoneNumber,
-                        Type = ApplicantTypeEnum.Applicant
-                    }, item.Id, false).ConfigureAwait(false);
+                        await _baseService.UpdateAsync(appli,
+                            _ => appli.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customer.CustomerId).ConfigureAwait(false);
+                        if (cnt == null)
+                            continue;
+
+                        var (addStatus, newApplicant) = await _baseService.AddAsync(_ => new Applicant
+                        {
+                            CustomerId = customer.CustomerId,
+                            UserId = currentUser.Id,
+                            Type = ApplicantTypeEnum.Applicant,
+                            ItemId = item.Id
+                        },
+                            null,
+                            false).ConfigureAwait(false);
+                    }
                 }
                 else
                 {
-                    var applicant = await _customerService.ApplicantEntityAsync(customr.ApplicantId).ConfigureAwait(false);
+                    var applicant = await _customerService.ApplicantEntityAsync(customer.ApplicantId).ConfigureAwait(false);
                     await _baseService.UpdateAsync(applicant,
                         _ => applicant.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
                 }
@@ -158,18 +173,75 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
+        public async Task<List<ItemOutJsonViewModel>> ItemListAsync()
+        {
+            var query = from item in _items
+                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+                        let lastRequest = requests.FirstOrDefault()
+                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+                        select item;
+            var models = await query.ToListAsync().ConfigureAwait(false);
+            if (models?.Any() != true)
+                return default;
+
+            var result = new List<ItemOutJsonViewModel>();
+            foreach (var model in models)
+            {
+                var converted = model.Into<Item, ItemViewModel>(false, act =>
+                {
+                    act.GetProperty(false, act2 =>
+                    {
+                        act2.GetCategory();
+                        act2.GetDistrict();
+                        act2.GetPropertyFacilities(false, act3 => act3.GetFacility());
+                        act2.GetPropertyFeatures(false, act3 => act3.GetFeature());
+                        act2.GetPropertyOwnerships(false, act3 => act3.GetOwnerships(false, act4 => act4.GetCustomer()));
+                    });
+                    act.GetCategory();
+                    act.GetItemFeatures(false, act2 => act2.GetFeature());
+                });
+                if (converted == null)
+                    continue;
+
+                var item = new ItemOutJsonViewModel
+                {
+                    Property = new PropertyOutJsonViewModel
+                    {
+                        Address = converted.Property?.Address,
+                        Category = converted.Property?.Category?.Name,
+                        District = converted.Property?.District?.Name,
+                        Description = converted.Description,
+                        Facilities = converted.Property?.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                        Ownerships = converted.Property?.PropertyOwnerships?.SelectMany(x => x.Ownerships?.Select(c => c.Customer?.Name)).ToList(),
+                        Features = converted.Property?.PropertyFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList(),
+                    },
+                    Category = converted.Category?.Name,
+                    ItemFeatures = converted.ItemFeatures?.Select(x => new ValueTuple<string, string>(x.Feature.Name, x.Value)).ToList()
+                };
+                result.Add(item);
+            }
+            return result;
+        }
+
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
             var query = from item in _items
                         let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
                         let lastRequest = requests.FirstOrDefault()
-                        where !requests.Any() || lastRequest.Status != DealStatusEnum.Finished
+                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
                         select item;
 
             if (searchModel != null)
             {
                 query = query.SearchBy(searchModel.CategoryId, x => x.CategoryId);
                 query = query.SearchBy(searchModel.Address, x => x.Property.Address);
+                query = query.SearchBy(searchModel.ItemId, x => x.Id);
+
+                if (!string.IsNullOrEmpty(searchModel.CustomerId))
+                {
+                    query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
+                                             || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
+                }
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,

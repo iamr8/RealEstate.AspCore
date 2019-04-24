@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
@@ -7,6 +8,7 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +18,8 @@ namespace RealEstate.Services
     public interface IDealService
     {
         Task<(StatusEnum, Deal)> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save);
+
+        Task<PaginationViewModel<DealViewModel>> ListAsync(DealSearchViewModel searchModel);
 
         Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save);
 
@@ -96,26 +100,56 @@ namespace RealEstate.Services
                         Description = viewModel.Description,
                         Beneficiaries = viewModel.Beneficiaries?.Select(x => new BeneficiaryJsonViewModel
                         {
-                            Id = x.Id,
                             UserId = x.User.Id,
                             UserFullName = $"{x.User.Employee.FirstName} • {x.User.Employee.LastName}",
                             TipPercent = x.TipPercent,
                             CommissionPercent = x.CommissionPercent
                         }).ToList(),
                         ItemId = entity.Id,
-                        Reminders = viewModel.Reminders.Select(x => new ReminderJsonViewModel
+                        Checks = viewModel.Reminders.Select(x => new CheckJsonViewModel
                         {
-                            Id = x.Id,
-                            Description = x.Description,
                             Date = x.Date.GregorianToPersian(true),
+                            Number = x.CheckNumber,
+                            Price = (decimal)x.Price,
+                            Bank = x.CheckBank
                         }).ToList(),
-                        Tip = viewModel.TipPrice,
-                        Commission = viewModel.CommissionPrice,
+                        Tip = (decimal)viewModel.TipPrice,
+                        Commission = (decimal)viewModel.CommissionPrice,
                         Barcode = viewModel.Barcode
                     };
 
                     return result;
             }
+        }
+
+        public async Task<PaginationViewModel<DealViewModel>> ListAsync(DealSearchViewModel searchModel)
+        {
+            var query = _deals.AsQueryable();
+
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
+                item => item.Into<Deal, DealViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
+                {
+                    act.GetDealRequest(false, act2 =>
+                    {
+                        act2.GetItem(false, act3 =>
+                        {
+                            act3.GetProperty(false, act4 =>
+                            {
+                                act4.GetPropertyOwnerships(true, act5 => act5.GetOwnerships(false, act6 => act6.GetCustomer()));
+                                act4.GetPropertyFacilities(false, act5 => act5.GetFacility());
+                                act4.GetPropertyFeatures(false, act5 => act5.GetFeature());
+                                act4.GetCategory();
+                                act4.GetDistrict();
+                            });
+                            act3.GetCategory();
+                            act3.GetItemFeatures(false, act4 => act4.GetFeature());
+                            act3.GetApplicants(false, act4 => act4.GetCustomer());
+                        });
+                    });
+                    act.GetBeneficiaries(false, act2 => act2.GetUser(false, act3 => act3.GetEmployee()));
+                    act.GetReminders(false, act2 => act2.GetPictures());
+                })).ConfigureAwait(false);
+            return result;
         }
 
         public async Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save)
@@ -130,14 +164,30 @@ namespace RealEstate.Services
             if (item == null)
                 return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemIsNull, null);
 
+            var lastRequest = item.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault();
+            if (lastRequest == null)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealRequestIsNull, null);
+
+            if (lastRequest.Status != DealStatusEnum.Requested)
+                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealRequestIsNull, null);
+
             var (addStatus, newDeal) = await _baseService.AddAsync(new Deal
             {
                 Description = model.Description,
+                TipPrice = model.Tip,
+                CommissionPrice = model.Commission,
             },
                 null,
                 false).ConfigureAwait(false);
 
-            await SyncAsync(newDeal, model, false).ConfigureAwait(false);
+            var newRequest = await _baseService.AddAsync(_ => new DealRequest
+            {
+                DealId = newDeal.Id,
+                ItemId = item.Id,
+                Status = DealStatusEnum.Finished
+            }, null, false).ConfigureAwait(false);
+            await SyncAsync(newDeal, model, true).ConfigureAwait(false);
+
             return await _baseService.SaveChangesAsync(newDeal, save).ConfigureAwait(false);
         }
 
@@ -145,18 +195,17 @@ namespace RealEstate.Services
         {
             await _baseService.SyncAsync(
                 deal.Reminders,
-                model.Reminders,
+                model.Checks,
                 (reminder, currentUser) => new Reminder
                 {
                     DealId = deal.Id,
-                    CheckBank = reminder.CheckBank,
-                    CheckNumber = reminder.CheckNumber,
+                    CheckBank = reminder.Bank,
+                    CheckNumber = reminder.Number,
                     Date = reminder.Date.PersianToGregorian(),
-                    Description = reminder.Description,
                     Price = reminder.Price,
                     UserId = currentUser.Id,
                 },
-                (inDb, inModel) => inDb.DealId == inModel.Id,
+                (inDb, inModel) => inDb.DealId == deal.Id && inDb.Date == inModel.Date.PersianToGregorian(),
                 null, false).ConfigureAwait(false);
 
             await _baseService.SyncAsync(
@@ -184,14 +233,19 @@ namespace RealEstate.Services
 
             var entity = await _deals.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedDeal) = await _baseService.UpdateAsync(entity,
-                _ => entity.Description = model.Description,
+                _ =>
+                {
+                    entity.Description = model.Description;
+                    entity.TipPrice = model.Tip;
+                    entity.CommissionPrice = model.Commission;
+                },
                 null,
                 false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
 
             if (updatedDeal == null)
                 return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealIsNull, null);
 
-            await SyncAsync(updatedDeal, model, false).ConfigureAwait(false);
+            await SyncAsync(updatedDeal, model, true).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedDeal, save).ConfigureAwait(false);
         }
 

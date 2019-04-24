@@ -41,7 +41,20 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.Description
+                                        @if (item.IsCheck)
+                                        {
+                                            <text>
+                                                @SharedLocalizer["Bank"]: @item.CheckBank
+                                                <br />
+                                                @SharedLocalizer["CheckNumber"]: @item.CheckNumber
+                                                <br />
+                                                @SharedLocalizer["Price"]: @item.Price.ToString("#,###") تومان
+                                            </text>
+                                        }
+                                        else
+                                        {
+                                            @item.Description
+                                        }
                                     </b>
                                     <span class="badge badge-primary">@item.Date.GregorianToPersian(true)</span>
                                 </span>

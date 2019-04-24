@@ -1,39 +1,102 @@
 ﻿<!DOCTYPE html>
-<html>
+<html dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <title>IndexedDB Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <META NAME="ROBOTS" CONTENT="INDEX, FOLLOW">
+    <meta name="theme-color" content="#343a40" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+
+    <title>مشاورین املاک</title>
+    <style>
+        body {
+            font-family: Tahoma;
+        }
+
+        *, ::before, ::after {
+            box-sizing: border-box;
+        }
+
+        #items {
+            width: 100%;
+        }
+
+            #items > div {
+                padding: 7px;
+            }
+
+        .category {
+            background-color: grey;
+            color: white;
+        }
+
+        .owners {
+            background-color: green;
+            color: white;
+        }
+
+        .features {
+            background-color: red;
+            color: white;
+        }
+
+        .facilities {
+            background-color: blueviolet;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .wrapper {
+                display: block;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .wrapper {
+                display: inline-block;
+            }
+        }
+
+        .item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid grey;
+        }
+
+        #sync {
+            width: 100%;
+            background-color: red;
+            color: white;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            font-family: Tahoma;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .styled {
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 9pt;
+            margin: 5px;
+            display: inline-block;
+        }
+    </style>
 </head>
+
 <body>
-    <h1>IndexedDB Example</h1>
-
-    <p>
-        <fieldset id="addForm">
-            <legend>Add Contact</legend>
-            <label>Name</label>
-            <input id="nameInput">
-            <label>Email</label>
-            <input id="emailInput">
-            <button id="addButton">Add</button>
-        </fieldset>
-    </p>
-
-    <table id="contacts">
-        <thead>
-            <tr><th>Name</th><th>Email</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <p>
-        <button id="deleteButton">Delete</button>
-    </p>
-
+    <button id="sync" onclick="sync()">بروزرسانی</button>
+    <div id="items">
+    </div>
     <script>
         // Helpers for working with indexedDB API.
         var indexedDB = window.indexedDB ||
             window.webkitIndexedDB ||
             window.mozIndexedDB;
+
         function Db(name) {
             this.init = function (version, upgrade, done) {
                 console.log('init');
@@ -94,6 +157,7 @@
                 };
             };
         }
+
         Db.deleteDatabase = function (name, done) {
             const delReq = indexedDB.deleteDatabase(name);
             delReq.onsuccess = function (e) {
@@ -110,61 +174,214 @@
     </script>
     <script>
         // The actual script for this page.
-        var databaseName = 'ContactsDB';
-        var contactsStoreName = 'contacts';
-        var contactsDB = new Db(databaseName);
-        var contacts = document.getElementById('contacts');
-        contactsDB.init(1, function (db) {
-            db.createObjectStore(contactsStoreName, {
-                autoIncrement: true
+        var databaseName = 'ItemsDB';
+        var itemsStoreName = 'items';
+        var itemsDB = new Db(databaseName);
+        var items = document.getElementById('items');
+        itemsDB.init(1,
+            function (db) {
+                db.createObjectStore(itemsStoreName,
+                    {
+                        autoIncrement: true
+                    });
+            },
+            function () {
+                console.log('ready');
+                loadItemsTable();
             });
-        }, function () {
-            console.log('ready');
-            loadContactsTable();
-        });
-        function loadContactsTable() {
-            contactsDB.read([contactsStoreName], function (tx) {
-                const cursor = tx.objectStore(contactsStoreName).openCursor();
-                cursor.onsuccess = function (e) {
-                    if (e.target.result) {
-                        addContactToTable(e.target.result.value);
-                        e.target.result.continue();
+
+        function loadItemsTable() {
+            itemsDB.read([itemsStoreName],
+                function (tx) {
+                    const cursor = tx.objectStore(itemsStoreName).openCursor();
+                    cursor.onsuccess = function (e) {
+                        if (e.target.result) {
+                            addItemToTable(e.target.result.value);
+                            e.target.result.continue();
+                        }
+                    };
+                    cursor.onerror = function (e) {
+                        console.log('cursor error');
+                    };
+                });
+        }
+
+        function addChild(wrapper, title, value) {
+            const itemCategoryTitleElement = document.createElement("b");
+            itemCategoryTitleElement.innerHTML = title;
+
+            const itemCategoryResultElement = document.createElement("div");
+            itemCategoryResultElement.innerHTML = value;
+
+            wrapper.appendChild(itemCategoryTitleElement);
+            wrapper.appendChild(itemCategoryResultElement);
+        }
+        function addItemToTable(item) {
+
+            const itemsElement = document.querySelectorAll("#items")[0];
+
+            // ----------------------
+
+            const itemElement = document.createElement("div");
+            itemElement.classList.add("item");
+
+            // ----------------------
+
+            const itemCategoryElement = document.createElement("div");
+            itemCategoryElement.classList.add("itemCategory");
+
+            const itemCategoryTitleElement = document.createElement("b");
+            itemCategoryTitleElement.innerHTML = "دسته بندی: ";
+            itemCategoryElement.appendChild(itemCategoryTitleElement);
+
+            const itemCategoryResultElement = document.createElement("span");
+            itemCategoryResultElement.innerHTML = item.cat;
+            itemCategoryElement.appendChild(itemCategoryResultElement);
+
+            // ----------------------
+
+            const itemFeatureElement = document.createElement("div");
+            itemFeatureElement.classList.add("itemFeature");
+
+            const itemFeatureTitleElement = document.createElement("b");
+            itemFeatureTitleElement.innerHTML = "مشخصات مورد: ";
+            itemFeatureElement.appendChild(itemFeatureTitleElement);
+
+            const itemFeatureResultElement = document.createElement("span");
+            itemFeatureResultElement.classList.add("wrapper");
+            item.ftr.forEach(function (value) {
+                const featureElement = document.createElement("b");
+                featureElement.classList.add("styled");
+                featureElement.classList.add("features");
+                featureElement.textContent = value.item1 + " - " + value.item2;
+                itemFeatureResultElement.appendChild(featureElement);
+            });
+            itemFeatureElement.appendChild(itemFeatureResultElement);
+
+            // ------------------
+
+            const itemPropertyElement = document.createElement("div");
+            itemPropertyElement.classList.add("property");
+
+            const itemPropertyTitleElement = document.createElement("b");
+            itemPropertyTitleElement.innerHTML = "ملک: ";
+            itemPropertyElement.appendChild(itemPropertyTitleElement);
+
+            const itemPropertyResultElement = document.createElement("div");
+            const districtElement = document.createElement("b");
+            districtElement.classList.add("styled");
+            districtElement.classList.add("category");
+            districtElement.textContent = item.prop.dis;
+            itemPropertyResultElement.appendChild(districtElement);
+
+            const catElement = document.createElement("b");
+            catElement.classList.add("styled");
+            catElement.classList.add("category");
+            catElement.textContent = item.prop.cat;
+            itemPropertyResultElement.appendChild(catElement);
+
+            const addressElement = document.createElement("p");
+            addressElement.classList.add("wrapper");
+            addressElement.textContent = item.prop.ad;
+            itemPropertyResultElement.appendChild(addressElement);
+
+            const ownersWrapperElement = document.createElement("div");
+            ownersWrapperElement.classList.add("wrapper");
+            item.prop.own.forEach(function (value) {
+                const ownElement = document.createElement("b");
+                ownElement.classList.add("styled");
+                ownElement.classList.add("owners");
+                ownElement.textContent = value;
+                ownersWrapperElement.appendChild(ownElement);
+            });
+            itemPropertyResultElement.appendChild(ownersWrapperElement);
+
+            const featuresWrapperElement = document.createElement("div");
+            featuresWrapperElement.classList.add("wrapper");
+            item.prop.ftr.forEach(function (value) {
+                const featureElement = document.createElement("b");
+                featureElement.classList.add("styled");
+                featureElement.classList.add("features");
+                featureElement.textContent = value.item1 + " - " + value.item2;
+                featuresWrapperElement.appendChild(featureElement);
+            });
+            itemPropertyResultElement.appendChild(featuresWrapperElement);
+
+            const facilityWrapperElement = document.createElement("div");
+            facilityWrapperElement.classList.add("wrapper");
+            item.prop.fcl.forEach(function (value) {
+                const facilityElement = document.createElement("b");
+                facilityElement.classList.add("styled");
+                facilityElement.classList.add("facilities");
+                facilityElement.textContent = value;
+                facilityWrapperElement.appendChild(facilityElement);
+            });
+            itemPropertyResultElement.appendChild(facilityWrapperElement);
+            itemPropertyElement.appendChild(itemPropertyResultElement);
+
+            // -----------------
+
+            itemElement.appendChild(itemCategoryElement);
+            itemElement.appendChild(itemFeatureElement);
+            itemElement.appendChild(itemPropertyElement);
+            itemsElement.appendChild(itemElement);
+
+        }
+    </script>
+    <script>
+
+        function sync() {
+            const xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+
+                    console.clear();
+                    const itemsWrapper = document.getElementById("items");
+                    while (itemsWrapper.firstChild) {
+                        itemsWrapper.removeChild(itemsWrapper.firstChild);
                     }
-                };
-                cursor.onerror = function (e) {
-                    console.log('cursor error');
-                };
-            });
+                    // Sync Data with IndexedDb
+                    const openReq = indexedDB.open(databaseName);
+                    openReq.onsuccess = function (e) {
+                        const db = e.target.result;
+                        const tx = db.transaction([itemsStoreName], "readwrite");
+                        tx.oncomplete = function (event) {
+                            console.log("Transaction completed");
+                        };
+                        tx.onerror = function (event) {
+                            console.log("Transaction not opened due to error", transaction.error);
+                        };
+                        const objectStore = tx.objectStore(itemsStoreName);
+                        const objectStoreRequest = objectStore.clear();
+                        objectStoreRequest.onsuccess = function (event) {
+                            console.log("Db cleared successfully");
+                        };
+                    };
+                    const json = JSON.parse(this.responseText);
+                    console.log(json);
+                    console.log('adding');
+                    json.forEach(function (currentValue) {
+                        itemsDB.readWrite([itemsStoreName],
+                            function (tx) {
+                                const model = {
+                                    cat: currentValue.cat,
+                                    prop: currentValue.prop,
+                                    ftr: currentValue.ftr
+                                };
+                                // add data to db
+                                tx.objectStore(itemsStoreName).put(model);
+                                addItemToTable(model);
+                            },
+                            function () {
+                                console.log('added');
+                            });
+                    });
+
+                }
+            };
+            xhttp.open("GET", "http://localhost:5566/api/sync/items", true);
+            xhttp.send();
         }
-        function addContactToTable(contact) {
-            const newRow = contacts.insertRow(-1);
-            const nameCell = newRow.insertCell(-1);
-            nameCell.textContent = contact.name;
-            const emailCell = newRow.insertCell(-1);
-            emailCell.textContent = contact.email;
-        }
-        var nameInput = document.getElementById('nameInput');
-        var emailInput = document.getElementById('emailInput');
-        document.getElementById('addButton').onclick = function (e) {
-            e.preventDefault();
-            var name = nameInput.value;
-            var email = emailInput.value;
-            console.log('adding');
-            contactsDB.readWrite([contactsStoreName], function (tx) {
-                const contact = {
-                    name: name,
-                    email: email
-                };
-                tx.objectStore(contactsStoreName).put(contact);
-                addContactToTable(contact);
-            }, function () {
-                console.log('added');
-                nameInput.value = '';
-                emailInput.value = '';
-                nameInput.focus();
-            });
-        };
-       
     </script>
 </body>
 </html>

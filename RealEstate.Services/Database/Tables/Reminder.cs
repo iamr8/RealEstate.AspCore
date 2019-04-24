@@ -2,12 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RealEstate.Services.Database.Tables
 {
     public class Reminder : BaseEntity
     {
-        [Required]
         public string Description { get; set; }
 
         [Required]
@@ -18,6 +18,10 @@ namespace RealEstate.Services.Database.Tables
         public string CheckNumber { get; set; }
 
         public decimal Price { get; set; }
+
+        [NotMapped]
+        public bool IsCheck => !string.IsNullOrEmpty(CheckNumber) && !string.IsNullOrEmpty(CheckBank);
+
         public string UserId { get; set; }
         public string DealId { get; set; }
         public virtual ICollection<Picture> Pictures { get; set; }

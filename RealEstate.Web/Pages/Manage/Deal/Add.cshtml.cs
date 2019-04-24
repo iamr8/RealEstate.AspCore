@@ -40,26 +40,24 @@ namespace RealEstate.Web.Pages.Manage.Deal
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
-            if (!string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToPage(typeof(IndexModel).Page());
+            }
+            else
             {
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
                 var model = await _dealService.DealInputAsync(id).ConfigureAwait(false);
-                if (model == null)
-                    return RedirectToPage(typeof(Deal.IndexModel).Page());
+                NewDeal = model;
 
-                var info = await _itemService.ItemAsync(model.ItemId, null).ConfigureAwait(false);
+                var info = await _itemService.ItemAsync(id, null).ConfigureAwait(false);
                 if (info == null)
                     return RedirectToPage(typeof(Deal.IndexModel).Page());
 
                 ItemInfo = info;
-                NewDeal = model;
-                PageTitle = _localizer["EditDeal"];
-            }
-            else
-            {
-                PageTitle = _localizer["NewDeal"];
+                PageTitle = model == null ? _localizer["NewDeal"] : _localizer["EditDeal"];
             }
 
             DealStatus = !string.IsNullOrEmpty(status) ? status.To<StatusEnum>().GetDisplayName() : null;

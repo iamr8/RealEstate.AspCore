@@ -1,11 +1,21 @@
 ﻿@page
 @model AddModel
-
+@{
+    var users = await UserService.ListJsonAsync().ConfigureAwait(false);
+    var usersselect = users?.Select(x => new SelectListItem
+    {
+        Text = x.UserFullName,
+        Value = x.UserId,
+    }).SelectFirstItem();
+}
 <div class="col-12">
     <form method="post" class="widget">
         <widget-header title="@Model.PageTitle" />
+        <input asp-for="NewDeal.Id" />
+        <input asp-for="NewDeal.ItemId" />
+
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center">
+            @*<div class="row justify-content-center align-items-center">
                 <div class="col-12 text-center">
                     <h3>@SharedLocalizer["ChangeDealBeforeAccept"]</h3>
                 </div>
@@ -13,7 +23,19 @@
                     <a asp-page="@typeof(Item.AddModel).Page()" asp-route-id="@Model.NewDeal.ItemId" target="_blank" class="btn btn-warning btn-block">@SharedLocalizer["EditItem"]</a>
                 </div>
             </div>
-            <hr />
+            <hr />*@
+            <div class="row justify-content-center itemShow">
+                <div class="col-12 detail">
+                    <div class="info">
+                        <span>
+                            @if (Model.ItemInfo != null)
+                            {
+                                <a target="_blank" asp-page="@typeof(Item.IndexModel).Page()" asp-route-id="@Model.ItemInfo.Id" class="badge badge-danger">مشخصات مورد</a>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
             <div class="row justify-content-center itemShow">
                 <div class="col-12 detail">
                     <div class="info">
@@ -52,6 +74,82 @@
             </div>
             <hr />
             <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewDeal.Commission" class="control-label"></label>
+                    <input asp-for="NewDeal.Commission" class="form-control" />
+                    <span asp-validation-for="NewDeal.Commission" class="text-danger"></span>
+                </div>
+                <div class="col-xs-12 col-6 margin-bottomed">
+                    <label asp-for="NewDeal.Tip" class="control-label"></label>
+                    <input asp-for="NewDeal.Tip" class="form-control" />
+                    <span asp-validation-for="NewDeal.Tip" class="text-danger"></span>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <input asp-for="NewDeal.BeneficiaryJson" value="@Model.NewDeal?.BeneficiaryJson" />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12" id="beneficiaries">
+                            <div class="itemShow adder input-group" style="margin-left: 0; margin-right: 0">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">@SharedLocalizer["Beneficiaries"]</span>
+                                </div>
+                                <select asp-items="usersselect" id="selectBeneficiary" class="custom-select"></select>
+                                <div class="input-group-text">
+                                    @SharedLocalizer["CommissionPercent"]
+                                </div>
+                                <input type="number" class="form-control" id="txtBenefComm" value="">
+                                <div class="input-group-text">
+                                    @SharedLocalizer["TipPercent"]
+                                </div>
+                                <input type="number" class="form-control" id="txtBenefTip" value="">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-sm btn-success btn-block" id="submitbenef">@SharedLocalizer["Submit"]</button>
+                                </div>
+                            </div>
+                            <div class="items"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <input asp-for="NewDeal.ChecksJson" value="@Model.NewDeal?.ChecksJson" />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12" id="checks">
+                            <div class="itemShow adder input-group" style="margin-left: 0; margin-right: 0">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">@SharedLocalizer["Payments"]</span>
+                                </div>
+                                <div class="input-group-text">
+                                    @SharedLocalizer["Date"]
+                                </div>
+                                <input type="text" class="form-control" id="txtCheckDate" value="@DateTime.Now.GregorianToPersian(true)">
+                                <div class="input-group-text">
+                                    @SharedLocalizer["Bank"]
+                                </div>
+                                <input type="text" class="form-control" id="txtCheckBank" value="">
+                                <div class="input-group-text">
+                                    @SharedLocalizer["CheckNumber"]
+                                </div>
+                                <input type="number" class="form-control" id="txtCheckNumber" value="">
+                                <div class="input-group-text">
+                                    @SharedLocalizer["Price"]
+                                </div>
+                                <input type="number" class="form-control" id="txtCheckPrice" value="">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-sm btn-success btn-block" id="submitCheck">@SharedLocalizer["Submit"]</button>
+                                </div>
+                            </div>
+                            <div class="items"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="row justify-content-center align-items-center">
                 <div class="col-12 margin-bottomed">
                     <label asp-for="NewDeal.Description" class="control-label"></label>
                     <textarea asp-for="NewDeal.Description" class="form-control" rows="3"></textarea>
@@ -71,3 +169,253 @@
         </widget-footer>
     </form>
 </div>
+
+@section Scripts
+    {
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewDeal)_@nameof(Model.NewDeal.BeneficiaryJson)");
+            const wrapperClass = $("#beneficiaries");
+            const selectInput = $("#selectBeneficiary");
+            const submitInput = $("#submitbenef");
+            const itemSelector = "beneficiary-item";
+            const commissionInput = $("#txtBenefComm");
+            const tipInput = $("#txtBenefTip");
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserFullName));
+                        const tip = item
+                            .@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.TipPercent));
+                        const commission = item
+                            .@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.CommissionPercent));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass("btn btn-warning");
+                        $(anchor).addClass(itemSelector);
+                        $(anchor).addClass("m-1");
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        const badge = document.createElement("span");
+                        $(badge).addClass("badge bg-white mr-2");
+                        $(badge).html(`@(Html.Raw(SharedLocalizer["CommissionPercent"])) : ${commission} - @(Html.Raw(SharedLocalizer["TipPercent"])) : ${tip}`);
+                        $(nameElement).append(badge);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(),
+                    (_, item) => {
+                        const id = $(item).val();
+                        const index = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId)) === id);
+                        if (index >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                if ($('option:not(.hidden)', selectInput).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+            });
+
+            $(submitInput).click(function(e) {
+
+                if ($(selectInput).children().length > 0) {
+                    let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                    if (selected === undefined || selected === null) {
+                        selected = $(selectInput).find('option:eq(0)')[0];
+                    }
+                    const userId = $(selected).attr("value");
+                    const userFullName = $(selected).text();
+                    const commission = $(commissionInput).val();
+                    const tip = $(tipInput).val();
+
+                    if (userId === undefined || userId === null
+                        || userFullName === undefined || userFullName === null
+                        || commission === undefined || commission === null
+                        || tip === undefined || tip === null)
+                        return;
+
+                    const newItem = {
+                        @(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId)): userId,
+                        @(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserFullName)):
+                            userFullName,
+                        @(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.TipPercent)): tip,
+                        @(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.CommissionPercent)):
+                            commission
+                    };
+                    addJson(jsonInput,
+                        newItem,
+                        obj => obj.@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId)) ===
+                        newItem.@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId)));
+                    $(commissionInput).val("");
+                    $(tipInput).val("");
+
+                }
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    e.preventDefault();
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index = jsonValue.findIndex(prop => prop.@(PropertyExtensions.GetJsonProperty<BeneficiaryJsonViewModel>(x => x.UserId)) === keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewDeal)_@nameof(Model.NewDeal.ChecksJson)");
+            const wrapperClass = $("#checks");
+            const submitInput = $("#submitCheck");
+            const itemSelector = "check-item";
+            const dateInput = $("#txtCheckDate");
+            const bankInput = $("#txtCheckBank");
+            const numberInput = $("#txtCheckNumber");
+            const priceInput = $("#txtCheckPrice");
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const number = item.@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Number));
+                        const bank = item
+                            .@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Bank));
+                        const date = item
+                            .@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Date));
+                        const price = item
+                            .@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Price));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", number);
+                        $(anchor).addClass("btn btn-warning");
+                        $(anchor).addClass(itemSelector);
+                        $(anchor).addClass("m-1");
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(bank);
+
+                        const badge = document.createElement("span");
+                        $(badge).addClass("badge bg-white mr-2");
+                        $(badge).html(`${date} - ${bank} - ${price} تومان`);
+                        $(nameElement).append(badge);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+            });
+
+            $(submitInput).click(function(e) {
+
+                const number = $(numberInput).val();
+                const date = $(dateInput).val();
+                const price = parseInt($(priceInput).val());
+                const bank = $(bankInput).val();
+
+                    if (number === undefined || number === null
+                        || date === undefined || date === null
+                        || price === undefined || price === null || price <= 0
+                        || bank === undefined || bank === null)
+                        return;
+
+                    const newItem = {
+                        @(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Number)): number,
+                        @(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Date)):
+                            date,
+                        @(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Bank)): bank,
+                        @(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Price)):
+                            price
+                    };
+                    addJson(jsonInput,
+                        newItem,
+                        obj => obj.@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Number)) ===
+                        newItem.@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Number)));
+            $(dateInput).val("");
+            $(bankInput).val("");
+            $(numberInput).val(0);
+            $(priceInput).val(0);
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    e.preventDefault();
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index = jsonValue.findIndex(prop => prop.@(PropertyExtensions.GetJsonProperty<CheckJsonViewModel>(x => x.Number)) === keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
+}

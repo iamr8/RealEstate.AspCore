@@ -23,6 +23,7 @@
                                     </b>
 
                                     <a href="tel:@item.Mobile" class="badge badge-primary">@item.Mobile</a>
+                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-customerId="@item.Id" class="badge badge-danger">@SharedLocalizer["Items"]</a>
                                 </span>
                             </div>
                             <div class="button">

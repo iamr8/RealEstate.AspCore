@@ -24,8 +24,8 @@ namespace RealEstate.Services.ViewModels
         }
 
         public string Description => _entity?.Description;
-        public decimal TipPrice => _entity?.TipPrice ?? 0;
-        public decimal CommissionPrice => _entity?.CommissionPrice ?? 0;
+        public double TipPrice => (double)(_entity?.TipPrice ?? 0);
+        public double CommissionPrice => (double)(_entity?.CommissionPrice ?? 0);
         public string Barcode => _entity?.Barcode;
 
         public void GetDealRequest(bool includeDeleted = false, Action<DealRequestViewModel> action = null)

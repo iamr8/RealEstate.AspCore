@@ -232,6 +232,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بانک.
+        /// </summary>
+        public static string Bank {
+            get {
+                return ResourceManager.GetString("Bank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ذینفعان.
+        /// </summary>
+        public static string Beneficiaries {
+            get {
+                return ResourceManager.GetString("Beneficiaries", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ذینفع.
         /// </summary>
         public static string Beneficiary {
@@ -300,6 +318,15 @@ namespace RealEstate.Resources {
         public static string ChangeDealBeforeAccept {
             get {
                 return ResourceManager.GetString("ChangeDealBeforeAccept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to شماره چک.
+        /// </summary>
+        public static string CheckNumber {
+            get {
+                return ResourceManager.GetString("CheckNumber", resourceCulture);
             }
         }
         
@@ -489,6 +516,24 @@ namespace RealEstate.Resources {
         public static string DealFirstPerson {
             get {
                 return ResourceManager.GetString("DealFirstPerson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to درخواست معامله.
+        /// </summary>
+        public static string DealRequest {
+            get {
+                return ResourceManager.GetString("DealRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to درخواست های معامله.
+        /// </summary>
+        public static string DealRequests {
+            get {
+                return ResourceManager.GetString("DealRequests", resourceCulture);
             }
         }
         
@@ -1051,24 +1096,6 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to درخواست معامله.
-        /// </summary>
-        public static string ItemRequest {
-            get {
-                return ResourceManager.GetString("ItemRequest", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to درخواست های معامله.
-        /// </summary>
-        public static string ItemRequests {
-            get {
-                return ResourceManager.GetString("ItemRequests", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to موارد.
         /// </summary>
         public static string Items {
@@ -1596,6 +1623,15 @@ namespace RealEstate.Resources {
         public static string Presences {
             get {
                 return ResourceManager.GetString("Presences", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مبلغ.
+        /// </summary>
+        public static string Price {
+            get {
+                return ResourceManager.GetString("Price", resourceCulture);
             }
         }
         

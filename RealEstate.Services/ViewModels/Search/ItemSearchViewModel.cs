@@ -17,5 +17,11 @@ namespace RealEstate.Services.ViewModels.Search
         [Display(ResourceType = typeof(SharedResource), Name = "Owner")]
         [SearchParameter("ownerName")]
         public string Owner { get; set; }
+
+        [SearchParameter("id")]
+        public string ItemId { get; set; }
+
+        [SearchParameter("customerId")]
+        public string CustomerId { get; set; }
     }
 }

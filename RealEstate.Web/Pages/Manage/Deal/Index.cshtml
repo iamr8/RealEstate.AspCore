@@ -1,5 +1,137 @@
 ﻿@page
-@model RealEstate.Web.Pages.Manage.Deal.IndexModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model IndexModel
+
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle">
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
+        </widget-header>
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center margin-bottomed">
+            </div>
+            @if (Model.List.Items?.Any() == true)
+            {
+                foreach (var item in Model.List.Items)
+                {
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    <div class="row justify-content-center itemShow @disabledClass">
+                        <div class="col-12 detail">
+                            <div class="info">
+                                <span>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest?.Item?.Property?.Id" target="_blank">
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.DealRequest?.Item?.Property?.District?.Id" target="_blank">@item.DealRequest?.Item?.Property?.District?.Name</a> &mdash;
+                                        @if (!string.IsNullOrEmpty(item.DealRequest?.Item?.Property?.Street))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.DealRequest?.Item?.Property?.Street<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.DealRequest?.Item?.Property?.Alley))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Alley"]: </span>@item.DealRequest?.Item?.Property?.Alley<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.DealRequest?.Item?.Property?.Number))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingNumber"]: </span>@item.DealRequest?.Item?.Property?.Number<text> &mdash; </text>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.DealRequest?.Item?.Property?.BuildingName))
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["BuildingName"]: </span>@item.DealRequest?.Item?.Property?.BuildingName<text> &mdash; </text>
+                                        }
+                                        @if (item.DealRequest?.Item?.Property?.Floor > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Floor"]: </span>@item.DealRequest?.Item?.Property?.Floor<text> &mdash; </text>
+                                        }
+                                        @if (item.DealRequest?.Item?.Property?.Flat > 0)
+                                        {
+                                            <span class="text-gray">@SharedLocalizer["Flat"]: </span>@item.DealRequest?.Item?.Property?.Flat
+                                        }
+                                    </a>
+                                    <span class="badge badge-danger">@item.DealRequest?.Item?.Category.Name</span>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest?.Item?.Property?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
+                                </span>
+                                @if (item.DealRequest?.Item?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer["DealFirstPerson"]:
+                                        @foreach (var ownership in item.DealRequest?.Item?.Property?.CurrentPropertyOwnership.Ownerships)
+                                        {
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
+                                        }
+                                    </span>
+                                }
+                                @if (item.DealRequest?.Item?.Applicants?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer["DealSecondPerson"]:
+                                        @foreach (var applicant in item.DealRequest?.Item?.Applicants)
+                                        {
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-warning">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
+                                        }
+                                    </span>
+                                }
+
+                                @if (item.DealRequest?.Item?.ItemFeatures?.Any() == true)
+                                {
+                                    <span>
+                                        @foreach (var spec in item.DealRequest.Item.ItemFeatures)
+                                        {
+                                            <text>
+                                                <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
+                                            </text>
+                                        }
+                                    </span>
+
+                                }
+
+                                <span>
+                                    @SharedLocalizer["TipPrice"]:
+                                    <span class="badge badge-warning">@item.TipPrice.ToString("#,###") تومان</span>
+                                </span>
+                                <span>
+                                    @SharedLocalizer["CommissionPrice"]:
+                                    <span class="badge badge-warning">@item.CommissionPrice.ToString("#,###") تومان</span>
+                                </span>
+                                @if (item.Beneficiaries?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer["Beneficiaries"]:
+                                        @foreach (var beneficiary in item.Beneficiaries)
+                                        {
+                                        <span class="badge badge-warning">@beneficiary.User?.Employee?.FirstName @beneficiary.User?.Employee?.LastName &mdash; @beneficiary.CommissionPercent @SharedLocalizer["CommissionPercent"] &mdash; @beneficiary.TipPercent @SharedLocalizer["TipPercent"]</span>
+                                        }
+                                    </span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <span class="text-gray text-justify description">
+                                        @item.Description
+                                    </span>
+                                }
+                            </div>
+                            <div class="button">
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                {
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                }
+                            </div>
+                        </div>
+                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                        {
+                            <vc:log logs="@item.Logs" />
+                        }
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="row justify-content-center align-items-center">
+                    <h5>
+                        @SharedLocalizer["NoItemToShow"]
+                    </h5>
+                </div>
+            }
+            <vc:pagination model="@Model.List"></vc:pagination>
+        </section>
+    </div>
+</div>

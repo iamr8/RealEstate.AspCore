@@ -101,7 +101,6 @@ namespace RealEstate.Services
             //    .ToListAsync().ConfigureAwait(false);
             var customers = await _customers
                 .Where(x => x.Applicants.Count == 0
-                            || x.Ownerships.Count >= 0
                             || x.Applicants.Any(c => c.Item.DealRequests.Any(v => v.DealId != null))
                             || x.Applicants.Any(c => c.UserId == currentUser.Id))
                 .ToListAsync()
@@ -340,17 +339,20 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
         {
-            var models = _applicants.AsQueryable();
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return default;
 
-            if (searchModel != null)
-            {
-            }
+            var models = _applicants
+                .Where(x => x.UserId == currentUser.Id)
+                .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                 item => item.Into<Applicant, ApplicantViewModel>(_baseService.IsAllowed(Role.SuperAdmin), act =>
                 {
                     act.GetCustomer(_baseService.IsAllowed(Role.SuperAdmin));
                     act.GetApplicantFeatures(false, act2 => act2.GetFeature());
+                    act.GetItem();
                 }).ShowBasedOn(x => x.Customer, _baseService.IsAllowed(Role.SuperAdmin))
             ).ConfigureAwait(false);
 

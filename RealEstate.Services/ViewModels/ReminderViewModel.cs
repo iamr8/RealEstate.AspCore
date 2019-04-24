@@ -23,11 +23,12 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Description => _entity.Description;
-        public DateTime Date => _entity.Date;
-        public string CheckBank => _entity.CheckBank;
-        public string CheckNumber => _entity.CheckNumber;
-        public decimal Price => _entity.Price;
+        public bool IsCheck => _entity?.IsCheck ?? false;
+        public string Description => _entity?.Description;
+        public DateTime Date => _entity?.Date ?? DateTime.Now;
+        public string CheckBank => _entity?.CheckBank;
+        public string CheckNumber => _entity?.CheckNumber;
+        public double Price => (double)(_entity?.Price ?? 0);
 
         public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
         {

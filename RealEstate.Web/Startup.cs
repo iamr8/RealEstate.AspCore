@@ -44,15 +44,15 @@ namespace RealEstate.Web
             var connectionStrings = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseLazyLoadingProxies()
-                    .UseSqlServer(connectionStrings,
-                        optionsBuilder =>
-                        {
-                            optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
-                            optionsBuilder.UseNetTopologySuite();
-                            optionsBuilder.EnableRetryOnFailure();
-                            optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
-                        });
+                options.UseLazyLoadingProxies();
+                options.UseSqlServer(connectionStrings,
+                    optionsBuilder =>
+                    {
+                        optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
+                        optionsBuilder.UseNetTopologySuite();
+                        optionsBuilder.EnableRetryOnFailure();
+                        optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
+                    });
                 options.ConfigureWarnings(config =>
                 {
                     config.Log(CoreEventId.IncludeIgnoredWarning);
@@ -62,7 +62,7 @@ namespace RealEstate.Web
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
                     config.Log(RelationalEventId.QueryClientEvaluationWarning);
                 });
-                //                options.EnableSensitiveDataLogging();
+                options.EnableSensitiveDataLogging();
             });
             //            .AddEntityFrameworkProxies();
 

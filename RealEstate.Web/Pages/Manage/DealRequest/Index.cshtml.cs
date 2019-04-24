@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.DealRequest
 
         public string Status { get; set; }
 
-        public string PageTitle => _localizer["Properties"];
+        public string PageTitle => _localizer["DealRequests"];
 
         public async Task OnGetAsync(string pageNo, string status)
         {
