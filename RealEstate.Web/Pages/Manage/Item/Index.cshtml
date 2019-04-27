@@ -1,6 +1,13 @@
 ﻿@page
 @model IndexModel
 @{
+    var featuresList = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item, FeatureTypeEnum.Property).ConfigureAwait(false);
+    var features = featuresList?.Select(x => new SelectListItem
+    {
+        Value = x.Name,
+        Text = x.Name
+    }).ToList().AddNone();
+
     var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
     var categories = categorieslist?.Select(x => new SelectListItem
     {
@@ -14,39 +21,76 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
         </widget-header>
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-            </div>
-            @if (Model.List.Items?.Any() == true)
-            {
+            <form method="post">
                 <div class="row justify-content-center align-items-center margin-bottomed">
                     <div class="col-12">
-                        <form method="post" class="widget mini-widget bg-white">
-                            <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                            <section class="container-fluid margin-bottomed">
-                                <div class="row">
-                                    <div class="col-6 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                        <input asp-for="SearchInput.Owner" class="form-control" />
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
+                            </div>
+                            <div id="search" class="collapse">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                                <input asp-for="SearchInput.Owner" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Address"></label>
+                                                <input asp-for="SearchInput.Address" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.CategoryId"></label>
+                                                <select asp-items="categories" asp-for="SearchInput.CategoryId" class="custom-select"></select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-6 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.CategoryId"></label>
-                                        <select asp-items="categories" asp-for="SearchInput.CategoryId" class="form-control"></select>
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.FeatureName"></label>
+                                                <select asp-items="features" asp-for="SearchInput.FeatureName" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.FromValue"></label>
+                                                <input asp-for="SearchInput.FromValue" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.ToValue"></label>
+                                                <input asp-for="SearchInput.ToValue" class="form-control" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-12 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.Address"></label>
-                                        <input asp-for="SearchInput.Address" class="form-control" />
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-12">
+                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
+                                        </div>
                                     </div>
                                 </div>
-                            </section>
-                            <widget-footer>
-                                <widget-footer-text></widget-footer-text>
-                                <widget-footer-button>
-                                    <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                                </widget-footer-button>
-                            </widget-footer>
-                        </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </form>
+
+            @if (Model.List.Items?.Any() == true)
+            {
+
                 foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
@@ -98,10 +142,23 @@
                                 @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var spec in item.ItemFeatures)
+                                        @foreach (var feature in item.ItemFeatures)
                                         {
+                                            string postfix;
+                                            if (feature.Feature.Name.Contains("قیمت"))
+                                            {
+                                                postfix = " تومان";
+                                            }
+                                            else if (feature.Feature.Name.Equals("متراژ"))
+                                            {
+                                                postfix = " متر";
+                                            }
+                                            else
+                                            {
+                                                postfix = null;
+                                            }
                                             <text>
-                                                <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
+                                                <span class="badge badge-secondary">@feature.Feature?.Name &mdash; @feature.Value @postfix</span>
                                             </text>
                                         }
                                     </span>
@@ -115,10 +172,10 @@
                                 }
                             </div>
                             <div class="button">
-                                @if (item.LastState != DealStatusEnum.Requested)
+                                @*@if (item.LastState != DealStatusEnum.Requested)
                                 {
                                     <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
-                                }
+                                }*@
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>

@@ -13,8 +13,6 @@ namespace RealEstate.Services.ViewModels
         public string FirstName { get; set; }
         public Role Role { get; set; }
         public string LastName { get; set; }
-        public string Address { get; set; }
-        public string Phone { get; set; }
         public string EmployeeId { get; set; }
         public List<DivisionJsonViewModel> EmployeeDivisions { get; set; }
         public List<CategoryJsonViewModel> UserItemCategories { get; set; }

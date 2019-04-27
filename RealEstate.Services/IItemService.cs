@@ -242,6 +242,17 @@ namespace RealEstate.Services
                     query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
                                              || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
                 }
+
+                if (!string.IsNullOrEmpty(searchModel.FeatureName))
+                {
+                    if (searchModel.FromValue != null && searchModel.FromValue > 0)
+                        query = query.Where(x =>
+                            x.Property.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName && double.Parse(c.Value) >= searchModel.FromValue));
+
+                    if (searchModel.ToValue != null && searchModel.ToValue > 0)
+                        query = query.Where(x =>
+                            x.Property.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName && double.Parse(c.Value) <= searchModel.FromValue));
+                }
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,

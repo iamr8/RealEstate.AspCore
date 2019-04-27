@@ -66,15 +66,14 @@ body {
             background-color: $sidebarheader-color;
 
             h2 {
-                color: white;
+                color: black;
             }
         }
     }
 
     > header {
         @include widget-headerfooter();
-        @include border-top-left-radius($standard-radius);
-        @include border-top-right-radius($standard-radius);
+        border-bottom: 1px dashed gray;
 
         > h2 {
             font-size: 12pt;
@@ -109,15 +108,14 @@ body {
         padding-top: 20px;
 
         > div {
-            margin-bottom: 10px;
+            /*margin-bottom: 10px;*/
         }
     }
 
     > footer {
         @include widget-headerfooter();
-        @include border-bottom-left-radius($standard-radius);
-        @include border-bottom-right-radius($standard-radius);
         margin-top: auto;
+        background-color: #e0e0e0;
 
         > .messages {
             font-size: 10pt;
@@ -248,7 +246,7 @@ input[type=submit], button {
     @include flexbox();
     @include flex-flow(column);
     @include transition(all, 0.5s, ease-in-out);
-    background-color: #111;
+    background-color: $nav-background-color;
     overflow: hidden;
     width: 250px;
 
@@ -272,7 +270,7 @@ input[type=submit], button {
 
             &:first-child {
                 font-size: 12pt;
-                color: white;
+                color: $nav-foreground-color;
             }
         }
     }
@@ -316,7 +314,7 @@ input[type=submit], button {
             @include border-radius(10px);
             background-color: $exit-backcolor;
             font-size: 8pt;
-            color: white;
+            color: $nav-foreground-color;
             padding: 7px;
 
             &:hover,
@@ -330,7 +328,7 @@ input[type=submit], button {
         overflow-y: auto;
 
         .sub-items {
-            background-color: #191919;
+            background-color: $nav-sub-background-color;
             padding-right: 20px;
         }
 
@@ -354,25 +352,36 @@ input[type=submit], button {
                 }
             }
 
+            &.wrapper {
+                > .img {
+                    > img {
+                        visibility: hidden;
+                    }
+                }
+
+                > .text {
+                    color: gray;
+                }
+            }
+
             > .text {
                 font-size: 10pt;
                 padding-right: 10px;
-                color: white;
+                color: $nav-foreground-color;
             }
         }
 
         a.nav-link {
             &.active {
-                background-color: $background-color;
+                background-color: $nav-item-focus-background-color;
             }
 
             &:hover,
             &:focus {
-                background-color: mix(white, $background-color, 5);
-
-                > .text {
+                background-color: $nav-item-hover-background-color;
+                /*> .text {
                     color: #f1f1f1;
-                }
+                }*/
             }
 
             &:active {
@@ -932,4 +941,192 @@ a {
             }
         }
     }
+}
+
+.input-group {
+    > :not(:last-child) {
+        &.form-control, &.custom-select {
+            @include border-top-right-radius(0);
+            @include border-top-left-radius(0.25rem);
+            @include border-bottom-right-radius(0);
+            @include border-bottom-left-radius(0.25rem);
+        }
+    }
+
+    select {
+        font-size: 9pt !important;
+    }
+
+    .form-control {
+        font-size: 9pt !important;
+    }
+
+    .input-group-text {
+        font-size: 8pt;
+    }
+
+    * + * {
+        &:not(input[type="hidden"]) {
+            @include border-top-left-radius(0 !important);
+            @include border-bottom-left-radius(0 !important);
+            @include border-top-right-radius(0 !important);
+            @include border-bottom-right-radius(0 !important);
+        }
+    }
+
+    *:first-child {
+        @include border-top-left-radius(0 !important);
+        @include border-top-right-radius(0.25rem !important);
+        @include border-bottom-left-radius(0 !important);
+        @include border-bottom-right-radius(0.25rem !important);
+    }
+
+    *:last-child {
+        &:not(.text-danger) {
+            @include border-top-left-radius(0.25rem !important);
+            @include border-top-right-radius(0 !important);
+            @include border-bottom-left-radius(0.25rem !important);
+            @include border-bottom-right-radius(0 !important);
+        }
+    }
+}
+
+.control-label {
+    font-size: 9pt !important;
+
+    &:after {
+        content: " :";
+        margin-left: 5px;
+    }
+}
+
+input, select {
+    @include border-radius(0 !important);
+
+    &:focus {
+        /*box-shadow: 0 0 0 0.1rem mix(transparent,$sidebarheader-color,90) !important;*/
+        box-shadow: none !important;
+        border-color: $input-hover !important;
+    }
+
+    &.input-validation-error {
+        border-color: red !important;
+    }
+}
+
+.custom-select {
+    font-size: 9pt !important;
+    /*width: auto;
+    min-width: 100px;*/
+    &:focus {
+        background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%235110c9' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px !important;
+    }
+}
+
+.form-control {
+    font-size: 9pt !important;
+}
+
+.input-wrapper {
+    @include flexbox();
+    @include justify-content(start);
+    @include align-items(center);
+    @include flex-flow(row);
+
+    .control-label {
+        flex: 0 0 auto;
+        margin: 0 !important;
+        margin-left: 10px !important;
+    }
+
+    .field-validation-valid {
+        display: none;
+    }
+
+    .field-validation-error {
+        flex: 0 0 auto;
+        margin-right: 5px;
+        @include user-select(none);
+
+        > span {
+            font-size: 7pt !important;
+        }
+    }
+
+    .btn {
+        flex: 0 0 auto;
+        margin: 0 !important;
+        margin-right: 10px !important;
+        @include border-radius(0 !important);
+        height: 100%;
+    }
+}
+
+.itemShow {
+    &.input-wrapper {
+        margin-bottom: 0 !important;
+
+        @media (max-width:768px) {
+            flex-wrap: wrap;
+
+            & > * {
+                margin-bottom: 10px !important;
+
+                &:last-child {
+                    flex-basis: 100%;
+                    margin-right: 0 !important;
+                }
+            }
+        }
+
+        &:hover, &:focus {
+            background-color: transparent;
+        }
+    }
+}
+
+.status-message {
+    background-color: $nav-background-color;
+    width: 100%;
+    padding: 10px;
+}
+
+.itemShow + .items {
+    background-color: $nav-background-color;
+    padding: 7px;
+    margin-top: 10px;
+
+    @media (max-width:768px) {
+        padding: 10px;
+    }
+
+    > a {
+        padding: 5px 10px;
+        background-color: white;
+        font-size: 8pt;
+        color: black;
+        display: inline-block;
+        margin: 3px;
+        outline: 1px solid $nav-item-hover-background-color;
+
+        &:hover, &:focus {
+            outline-color: $input-hover;
+        }
+
+        @media (max-width:768px) {
+            width: 100%;
+            margin: 0;
+            margin-bottom: 10px;
+            display: block;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.clearSearch {
+    color: gray;
+    font-size: 8pt;
 }

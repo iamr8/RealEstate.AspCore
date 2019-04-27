@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace RealEstate.Web.Migrations
 {
-    public partial class InitialDatabase : Migration
+    public partial class InitialDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -122,6 +122,24 @@ namespace RealEstate.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Feature", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Sms",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    Audit = table.Column<string>(nullable: true),
+                    Sender = table.Column<string>(nullable: true),
+                    Receiver = table.Column<string>(nullable: true),
+                    ReferenceId = table.Column<string>(nullable: true),
+                    Text = table.Column<string>(nullable: true),
+                    Provider = table.Column<int>(nullable: false),
+                    StatusJson = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sms", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -287,28 +305,6 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Payment",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    Audit = table.Column<string>(nullable: true),
-                    Value = table.Column<double>(nullable: false),
-                    Text = table.Column<string>(nullable: true),
-                    Type = table.Column<int>(nullable: false),
-                    EmployeeId = table.Column<string>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Payment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Payment_Employee_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employee",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Presence",
                 columns: table => new
                 {
@@ -332,38 +328,6 @@ namespace RealEstate.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Sms",
-                columns: table => new
-                {
-                    Id = table.Column<string>(nullable: false),
-                    Audit = table.Column<string>(nullable: true),
-                    Sender = table.Column<string>(nullable: true),
-                    Receiver = table.Column<string>(nullable: true),
-                    ReferenceId = table.Column<string>(nullable: true),
-                    Text = table.Column<string>(nullable: true),
-                    Provider = table.Column<int>(nullable: false),
-                    StatusJson = table.Column<string>(nullable: true),
-                    CustomerId = table.Column<string>(nullable: true),
-                    EmployeeId = table.Column<string>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Sms", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Sms_Customer_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customer",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Sms_Employee_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employee",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "User",
                 columns: table => new
                 {
@@ -383,6 +347,42 @@ namespace RealEstate.Web.Migrations
                         principalTable: "Employee",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payment",
+                columns: table => new
+                {
+                    Id = table.Column<string>(nullable: false),
+                    Audit = table.Column<string>(nullable: true),
+                    Value = table.Column<double>(nullable: false),
+                    Text = table.Column<string>(nullable: true),
+                    Type = table.Column<int>(nullable: false),
+                    SmsId = table.Column<string>(nullable: true),
+                    CheckoutId = table.Column<string>(nullable: true),
+                    EmployeeId = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Payment_Payment_CheckoutId",
+                        column: x => x.CheckoutId,
+                        principalTable: "Payment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Payment_Employee_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employee",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Payment_Sms_SmsId",
+                        column: x => x.SmsId,
+                        principalTable: "Sms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -518,7 +518,7 @@ namespace RealEstate.Web.Migrations
                 {
                     Id = table.Column<string>(nullable: false),
                     Audit = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: false),
+                    Description = table.Column<string>(nullable: true),
                     Date = table.Column<DateTime>(nullable: false),
                     CheckBank = table.Column<string>(nullable: true),
                     CheckNumber = table.Column<string>(nullable: true),
@@ -638,7 +638,8 @@ namespace RealEstate.Web.Migrations
                     Audit = table.Column<string>(nullable: true),
                     Status = table.Column<int>(nullable: false),
                     ItemId = table.Column<string>(nullable: false),
-                    DealId = table.Column<string>(nullable: true)
+                    DealId = table.Column<string>(nullable: true),
+                    SmsId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -655,6 +656,12 @@ namespace RealEstate.Web.Migrations
                         principalTable: "Item",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DealRequest_Sms_SmsId",
+                        column: x => x.SmsId,
+                        principalTable: "Sms",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -793,14 +800,14 @@ namespace RealEstate.Web.Migrations
                 columns: new[] { "Id", "Audit", "Name", "Type" },
                 values: new object[,]
                 {
-                    { "fcdf54c9-2e82-4384-acf3-4be023803576", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "خرید و فروش", 0 },
-                    { "18dada49-eb92-4435-9d68-4513226376fa", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "زمین", 1 },
-                    { "296b08fe-3d69-45d5-b8c7-1b2aa5205a0c", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "ویلایی", 1 },
-                    { "07d0fc97-1cf2-4688-aee8-24919f68b6bd", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "مشارکت در ساخت", 0 },
-                    { "7ee3c867-cb10-4668-8f9c-e0b6768aca45", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "رهن و اجاره", 0 },
-                    { "25b18d5b-f861-4b2c-bf82-a4875db8eb26", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "رهن کامل", 0 },
-                    { "9c356476-d411-4e7f-a812-39b59f514bad", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "آپارتمان", 1 },
-                    { "dd0a18d7-7770-4d8d-bb95-3caf4bed298e", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "مغازه", 1 }
+                    { "1943a814-7c25-4569-b528-8e96c4b5d3f8", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "خرید و فروش", 0 },
+                    { "8f19a3ee-b39a-47f1-84d3-08ca6f62278b", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "زمین", 1 },
+                    { "91144dc3-70e3-44a8-904c-cc8bf12aaa4c", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "ویلایی", 1 },
+                    { "d03ef728-2932-480f-bfa1-11c77b2e8767", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "مشارکت در ساخت", 0 },
+                    { "199acde7-7244-42c8-a6e7-eab43d0a9eee", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "رهن و اجاره", 0 },
+                    { "5816a67b-eb6a-464e-b6c9-7f0520eef95e", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "رهن کامل", 0 },
+                    { "826e9eaf-40f7-4adc-9a1d-b84ad151e176", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "آپارتمان", 1 },
+                    { "29dfac27-765c-4839-b77b-0afc7b6450e3", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "مغازه", 1 }
                 });
 
             migrationBuilder.InsertData(
@@ -808,12 +815,12 @@ namespace RealEstate.Web.Migrations
                 columns: new[] { "Id", "Audit", "Name" },
                 values: new object[,]
                 {
-                    { "dbaa9cd6-bff6-43f2-b0a7-0f8626894964", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "زیتون کارمندی" },
-                    { "f65efe6f-d7e5-468b-b824-6d5b90c146f2", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "زیتون کارگری" },
-                    { "245fc791-8e69-400c-a9fe-b62f7edcd639", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "باهنر" },
-                    { "9370f570-144f-4726-848c-55998ff05592", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "کیان آباد" },
-                    { "2c5e2312-a2f9-4828-8335-e4b12f12bd0b", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "کیانپارس" },
-                    { "36010ce4-8c6e-48c9-a0f1-9a72c321add2", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "ملیراه" }
+                    { "b79d7dc7-0f26-448a-baf7-87b394a3c41c", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "زیتون کارمندی" },
+                    { "fb5298c9-b9cf-409a-b631-83e50d174659", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "زیتون کارگری" },
+                    { "fd487831-2da5-4e3f-8411-b68a3ef6310a", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "باهنر" },
+                    { "e23e453d-df4f-47fc-b569-e18e29f849f8", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "کیان آباد" },
+                    { "3c53d525-487e-4163-b391-23d890888999", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "کیانپارس" },
+                    { "1583db20-61fa-49fa-8dc8-828a166dd711", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "ملیراه" }
                 });
 
             migrationBuilder.InsertData(
@@ -821,25 +828,25 @@ namespace RealEstate.Web.Migrations
                 columns: new[] { "Id", "Audit", "Name" },
                 values: new object[,]
                 {
-                    { "d196f024-32c7-4c7a-8e7b-f0ba53356583", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "کارواش" },
-                    { "0eb73618-1fd1-4bd0-9bdf-d1b8203905c8", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "املاک" }
+                    { "955fcc87-c851-4f7b-bb01-58ab853da6fc", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "کارواش" },
+                    { "c2a55dcd-f3db-4fc3-853c-496ad8b43a1d", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "املاک" }
                 });
 
             migrationBuilder.InsertData(
                 table: "Employee",
                 columns: new[] { "Id", "Address", "Audit", "FirstName", "LastName", "Mobile", "Phone" },
-                values: new object[] { "e17a64aa-9732-4e11-ba0a-26ee515d8dd5", "باهنر", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "هانی", "موسی زاده", "09166000341", "33379367" });
+                values: new object[] { "f60fe209-c03b-48e5-9bb2-926184ed0c11", "باهنر", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "هانی", "موسی زاده", "09166000341", "33379367" });
 
             migrationBuilder.InsertData(
                 table: "Facility",
                 columns: new[] { "Id", "Audit", "Name" },
                 values: new object[,]
                 {
-                    { "bda52f5f-76b6-49f1-a0b8-a5626d7bf62e", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "سالن بدنسازی" },
-                    { "2dd39a45-fda3-4b60-b58f-bda831d3a7fd", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "پارکینگ" },
-                    { "ea761002-3277-491e-bbc5-08d1b7d1d2a7", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "آسانسور" },
-                    { "538e01d9-fbfe-4bc9-8e33-a789edf02cbc", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "سالن همایش" },
-                    { "9098ca45-b036-4c98-a41e-f3ff8dc199cd", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "آنتن مرکزی" }
+                    { "f36231da-d068-4c4d-a2f1-62010a1e06c5", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "سالن بدنسازی" },
+                    { "ac5e7676-dd9b-4674-a636-a4c50e8e5db7", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "پارکینگ" },
+                    { "e019156a-79cd-4695-8900-ba1b0113267b", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "آسانسور" },
+                    { "328b6393-ec90-440b-94d6-bc75957f3a39", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "سالن همایش" },
+                    { "b789b07b-9a34-4a51-a4bb-51acf4f036a6", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "آنتن مرکزی" }
                 });
 
             migrationBuilder.InsertData(
@@ -847,30 +854,30 @@ namespace RealEstate.Web.Migrations
                 columns: new[] { "Id", "Audit", "Name", "Type" },
                 values: new object[,]
                 {
-                    { "9c34c06c-0989-42b4-930e-db50260bb2f9", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "بر زمین", 1 },
-                    { "9eb642bd-5320-4b27-998e-8f90fb95116e", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "قیمت نهایی", 0 },
-                    { "8d4576a7-7728-47de-8c45-e348e30e67fb", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "بودجه", 2 },
-                    { "f74540f2-140b-4b34-9789-b4823bb940bb", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "متراژ", 1 },
-                    { "dde31d12-397e-4a0c-8fd7-d87efd345db6", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "پیش پرداخت", 2 },
-                    { "28f4e37a-aeae-4e00-92e8-f2a0a28f8b40", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "قیمت هر متر", 0 },
-                    { "aba3615a-c4ab-443d-af8a-a45ccef6d613", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "تعداد خواب", 1 },
-                    { "32126744-4fed-406d-8a44-e772611270ad", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "کرایه", 2 }
+                    { "93179c86-a0db-40cf-a0e2-d26c70a8de45", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "بر زمین", 1 },
+                    { "54a0b920-c17f-4ff2-9c51-f9551159026a", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "قیمت نهایی", 0 },
+                    { "ac1ba7ca-7054-4f46-a234-c3d6fd99b442", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "بودجه", 2 },
+                    { "15bf9d15-07bc-4f3c-8339-8192c8fd0c18", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "متراژ", 1 },
+                    { "22f68cda-29f2-4cc0-bb0f-e578defb85d1", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "پیش پرداخت", 2 },
+                    { "01cb6a1d-959d-4abb-8488-f10ab09bd8a8", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "قیمت هر متر", 0 },
+                    { "b35f4bef-925e-415b-b8f1-19f6df02e6ac", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "تعداد خواب", 1 },
+                    { "02cbebcc-610a-4bd2-8e27-e2d50b13587f", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "کرایه", 2 }
                 });
 
             migrationBuilder.InsertData(
                 table: "EmployeeDivision",
                 columns: new[] { "Id", "Audit", "DivisionId", "EmployeeId" },
-                values: new object[] { "6a7e9e40-3535-465a-883f-86fa21cb58d7", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "0eb73618-1fd1-4bd0-9bdf-d1b8203905c8", "e17a64aa-9732-4e11-ba0a-26ee515d8dd5" });
+                values: new object[] { "4c86edfc-64e5-43c9-981e-83e71c64ca57", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "c2a55dcd-f3db-4fc3-853c-496ad8b43a1d", "f60fe209-c03b-48e5-9bb2-926184ed0c11" });
 
             migrationBuilder.InsertData(
                 table: "EmployeeStatus",
                 columns: new[] { "Id", "Audit", "EmployeeId", "Status" },
-                values: new object[] { "77cf3bf9-013f-46e9-8889-7b615e8a8c82", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "e17a64aa-9732-4e11-ba0a-26ee515d8dd5", 0 });
+                values: new object[] { "7d8f0e43-d368-46a1-85c7-789fa2737a10", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "f60fe209-c03b-48e5-9bb2-926184ed0c11", 0 });
 
             migrationBuilder.InsertData(
                 table: "User",
                 columns: new[] { "Id", "Audit", "EmployeeId", "Password", "Role", "Username" },
-                values: new object[] { "85bf213c-2af9-4e36-ae45-4d4f5dfd2144", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-24T00:34:29.7761901+04:30\",\"t\":0}]", "e17a64aa-9732-4e11-ba0a-26ee515d8dd5", "YmAdyc6Ph9PNcJOLeira6w==", 2, "admin" });
+                values: new object[] { "f19fb481-805f-4ef7-b63d-3be132a83215", "[{\"i\":null,\"n\":\"آرش شبه\",\"m\":\"09364091209\",\"d\":\"2019-04-25T16:48:03.9433293+04:30\",\"t\":0}]", "f60fe209-c03b-48e5-9bb2-926184ed0c11", "YmAdyc6Ph9PNcJOLeira6w==", 2, "admin" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applicant_CustomerId",
@@ -918,6 +925,11 @@ namespace RealEstate.Web.Migrations
                 name: "IX_DealRequest_ItemId",
                 table: "DealRequest",
                 column: "ItemId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DealRequest_SmsId",
+                table: "DealRequest",
+                column: "SmsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Employee_Mobile",
@@ -991,9 +1003,19 @@ namespace RealEstate.Web.Migrations
                 column: "PropertyOwnershipId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Payment_CheckoutId",
+                table: "Payment",
+                column: "CheckoutId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payment_EmployeeId",
                 table: "Payment",
                 column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payment_SmsId",
+                table: "Payment",
+                column: "SmsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Picture_DealId",
@@ -1069,16 +1091,6 @@ namespace RealEstate.Web.Migrations
                 name: "IX_Reminder_UserId",
                 table: "Reminder",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sms_CustomerId",
-                table: "Sms",
-                column: "CustomerId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Sms_EmployeeId",
-                table: "Sms",
-                column: "EmployeeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_EmployeeId",
@@ -1160,9 +1172,6 @@ namespace RealEstate.Web.Migrations
                 name: "PropertyFeature");
 
             migrationBuilder.DropTable(
-                name: "Sms");
-
-            migrationBuilder.DropTable(
                 name: "UserItemCategory");
 
             migrationBuilder.DropTable(
@@ -1194,6 +1203,9 @@ namespace RealEstate.Web.Migrations
 
             migrationBuilder.DropTable(
                 name: "Item");
+
+            migrationBuilder.DropTable(
+                name: "Sms");
 
             migrationBuilder.DropTable(
                 name: "Deal");

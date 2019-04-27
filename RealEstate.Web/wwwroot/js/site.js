@@ -25,11 +25,14 @@ $(document).ready(function () {
                     });
             }
         });
-    $(document).on("click", "a[data-confirm]", function (e) {
+    $(document).on("click", "[data-confirm]", function (e) {
         if (!confirm($(this).attr("data-confirm"))) {
             e.preventDefault();
+            e.stopPropagation();
+            return false;
         }
     });
+
     $(".lazy").lazy({
         effect: "fadeIn",
         visibleOnly: true,

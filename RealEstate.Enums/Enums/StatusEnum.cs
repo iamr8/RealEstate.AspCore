@@ -88,6 +88,7 @@ namespace RealEstate.Base.Enums
         EntityIsNull,
         DealIsNull,
         ManagemenetPercentIsNull,
-        LeaveIsNull
+        LeaveIsNull,
+        Ready
     }
 }

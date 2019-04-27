@@ -34,7 +34,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public string PageTitle => _localizer["Items"];
 
-        public async Task OnGetAsync(string pageNo, string status, string id, string itemAddress, string categoryId, string ownerName, string customerId)
+        public async Task OnGetAsync(string pageNo, string status, string id, string itemAddress, string categoryId, string ownerName, string customerId, string itemFeature, double? itemFeatureFrom, double? itemFeatureTo)
         {
             SearchInput = new ItemSearchViewModel
             {
@@ -43,7 +43,10 @@ namespace RealEstate.Web.Pages.Manage.Item
                 CategoryId = categoryId,
                 Owner = ownerName,
                 ItemId = id,
-                CustomerId = customerId
+                CustomerId = customerId,
+                ToValue = itemFeatureTo,
+                FromValue = itemFeatureFrom,
+                FeatureName = itemFeature
             };
 
             Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;

@@ -2,91 +2,228 @@
 @model AddModel
 @{
     var divisions = await DivisionService.ListAsync().ConfigureAwait(false);
-    var divisionsSelector = new JsonSelectorComponentModel
+    var divisionsSelect = divisions?.Select(x => new SelectListItem
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
-        ModelName = nameof(Model.NewEmployee),
-        ItemName = nameof(Model.NewEmployee.Divisions),
-        Json = nameof(Model.NewEmployee.DivisionsJson),
-        Title = SharedLocalizer["Divisions"],
-        ScriptKey = "divisionsScript",
-        SelectListItems = divisions?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
-    };
+        Text = x.Name,
+        Value = x.Id,
+    }).SelectFirstItem();
+    //var divisionsSelector = new JsonSelectorComponentModel
+    //{
+    //    IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+    //    NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+    //    ModelName = nameof(Model.NewEmployee),
+    //    ItemName = nameof(Model.NewEmployee.Divisions),
+    //    Json = nameof(Model.NewEmployee.DivisionsJson),
+    //    Title = SharedLocalizer["Divisions"],
+    //    ScriptKey = "divisionsScript",
+    //    SelectListItems = divisions?.Select(x => new SelectListItem
+    //    {
+    //        Text = x.Name,
+    //        Value = x.Id,
+    //    }).SelectFirstItem(),
+    //};
 }
 <form method="post" class="col-12">
+    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status.GetDisplayName()
+    </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewEmployee.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.FirstName" class="control-label"></label>
+                        <input asp-for="NewEmployee.FirstName" class="form-control" />
+                        <span asp-validation-for="NewEmployee.FirstName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.LastName" class="control-label"></label>
+                        <input asp-for="NewEmployee.LastName" class="form-control" />
+                        <span asp-validation-for="NewEmployee.LastName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.Mobile" class="control-label"></label>
+                        <input asp-for="NewEmployee.Mobile" class="form-control" />
+                        <span asp-validation-for="NewEmployee.Mobile" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.FixedSalary" class="control-label"></label>
+                        <input asp-for="NewEmployee.FixedSalary" class="form-control" />
+                        <span asp-validation-for="NewEmployee.FixedSalary" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.Insurance" class="control-label"></label>
+                        <input asp-for="NewEmployee.Insurance" class="form-control" />
+                        <span asp-validation-for="NewEmployee.Insurance" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center align-items-center">
 
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewEmployee.FirstName" class="control-label"></label>
-                    <input asp-for="NewEmployee.FirstName" class="form-control" />
-                    <span asp-validation-for="NewEmployee.FirstName" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewEmployee.LastName" class="control-label"></label>
-                    <input asp-for="NewEmployee.LastName" class="form-control" />
-                    <span asp-validation-for="NewEmployee.LastName" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-sm-4 margin-bottomed">
-                    <label asp-for="NewEmployee.Mobile" class="control-label"></label>
-                    <input asp-for="NewEmployee.Mobile" class="form-control" />
-                    <span asp-validation-for="NewEmployee.Mobile" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row justify-content-center align-items-center">
                 <div class="col-xs-12 col-md-6 margin-bottomed">
-                    <label asp-for="NewEmployee.FixedSalary" class="control-label"></label>
-                    <input asp-for="NewEmployee.FixedSalary" class="form-control" />
-                    <span asp-validation-for="NewEmployee.FixedSalary" class="text-danger"></span>
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.Phone" class="control-label"></label>
+                        <input asp-for="NewEmployee.Phone" class="form-control" />
+                        <span asp-validation-for="NewEmployee.Phone" class="text-danger"></span>
+                    </div>
                 </div>
                 <div class="col-xs-12 col-md-6 margin-bottomed">
-                    <label asp-for="NewEmployee.Insurance" class="control-label"></label>
-                    <input asp-for="NewEmployee.Insurance" class="form-control" />
-                    <span asp-validation-for="NewEmployee.Insurance" class="text-danger"></span>
-                </div>
-            </div>
-            <div class="row justify-content-center align-items-center">
-               
-                <div class="col-xs-12 col-md-6 margin-bottomed">
-                    <label asp-for="NewEmployee.Phone" class="control-label"></label>
-                    <input asp-for="NewEmployee.Phone" class="form-control"/>
-                    <span asp-validation-for="NewEmployee.Phone" class="text-danger"></span>
-                </div>
-                <div class="col-xs-12 col-md-6 margin-bottomed">
-                    <label asp-for="NewEmployee.Address" class="control-label"></label>
-                    <input asp-for="NewEmployee.Address" class="form-control"/>
-                    <span asp-validation-for="NewEmployee.Address" class="text-danger"></span>
+                    <div class="input-wrapper">
+                        <label asp-for="NewEmployee.Address" class="control-label"></label>
+                        <input asp-for="NewEmployee.Address" class="form-control" />
+                        <span asp-validation-for="NewEmployee.Address" class="text-danger"></span>
+                    </div>
                 </div>
             </div>
             <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <input asp-for="NewEmployee.DivisionsJson" />
-                    <vc:json-selector model="@divisionsSelector" />
+            @if (divisions?.Any() == true)
+            {
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12" id="divisions">
+                        <input asp-for="NewEmployee.DivisionsJson" />
+                        <div class="itemShow adder input-wrapper">
+                            <label class="control-label" for="txtDivisions">@SharedLocalizer["Divisions"]</label>
+                            <select asp-items="divisionsSelect" class="custom-select" id="txtDivisions"></select>
+                            <button type="button" class="btn btn-sm btn-success" id="addDivisions">@SharedLocalizer["Add"]</button>
+                        </div>
+                        <div class="items hidden"></div>
+                    </div>
                 </div>
-            </div>
+            }
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.EmployeeStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success btn-block" />
+        </footer>
     </div>
 </form>
 @section Scripts
-{
-    <script asp-paste-key="@divisionsSelector.ScriptKey"></script>
+    {
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewEmployee)_@nameof(Model.NewEmployee.DivisionsJson)");
+            const selectInput = $("#txtDivisions");
+            const wrapperClass = $("#divisions");
+            const submitInput = $("#addDivisions");
+            const itemSelector = "division-item";
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass(itemSelector);
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) === id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                if ($('option:not(.hidden)', selectInput).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+
+                if (keyId === undefined || keyId === null)
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name)): keyName
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)));
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function (e) {
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index =
+                        jsonValue.findIndex(prop => prop
+                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
+                            keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
 }

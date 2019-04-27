@@ -6,6 +6,7 @@ using RealEstate.Services;
 using RealEstate.Services.Base;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 
 namespace RealEstate.Web.Pages
 {

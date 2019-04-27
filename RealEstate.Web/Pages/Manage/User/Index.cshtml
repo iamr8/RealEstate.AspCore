@@ -4,41 +4,54 @@
     var roles = SelectItemExtensions.ToSelectList<Role>().AddNone();
 }
 <div class="col-12">
+    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status.GetDisplayName()
+    </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewUser"]</a>
         </widget-header>
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-                <div class="col-12">
-                    <form method="post" class="widget mini-widget bg-white">
-                        <input asp-for="SearchInput.PageNo" />
-                        <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                        <section class="container-fluid margin-bottomed">
-                            <div class="row">
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.UserId"></label>
-                                    <input asp-for="SearchInput.UserId" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Username"></label>
-                                    <input asp-for="SearchInput.Username" class="form-control" />
-                                </div>
-                                <div class="col-6 col-lg-3 margin-bottomed">
-                                    <label class="control-label" asp-for="SearchInput.Username"></label>
-                                    <select asp-for="SearchInput.Role" asp-items="roles" class="form-control"></select>
+            <form method="post">
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
+                            </div>
+                            <div id="search" class="collapse">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Username"></label>
+                                                <input asp-for="SearchInput.Username" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Role"></label>
+                                                <select asp-for="SearchInput.Role" asp-items="roles" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-12">
+                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </section>
-                        <widget-footer>
-                            <widget-footer-text></widget-footer-text>
-                            <widget-footer-button>
-                                <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                            </widget-footer-button>
-                        </widget-footer>
-                    </form>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </form>
             @if (Model.List.Items?.Any() == true)
             {
                 foreach (var item in Model.List.Items)
@@ -67,8 +80,7 @@
                                     {
                                         <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
                                     }
-                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-role="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
-
+                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-userRole="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
                                 @if (item.UserItemCategories?.Any() == true || item.UserPropertyCategories?.Any() == true)
                                 {

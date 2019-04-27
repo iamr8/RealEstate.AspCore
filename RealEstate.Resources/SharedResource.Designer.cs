@@ -88,6 +88,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to اضافه به لیست.
+        /// </summary>
+        public static string Add {
+            get {
+                return ResourceManager.GetString("Add", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to آدرس.
         /// </summary>
         public static string Address {
@@ -336,6 +345,15 @@ namespace RealEstate.Resources {
         public static string Checks {
             get {
                 return ResourceManager.GetString("Checks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to خالی کردن جستجو.
+        /// </summary>
+        public static string ClearSearch {
+            get {
+                return ResourceManager.GetString("ClearSearch", resourceCulture);
             }
         }
         
@@ -844,6 +862,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مشخصه.
+        /// </summary>
+        public static string Feature {
+            get {
+                return ResourceManager.GetString("Feature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مشخصات.
         /// </summary>
         public static string Features {
@@ -1218,6 +1245,15 @@ namespace RealEstate.Resources {
         public static string Mediator {
             get {
                 return ResourceManager.GetString("Mediator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to حداقل {1} حرف لازم است..
+        /// </summary>
+        public static string MinLength {
+            get {
+                return ResourceManager.GetString("MinLength", resourceCulture);
             }
         }
         

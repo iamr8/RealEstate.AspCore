@@ -336,8 +336,6 @@ namespace RealEstate.Services.Base
                 Id = claims.Find(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
                 FirstName = claims.Find(x => x.Type == "FirstName")?.Value,
                 LastName = claims.Find(x => x.Type == "LastName")?.Value,
-                Address = claims.Find(x => x.Type == ClaimTypes.StreetAddress)?.Value,
-                Phone = claims.Find(x => x.Type == ClaimTypes.HomePhone)?.Value,
                 UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
                 UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
                 EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,

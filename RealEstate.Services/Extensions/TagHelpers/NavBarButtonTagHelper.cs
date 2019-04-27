@@ -160,6 +160,7 @@ namespace RealEstate.Services.Extensions.TagHelpers
 
             var txtWrapper = new TagBuilder("div");
             txtWrapper.AddCssClass("text");
+
             txtWrapper.InnerHtml.Append(Subject);
 
             if (!string.IsNullOrEmpty(content))
@@ -172,6 +173,8 @@ namespace RealEstate.Services.Extensions.TagHelpers
             }
 
             output.AddClass("nav-link", HtmlEncoder.Default);
+            if (!string.IsNullOrEmpty(content))
+                output.AddClass("wrapper", HtmlEncoder.Default);
             if (classes.Count > 0)
                 foreach (var @class in classes)
                     output.AddClass(@class, HtmlEncoder.Default);

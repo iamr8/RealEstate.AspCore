@@ -2,11 +2,11 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "font-awesome@5.7.2",
+      "library": "font-awesome@5.8.1",
       "destination": "wwwroot/lib/font-awesome"
     },
     {
-      "library": "Chart.js@2.7.3",
+      "library": "Chart.js@2.8.0-rc.1",
       "files": [ "Chart.js", "Chart.min.js" ],
       "destination": "wwwroot/lib/Chart.js"
     },
@@ -20,7 +20,7 @@
       "destination": "wwwroot/lib/jquery-validation-unobtrusive"
     },
     {
-      "library": "jquery@3.3.1",
+      "library": "jquery@3.4.0",
       "files": [ "jquery.js", "jquery.min.js", "jquery.min.map" ],
       "destination": "wwwroot/lib/jquery"
     },

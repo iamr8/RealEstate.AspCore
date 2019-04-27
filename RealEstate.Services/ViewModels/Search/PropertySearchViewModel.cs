@@ -1,8 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Newtonsoft.Json;
-using RealEstate.Base;
+﻿using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Search
 {
@@ -30,5 +29,21 @@ namespace RealEstate.Services.ViewModels.Search
         [Display(ResourceType = typeof(SharedResource), Name = "Mobile")]
         [SearchParameter("propertyOwnerMobile")]
         public string OwnerMobile { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Category")]
+        [SearchParameter("propertyCategory")]
+        public string CategoryName { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Feature")]
+        [SearchParameter("propertyFeature")]
+        public string FeatureName { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "From")]
+        [SearchParameter("propertyFeatureFrom")]
+        public double? FromValue { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "To")]
+        [SearchParameter("propertyFeatureTo")]
+        public double? ToValue { get; set; }
     }
 }

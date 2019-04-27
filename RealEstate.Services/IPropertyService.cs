@@ -156,6 +156,20 @@ namespace RealEstate.Services
             models = models.SearchBy(searchModel?.Owner, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.Name == y)));
             models = models.SearchBy(searchModel?.OwnerMobile, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.MobileNumber == y)));
 
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.FeatureName))
+                {
+                    models = models.Where(x => x.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName));
+
+                    if (searchModel.FromValue != null && searchModel.FromValue > 0)
+                        models = models.Where(x => x.PropertyFeatures.Any(c => Convert.ToDouble(c.Value) >= searchModel.FromValue));
+
+                    if (searchModel.ToValue != null && searchModel.ToValue > 0)
+                        models = models.Where(x => x.PropertyFeatures.Any(c => Convert.ToDouble(c.Value) <= searchModel.ToValue));
+                }
+            }
+
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                     item =>
                     {

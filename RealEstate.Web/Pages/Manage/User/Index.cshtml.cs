@@ -9,7 +9,6 @@ using RealEstate.Services;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User
@@ -36,7 +35,9 @@ namespace RealEstate.Web.Pages.Manage.User
         [ViewData]
         public string PageTitle => _localizer["Users"];
 
-        public async Task OnGetAsync(string pageNo, string userName, string userId, Role? userRole)
+        public StatusEnum Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string status, string userName, string userId, Role? userRole)
         {
             SearchInput = new UserSearchViewModel
             {
@@ -46,6 +47,9 @@ namespace RealEstate.Web.Pages.Manage.User
                 Role = userRole
             };
 
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
             List = await _userService.ListAsync(SearchInput).ConfigureAwait(false);
         }
 

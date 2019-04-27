@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using RealEstate.Base;
+using RealEstate.Base.Config;
 using RealEstate.Resources;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
@@ -42,6 +43,16 @@ namespace RealEstate.Web
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionStrings = Configuration.GetConnectionString("DefaultConnection");
+            if (connectionStrings.Contains("{{CFG}}"))
+            {
+                // D:\\RSDB\\RSDB.mdf
+                var config = Reader.Read();
+                if (config == null)
+                    return;
+
+                connectionStrings = connectionStrings.Replace("{{CFG}}", config.DbPath);
+            }
+            Console.WriteLine(connectionStrings);
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseLazyLoadingProxies();
@@ -93,7 +104,7 @@ namespace RealEstate.Web
 
             services.AddElmah(options =>
             {
-                options.CheckPermissionAction = context => context.User.Identity.IsAuthenticated;
+//                options.CheckPermissionAction = context => context.User.Identity.IsAuthenticated;
                 options.ConnectionString = connectionStrings;
             });
             services.AddSingleton<LocalizationService>();

@@ -6,20 +6,17 @@
 {
     <nav-button page="@typeof(Manage.Reminder.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Reminders"]" />
     <nav-button icon="~/icons/deal.svg" subject="@SharedLocalizer["Items"]">
-        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
-        {
-            <nav-button page="@typeof(Manage.Item.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
-            <nav-button page="@typeof(Manage.Property.IndexModel).Page()" icon="~/icons/property.svg" subject="@SharedLocalizer["Properties"]" />
-        }
+        <nav-button page="@typeof(Manage.Item.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
+        <nav-button page="@typeof(Manage.Property.IndexModel).Page()" icon="~/icons/property.svg" subject="@SharedLocalizer["Properties"]" />
     </nav-button>
 
-    if (User.IsInRole(Role.SuperAdmin.ToString()))
-    {
-        <nav-button icon="~/icons/property.svg" subject="@SharedLocalizer["Deals"]">
-            <nav-button page="@typeof(Manage.Deal.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
-            <nav-button page="@typeof(Manage.DealRequest.IndexModel).Page()" icon="~/icons/dealstatus.svg" subject="@SharedLocalizer["DealRequests"]" />
-        </nav-button>
-    }
+    @*if (User.IsInRole(Role.SuperAdmin.ToString()))
+        {
+            <nav-button icon="~/icons/property.svg" subject="@SharedLocalizer["Deals"]">
+                <nav-button page="@typeof(Manage.Deal.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
+                <nav-button page="@typeof(Manage.DealRequest.IndexModel).Page()" icon="~/icons/dealstatus.svg" subject="@SharedLocalizer["DealRequests"]" />
+            </nav-button>
+        }*@
 
     if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
     {
@@ -39,16 +36,16 @@
 
     if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
     {
-    <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer["Management"]">
-        <nav-button page="@typeof(Manage.ManagementPercent.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["ManagementPercents"]" />
-        <nav-button page="@typeof(Manage.Employee.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Employees"]" />
-        <nav-button page="@typeof(Manage.Division.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Divisions"]" />
-        <nav-button page="@typeof(Manage.Sms.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Smses"]" />
-        <nav-button page="@typeof(Manage.Presence.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Presences"]" />
-        <nav-button page="@typeof(Manage.Leave.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Leaves"]" />
-        <nav-button page="@typeof(Manage.Payment.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Financial"]" />
-        <nav-button page="@typeof(Manage.User.IndexModel).Page()" icon="~/icons/user.svg" subject="@SharedLocalizer["Users"]" />
-    </nav-button>
+        <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer["Management"]">
+            @*<nav-button page="@typeof(Manage.ManagementPercent.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["ManagementPercents"]" />*@
+            <nav-button page="@typeof(Manage.Employee.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Employees"]" />
+            @*<nav-button page="@typeof(Manage.Division.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Divisions"]" />*@
+            @*<nav-button page="@typeof(Manage.Sms.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Smses"]" />*@
+            @*<nav-button page="@typeof(Manage.Presence.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Presences"]" />*@
+            @*<nav-button page="@typeof(Manage.Leave.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Leaves"]" />*@
+            @*<nav-button page="@typeof(Manage.Payment.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Financial"]" />*@
+            <nav-button page="@typeof(Manage.User.IndexModel).Page()" icon="~/icons/user.svg" subject="@SharedLocalizer["Users"]" />
+        </nav-button>
 
     }
 }

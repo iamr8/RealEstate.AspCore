@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
@@ -32,10 +31,9 @@ namespace RealEstate.Web.Pages.Manage.User
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string UserStatus { get; set; }
+        public StatusEnum Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -53,6 +51,9 @@ namespace RealEstate.Web.Pages.Manage.User
             {
                 PageTitle = _localizer["NewUser"];
             }
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
             return Page();
         }
 
@@ -62,17 +63,12 @@ namespace RealEstate.Web.Pages.Manage.User
                 ? (await _userService.AddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            UserStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewUser.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewUser = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
-            {
-                id = NewUser?.Id
-            });
+            return RedirectToPage(finalStatus != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = (int)finalStatus
+                });
         }
     }
 }

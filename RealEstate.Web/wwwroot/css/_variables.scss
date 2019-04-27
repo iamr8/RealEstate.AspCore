@@ -1,11 +1,18 @@
 ﻿$sidebarheader-color: #5110c9;
 
-$background-color: #282c34;
+$background-color: white;
 $standard-radius: 6px;
 $foreground-color: #141820;
-
-$widget-background-color: #eee;
-$widget-header-footer-background-color: mix(black,$widget-background-color,6);
-$widget-header-footer-foreground-color: mix(black,$widget-background-color,70);
+// #e0e0e0
+$widget-background-color: transparent;
+$widget-header-footer-background-color: transparent;
+$widget-header-footer-foreground-color: black;
 /*$widget-inline-header-footer-background-color: mix(black,$color3,4);*/
 
+$nav-background-color: #e0e0e0;
+$nav-sub-background-color: mix(black,#e0e0e0,10);
+$nav-foreground-color: black;
+$nav-item-hover-background-color: mix(black, $nav-background-color,20);
+$nav-item-focus-background-color: mix(black, $nav-item-hover-background-color,20);
+
+$input-hover: mix(transparent,$sidebarheader-color,40);

@@ -11,6 +11,7 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("itemAddress")]
         public string Address { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Category")]
         [SearchParameter("categoryId")]
         public string CategoryId { get; set; }
 
@@ -23,5 +24,17 @@ namespace RealEstate.Services.ViewModels.Search
 
         [SearchParameter("customerId")]
         public string CustomerId { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Feature")]
+        [SearchParameter("itemFeature")]
+        public string FeatureName { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "From")]
+        [SearchParameter("itemFeatureFrom")]
+        public double? FromValue { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "To")]
+        [SearchParameter("itemFeatureTo")]
+        public double? ToValue { get; set; }
     }
 }

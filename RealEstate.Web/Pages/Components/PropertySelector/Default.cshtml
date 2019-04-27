@@ -32,87 +32,94 @@
             const searchInputResults = $("#@Model.SearchResultId");
             const currentPropertyIdElement = $("#@Model.PropertyId");
 
-             $(searchInput).on("paste keyup",
-            delayOnRun(function() {
-                    const val = $(this).val();
-                    const parent = $(this).parent();
-                    const result = $(".result", parent);
-                    const items = $(".items", result);
-                    const template = $("> li.template", items);
+            $(searchInput).on("paste keyup",
+                delayOnRun(function() {
+                        const val = $(this).val();
+                        const parent = $(this).parent();
+                        const result = $(".result", parent);
+                        const items = $(".items", result);
+                        const template = $("> li.template", items);
 
-                    if (val == null || val.length < 3) {
-                        $(items).addClass("d-none");
-                        cleanResult(items);
-                        return;
-                    }
-
-                    pendingRequest = $.ajax({
-                        type: 'GET',
-                        data: { term: val },
-                        url: '@Url.Action("PropertyAsync", "Search")',
-                        beforeSend: function() {
-                            if (pendingRequest != null) {
-                                pendingRequest.abort();
-                            }
-                        },
-                        success: function(response) {
-                            cleanResult(items);
-                            $(items).removeClass("d-none");
-
-                            if (response != undefined && response.length > 0) {
-                                $.each(response,
-                                    (key, value) => {
-
-                                        const itemElement = $(template).clone();
-                                        $(itemElement).removeClass("template d-none");
-                                        const anchor = $("> a", itemElement);
-
-                                        const titleElement = $("> .title", anchor);
-                                        const ownersElement = $("> .owners", anchor);
-                                        const ownerTemplate = $("> b.template.owner", ownersElement);
-
-                                        const districtElement = $("> .district", anchor);
-                                        const categoryElement = $("> .category", anchor);
-
-                                        const addressValue = value
-                                            .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Address));
-                                        const ownersValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Ownerships));
-                                        const districtValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.District));
-                                        const categoryValue = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Category));
-                                        const idValue  = value.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Id));
-
-                                        $(titleElement).html(addressValue);
-                                        $(districtElement).html(districtValue);
-                                        $(categoryElement).html(categoryValue);
-                                        $(itemElement).attr('data-id', idValue);
-
-                                        $.each(ownersValue,
-                                            (ownerKey, ownerValue) => {
-                                                const ownerItemElement = $(ownerTemplate).clone();
-                                                $(ownerItemElement).removeClass("template d-none");
-
-                                                const ownerIdValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.CustomerId));
-                                                const ownerNameValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Name));
-                                                const ownerMobileValue = ownerValue.@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Mobile));
-
-                                                const ownerElement = $("> .owner", anchor);
-                                                $(ownerElement).html(`${ownerNameValue} • ${ownerMobileValue}`);
-                                                $(ownerElement).attr("data-id", ownerIdValue);
-
-                                                $(ownersElement).append(ownerItemElement);
-                                            });
-
-                                        $(items).append(itemElement);
-                                    });
-                            }
-                        },
-                        error: function(e) {
+                        if (val == null || val.length < 3) {
                             $(items).addClass("d-none");
-                            $("> li", items).not(".template").remove();
+                            cleanResult(items);
+                            return;
                         }
-                    });
 
-                },
+                        pendingRequest = $.ajax({
+                            type: 'GET',
+                            data: { term: val },
+                            url: '@Url.Action("PropertyAsync", "Search")',
+                            beforeSend: function() {
+                                if (pendingRequest != null) {
+                                    pendingRequest.abort();
+                                }
+                            },
+                            success: function(response) {
+                                cleanResult(items);
+                                $(items).removeClass("d-none");
+
+                                if (response != undefined && response.length > 0) {
+                                    $.each(response,
+                                        (key, value) => {
+
+                                            const itemElement = $(template).clone();
+                                            $(itemElement).removeClass("template d-none");
+                                            const anchor = $("> a", itemElement);
+
+                                            const titleElement = $("> .title", anchor);
+                                            const ownersElement = $("> .owners", anchor);
+                                            const ownerTemplate = $("> b.template.owner", ownersElement);
+
+                                            const districtElement = $("> .district", anchor);
+                                            const categoryElement = $("> .category", anchor);
+
+                                            const addressValue = value
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Address));
+                                            const ownersValue = value
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Ownerships));
+                                            const districtValue = value
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.District));
+                                            const categoryValue = value
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Category));
+                                            const idValue = value
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Id));
+
+                                            $(titleElement).html(addressValue);
+                                            $(districtElement).html(districtValue);
+                                            $(categoryElement).html(categoryValue);
+                                            $(itemElement).attr('data-id', idValue);
+
+                                            $.each(ownersValue,
+                                                (ownerKey, ownerValue) => {
+                                                    const ownerItemElement = $(ownerTemplate).clone();
+                                                    $(ownerItemElement).removeClass("template d-none");
+
+                                                    const ownerIdValue = ownerValue
+                                                        .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.CustomerId));
+                                                    const ownerNameValue = ownerValue
+                                                        .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Name));
+                                                    const ownerMobileValue = ownerValue
+                                                        .@(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x=>x.Mobile));
+
+                                                    const ownerElement = $("> .owner", anchor);
+                                                    $(ownerElement).html(`${ownerNameValue} • ${ownerMobileValue}`);
+                                                    $(ownerElement).attr("data-id", ownerIdValue);
+
+                                                    $(ownersElement).append(ownerItemElement);
+                                                });
+
+                                            $(items).append(itemElement);
+                                        });
+                                }
+                            },
+                            error: function(e) {
+                                $(items).addClass("d-none");
+                                $("> li", items).not(".template").remove();
+                            }
+                        });
+
+                    },
                     1000));
 
             $(document).mouseup(function(e) {

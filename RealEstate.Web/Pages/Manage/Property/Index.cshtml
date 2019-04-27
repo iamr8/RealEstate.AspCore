@@ -1,6 +1,14 @@
 ﻿@page
 @model IndexModel
 @{
+
+    var featuresList = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
+    var features = featuresList?.Select(x => new SelectListItem
+    {
+        Value = x.Name,
+        Text = x.Name
+    }).ToList().AddNone();
+
     var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
     var categories = categorieslist?.Select(x => new SelectListItem
     {
@@ -34,6 +42,18 @@
                             <div class="col-6 col-lg-4 margin-bottomed">
                                 <label class="control-label" asp-for="SearchInput.District"></label>
                                 <input asp-for="SearchInput.District" class="form-control" />
+                            </div>
+                            <div class="col-6 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.FeatureName"></label>
+                                <select asp-items="features" asp-for="SearchInput.FeatureName" class="form-control"></select>
+                            </div>
+                            <div class="col-6 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.FromValue"></label>
+                                <input asp-for="SearchInput.FromValue" class="form-control" />
+                            </div>
+                            <div class="col-6 col-lg-4 margin-bottomed">
+                                <label class="control-label" asp-for="SearchInput.ToValue"></label>
+                                <input asp-for="SearchInput.ToValue" class="form-control" />
                             </div>
                         </div>
                     </section>

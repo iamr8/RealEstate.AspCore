@@ -38,7 +38,7 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Facility)> FacilityUpdateAsync(FacilityInputViewModel model, bool save);
 
-        Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type);
+        Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] type);
 
         Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel);
 
@@ -427,13 +427,13 @@ namespace RealEstate.Services
             return facilities.Into<Facility, FacilityViewModel>();
         }
 
-        public async Task<List<FeatureViewModel>> FeatureListAsync(FeatureTypeEnum? type)
+        public async Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] types)
         {
             var query = _features as IQueryable<Feature>;
             query = query.WhereNotDeleted();
 
-            if (type != null)
-                query = query.Where(x => x.Type == type);
+            if (types?.Any() == true)
+                query = query.Where(x => types.Contains(x.Type));
 
             var features = await query.ToListAsync().ConfigureAwait(false);
             return features.Into<Feature, FeatureViewModel>();

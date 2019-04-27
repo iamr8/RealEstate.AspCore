@@ -227,6 +227,10 @@ namespace RealEstate.Services
             if (model == null)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
 
+            var existing = await _users.AnyAsync(x => x.Username == model.Username).ConfigureAwait(false);
+            if (existing)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.AlreadyExists, null);
+
             var (userAddStatus, newUser) = await _baseService.AddAsync(new User
             {
                 Username = model.Username,
@@ -302,32 +306,30 @@ namespace RealEstate.Services
             if (employee == null)
                 return StatusEnum.EmployeeIsNull;
 
-            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
+            var itemCategoriesJson = userDb.UserItemCategories?.JsonConversion(category => new CategoryJsonViewModel
             {
                 Id = category.Id,
-                Name = category.Category.Name,
+                Name = category.Category?.Name,
             });
-            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(category => new CategoryJsonViewModel
+            var propertyCategoriesJson = userDb.UserPropertyCategories?.JsonConversion(category => new CategoryJsonViewModel
             {
                 Id = category.Id,
-                Name = category.Category.Name
+                Name = category.Category?.Name
             });
-            var employeeDivisionsJson = userDb.Employee.EmployeeDivisions.JsonConversion(division => new DivisionJsonViewModel
+            var employeeDivisionsJson = userDb.Employee?.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
             {
                 Id = division.Id,
-                Name = division.Division.Name
+                Name = division.Division?.Name
             });
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userDb.Id),
                 new Claim(ClaimTypes.Name, userDb.Username),
-                new Claim(ClaimTypes.MobilePhone, userDb.Employee.Mobile),
+                new Claim(ClaimTypes.MobilePhone, userDb.Employee?.Mobile),
                 new Claim(ClaimTypes.Hash,userDb.Password),
-                new Claim("FirstName",userDb.Employee.FirstName),
-                new Claim("LastName",userDb.Employee.LastName),
-                new Claim(ClaimTypes.HomePhone, userDb.Employee.Phone),
-                new Claim(ClaimTypes.StreetAddress, userDb.Employee.Address),
-                new Claim("EmployeeId", userDb.Employee.Id),
+                new Claim("FirstName",userDb.Employee?.FirstName),
+                new Claim("LastName",userDb.Employee?.LastName),
+                new Claim("EmployeeId", userDb.Employee?.Id),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),
                 new Claim(ClaimTypes.Role, userDb.Role.ToString()),

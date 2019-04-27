@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.965</AssemblyVersion>
-    <FileVersion>1.0.0.965</FileVersion>
+    <AssemblyVersion>1.0.0.1039</AssemblyVersion>
+    <FileVersion>1.0.0.1039</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -24,7 +24,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Config.inf" />
     <None Remove="Synchronizer.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="config.inf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Synchronizer.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -58,16 +68,17 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
   </ItemGroup>
 
 
   <ItemGroup>
     <Content Update="appsettings.Development.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
     <Content Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

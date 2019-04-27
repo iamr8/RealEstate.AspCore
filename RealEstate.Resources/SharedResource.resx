@@ -927,4 +927,16 @@
   <data name="DealRequest" xml:space="preserve">
     <value>درخواست معامله</value>
   </data>
+  <data name="Feature" xml:space="preserve">
+    <value>مشخصه</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>اضافه به لیست</value>
+  </data>
+  <data name="MinLength" xml:space="preserve">
+    <value>حداقل {1} حرف لازم است.</value>
+  </data>
+  <data name="ClearSearch" xml:space="preserve">
+    <value>خالی کردن جستجو</value>
+  </data>
 </root>

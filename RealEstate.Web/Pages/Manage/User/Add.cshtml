@@ -6,89 +6,91 @@
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
     var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
 
+    var propertyCategorySelect = propertyCategories?.Select(x => new SelectListItem
+    {
+        Text = x.Name,
+        Value = x.Id,
+    }).SelectFirstItem();
+
+    var itemCategorySelect = itemCategories?.Select(x => new SelectListItem
+    {
+        Text = x.Name,
+        Value = x.Id,
+    }).SelectFirstItem();
+
     var emploo = employees?.Select(x => new SelectListItem
     {
         Text = $"{x.FirstName} {x.LastName}",
         Value = x.Id
     }).SelectFirstItem();
 
-    var userPropertySelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
-        ModelName = nameof(Model.NewUser),
-        ItemName = nameof(Model.NewUser.UserPropertyCategories),
-        Json = nameof(Model.NewUser.UserPropertyCategoriesJson),
-        Title = SharedLocalizer["UserPropertyCategories"],
-        ScriptKey = "userPropertyScript",
-        SelectListItems = propertyCategories?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
+    //var userPropertySelector = new JsonSelectorComponentModel
+    //{
+    //    IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
+    //    NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
+    //    ModelName = nameof(Model.NewUser),
+    //    ItemName = nameof(Model.NewUser.UserPropertyCategories),
+    //    Json = nameof(Model.NewUser.UserPropertyCategoriesJson),
+    //    Title = SharedLocalizer["UserPropertyCategories"],
+    //    ScriptKey = "userPropertyScript",
+    //    SelectListItems = propertyCategories?.Select(x => new SelectListItem
+    //    {
+    //        Text = x.Name,
+    //        Value = x.Id,
+    //    }).SelectFirstItem(),
 
-    };
+    //};
 
-    var userItemSelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name),
-        ModelName = nameof(Model.NewUser),
-        ItemName = nameof(Model.NewUser.UserItemCategories),
-        Json = nameof(Model.NewUser.UserItemCategoriesJson),
-        Title = SharedLocalizer["UserItemCategories"],
-        ScriptKey = "useritemScript",
-        SelectListItems = itemCategories?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
+    //var userItemSelector = new JsonSelectorComponentModel
+    //{
+    //    IdProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id),
+    //    NameProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name),
+    //    ModelName = nameof(Model.NewUser),
+    //    ItemName = nameof(Model.NewUser.UserItemCategories),
+    //    Json = nameof(Model.NewUser.UserItemCategoriesJson),
+    //    Title = SharedLocalizer["UserItemCategories"],
+    //    ScriptKey = "useritemScript",
+    //    SelectListItems = itemCategories?.Select(x => new SelectListItem
+    //    {
+    //        Text = x.Name,
+    //        Value = x.Id,
+    //    }).SelectFirstItem(),
 
-    };
+    //};
 }
+
 <form method="post" class="col-12">
+    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status.GetDisplayName()
+    </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewUser.Id" />
         <section class="container-fluid">
-            @if (Model.NewUser == null)
-            {
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-xs-12 col-sm margin-bottomed">
-                        <label asp-for="NewUser.EmployeeId" class="control-label"></label>
-                        <select asp-for="NewUser.EmployeeId" asp-items="emploo" class="form-control"></select>
-                        <span asp-validation-for="NewUser.EmployeeId" class="text-danger"></span>
-                    </div>
-                </div>
-            }
-            else
-            { 
-                <input type="hidden" asp-for="NewUser.EmployeeId" />
-            }
+
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {
-                    <div class="col-xs-12 col-sm margin-bottomed">
-                        <label asp-for="NewUser.Username" class="control-label"></label>
-                        <input asp-for="NewUser.Username" class="form-control" />
-                        <span asp-validation-for="NewUser.Username" class="text-danger"></span>
+                    <div class="col-xs-12 col-md margin-bottomed">
+                        <div class="input-wrapper">
+                            <label asp-for="NewUser.EmployeeId" class="control-label"></label>
+                            <select asp-for="NewUser.EmployeeId" asp-items="emploo" class="custom-select"></select>
+                            <span asp-validation-for="NewUser.EmployeeId" class="text-danger"></span>
+                        </div>
                     </div>
                 }
                 else
                 {
-                    <input asp-for="NewUser.Username" type="hidden" />
+                    <input type="hidden" asp-for="NewUser.EmployeeId" />
                 }
-                <div class="col-xs-12 col-sm margin-bottomed">
-                    <label asp-for="NewUser.Password" class="control-label"></label>
-                    <input asp-for="NewUser.Password" class="form-control" />
-                    <span asp-validation-for="NewUser.Password" class="text-danger"></span>
-                </div>
                 @if (Model.NewUser?.Username != User.Identity.Name)
                 {
-                    <div class="col-xs-12 col-sm margin-bottomed">
-                        <label asp-for="NewUser.Role" class="control-label"></label>
-                        <select asp-for="NewUser.Role" asp-items="roles" class="form-control"></select>
-                        <span asp-validation-for="NewUser.Role" class="text-danger"></span>
+                    <div class="col-xs-12 col-md margin-bottomed">
+                        <div class="input-wrapper">
+                            <label asp-for="NewUser.Role" class="control-label"></label>
+                            <select asp-for="NewUser.Role" asp-items="roles" class="custom-select"></select>
+                            <span asp-validation-for="NewUser.Role" class="text-danger"></span>
+                        </div>
                     </div>
                 }
                 else
@@ -96,35 +98,297 @@
                     <input asp-for="NewUser.Role" type="hidden" />
                 }
             </div>
+
+            <div class="row justify-content-center align-items-center">
+                @if (Model.NewUser == null)
+                {
+                    <div class="col-xs-12 col-md margin-bottomed">
+                        <div class="input-wrapper">
+                            <label asp-for="NewUser.Username" class="control-label"></label>
+                            <input asp-for="NewUser.Username" class="form-control" />
+                            <span asp-validation-for="NewUser.Username" class="text-danger"></span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <input asp-for="NewUser.Username" type="hidden" />
+                }
+                <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="input-wrapper">
+                        <label asp-for="NewUser.Password" class="control-label"></label>
+                        <input asp-for="NewUser.Password" class="form-control" />
+                        <span asp-validation-for="NewUser.Password" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
             <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <input asp-for="NewUser.UserPropertyCategoriesJson" value="@Model.NewUser?.UserPropertyCategoriesJson" />
-                    <vc:json-selector model="@userPropertySelector" />
+            @if (propertyCategories?.Any() == true)
+            {
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12" id="propertyCategories">
+                        <input asp-for="NewUser.UserPropertyCategoriesJson" />
+                        <div class="itemShow adder input-wrapper">
+                            <label class="control-label" for="txtPropertyCategories">@SharedLocalizer["UserPropertyCategories"]</label>
+                            <select asp-items="propertyCategorySelect" class="custom-select" id="txtPropertyCategories"></select>
+                            <button type="button" class="btn btn-sm btn-success" id="addPropertyCategory">@SharedLocalizer["Add"]</button>
+                        </div>
+                        <div class="items hidden"></div>
+                    </div>
                 </div>
-            </div>
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <input asp-for="NewUser.UserItemCategoriesJson" value="@Model.NewUser?.UserItemCategoriesJson" />
-                    <vc:json-selector model="@userItemSelector" />
+            }
+            @if (itemCategories?.Any() == true)
+            {
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12" id="itemCategories">
+                        <input asp-for="NewUser.UserItemCategoriesJson" />
+                        <div class="itemShow adder input-wrapper">
+                            <label class="control-label" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
+                            <select asp-items="itemCategorySelect" class="custom-select" id="txtItemCategories"></select>
+                            <button type="button" class="btn btn-sm btn-success" id="addItemCategory">@SharedLocalizer["Add"]</button>
+                        </div>
+                        <div class="items hidden"></div>
+                    </div>
                 </div>
-            </div>
+            }
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.UserStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success btn-block" />
+        </footer>
     </div>
 </form>
 
 @section Scripts
     {
-    <script asp-paste-key="@userPropertySelector.ScriptKey"></script>
-    <script asp-paste-key="@userItemSelector.ScriptKey"></script>
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewUser)_@nameof(Model.NewUser.UserItemCategoriesJson)");
+            const selectInput = $("#txtItemCategories");
+            const wrapperClass = $("#itemCategories");
+            const submitInput = $("#addItemCategory");
+            const itemSelector = "item-item";
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass(itemSelector);
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) === id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                if ($('option:not(.hidden)', selectInput).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+
+                if (keyId === undefined || keyId === null)
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name)): keyName
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)));
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function (e) {
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index =
+                        jsonValue.findIndex(prop => prop
+                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
+                            keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewUser)_@nameof(Model.NewUser.UserPropertyCategoriesJson)");
+            const selectInput = $("#txtPropertyCategories");
+            const wrapperClass = $("#propertyCategories");
+            const submitInput = $("#addPropertyCategory");
+            const itemSelector = "property-item";
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass(itemSelector);
+                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) === id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                if ($('option:not(.hidden)', selectInput).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+
+                if (keyId === undefined || keyId === null)
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name)): keyName
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)));
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index = jsonValue.findIndex(prop => prop
+                        .@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) ===
+                        keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
 }

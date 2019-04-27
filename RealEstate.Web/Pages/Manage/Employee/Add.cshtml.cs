@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
@@ -32,10 +31,9 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string EmployeeStatus { get; set; }
+        public StatusEnum Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -53,6 +51,9 @@ namespace RealEstate.Web.Pages.Manage.Employee
             {
                 PageTitle = _localizer["NewEmployee"];
             }
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
             return Page();
         }
 
@@ -62,17 +63,12 @@ namespace RealEstate.Web.Pages.Manage.Employee
                 ? (await _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            EmployeeStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewEmployee.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewEmployee = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
-            {
-                id = NewEmployee?.Id
-            });
+            return RedirectToPage(finalStatus != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = (int)finalStatus
+                });
         }
     }
 }

@@ -26,7 +26,6 @@ namespace RealEstate.Services.ViewModels.Input
         public string Phone { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Address")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [R8Validator(RegexPatterns.SafeText)]
         [JsonProperty("ad")]
         public string Address { get; set; }
