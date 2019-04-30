@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services;
 using RealEstate.Services.Base;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 
 namespace RealEstate.Web.Pages
 {
@@ -27,41 +25,13 @@ namespace RealEstate.Web.Pages
         [BindProperty]
         public UserLoginViewModel Input { get; set; }
 
-        [ViewData]
-        public string ErrorMessage { get; set; }
+        public StatusEnum Status { get; set; }
 
-        public IActionResult OnGet(string returnUrl)
+        public IActionResult OnGet(string returnUrl, string status)
         {
-            //            var local = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
-            //            if (local)
-            //                await _userService.RegisterFirstUserAsync().ConfigureAwait(false);
-
             Input = new UserLoginViewModel();
 
-            if (!string.IsNullOrEmpty(ErrorMessage))
-                ModelState.AddModelError(string.Empty, ErrorMessage);
-
             if (User.Identity.IsAuthenticated)
-            {
-                if (!string.IsNullOrEmpty(Input.ReturnUrl))
-                    return Redirect(Input.ReturnUrl);
-
-                return RedirectToPage($"/{nameof(Manage)}/Index");
-            }
-
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                Input.ReturnUrl = returnUrl;
-
-            return Page();
-        }
-
-        public async Task<IActionResult> OnPostAsync()
-        {
-            if (!ModelState.IsValid) return Page();
-
-            var status = await _userService.SignInAsync(Input).ConfigureAwait(false);
-
-            if (status == StatusEnum.SignedIn)
             {
                 if (!string.IsNullOrEmpty(Input.ReturnUrl))
                     return Redirect(Input.ReturnUrl);
@@ -69,8 +39,33 @@ namespace RealEstate.Web.Pages
                 return RedirectToPage(typeof(Manage.IndexModel).Page());
             }
 
-            ErrorMessage = status.GetDisplayName();
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                Input.ReturnUrl = returnUrl;
+
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            var finalStatus = ModelState.IsValid
+                ? await _userService.SignInAsync(Input).ConfigureAwait(false)
+                : StatusEnum.RetryAfterReview;
+
+            if (finalStatus != StatusEnum.SignedIn)
+            {
+                return RedirectToPage(typeof(IndexModel).Page(), new
+                {
+                    status = (int)finalStatus
+                });
+            }
+
+            if (!string.IsNullOrEmpty(Input.ReturnUrl))
+                return Redirect(Input.ReturnUrl);
+
+            return RedirectToPage(typeof(Manage.IndexModel).Page());
         }
     }
 }

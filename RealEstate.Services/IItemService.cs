@@ -55,6 +55,7 @@ namespace RealEstate.Services
         private readonly DbSet<Customer> _customers;
         private readonly DbSet<DealRequest> _dealRequests;
         private readonly DbSet<Applicant> _applicants;
+        private readonly DbSet<Feature> _features;
 
         public ItemService(
             IBaseService baseService,
@@ -75,6 +76,7 @@ namespace RealEstate.Services
             _ownerships = _unitOfWork.Set<Ownership>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
+            _features = _unitOfWork.Set<Feature>();
         }
 
         public async Task<StatusEnum> RequestRejectAsync(string itemId, bool save)
@@ -233,9 +235,14 @@ namespace RealEstate.Services
 
             if (searchModel != null)
             {
-                query = query.SearchBy(searchModel.CategoryId, x => x.CategoryId);
                 query = query.SearchBy(searchModel.Address, x => x.Property.Address);
                 query = query.SearchBy(searchModel.ItemId, x => x.Id);
+
+                if (!string.IsNullOrEmpty(searchModel.ItemCategory))
+                    query = query.Where(x => x.Category.Name == searchModel.ItemCategory);
+
+                if (!string.IsNullOrEmpty(searchModel.PropertyCategory))
+                    query = query.Where(x => x.Property.Category.Name == searchModel.PropertyCategory);
 
                 if (!string.IsNullOrEmpty(searchModel.CustomerId))
                 {
@@ -243,15 +250,74 @@ namespace RealEstate.Services
                                              || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
                 }
 
-                if (!string.IsNullOrEmpty(searchModel.FeatureName))
+                if (searchModel.Facilities?.Any() == true)
                 {
-                    if (searchModel.FromValue != null && searchModel.FromValue > 0)
-                        query = query.Where(x =>
-                            x.Property.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName && double.Parse(c.Value) >= searchModel.FromValue));
+                    foreach (var facility in searchModel.Facilities)
+                    {
+                        var name = facility.Name;
+                        if (string.IsNullOrEmpty(name))
+                            continue;
 
-                    if (searchModel.ToValue != null && searchModel.ToValue > 0)
-                        query = query.Where(x =>
-                            x.Property.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName && double.Parse(c.Value) <= searchModel.FromValue));
+                        query = query.Where(x => x.Property.PropertyFacilities.Any(c => c.Facility.Name == name));
+                    }
+                }
+
+                if (searchModel.Features?.Any() == true)
+                {
+                    foreach (var feature in searchModel.Features)
+                    {
+                        var id = feature.Id;
+                        if (string.IsNullOrEmpty(id))
+                            continue;
+
+                        var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync().ConfigureAwait(false);
+                        var from = feature.From;
+                        var to = feature.To;
+
+                        if (!string.IsNullOrEmpty(from) && string.IsNullOrEmpty(to))
+                        {
+                            if (int.TryParse(from, out var numFrom))
+                            {
+                                if (type == FeatureTypeEnum.Item)
+                                    query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() >= numFrom));
+                                else if (type == FeatureTypeEnum.Property)
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() >= numFrom));
+                            }
+                            else
+                            {
+                                if (type == FeatureTypeEnum.Item)
+                                    query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value == @from));
+                                else if (type == FeatureTypeEnum.Property)
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value == @from));
+                            }
+                        }
+                        else if (string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+                        {
+                            if (!int.TryParse(to, out var numTo))
+                                continue;
+
+                            if (type == FeatureTypeEnum.Item)
+                                query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo));
+                            else if (type == FeatureTypeEnum.Property)
+                                query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo));
+                        }
+                        else if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
+                        {
+                            if (!int.TryParse(@from, out var numFrom) || !int.TryParse(to, out var numTo) || numFrom >= numTo)
+                                continue;
+
+                            if (type == FeatureTypeEnum.Item)
+                            {
+                                query = query.Where(x =>
+                                    x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo && c.Value.IsNumeric() >= numFrom));
+                            }
+                            else if (type == FeatureTypeEnum.Property)
+                            {
+                                query = query.Where(x =>
+                                    x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo && c.Value.IsNumeric() >= numFrom));
+                            }
+                        }
+                    }
                 }
             }
 

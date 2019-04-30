@@ -25,7 +25,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<ItemCustomerJsonViewModel> Customers
         {
-            get => CustomerJson.JsonGetAccessor<List<ItemCustomerJsonViewModel>>();
+            get => CustomerJson.JsonGetAccessor<ItemCustomerJsonViewModel>();
             set => CustomerJson = value.JsonSetAccessor();
         }
     }

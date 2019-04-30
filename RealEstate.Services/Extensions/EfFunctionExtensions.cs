@@ -8,5 +8,10 @@ namespace RealEstate.Services.Extensions
         {
             return $"%{string.Join("%", searchString.Split(' ').ToArray())}%";
         }
+
+        public static int IsNumeric(this string str)
+        {
+            return int.TryParse(str, out var num) ? num : 0;
+        }
     }
 }

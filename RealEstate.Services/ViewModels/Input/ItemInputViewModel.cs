@@ -30,7 +30,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<FeatureJsonValueViewModel> ItemFeatures
         {
-            get => ItemFeaturesJson.JsonGetAccessor<List<FeatureJsonValueViewModel>>();
+            get => ItemFeaturesJson.JsonGetAccessor<FeatureJsonValueViewModel>();
             set => ItemFeaturesJson = value.JsonSetAccessor();
         }
 

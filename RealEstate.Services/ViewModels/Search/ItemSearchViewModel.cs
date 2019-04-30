@@ -1,19 +1,29 @@
-﻿using RealEstate.Base;
+﻿using Microsoft.AspNetCore.Mvc;
+using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
+using RealEstate.Services.ViewModels.Json;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Search
 {
     public class ItemSearchViewModel : BaseSearchModel
     {
+        private string _featuresJson;
+        private string _facilitiesJson;
+
         [Display(ResourceType = typeof(SharedResource), Name = "Address")]
         [SearchParameter("itemAddress")]
         public string Address { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Category")]
-        [SearchParameter("categoryId")]
-        public string CategoryId { get; set; }
+        [Display(ResourceType = typeof(SharedResource), Name = "ItemCategory")]
+        [SearchParameter("itemCategory")]
+        public string ItemCategory { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "PropertyCategory")]
+        [SearchParameter("propertyCategory")]
+        public string PropertyCategory { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Owner")]
         [SearchParameter("ownerName")]
@@ -25,16 +35,44 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("customerId")]
         public string CustomerId { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Feature")]
-        [SearchParameter("itemFeature")]
-        public string FeatureName { get; set; }
+        [HiddenInput]
+        [SearchParameter("features", typeof(ItemFeatureJsonValueViewModel))]
+        public string FeaturesJson
+        {
+            get => _featuresJson.DecodeJson<ItemFeatureJsonValueViewModel>();
+            set => _featuresJson = value.JsonSetAccessor();
+        }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "From")]
-        [SearchParameter("itemFeatureFrom")]
-        public double? FromValue { get; set; }
+        public List<ItemFeatureJsonValueViewModel> Features
+        {
+            get => FeaturesJson.JsonGetAccessor<ItemFeatureJsonValueViewModel>().AddNoneToLast();
+            set => FeaturesJson = value.JsonSetAccessor();
+        }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "To")]
-        [SearchParameter("itemFeatureTo")]
-        public double? ToValue { get; set; }
+        [HiddenInput]
+        [SearchParameter("facilities", typeof(ItemFacilityJsonViewModel))]
+        public string FacilitiesJson
+        {
+            get => _facilitiesJson.DecodeJson<ItemFacilityJsonViewModel>();
+            set => _facilitiesJson = value.JsonSetAccessor();
+        }
+
+        public List<ItemFacilityJsonViewModel> Facilities
+        {
+            get => FacilitiesJson.JsonGetAccessor<ItemFacilityJsonViewModel>().AddNoneToLast();
+            set => FacilitiesJson = value.JsonSetAccessor();
+        }
+
+        //[Display(ResourceType = typeof(SharedResource), Name = "Feature")]
+        //[SearchParameter("itemFeature")]
+        //public string FeatureName { get; set; }
+
+        //[Display(ResourceType = typeof(SharedResource), Name = "From")]
+        //[SearchParameter("itemFeatureFrom")]
+        //public double? FromValue { get; set; }
+
+        //[Display(ResourceType = typeof(SharedResource), Name = "To")]
+        //[SearchParameter("itemFeatureTo")]
+        //public double? ToValue { get; set; }
     }
 }

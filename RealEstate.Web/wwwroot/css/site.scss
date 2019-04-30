@@ -1039,6 +1039,10 @@ input, select {
         margin-left: 10px !important;
     }
 
+    * + .control-label {
+        margin-right: 10px !important;
+    }
+
     .field-validation-valid {
         display: none;
     }

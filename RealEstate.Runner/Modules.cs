@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using WindowsFirewallHelper;
 using WindowsFirewallHelper.FirewallAPIv2;
+using RealEstate.Runner.Config;
 
 namespace RealEstate.Runner
 {
@@ -105,14 +106,13 @@ namespace RealEstate.Runner
             return CheckFirewall(appName, port);
         }
 
-        public static List<string> CheckIp()
+        public static string CheckIp()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());
             var result = (from ip in host.AddressList
                           where ip.AddressFamily == AddressFamily.InterNetwork
                                  && ip.ToString().StartsWith("192")
-                                || ip.ToString().StartsWith("172")
-                          select ip.ToString()).ToList();
+                          select ip.ToString()).FirstOrDefault();
             return result;
         }
 

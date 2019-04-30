@@ -1,20 +1,21 @@
 ﻿@page
+@using RealEstate.Services.Extensions
 @model IndexModel
 @{
 
     var featuresList = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
-    var features = featuresList?.Select(x => new SelectListItem
+    var features = SelectItemExtensions.AddNone(featuresList?.Select(x => new SelectListItem
     {
         Value = x.Name,
         Text = x.Name
-    }).ToList().AddNone();
+    }).ToList());
 
     var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
-    var categories = categorieslist?.Select(x => new SelectListItem
+    var categories = SelectItemExtensions.AddNone(categorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,
         Text = x.Name
-    }).ToList().AddNone();
+    }).ToList());
 
 }
 <div class="col-12">

@@ -1,7 +1,8 @@
 ﻿@page
+@using RealEstate.Services.Extensions
 @model IndexModel
 @{
-    var roles = SelectItemExtensions.ToSelectList<Role>().AddNone();
+    var roles = SelectItemExtensions.AddNone(SelectItemExtensions.ToSelectList<Role>());
 }
 <div class="col-12">
     <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">

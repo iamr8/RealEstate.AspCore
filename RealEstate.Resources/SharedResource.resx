@@ -939,4 +939,10 @@
   <data name="ClearSearch" xml:space="preserve">
     <value>خالی کردن جستجو</value>
   </data>
+  <data name="Remove" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="ItemCategory" xml:space="preserve">
+    <value>دسته بندی مورد</value>
+  </data>
 </root>

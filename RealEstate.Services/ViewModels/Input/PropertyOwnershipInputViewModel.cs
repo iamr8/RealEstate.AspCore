@@ -16,7 +16,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<OwnershipInputViewModel> Owners
         {
-            get => OwnersJson.JsonGetAccessor<List<OwnershipInputViewModel>>();
+            get => OwnersJson.JsonGetAccessor<OwnershipInputViewModel>();
             set => OwnersJson = value.JsonSetAccessor();
         }
     }

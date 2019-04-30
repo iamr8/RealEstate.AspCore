@@ -27,7 +27,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<FeatureJsonValueViewModel> ApplicantFeatures
         {
-            get => ApplicantFeaturesJson.JsonGetAccessor<List<FeatureJsonValueViewModel>>();
+            get => ApplicantFeaturesJson.JsonGetAccessor<FeatureJsonValueViewModel>();
             set => ApplicantFeaturesJson = value.JsonSetAccessor();
         }
     }

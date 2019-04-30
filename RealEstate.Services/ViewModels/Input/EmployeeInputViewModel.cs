@@ -54,7 +54,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<DivisionJsonViewModel> Divisions
         {
-            get => DivisionsJson.JsonGetAccessor<List<DivisionJsonViewModel>>();
+            get => DivisionsJson.JsonGetAccessor<DivisionJsonViewModel>();
             set => DivisionsJson = value.JsonSetAccessor();
         }
     }

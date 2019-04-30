@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using RealEstate.Base.Config;
 
-namespace RealEstate.Base.Config
+namespace RealEstate.Runner.Config
 {
     public static class Reader
     {

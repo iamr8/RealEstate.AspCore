@@ -39,7 +39,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<CheckJsonViewModel> Checks
         {
-            get => ChecksJson.JsonGetAccessor<List<CheckJsonViewModel>>();
+            get => ChecksJson.JsonGetAccessor<CheckJsonViewModel>();
             set => ChecksJson = value.JsonSetAccessor();
         }
 
@@ -53,7 +53,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<BeneficiaryJsonViewModel> Beneficiaries
         {
-            get => BeneficiaryJson.JsonGetAccessor<List<BeneficiaryJsonViewModel>>();
+            get => BeneficiaryJson.JsonGetAccessor<BeneficiaryJsonViewModel>();
             set => BeneficiaryJson = value.JsonSetAccessor();
         }
     }

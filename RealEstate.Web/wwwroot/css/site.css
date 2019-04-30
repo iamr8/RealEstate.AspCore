@@ -954,6 +954,8 @@ input, select {
     flex: 0 0 auto;
     margin: 0 !important;
     margin-left: 10px !important; }
+  .input-wrapper * + .control-label {
+    margin-right: 10px !important; }
   .input-wrapper .field-validation-valid {
     display: none; }
   .input-wrapper .field-validation-error {

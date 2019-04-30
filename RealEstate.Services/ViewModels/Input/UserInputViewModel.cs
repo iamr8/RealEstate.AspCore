@@ -43,7 +43,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories
         {
-            get => UserPropertyCategoriesJson.JsonGetAccessor<List<UserPropertyCategoryJsonViewModel>>();
+            get => UserPropertyCategoriesJson.JsonGetAccessor<UserPropertyCategoryJsonViewModel>();
             set => UserPropertyCategoriesJson = value.JsonSetAccessor();
         }
 
@@ -56,7 +56,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<UserItemCategoryJsonViewModel> UserItemCategories
         {
-            get => UserItemCategoriesJson.JsonGetAccessor<List<UserItemCategoryJsonViewModel>>();
+            get => UserItemCategoriesJson.JsonGetAccessor<UserItemCategoryJsonViewModel>();
             set => UserItemCategoriesJson = value.JsonSetAccessor();
         }
     }

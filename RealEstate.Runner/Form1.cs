@@ -1,12 +1,12 @@
 ﻿using RealEstate.Base.Config;
 using System;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
+using RealEstate.Runner.Config;
 
 namespace RealEstate.Runner
 {
@@ -144,18 +144,8 @@ namespace RealEstate.Runner
             var ipCheck = Modules.CheckIp();
             if (ipCheck?.Any() == true)
             {
-                Urls = ipCheck.Select(ip =>
-                {
-                    var term = string.Empty;
-                    if (ip.StartsWith("192"))
-                        term = "Public Network";
-
-                    if (ip.StartsWith("172"))
-                        term = "Private Network";
-
-                    return $"http://{ip}:{Port} ({term})";
-                }).ToArray();
-                Log("Server IP: " + string.Join(" OR ", Urls));
+                Url = $"http://{ipCheck}:{Port}";
+                Log($"Server IP: {Url}");
                 IsAllowed(true);
             }
             else
@@ -169,7 +159,6 @@ namespace RealEstate.Runner
             if (localDbCheck)
             {
                 // msiexec /i SqlLocalDB.msi /qn IACCEPTSQLLOCALDBLICENSETERMS=YES
-                Urls = ipCheck.Select(x => $"http://{x}:{Port}").ToArray();
                 Log("Microsoft SQL Server LocalDB 13.0 is installed");
                 IsAllowed(true);
             }
@@ -245,7 +234,7 @@ namespace RealEstate.Runner
         }
 
         private Process Process { get; set; }
-        private string[] Urls { get; set; }
+        private string Url { get; set; }
         private const ushort Port = 5566;
         private const string Prefix = "RealEstate";
         private string MainAssembly => $"{Prefix}.Web";
@@ -268,16 +257,16 @@ namespace RealEstate.Runner
             }
             else if (btnFunc.Text.Equals("Start"))
             {
-                //var sync = CreateSynchronizer(url);
-                //if (string.IsNullOrEmpty(sync))
-                //{
-                //    AddInfo("Unable to Create Synchronizer.");
-                //    return;
-                //}
-                //else
-                //{
-                //    AddInfo($"Synchronizer created in : {sync}");
-                //}
+                var sync = Modules.CreateSynchronizer(Url);
+                if (string.IsNullOrEmpty(sync))
+                {
+                    Log("Unable to Create Synchronizer.");
+                    return;
+                }
+                else
+                {
+                    Log($"Synchronizer created in : {sync}");
+                }
 
                 foreach (var process in Process.GetProcesses())
                 {
@@ -367,11 +356,10 @@ namespace RealEstate.Runner
             else if (e.Data.Contains("Application started. Press Ctrl+C to shut down."))
             {
                 Log("Application running successfully.");
-                if (Urls?.Any() != true)
+                if (string.IsNullOrEmpty(Url))
                     return;
 
-                foreach (var url in Urls)
-                    Process.Start(new ProcessStartInfo(url));
+                Process.Start(new ProcessStartInfo(Url));
             }
         }
     }

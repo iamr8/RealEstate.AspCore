@@ -1114,6 +1114,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دسته بندی مورد.
+        /// </summary>
+        public static string ItemCategory {
+            get {
+                return ResourceManager.GetString("ItemCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مشخصات مورد.
         /// </summary>
         public static string ItemFeatures {
@@ -1812,6 +1821,15 @@ namespace RealEstate.Resources {
         public static string Reminders {
             get {
                 return ResourceManager.GetString("Reminders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to حذف.
+        /// </summary>
+        public static string Remove {
+            get {
+                return ResourceManager.GetString("Remove", resourceCulture);
             }
         }
         

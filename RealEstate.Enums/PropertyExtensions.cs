@@ -32,6 +32,18 @@ namespace RealEstate.Base
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
+        private class JsonKeyValue
+        {
+            public void Deconstruct(out string key, out object value)
+            {
+                key = Key;
+                value = Value;
+            }
+
+            public string Key { get; set; }
+            public object Value { get; set; }
+        }
+
         public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : BaseSearchModel
         {
             var routeValues = new Dictionary<string, object>();
@@ -53,7 +65,16 @@ namespace RealEstate.Base
                 if (string.IsNullOrEmpty(searchParameter))
                     continue;
 
-                routeValues.Add(searchParameter, searchValue);
+                var searchParameterType = searchParameterAttribute.Type;
+                if (searchParameterType != null)
+                {
+                    var encodeJson = searchValue.ToString().EncodeJson(searchParameterType);
+                    routeValues.Add(searchParameter, encodeJson);
+                }
+                else
+                {
+                    routeValues.Add(searchParameter, searchValue);
+                }
             }
 
             return routeValues;
@@ -63,6 +84,37 @@ namespace RealEstate.Base
             this PropertyInfo property) where TAttribute : Attribute
         {
             return property?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
+        }
+
+        public static PropertyInfo GetProperty<TModel>(this string propertyName)
+        {
+            var modelType = typeof(TModel);
+
+            var property = Array.Find(modelType.GetProperties(), x =>
+            {
+                if (x.Name == propertyName)
+                    return true;
+
+                if (x.GetJsonProperty() == propertyName)
+                    return true;
+
+                return false;
+            });
+
+            return property;
+        }
+
+        public static string GetJsonProperty(this PropertyInfo propertyInfo)
+        {
+            var json = propertyInfo.GetPropertyAttribute<JsonPropertyAttribute>();
+            if (json != null)
+                return json.PropertyName;
+
+            var contractResolver = JsonExtensions.JsonNetSetting.ContractResolver;
+            if (contractResolver is JsonExtensions.NullToEmptyContractResolver nullToEmptyContractResolver)
+                return nullToEmptyContractResolver.GetResolvedPropertyName(propertyInfo.Name);
+
+            return propertyInfo.Name;
         }
 
         public static object[] GetPropertyAttributes<TModel>(

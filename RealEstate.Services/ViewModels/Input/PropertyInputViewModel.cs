@@ -58,7 +58,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<OwnershipJsonViewModel> Ownerships
         {
-            get => OwnershipsJson.JsonGetAccessor<List<OwnershipJsonViewModel>>();
+            get => OwnershipsJson.JsonGetAccessor<OwnershipJsonViewModel>();
             set => OwnershipsJson = value.JsonSetAccessor();
         }
 
@@ -72,7 +72,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<FeatureJsonValueViewModel> PropertyFeatures
         {
-            get => PropertyFeaturesJson.JsonGetAccessor<List<FeatureJsonValueViewModel>>();
+            get => PropertyFeaturesJson.JsonGetAccessor<FeatureJsonValueViewModel>();
             set => PropertyFeaturesJson = value.JsonSetAccessor();
         }
 
@@ -86,7 +86,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         public List<FacilityJsonViewModel> PropertyFacilities
         {
-            get => PropertyFacilitiesJson.JsonGetAccessor<List<FacilityJsonViewModel>>();
+            get => PropertyFacilitiesJson.JsonGetAccessor<FacilityJsonViewModel>();
             set => PropertyFacilitiesJson = value.JsonSetAccessor();
         }
     }

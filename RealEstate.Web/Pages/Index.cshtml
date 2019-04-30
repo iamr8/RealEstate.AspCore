@@ -6,39 +6,32 @@
 
 }
 <form method="post" class="col-12">
+    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status.GetDisplayName()
+    </div>
     <div class="widget">
         <input asp-for="Input.ReturnUrl" />
         <widget-header title="@title"></widget-header>
-        <section class="container-fluid d-flex flex-column align-items-center">
-            <div class="col-12 col-lg-6">
-                <label asp-for="Input.Username" class="control-label"></label>
-                <input asp-for="Input.Username" class="form-control" />
-                <span asp-validation-for="Input.Username" class="text-danger"></span>
-            </div>
-            <div class="col-12 col-lg-6">
-                <label asp-for="Input.Password" class="control-label"></label>
-                <input asp-for="Input.Password" class="form-control" type="password" />
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
+        <section class="container-fluid">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="Input.Username" class="control-label"></label>
+                        <input asp-for="Input.Username" class="form-control" />
+                        <span asp-validation-for="Input.Username" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="Input.Password" class="control-label"></label>
+                        <input asp-for="Input.Password" class="form-control" type="password" />
+                        <span asp-validation-for="Input.Password" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                @if (string.IsNullOrEmpty(Model.ErrorMessage))
-                {
-                    <text>
-                        برای استفاده از سامانه، مشخصات کاربری خود را وارد نمائید.
-                    </text>
-                }
-                else
-                {
-                    <text>
-                        <b>خطا:</b> @Model.ErrorMessage
-                    </text>
-                }
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="ورود" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <input type="submit" value="@SharedLocalizer["Login"]" class="btn-success btn-block" />
+        </footer>
     </div>
 </form>
