@@ -25,7 +25,7 @@ namespace RealEstate.Services
 
         Task<StatusEnum> ItemRemoveAsync(string id);
 
-        Task<List<ItemOutJsonViewModel>> ItemListAsync();
+        Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory);
 
         Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model);
 
@@ -56,6 +56,7 @@ namespace RealEstate.Services
         private readonly DbSet<DealRequest> _dealRequests;
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Feature> _features;
+        private readonly DbSet<User> _users;
 
         public ItemService(
             IBaseService baseService,
@@ -77,6 +78,7 @@ namespace RealEstate.Services
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
+            _users = _unitOfWork.Set<User>();
         }
 
         public async Task<StatusEnum> RequestRejectAsync(string itemId, bool save)
@@ -175,19 +177,67 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public async Task<List<ItemOutJsonViewModel>> ItemListAsync()
+        public async Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory)
         {
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
+            {
+                return new SyncJsonViewModel
+                {
+                    StatusCode = (int)StatusEnum.CredentialError,
+                    Message = StatusEnum.CredentialError.GetDisplayName()
+                };
+            }
+
+            var encryptedPass = pass.Cipher(CryptologyExtension.CypherMode.Encryption);
+            var userDb = await _users
+                .WhereNotDeleted()
+                .Where(x => x.Username == user && x.Password == encryptedPass)
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+            if (userDb == null)
+            {
+                return new SyncJsonViewModel
+                {
+                    StatusCode = (int)StatusEnum.UserNotFound,
+                    Message = StatusEnum.UserNotFound.GetDisplayName()
+                };
+            }
+
+            var allowedItemCategories = userDb.UserItemCategories.ToList().Select(x => x.Category.Name).ToList();
+            var allowedPropertyCategories = userDb.UserPropertyCategories.ToList().Select(x => x.Category.Name).ToList();
+
             var query = from item in _items
                         let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
                         let lastRequest = requests.FirstOrDefault()
                         where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+                        let category = item.Category
+                        let property = item.Property
+                        let propertyCategory = property.Category
+                        where category.UserItemCategories.Any(userItemCategory => userItemCategory.UserId == userDb.Id && userItemCategory.CategoryId == category.Id)
+                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
+                            userPropertyCategory.UserId == userDb.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
                         select item;
-            var models = await query.ToListAsync().ConfigureAwait(false);
-            if (models?.Any() != true)
-                return default;
+
+            if (!string.IsNullOrEmpty(itmCategory))
+                query = query.Where(x => x.Category.Name == itmCategory);
+
+            if (!string.IsNullOrEmpty(propCategory))
+                query = query.Where(x => x.Property.Category.Name == propCategory);
+
+            var items = await query.ToListAsync().ConfigureAwait(false);
+            if (items?.Any() != true)
+            {
+                return new SyncJsonViewModel
+                {
+                    StatusCode = (int)StatusEnum.Success,
+                    Message = StatusEnum.Success.GetDisplayName(),
+                    ItemCategories = allowedItemCategories,
+                    PropertyCategories = allowedPropertyCategories
+                };
+            }
 
             var result = new List<ItemOutJsonViewModel>();
-            foreach (var model in models)
+            foreach (var model in items)
             {
                 var converted = model.Into<Item, ItemViewModel>(false, act =>
                 {
@@ -222,7 +272,15 @@ namespace RealEstate.Services
                 };
                 result.Add(item);
             }
-            return result;
+
+            return new SyncJsonViewModel
+            {
+                StatusCode = (int)StatusEnum.Success,
+                Message = StatusEnum.Success.GetDisplayName(),
+                Items = result,
+                ItemCategories = allowedItemCategories,
+                PropertyCategories = allowedPropertyCategories
+            };
         }
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
@@ -252,24 +310,17 @@ namespace RealEstate.Services
 
                 if (searchModel.Facilities?.Any() == true)
                 {
-                    foreach (var facility in searchModel.Facilities)
-                    {
-                        var name = facility.Name;
-                        if (string.IsNullOrEmpty(name))
-                            continue;
-
-                        query = query.Where(x => x.Property.PropertyFacilities.Any(c => c.Facility.Name == name));
-                    }
+                    query = searchModel.Facilities
+                        .Where(x => !string.IsNullOrEmpty(x.Name))
+                        .Select(facility => facility.Name)
+                        .Aggregate(query, (current, name) => current.Where(x => x.Property.PropertyFacilities.Any(c => c.Facility.Name == name)));
                 }
 
                 if (searchModel.Features?.Any() == true)
                 {
-                    foreach (var feature in searchModel.Features)
+                    foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
                     {
                         var id = feature.Id;
-                        if (string.IsNullOrEmpty(id))
-                            continue;
-
                         var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync().ConfigureAwait(false);
                         var from = feature.From;
                         var to = feature.To;

@@ -26,6 +26,8 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
 
+        Task<List<PropertyJsonViewModel>> PropertyListAsync(string district, string category, string street);
+
         Task<PropertyJsonViewModel> PropertyJsonAsync(string id);
 
         Task<PropertyInputViewModel> PropertyInputAsync(string id);
@@ -110,6 +112,23 @@ namespace RealEstate.Services
                 return default;
 
             var result = MapJson(entity);
+            return result;
+        }
+
+        public async Task<List<PropertyJsonViewModel>> PropertyListAsync(string district, string category, string street)
+        {
+            if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
+                return default;
+
+            var query = _properties.WhereNotDeleted().Where(x => EF.Functions.Like(x.Street, street.LikeExpression())
+                                     || EF.Functions.Like(x.District.Name, district.LikeExpression())
+                                     || EF.Functions.Like(x.Category.Name, category.LikeExpression()));
+
+            var models = await query.ToListAsync().ConfigureAwait(false);
+            if (models?.Any() != true)
+                return default;
+
+            var result = models.Select(MapJson).ToList();
             return result;
         }
 

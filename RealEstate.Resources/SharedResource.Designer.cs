@@ -331,6 +331,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بررسی.
+        /// </summary>
+        public static string Check {
+            get {
+                return ResourceManager.GetString("Check", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شماره چک.
         /// </summary>
         public static string CheckNumber {
@@ -1303,6 +1312,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to جدید.
+        /// </summary>
+        public static string New {
+            get {
+                return ResourceManager.GetString("New", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to متقاضی جدید.
         /// </summary>
         public static string NewApplicant {
@@ -1974,6 +1992,15 @@ namespace RealEstate.Resources {
         public static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to موارد مشابه.
+        /// </summary>
+        public static string SimilarItems {
+            get {
+                return ResourceManager.GetString("SimilarItems", resourceCulture);
             }
         }
         

@@ -945,4 +945,13 @@
   <data name="ItemCategory" xml:space="preserve">
     <value>دسته بندی مورد</value>
   </data>
+  <data name="SimilarItems" xml:space="preserve">
+    <value>موارد مشابه</value>
+  </data>
+  <data name="Check" xml:space="preserve">
+    <value>بررسی</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>جدید</value>
+  </data>
 </root>

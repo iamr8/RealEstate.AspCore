@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace RealEstate.Runner
 {
-    internal static class Program
+    public static class Program
     {
         /// <summary>
         /// The main entry point for the application.
@@ -25,7 +25,7 @@ namespace RealEstate.Runner
             }
         }
 
-        private static void KillDotNet()
+        public static void KillDotNet()
         {
             foreach (var process in Process.GetProcesses())
             {

@@ -20,6 +20,16 @@ namespace RealEstate.Web.Controllers
             _propertyService = propertyService;
         }
 
+        [Route("customer/detail")]
+        public async Task<IActionResult> CustomerAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return new JsonResult(null);
+
+            var models = await _customerService.CustomerJsonAsync(id).ConfigureAwait(false);
+            return new JsonResult(models);
+        }
+
         [Route("ownership/detail")]
         public async Task<IActionResult> OwnershipAsync(string id)
         {

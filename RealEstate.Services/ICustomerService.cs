@@ -24,7 +24,11 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
 
+        Task<CustomerJsonViewModel> CustomerJsonAsync(string id);
+
         Task<(StatusEnum, Database.Tables.Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
+
+        Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
         Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id);
 
@@ -204,6 +208,26 @@ namespace RealEstate.Services
             return entity;
         }
 
+        public async Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile)
+        {
+            var query = _customers
+                .WhereNotDeleted()
+                .WhereItIsPublic()
+                .Where(x => EF.Functions.Like(x.Name, name.LikeExpression())
+                || EF.Functions.Like(x.MobileNumber, mobile.LikeExpression()));
+
+            var customers = await query.ToListAsync().ConfigureAwait(false);
+            var cust = customers.Into<Customer, CustomerViewModel>();
+            return cust?.Select(x => new CustomerJsonViewModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Address = x.Address,
+                Mobile = x.Mobile,
+                Phone = x.Phone
+            }).ToList();
+        }
+
         public async Task<List<CustomerViewModel>> CustomerListAsync()
         {
             var query = _customers
@@ -231,6 +255,27 @@ namespace RealEstate.Services
 
             var entity = await _ownerships.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             return entity;
+        }
+
+        public async Task<CustomerJsonViewModel> CustomerJsonAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+
+            var entity = await _customers.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            if (entity == null) return null;
+
+            var viewModel = entity.Into<Customer, CustomerViewModel>();
+            if (viewModel == null)
+                return default;
+
+            return new CustomerJsonViewModel
+            {
+                Name = viewModel.Name,
+                Mobile = viewModel.Mobile,
+                Id = viewModel.Id,
+                Address = viewModel.Address,
+                Phone = viewModel.Phone
+            };
         }
 
         public async Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id)

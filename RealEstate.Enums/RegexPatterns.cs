@@ -63,6 +63,10 @@ namespace RealEstate.Base
 
         [Description("فقط اعداد در قالب طول و عرض جغرافیایی مجاز است: 23.342444")]
         [Display(Name = @"^(?:\d+\.\d+)$")]
-        Geolocation
+        Geolocation,
+
+        [Description("فقط قالب JSON")]
+        [Display(Name = "^[a-zA-Z]+$")]
+        Json,
     }
 }

@@ -8,9 +8,6 @@ namespace RealEstate.Services.ViewModels.Json
         [JsonProperty("ad")]
         public string Address { get; set; }
 
-        [JsonProperty("desc")]
-        public string Description { get; set; }
-
         [JsonProperty("nm")]
         public string Name { get; set; }
 

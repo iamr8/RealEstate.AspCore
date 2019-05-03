@@ -24,7 +24,7 @@ namespace RealEstate.Services.ViewModels
             action?.Invoke(this);
         }
 
-        public string Address => $"خیابان {Street} - کوچه {Alley} - پلاک {Number} - ساختمان {BuildingName} - طبقه {Floor} - واحد {Flat}";
+        public string Address => _entity?.Address;
         public string Street => _entity?.Street;
 
         public string Alley => _entity?.Alley;

@@ -5,7 +5,7 @@
     var featuresSelect = features?.Select(x => new SelectListItem
     {
         Text = x.Name,
-        Value = x.Name
+        Value = x.Id
     }).AddNone();
 
     var facilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
@@ -32,13 +32,16 @@
     }).ToList()).AddNone();
 }
 <div class="col-12">
+    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status.GetDisplayName()
+    </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
         </widget-header>
         <section class="container-fluid">
-            <form method="post">
-                <div class="row justify-content-center align-items-center margin-bottomed">
+            <form method="post" class="search">
+                <div class="row justify-content-center align-items-center">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
@@ -53,13 +56,13 @@
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
-                                        <div class="col-xs-12 col-md margin-bottomed">
+                                        <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
                                                 <label class="control-label" asp-for="SearchInput.Owner"></label>
                                                 <input asp-for="SearchInput.Owner" class="form-control" />
                                             </div>
                                         </div>
-                                        <div class="col-xs-12 col-md margin-bottomed">
+                                        <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
                                                 <label class="control-label" asp-for="SearchInput.Address"></label>
                                                 <input asp-for="SearchInput.Address" class="form-control" />
@@ -67,13 +70,13 @@
                                         </div>
                                     </div>
                                     <div class="row justify-content-center align-items-center">
-                                        <div class="col-xs-12 col-md margin-bottomed">
+                                        <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
                                                 <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
                                                 <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
                                             </div>
                                         </div>
-                                        <div class="col-xs-12 col-md margin-bottomed">
+                                        <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
                                                 <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
                                                 <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
@@ -82,18 +85,18 @@
                                     </div>
                                     @if (features?.Any() == true)
                                     {
-                                        <input asp-for="SearchInput.FeaturesJson" />
                                         <hr />
                                         <div class="row justify-content-center align-items-center">
                                             <div class="col-12" id="features-wrapper">
                                                 <div class="itemShow adder input-wrapper">
+                                                    <input asp-for="SearchInput.FeaturesJson" />
                                                     <label class="control-label">@SharedLocalizer["Features"]</label>
                                                     <select asp-items="featuresSelect" id="features-select" class="custom-select"></select>
                                                     <label class="control-label">@SharedLocalizer["From"]</label>
                                                     <input class="form-control" id="featureFrom" />
                                                     <label class="control-label">@SharedLocalizer["To"]</label>
                                                     <input class="form-control" id="featureTo" />
-                                                    <input type="button" id="addNewFeature" class="btn btn-success btn-sm" value="@SharedLocalizer["NewItem"]" />
+                                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
                                                 </div>
                                                 <div class="items hidden"></div>
                                             </div>
@@ -101,14 +104,15 @@
                                     }
                                     @if (facilities?.Any() == true)
                                     {
-                                        <input asp-for="SearchInput.FacilitiesJson" />
                                         <hr />
                                         <div class="row justify-content-center align-items-center">
                                             <div class="col-12" id="facilities-wrapper">
                                                 <div class="itemShow adder input-wrapper">
+                                                    <input asp-for="SearchInput.FacilitiesJson" />
+
                                                     <label class="control-label">@SharedLocalizer["Facilities"]</label>
                                                     <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
-                                                    <input type="button" id="addNewFacility" class="btn btn-success btn-sm" value="@SharedLocalizer["NewItem"]" />
+                                                    <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
                                                 </div>
                                                 <div class="items hidden"></div>
                                             </div>
@@ -245,111 +249,6 @@
 
 @section Scripts
     {
-    @*<script>
-
-            $(document).ready(function() {
-
-                const jsonInput = $("#@nameof(Model.SearchInput)_@nameof(Model.SearchInput.FeaturesJson)");
-                const btnNewFeature = $("#addNewFeature");
-                const wrapper = $("#features-wrapper");
-                const removeSelector = ".remove-feature";
-
-                $(btnNewFeature).click(function(e) {
-                    var template;
-                    if (wrapper.length >= 1) {
-                        template = $(this).parents(".row").prev().find(".feature-select-item:last-child");
-                    } else {
-                        return;
-                    }
-
-                    const previousSelect = $(".feature-select", template);
-                    const previousSelectedValue = $(previousSelect).find('option:selected:eq(0)')[0];
-                    const previousFromInput = $(".feature-from", template);
-                    const previousToInput = $(".feature-to", template);
-
-                    if (previousSelect == undefined || previousFromInput == undefined || previousToInput == undefined) {
-                        return;
-                    }
-
-                    const previousSelectValue = $(previousSelectedValue).val();
-                    const previousFromInputValue = $(previousFromInput).val();
-                    const previousToInputValue = $(previousToInput).val();
-
-                    if (previousSelectedValue == undefined || previousSelectValue === "---") {
-                        console.log("First feature is still null.");
-                        return;
-                    }
-
-                    if ((previousFromInputValue == null || previousFromInputValue === "") &&
-                        (previousToInputValue == null || previousToInputValue === "")) {
-                        console.log("First feature's values is still null.");
-                        return;
-                    }
-
-                    const item = $(template).clone();
-                    const from = $(".feature-from", item);
-                    const to = $(".feature-to", item);
-                    const select = $(".feature-select", item);
-
-                    $(jsonInput).trigger("change");
-
-                    $(from).val("");
-                    $(to).val("");
-                    $("option:eq(0)", select).prop('selected', true);
-                    $(wrapper).append(item);
-                });
-
-                $(document).on('click',
-                    removeSelector,
-                    function(e) {
-                        const item = $(this).parents(".feature-select-item");
-                        const wrapperCount = $(wrapper).children().length;
-                        if (wrapperCount > 1) {
-                            $(item).remove();
-                        } else {
-                            const select = $(".feature-select", item);
-                            $("option:eq(0)", select).prop('selected', true);
-                            $(".feature-from", item).val("");
-                            $(".feature-to", item).val("");
-                        }
-                        $(jsonInput).trigger("change");
-                    });
-
-                $(jsonInput).change(function() {
-                    $(jsonInput).val("[]");
-                    const json = [];
-
-                    $.each(wrapper.children(),
-                        (key, value) => {
-
-                            const fromInput = $(".feature-from", value);
-                            const toInput = $(".feature-to", value);
-                            const select = $(".feature-select", value);
-                            const selectedFeature = $(select).find('option:selected:eq(0)')[0];
-
-                            const id = $(selectedFeature).val();
-                            const name = $(selectedFeature).text();
-                            const from = $(fromInput).val();
-                            const to = $(toInput).val();
-
-                            if (id === "---")
-                                return true;
-
-                            const newItem = {
-                                @(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)): id,
-                                @(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Name)): name,
-                                @(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.From)): from,
-                                @(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.To)): to
-                            };
-
-                            json.push(newItem);
-                        });
-                    $(jsonInput).val(JSON.stringify(json));
-                });
-
-                $(jsonInput).trigger("change");
-            });
-        </script>*@
     <script>
         $(document).ready(function() {
 
@@ -387,7 +286,7 @@
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", name);
                         $(anchor).addClass(itemSelector);
-                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+//                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
 
                         const nameElement = document.createElement("span");
                         $(nameElement).html(name);
@@ -397,7 +296,7 @@
 
                     });
 
-                $.each(selectInput.children(),
+                $.each(selectInput.children(":not([value='---'])"),
                     (index, item) => {
                         const id = $(item).val();
                         const i = jsonObject.findIndex(
@@ -411,7 +310,9 @@
 
                     });
 
-                if ($('option:not(.hidden)', selectInput).length > 0) {
+                const availableItems = $('option:not(.hidden):not([value=""])', selectInput);
+                console.log("Available items", availableItems);
+                if ($(availableItems).length > 0) {
                     $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
                     $(adder).fadeIn("slow");
                 } else {
@@ -421,7 +322,7 @@
             });
 
             $(submitInput).click(function(e) {
-                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                let selected = $(selectInput).find('option:selected:not([value="---"]):eq(0)')[0];
                 if (selected === undefined || selected === null) {
                     selected = $(selectInput).find('option:eq(0)')[0];
                 }
@@ -512,21 +413,27 @@
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", id);
                         $(anchor).addClass(itemSelector);
-                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
 
                         const nameElement = document.createElement("span");
-                        $(nameElement).html(`${name}: از ${from} تا ${to}`);
+                        var finalName = `${name}: `;
+
+                        if (from != null && from !== "")
+                            finalName = `${finalName} از ${from}`;
+                        if (to != null && to !== "")
+                            finalName = `${finalName} تا ${to}`;
+
+                        $(nameElement).html(finalName);
 
                         $(anchor).append(nameElement);
                         $(items).append(anchor);
 
                     });
 
-                @*$.each(selectInput.children(),
+                $.each(selectInput.children(":not([value='---'])"),
                     (index, item) => {
                         const id = $(item).val();
-                        const i = jsonObject.findIndex(obj => obj
-                            .@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)) ===
+                        const i = jsonObject.findIndex(
+                            obj => obj.@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)) ===
                             id);
                         if (i >= 0) {
                             $(item).addClass("hidden");
@@ -536,12 +443,14 @@
 
                     });
 
-                if ($('option:not(.hidden)', selectInput).length > 0) {
+                const availableItems = $('option:not(.hidden):not([value=""])', selectInput);
+                console.log("Available items", availableItems);
+                if ($(availableItems).length > 0) {
                     $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
                     $(adder).fadeIn("slow");
                 } else {
                     $(adder).fadeOut("slow");
-                }*@
+                }
 
             });
 
@@ -555,10 +464,14 @@
                 const from = $(fromInput).val();
                 const to = $(toInput).val();
 
-                if (keyName === "---")
+                if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
                     return;
 
-                if (keyId === undefined || keyId === null)
+                if (keyId === undefined || keyId === null || keyId === "")
+                    return;
+
+                if ((from === undefined || from === null || from === "" || from === "0") &&
+                    (to === undefined || to === null || to === "" || to === "0"))
                     return;
 
                 const newItem = {
@@ -573,11 +486,16 @@
                     obj => obj.@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)) ===
                     newItem.@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)));
 
+            $(fromInput).val("");
+                $(toInput).val("");
+
             });
 
             $(document).on("click",
                 `.${itemSelector}`,
                 function(e) {
+                    e.preventDefault();
+
                     const keyId = $(this).attr("data-id");
                     console.log("KeyId", keyId);
 

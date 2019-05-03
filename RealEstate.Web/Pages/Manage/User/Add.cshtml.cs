@@ -6,6 +6,7 @@ using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.ViewModels.Input;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User
@@ -35,25 +36,24 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
+            UserInputViewModel model = null;
             if (!string.IsNullOrEmpty(id))
             {
-                if (!User.IsInRole(nameof(Role.SuperAdmin)))
+                if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                var model = await _userService.FindInputAsync(id).ConfigureAwait(false);
-                if (model == null)
-                    return RedirectToPage(typeof(IndexModel).Page());
+                model = await _userService.FindInputAsync(id).ConfigureAwait(false);
+            }
 
-                NewUser = model;
-                PageTitle = _localizer["EditUser"];
-            }
-            else
-            {
-                PageTitle = _localizer["NewUser"];
-            }
+            PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];
+            NewUser = model;
             Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
                 ? (StatusEnum)statusInt
                 : StatusEnum.Ready;
+
+            if (!string.IsNullOrEmpty(id) && model == null)
+                return RedirectToPage(typeof(IndexModel).Page());
+
             return Page();
         }
 

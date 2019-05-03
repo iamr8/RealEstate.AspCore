@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MoreLinq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
@@ -62,15 +63,25 @@ namespace RealEstate.Base
 
                 var itemString = new StringBuilder();
                 var propertyIndicator = 0;
+
+                var oneProperty = modelType.GetProperties().Length == 1;
                 foreach (var (propKey, propValue) in itemProps)
                 {
                     var prop = modelType.GetProperty(propKey);
                     var key = prop.GetJsonProperty();
 
-                    itemString
-                        .Append(key)
-                        .Append(JsonPropertyMemberDivider)
-                        .Append(propValue);
+                    if (oneProperty)
+                    {
+                        itemString
+                            .Append(propValue);
+                    }
+                    else
+                    {
+                        itemString
+                            .Append(key)
+                            .Append(JsonPropertyMemberDivider)
+                            .Append(propValue);
+                    }
 
                     if (propertyIndicator != itemProps.Count - 1)
                         itemString.Append(JsonPropertyDivider);
@@ -132,20 +143,24 @@ namespace RealEstate.Base
             if (splitByItem?.Any() != true)
                 return json;
 
+            var properties = typeof(TModel).GetProperties();
+            var oneProperty = properties.Length == 1;
+            var firstProperty = properties.FirstOrDefault();
+
             var items = (from item in splitByItem
-                         select item.Split(JsonPropertyDivider)
-                         into splitByProperty
+                         select item.Split(JsonPropertyDivider) into splitByProperty
                          where splitByProperty?.Any() == true
                          select (from property in splitByProperty
                                  select property.Split(JsonPropertyMemberDivider)
                                  into split
                                  where split?.Any() == true
-                                 let key = split[0]
+                                 let key = oneProperty ? firstProperty.GetJsonProperty() : split[0]
                                  let propertyInfo = key.GetProperty<TModel>()
                                  let type = propertyInfo.PropertyType
-                                 //                                 let key = propertyInfo.Name
                                  let isNumeric = type == typeof(int) || type == typeof(double) || type == typeof(decimal) || type == typeof(long)
-                                 let value = isNumeric ? split[1] : $"\"{split[1]}\""
+                                 let value = oneProperty
+                                     ? isNumeric ? split[0] : $"\"{split[0]}\""
+                                     : isNumeric ? split[1] : $"\"{split[1]}\""
                                  select $"\"{key}\":{value}").ToList()
                          into props
                          select string.Join(", ", props)

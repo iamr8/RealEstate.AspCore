@@ -30,11 +30,11 @@ namespace RealEstate.Web.Controllers
         public async Task<IActionResult> CustomerAsync([FromForm] CustomerInputViewModel model)
         {
             var (status, newCustomer) = await _customerService.CustomerAddAsync(model, false, true).ConfigureAwait(false);
-            return new JsonResult(new JsonStatusValueViewModel
+            return new JsonResult(new JsonStatusViewModel
             {
-                Status = status,
+                StatusCode = (int)status,
                 Id = newCustomer?.Id,
-                Name = newCustomer != null ? $"{newCustomer.Name} • {newCustomer.MobileNumber}" : null
+                Message = status.GetDisplayName()
             });
         }
 
@@ -44,8 +44,9 @@ namespace RealEstate.Web.Controllers
             var (status, newProperty) = await _propertyService.PropertyAddOrUpdateAsync(model, true).ConfigureAwait(false);
             return new JsonResult(new JsonStatusViewModel
             {
-                Status = status,
+                StatusCode = (int)status,
                 Id = newProperty?.Id,
+                Message = status.GetDisplayName()
             });
         }
     }

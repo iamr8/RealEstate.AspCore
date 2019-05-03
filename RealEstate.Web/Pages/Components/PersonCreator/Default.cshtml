@@ -89,11 +89,9 @@
                             if (response != undefined) {
 
                                 const responseStatus =
-                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x=>x.Status));
+                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x=>x.StatusCode));
                                 const responseId =
-                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Id));
-                                const responseName =
-                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusValueViewModel>(x => x.Name));
+                                    response.@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.Id));
 
                                 if (responseStatus === @((int)StatusEnum.Success) ||
                                     responseStatus === @((int)StatusEnum.PartialSuccess)) {

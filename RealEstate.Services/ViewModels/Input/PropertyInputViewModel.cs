@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
@@ -16,15 +17,19 @@ namespace RealEstate.Services.ViewModels.Input
 
         [Display(ResourceType = typeof(SharedResource), Name = "Street")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        [R8Validator(RegexPatterns.SafeText)]
         public string Street { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Alley")]
+        [R8Validator(RegexPatterns.SafeText)]
         public string Alley { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "BuildingName")]
+        [R8Validator(RegexPatterns.SafeText)]
         public string BuildingName { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "BuildingNumber")]
+        [R8Validator(RegexPatterns.SafeText)]
         public string Number { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Floor")]
@@ -38,6 +43,7 @@ namespace RealEstate.Services.ViewModels.Input
         public string CategoryId { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
+        [R8Validator(RegexPatterns.SafeText)]
         public string Description { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "District")]

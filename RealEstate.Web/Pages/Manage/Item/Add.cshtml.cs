@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.ViewModels.Input;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
@@ -30,28 +30,28 @@ namespace RealEstate.Web.Pages.Manage.Item
         [ViewData]
         public string PageTitle { get; set; }
 
-        public string ItemStatus { get; set; }
+        public StatusEnum Status { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
+            ItemInputViewModel model = null;
             if (!string.IsNullOrEmpty(id))
             {
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                var model = await _itemService.ItemInputAsync(id).ConfigureAwait(false);
-                if (model == null)
-                    return RedirectToPage(typeof(IndexModel).Page());
-
-                NewItem = model;
-                PageTitle = _localizer["EditItem"];
-            }
-            else
-            {
-                PageTitle = _localizer["NewItem"];
+                model = await _itemService.ItemInputAsync(id).ConfigureAwait(false);
             }
 
-            ItemStatus = !string.IsNullOrEmpty(status) ? status.To<StatusEnum>().GetDisplayName() : null;
+            PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];
+            NewItem = model;
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
+
+            if (!string.IsNullOrEmpty(id) && model == null)
+                return RedirectToPage(typeof(IndexModel).Page());
+
             return Page();
         }
 
@@ -61,22 +61,12 @@ namespace RealEstate.Web.Pages.Manage.Item
                 ? (await _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true).ConfigureAwait(false)).Item1
                 : StatusEnum.RetryAfterReview;
 
-            ItemStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewItem.IsNew)
-                return RedirectToPage(typeof(AddModel).Page(), new
+            return RedirectToPage(finalStatus != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
                 {
-                    id = NewItem?.Id,
-                    status = finalStatus
+                    status = (int)finalStatus
                 });
-
-            ModelState.Clear();
-            NewItem = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
-            {
-                id = NewItem?.Id,
-                status = StatusEnum.Success
-            });
         }
     }
 }

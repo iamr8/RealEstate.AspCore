@@ -71,7 +71,7 @@
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {
-                    <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="col-xs-12 col-md">
                         <div class="input-wrapper">
                             <label asp-for="NewUser.EmployeeId" class="control-label"></label>
                             <select asp-for="NewUser.EmployeeId" asp-items="emploo" class="custom-select"></select>
@@ -85,7 +85,7 @@
                 }
                 @if (Model.NewUser?.Username != User.Identity.Name)
                 {
-                    <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="col-xs-12 col-md">
                         <div class="input-wrapper">
                             <label asp-for="NewUser.Role" class="control-label"></label>
                             <select asp-for="NewUser.Role" asp-items="roles" class="custom-select"></select>
@@ -102,7 +102,7 @@
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {
-                    <div class="col-xs-12 col-md margin-bottomed">
+                    <div class="col-xs-12 col-md">
                         <div class="input-wrapper">
                             <label asp-for="NewUser.Username" class="control-label"></label>
                             <input asp-for="NewUser.Username" class="form-control" />
@@ -114,7 +114,7 @@
                 {
                     <input asp-for="NewUser.Username" type="hidden" />
                 }
-                <div class="col-xs-12 col-md margin-bottomed">
+                <div class="col-xs-12 col-md">
                     <div class="input-wrapper">
                         <label asp-for="NewUser.Password" class="control-label"></label>
                         <input asp-for="NewUser.Password" class="form-control" />
@@ -125,11 +125,11 @@
             <hr />
             @if (propertyCategories?.Any() == true)
             {
-                <div class="row justify-content-center align-items-center margin-bottomed">
+                <div class="row justify-content-center align-items-center">
                     <div class="col-12" id="propertyCategories">
                         <input asp-for="NewUser.UserPropertyCategoriesJson" />
                         <div class="itemShow adder input-wrapper">
-                            <label class="control-label" for="txtPropertyCategories">@SharedLocalizer["UserPropertyCategories"]</label>
+                            <label class="control-label full-line" for="txtPropertyCategories">@SharedLocalizer["UserPropertyCategories"]</label>
                             <select asp-items="propertyCategorySelect" class="custom-select" id="txtPropertyCategories"></select>
                             <button type="button" class="btn btn-sm btn-success" id="addPropertyCategory">@SharedLocalizer["Add"]</button>
                         </div>
@@ -139,11 +139,11 @@
             }
             @if (itemCategories?.Any() == true)
             {
-                <div class="row justify-content-center align-items-center margin-bottomed">
+                <div class="row justify-content-center align-items-center">
                     <div class="col-12" id="itemCategories">
                         <input asp-for="NewUser.UserItemCategoriesJson" />
                         <div class="itemShow adder input-wrapper">
-                            <label class="control-label" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
+                            <label class="control-label full-line" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
                             <select asp-items="itemCategorySelect" class="custom-select" id="txtItemCategories"></select>
                             <button type="button" class="btn btn-sm btn-success" id="addItemCategory">@SharedLocalizer["Add"]</button>
                         </div>

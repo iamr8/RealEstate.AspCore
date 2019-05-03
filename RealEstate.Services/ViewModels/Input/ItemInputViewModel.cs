@@ -17,7 +17,7 @@ namespace RealEstate.Services.ViewModels.Input
         [HiddenInput]
         public string PropertyId { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "DealCategory")]
+        [Display(ResourceType = typeof(SharedResource), Name = "ItemCategory")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string CategoryId { get; set; }
 

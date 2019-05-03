@@ -89,6 +89,7 @@ namespace RealEstate.Base.Enums
         DealIsNull,
         ManagemenetPercentIsNull,
         LeaveIsNull,
-        Ready
+        Ready,
+        CredentialError
     }
 }

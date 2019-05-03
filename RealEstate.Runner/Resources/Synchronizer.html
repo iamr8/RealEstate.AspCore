@@ -84,11 +84,44 @@
             margin: 5px;
             display: inline-block;
         }
+
+        .loginField {
+            text-align: center;
+        }
+
+        .field {
+            padding: 10px;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid;
+            padding-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
+
+    <p class="loginField">
+        <label for="txtUser">شناسه:</label>
+        <input type="text" id="txtUser" class="field" />
+    </p>
+    <p class="loginField">
+        <label for="txtPass">رمز:</label>
+        <input type="password" id="txtPass" class="field" />
+    </p>
+    <p class="loginField">
+        <label for="selectItemCategory">دسته بندی مورد:</label>
+        <select id="selectItemCategory" class="field"></select>
+    </p>
+    <p class="loginField">
+        <label for="selectPropertyCategory">دسته بندی ملک:</label>
+        <select id="selectPropertyCategory" class="field"></select>
+    </p>
     <button id="sync" onclick="sync()">بروزرسانی</button>
+    <p id="status"></p>
     <div id="items">
     </div>
     <script>
@@ -216,6 +249,7 @@
             wrapper.appendChild(itemCategoryTitleElement);
             wrapper.appendChild(itemCategoryResultElement);
         }
+
         function addItemToTable(item) {
 
             const itemsElement = document.querySelectorAll("#items")[0];
@@ -264,7 +298,7 @@
             itemPropertyElement.classList.add("property");
 
             const itemPropertyTitleElement = document.createElement("b");
-            itemPropertyTitleElement.innerHTML = "ملک: ";
+            itemPropertyTitleElement.innerHTML = "مشخصات ملک: ";
             itemPropertyElement.appendChild(itemPropertyTitleElement);
 
             const itemPropertyResultElement = document.createElement("div");
@@ -291,7 +325,7 @@
                 const ownElement = document.createElement("b");
                 ownElement.classList.add("styled");
                 ownElement.classList.add("owners");
-                ownElement.textContent = value;
+                ownElement.textContent = `مالک: ${value}`;
                 ownersWrapperElement.appendChild(ownElement);
             });
             itemPropertyResultElement.appendChild(ownersWrapperElement);
@@ -330,39 +364,78 @@
     </script>
     <script>
 
-        function sync() {
-            const xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState === 4 && this.status === 200) {
+    function clearSelect(element) {
+            var i;
+            for (i = element.options.length - 1; i >= 0; i--) {
+                element.remove(i);
+            }
+    }
+    function sync() {
+        const itc = document.getElementById("selectItemCategory");
+        const prc = document.getElementById("selectPropertyCategory");
+        const user = document.getElementById("txtUser");
+        const pass = document.getElementById("txtPass");
+        if (user.value.length === 0 || pass.value.length === 0)
+            return;
 
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState === 4 && this.status === 200) {
+                if (this.responseText !== "" || this.responseText !== null) {
                     console.clear();
+
+                    const json = JSON.parse(this.responseText);
+                    console.log(json);
+
+                    const status = document.getElementById("status");
+                    status.innerHTML = json.msg;
+
+                    clearSelect(itc);
+                    const itemCategory = document.createElement("option");
+                    itemCategory.textContent = "---";
+                    itc.appendChild(itemCategory);
+                    json.itc.forEach(function(value) {
+                        const itemCat = document.createElement("option");
+                        itemCat.textContent = value;
+                        itc.appendChild(itemCat);
+                    });
+
+                    clearSelect(prc);
+                    const propertyCategory = document.createElement("option");
+                    propertyCategory.textContent = "---";
+                    prc.appendChild(propertyCategory);
+                    json.prc.forEach(function (value) {
+                        const propCat = document.createElement("option");
+                        propCat.textContent = value;
+                        prc.appendChild(propCat);
+                    });
+
                     const itemsWrapper = document.getElementById("items");
                     while (itemsWrapper.firstChild) {
                         itemsWrapper.removeChild(itemsWrapper.firstChild);
                     }
                     // Sync Data with IndexedDb
                     const openReq = indexedDB.open(databaseName);
-                    openReq.onsuccess = function (e) {
+                    openReq.onsuccess = function(e) {
                         const db = e.target.result;
                         const tx = db.transaction([itemsStoreName], "readwrite");
-                        tx.oncomplete = function (event) {
+                        tx.oncomplete = function(event) {
                             console.log("Transaction completed");
                         };
-                        tx.onerror = function (event) {
+                        tx.onerror = function(event) {
                             console.log("Transaction not opened due to error", transaction.error);
                         };
                         const objectStore = tx.objectStore(itemsStoreName);
                         const objectStoreRequest = objectStore.clear();
-                        objectStoreRequest.onsuccess = function (event) {
+                        objectStoreRequest.onsuccess = function(event) {
                             console.log("Db cleared successfully");
                         };
                     };
-                    const json = JSON.parse(this.responseText);
-                    console.log(json);
+
                     console.log('adding');
-                    json.forEach(function (currentValue) {
+                    json.itm.forEach(function(currentValue) {
                         itemsDB.readWrite([itemsStoreName],
-                            function (tx) {
+                            function(tx) {
                                 const model = {
                                     cat: currentValue.cat,
                                     prop: currentValue.prop,
@@ -372,16 +445,29 @@
                                 tx.objectStore(itemsStoreName).put(model);
                                 addItemToTable(model);
                             },
-                            function () {
+                            function() {
                                 console.log('added');
                             });
                     });
-
                 }
-            };
-            xhttp.open("GET", "{{url}}/api/sync/items", true);
-            xhttp.send();
+
+            }
+        };
+
+        xhttp.open("POST", "{{url}}/api/sync/items", true);
+        xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        var params = `user=${user.value}&pass=${pass.value}`;
+
+        if (itc.value.length > 0 && itc.value !== "---") {
+            params += `&itmCategory=${itc.value}`;
         }
+
+        if (prc.value.length > 0 && prc.value !== "---") {
+            params += `&propCategory=${prc.value}`;
+        }
+
+        xhttp.send(params);
+    }
     </script>
 </body>
 </html>

@@ -995,16 +995,16 @@ a {
     font-size: 9pt !important;
 
     &:after {
-        content: " :";
+        content: ":";
         margin-left: 5px;
+        margin-right: 5px;
     }
 }
 
-input, select {
+input, select, textarea {
     @include border-radius(0 !important);
 
     &:focus {
-        /*box-shadow: 0 0 0 0.1rem mix(transparent,$sidebarheader-color,90) !important;*/
         box-shadow: none !important;
         border-color: $input-hover !important;
     }
@@ -1025,6 +1025,12 @@ input, select {
 
 .form-control {
     font-size: 9pt !important;
+}
+
+div[class|="col"] {
+    & > .input-wrapper {
+        margin-bottom: 10px;
+    }
 }
 
 .input-wrapper {
@@ -1064,27 +1070,37 @@ input, select {
         @include border-radius(0 !important);
         height: 100%;
     }
-}
 
-.itemShow {
-    &.input-wrapper {
-        margin-bottom: 0 !important;
+    > *:first-child {
+        margin-right: 0 !important;
+    }
 
-        @media (max-width:768px) {
-            flex-wrap: wrap;
+    @media (max-width: 1095px) {
+        flex-wrap: wrap;
 
-            & > * {
-                margin-bottom: 10px !important;
-
-                &:last-child {
-                    flex-basis: 100%;
-                    margin-right: 0 !important;
-                }
+        & > * {
+            &:last-child {
+                flex-basis: 100%;
+                margin-right: 0 !important;
             }
         }
 
-        &:hover, &:focus {
-            background-color: transparent;
+        & > .control-label {
+            &:not(.full-line) {
+                flex: 0 1 35%;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                display: inline-block;
+
+                & + input, & + select, & + textarea {
+                    flex: 1 0 65%;
+                    display: inline-block;
+
+                    & + .field-validation-error {
+                        text-align: left;
+                    }
+                }
+            }
         }
     }
 }
@@ -1095,13 +1111,48 @@ input, select {
     padding: 10px;
 }
 
-.itemShow + .items {
+.itemShow {
+    &.input-wrapper {
+        margin-bottom: 0 !important;
+
+        @media (max-width: 1095px) {
+            & > * {
+                margin-bottom: 10px !important;
+
+                &:last-child {
+                    margin-bottom: 0 !important;
+                }
+            }
+        }
+
+        &:hover, &:focus {
+            background-color: transparent;
+        }
+    }
+
+    & + .items {
+        @media (max-width:768px) {
+            padding: 10px;
+        }
+    }
+}
+
+.items {
     background-color: $nav-background-color;
     padding: 7px;
-    margin-top: 10px;
 
     @media (max-width:768px) {
         padding: 10px;
+    }
+
+    &:not(:empty) {
+        margin-top: 10px;
+
+        & ~ .items {
+            &[style*="display:none"] {
+                margin-top: 0 !important;
+            }
+        }
     }
 
     > a {
@@ -1130,7 +1181,55 @@ input, select {
     }
 }
 
+textarea {
+    resize: vertical !important;
+    min-height: 85px;
+}
+
+hr {
+    + .row {
+        > div[class|="col"] {
+            > .itemShow.input-wrapper {
+                padding-top: 0px !important;
+            }
+        }
+    }
+
+    ~ .row {
+        &:not(.margin-bottomed) {
+            > div[class|="col"] {
+                > .itemShow.input-wrapper {
+                    padding-bottom: 0px !important;
+                }
+            }
+        }
+    }
+}
+
 .clearSearch {
     color: gray;
     font-size: 8pt;
+    float: left;
+    margin-left: 0 !important;
+}
+
+.search {
+    margin-bottom: 10px;
+}
+
+[for] {
+    & + [data-val-required] {
+        /*border-style: double;*/
+        /*border-width: 3px;*/
+
+        &.form-control {
+            /*background: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23ff0000' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat left 0.75rem center/8px 10px;*/
+            /*background-color: rgba(0, 0, 0, 0);*/
+        }
+        /*&:after {
+            content: "*";
+            color: red;
+            margin-right: 5px;
+        }*/
+    }
 }

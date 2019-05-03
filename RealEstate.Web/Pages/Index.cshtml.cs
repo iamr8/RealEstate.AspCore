@@ -12,14 +12,17 @@ namespace RealEstate.Web.Pages
     {
         private readonly IUserService _userService;
         private readonly IBaseService _baseService;
+        private readonly IItemService _itemService;
 
         public IndexModel(
             IUserService userService,
-            IBaseService baseService
+            IBaseService baseService,
+            IItemService itemService
             )
         {
             _userService = userService;
             _baseService = baseService;
+            _itemService = itemService;
         }
 
         [BindProperty]

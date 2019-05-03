@@ -30,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public PaginationViewModel<ItemViewModel> List { get; set; }
 
-        public string Status { get; set; }
+        public StatusEnum Status { get; set; }
 
         public string PageTitle => _localizer["Items"];
 
@@ -49,7 +49,9 @@ namespace RealEstate.Web.Pages.Manage.Item
                 PropertyCategory = propertyCategory
             };
 
-            Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;
+            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
+                ? (StatusEnum)statusInt
+                : StatusEnum.Ready;
             List = await _itemService.ItemListAsync(SearchInput).ConfigureAwait(false);
         }
 

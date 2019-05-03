@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using RealEstate.Base.Config;
+using RealEstate.Runner.Config;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -8,9 +8,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Text;
 using WindowsFirewallHelper;
 using WindowsFirewallHelper.FirewallAPIv2;
-using RealEstate.Runner.Config;
 
 namespace RealEstate.Runner
 {
@@ -25,6 +25,12 @@ namespace RealEstate.Runner
             return File.Exists(filePath);
         }
 
+        public enum Mode
+        {
+            Debug,
+            Release,
+        }
+
         public static string CheckDotNetCoreRuntimesInstalled()
         {
             var process = new System.Diagnostics.Process
@@ -37,7 +43,8 @@ namespace RealEstate.Runner
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
-                    RedirectStandardInput = true
+                    RedirectStandardInput = true,
+                    Verb = "runas"
                 }
             };
             process.Start();
@@ -68,7 +75,8 @@ namespace RealEstate.Runner
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    Verb = "runas"
                 }
             };
             var isStarted = process.Start();
@@ -128,11 +136,23 @@ namespace RealEstate.Runner
             var dir = Directory.GetCurrentDirectory();
             var path = $"{dir}\\{fileName}";
 
-            var exist = File.Exists(path);
-            var fs = File.CreateText(path);
-            fs.Write(synchronizer);
-            fs.Flush();
-            fs.Close();
+            //var exist = File.Exists(path);
+            var bytes = Encoding.UTF8.GetBytes(synchronizer);
+            using (var fs = File.Open(path, FileMode.OpenOrCreate))
+            {
+                fs.Write(bytes, 0, bytes.Length);
+                fs.Flush();
+            }
+            //            }
+            //            else
+            //            {
+            //                using (var fs = File.CreateText(path))
+            //                {
+            //                    fs.Write(synchronizer);
+            //                    fs.Flush();
+            //                }
+            //            }
+
             return path;
         }
 

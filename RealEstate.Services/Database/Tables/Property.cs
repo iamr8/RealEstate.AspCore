@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-using RealEstate.Services.BaseLog;
+using System.Text;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -36,7 +36,31 @@ namespace RealEstate.Services.Database.Tables
         public virtual Category Category { get; set; }
 
         [NotMapped]
-        public string Address => $"{Street} {Alley} {Number} {BuildingName} {Floor} {Flat}";
+        public string Address
+        {
+            get
+            {
+                var finalString = new StringBuilder();
+                finalString.Append("خیابان ").Append(Street);
+
+                if (!string.IsNullOrEmpty(Alley))
+                    finalString.Append("، ").Append("کوچه ").Append(Alley);
+
+                if (!string.IsNullOrEmpty(Number))
+                    finalString.Append("، ").Append("پلاک ").Append(Number);
+
+                if (!string.IsNullOrEmpty(BuildingName))
+                    finalString.Append("، ").Append("نام ساختمان ").Append(BuildingName);
+
+                if (Floor > 0)
+                    finalString.Append("، ").Append("طبقه ").Append(Floor);
+
+                if (Flat > 0)
+                    finalString.Append("، ").Append("واحد ").Append(Flat);
+
+                return finalString.ToString();
+            }
+        }
 
         public virtual District District { get; set; }
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }

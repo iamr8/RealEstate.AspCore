@@ -17,11 +17,11 @@ namespace RealEstate.Web.Controllers
             _itemService = itemService;
         }
 
-        [Route("items")]
-        public async Task<IActionResult> ItemsAsync()
+        [Route("items"), HttpPost]
+        public async Task<IActionResult> ItemsAsync([FromForm] string user, [FromForm] string pass, [FromForm] string itmCategory, [FromForm] string propCategory)
         {
-            var models = await _itemService.ItemListAsync().ConfigureAwait(false);
-            return new JsonResult(models);
+            var items = await _itemService.ItemListAsync(user, pass, itmCategory, propCategory).ConfigureAwait(false);
+            return new JsonResult(items);
         }
     }
 }

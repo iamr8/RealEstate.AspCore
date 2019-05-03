@@ -6,15 +6,12 @@ namespace RealEstate.Base
     public class JsonStatusViewModel
     {
         [JsonProperty("sts")]
-        public StatusEnum Status { get; set; }
+        public int StatusCode { get; set; }
+
+        [JsonProperty("msg")]
+        public string Message { get; set; }
 
         [JsonProperty("id")]
         public string Id { get; set; }
-    }
-
-    public class JsonStatusValueViewModel : JsonStatusViewModel
-    {
-        [JsonProperty("nm")]
-        public string Name { get; set; }
     }
 }

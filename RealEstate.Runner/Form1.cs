@@ -1,12 +1,12 @@
-﻿using RealEstate.Base.Config;
+﻿using RealEstate.Runner.Config;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.Text;
 using System.Windows.Forms;
-using RealEstate.Runner.Config;
 
 namespace RealEstate.Runner
 {
@@ -16,9 +16,14 @@ namespace RealEstate.Runner
         {
             InitializeComponent();
             IsAllowed(false);
+            _mode = Modules.Mode.Debug;
+            _admin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
         }
 
         private delegate void SetTextCallback(string text);
+
+        private readonly Modules.Mode _mode;
+        private readonly bool _admin;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -76,6 +81,9 @@ namespace RealEstate.Runner
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Log(_mode.ToString());
+            Log(_admin ? "Ran as Administrator" : "Not ran as Administrator");
+
             var assembliesVersion = Modules.CheckAssembliesVersion();
             foreach (var ass in assembliesVersion)
             {
@@ -244,16 +252,10 @@ namespace RealEstate.Runner
         {
             if (btnFunc.Text.Equals("Stop"))
             {
-                foreach (var process in Process.GetProcesses())
-                {
-                    if (!process.ProcessName.Contains("dotnet"))
-                        continue;
-
-                    process.Kill();
-                }
+                Program.KillDotNet();
 
                 Log("Application stopped.");
-                btnFunc.Text = "Start";
+                SetState("Start");
             }
             else if (btnFunc.Text.Equals("Start"))
             {
@@ -288,7 +290,8 @@ namespace RealEstate.Runner
                         RedirectStandardError = true,
                         RedirectStandardOutput = true,
                         WindowStyle = ProcessWindowStyle.Hidden,
-                        CreateNoWindow = true
+                        CreateNoWindow = true,
+                        Verb = "runas"
                     }
                 };
 
@@ -305,7 +308,7 @@ namespace RealEstate.Runner
                 else
                 {
                     Log("Process is preparing to run.");
-                    btnFunc.Text = "Stop";
+                    SetState("Stop");
                 }
                 Process.BeginErrorReadLine();
                 Process.BeginOutputReadLine();
@@ -315,12 +318,34 @@ namespace RealEstate.Runner
         private void Process_Exited(object sender, EventArgs e)
         {
             Log($"Application exited.");
+            Program.KillDotNet();
+            SetState("Start");
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            LogDotnet(e.Data);
-            Log($"Application got error.");
+            if (_mode == Modules.Mode.Debug)
+            {
+                Log(e.Data);
+            }
+            else
+            {
+                LogDotnet(e.Data);
+                Log($"Application got error.");
+            }
+        }
+
+        private void SetState(string text)
+        {
+            if (this.btnFunc.InvokeRequired)
+            {
+                var d = new SetTextCallback(SetState);
+                Invoke(d, text);
+            }
+            else
+            {
+                btnFunc.Text = text;
+            }
         }
 
         private void LogDotnet(string text)
@@ -338,28 +363,45 @@ namespace RealEstate.Runner
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-            LogDotnet(e.Data);
-            if (string.IsNullOrEmpty(e.Data))
+            if (_mode == Modules.Mode.Debug)
             {
-                Log("Unexpected Error when running application");
-                return;
-            }
-
-            if (e.Data.Contains("Unable to start Kestrel."))
-            {
-                Log("Unable to start Background process.");
-            }
-            else if (e.Data.Contains("http://*:5566 is already in use."))
-            {
-                Log("Failed to bind to address http://[::]:5566: address already in use.");
-            }
-            else if (e.Data.Contains("Application started. Press Ctrl+C to shut down."))
-            {
-                Log("Application running successfully.");
-                if (string.IsNullOrEmpty(Url))
+                Log(e.Data);
+                if (e.Data?.Contains("Unable to start Kestrel.") == true)
+                {
+                    Log("Unable to start Application.");
+                    Program.KillDotNet();
+                    SetState("Stop");
                     return;
+                }
 
-                Process.Start(new ProcessStartInfo(Url));
+                if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") == true)
+                {
+                    Log("Application running successfully.");
+                    if (string.IsNullOrEmpty(Url))
+                        return;
+
+                    Process.Start(new ProcessStartInfo(Url));
+                }
+            }
+            else
+            {
+                LogDotnet(e.Data);
+                if (e.Data?.Contains("Unable to start Kestrel.") == true)
+                {
+                    Log("Unable to start Background process.");
+                }
+                else if (e.Data?.Contains("http://*:5566 is already in use.") == true)
+                {
+                    Log("Failed to bind to address http://[::]:5566: address already in use.");
+                }
+                else if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") == true)
+                {
+                    Log("Application running successfully.");
+                    if (string.IsNullOrEmpty(Url))
+                        return;
+
+                    Process.Start(new ProcessStartInfo(Url));
+                }
             }
         }
     }

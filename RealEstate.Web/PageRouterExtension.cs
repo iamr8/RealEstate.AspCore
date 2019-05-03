@@ -1,45 +1,40 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace RealEstate.Web
 {
     public static class PageRouterExtension
     {
-        private static string Manage => nameof(RealEstate.Web.Pages.Manage);
-
-        private static string FixPageModelName(this MemberInfo page)
-        {
-            return page.Name.Replace("Model", "");
-        }
-
-        public static string Page(this Type pageType)
+        public static string[] Namespaces(this Type pageType)
         {
             var nameSpace = pageType?.Namespace;
             if (string.IsNullOrEmpty(nameSpace))
                 throw new Exception("Namespace must be not null or empty");
 
             var splitByDots = nameSpace.Split('.');
-            if (!splitByDots.Any())
-                throw new Exception("Splitted Namespace must be not empty");
+            return splitByDots;
+        }
 
-            foreach (var text in splitByDots)
+        public static string Page(this Type pageType)
+        {
+            var namespaces = pageType.Namespaces();
+            var manageNamespace = new List<string>();
+            var crossed = false;
+            foreach (var text in namespaces)
             {
-                if (text != Manage)
-                    continue;
+                if (text == nameof(RealEstate.Web.Pages.Manage))
+                    crossed = true;
 
-                var indexInString = nameSpace.IndexOf(text, StringComparison.Ordinal);
-                nameSpace = nameSpace.Substring(indexInString);
-                break;
+                if (crossed)
+                    manageNamespace.Add(text);
             }
 
             var address = "/";
-            splitByDots = nameSpace.Split('.');
-            if (splitByDots.Length > 0)
-                address = splitByDots.Aggregate(address, (current, text) => current + $"{text}/");
+            if (manageNamespace.Count > 0)
+                address = manageNamespace.Aggregate(address, (current, text) => current + $"{text}/");
 
-            address += pageType.FixPageModelName();
+            address += pageType.Name.Replace("Model", "");
             return address;
         }
     }
