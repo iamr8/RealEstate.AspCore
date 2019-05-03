@@ -1537,6 +1537,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to موبایل مالک.
+        /// </summary>
+        public static string OwnerMobile {
+            get {
+                return ResourceManager.GetString("OwnerMobile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مالک انتخاب نشده است..
         /// </summary>
         public static string OwnerNotSelected {
@@ -1992,6 +2001,15 @@ namespace RealEstate.Resources {
         public static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to نمایش حذف شده ها.
+        /// </summary>
+        public static string ShowDeletedItems {
+            get {
+                return ResourceManager.GetString("ShowDeletedItems", resourceCulture);
             }
         }
         

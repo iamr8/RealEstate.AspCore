@@ -1,4 +1,4 @@
-﻿using RealEstate.Runner.Config;
+﻿using RealEstate.Configuration;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -18,12 +18,14 @@ namespace RealEstate.Runner
             IsAllowed(false);
             _mode = Modules.Mode.Debug;
             _admin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
+            _configuration = Assembly.GetEntryAssembly().ReadConfiguration();
         }
 
         private delegate void SetTextCallback(string text);
 
         private readonly Modules.Mode _mode;
         private readonly bool _admin;
+        private readonly R8Config _configuration;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -100,8 +102,7 @@ namespace RealEstate.Runner
                 }
             }
 
-            var checkConfig = Modules.CheckConfigFile();
-            if (checkConfig)
+            if (_configuration != null)
             {
                 Log("Configuration found.");
                 IsAllowed(true);
@@ -113,13 +114,12 @@ namespace RealEstate.Runner
                 return;
             }
 
-            var config = Reader.Read();
-            if (config != null && !string.IsNullOrEmpty(config.DbPath))
+            if (!string.IsNullOrEmpty(_configuration.DbPath))
             {
-                var file = File.Exists(config.DbPath);
+                var file = File.Exists(_configuration.DbPath);
                 if (file)
                 {
-                    Log($"Database path: {config.DbPath}");
+                    Log($"Database path: {_configuration.DbPath}");
                     IsAllowed(true);
                 }
                 else

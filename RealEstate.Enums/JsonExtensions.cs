@@ -57,7 +57,7 @@ namespace RealEstate.Base
             var itemIndicator = 0;
             foreach (var item in jsons)
             {
-                var itemProps = item.GetProperties();
+                var itemProps = item.GetPublicProperties();
                 if (itemProps == null || itemProps.Count <= 0)
                     continue;
 
@@ -65,9 +65,9 @@ namespace RealEstate.Base
                 var propertyIndicator = 0;
 
                 var oneProperty = modelType.GetProperties().Length == 1;
-                foreach (var (propKey, propValue) in itemProps)
+                foreach (var prop in itemProps)
                 {
-                    var prop = modelType.GetProperty(propKey);
+                    var propValue = prop.GetValue(item);
                     var key = prop.GetJsonProperty();
 
                     if (oneProperty)

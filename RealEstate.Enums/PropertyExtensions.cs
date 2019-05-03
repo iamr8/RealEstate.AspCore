@@ -44,20 +44,29 @@ namespace RealEstate.Base
             public object Value { get; set; }
         }
 
+        public static SearchParameterAttribute GetSearchParameter(this PropertyInfo property)
+        {
+            if (property == null)
+                return default;
+
+            var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
+            if (searchParameterAttribute == null)
+                return default;
+
+            return searchParameterAttribute;
+        }
+
         public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : BaseSearchModel
         {
             var routeValues = new Dictionary<string, object>();
-            var properties = model.GetProperties();
-            if (properties?.Any(x => x.Value != null) != true)
+            var properties = model.GetPublicProperties().Where(x => x.GetValue(model) != null).ToList();
+            if (properties?.Any() != true)
                 return default;
 
-            foreach (var (searchKey, searchValue) in properties.Where(x => x.Value != null))
+            foreach (var property in properties)
             {
-                var property = model.GetProperty(searchKey);
-                if (property == null)
-                    continue;
-
-                var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
+                var value = property.GetValue(model).ToString();
+                var searchParameterAttribute = property.GetSearchParameter();
                 if (searchParameterAttribute == null)
                     continue;
 
@@ -68,12 +77,15 @@ namespace RealEstate.Base
                 var searchParameterType = searchParameterAttribute.Type;
                 if (searchParameterType != null)
                 {
-                    var encodeJson = searchValue.ToString().EncodeJson(searchParameterType);
+                    if (property.PropertyType != typeof(string))
+                        continue;
+
+                    var encodeJson = value.EncodeJson(searchParameterType);
                     routeValues.Add(searchParameter, encodeJson);
                 }
                 else
                 {
-                    routeValues.Add(searchParameter, searchValue);
+                    routeValues.Add(searchParameter, value);
                 }
             }
 
@@ -124,23 +136,14 @@ namespace RealEstate.Base
             return propertyInfo?.GetCustomAttributes(false);
         }
 
-        public static ParameterInfo[] GetParameters(this MethodInfo method)
+        public static List<PropertyInfo> GetPublicProperties(this Type modelType)
         {
-            var retVal = method.GetParameters();
-            return retVal;
+            return modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
         }
 
-        public static MethodInfo GetMethodInfo(this Type parentType, string methodName)
+        public static List<PropertyInfo> GetPublicProperties<TModel>(this TModel model) where TModel : class
         {
-            var methodInfo = parentType.GetMethod(methodName);
-            return methodInfo;
-        }
-
-        public static Dictionary<string, object> GetProperties<TModel>(this TModel model) where TModel : class
-        {
-            return model.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(propertyInfo => propertyInfo.Name, propertyInfo => propertyInfo.GetValue(model, null));
+            return model.GetType().GetPublicProperties();
         }
 
         public static PropertyInfo GetProperty<TModel>(this TModel model, string propertyName) where TModel : class

@@ -1,7 +1,5 @@
 ﻿using Microsoft.Win32;
-using RealEstate.Runner.Config;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,15 +14,6 @@ namespace RealEstate.Runner
 {
     public static class Modules
     {
-        public static bool CheckConfigFile()
-        {
-            var path = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            const string fileName = "config.inf";
-
-            var filePath = $"{path}\\{fileName}";
-            return File.Exists(filePath);
-        }
-
         public enum Mode
         {
             Debug,
@@ -161,23 +150,6 @@ namespace RealEstate.Runner
             var assembly = Assembly.LoadFrom(filePath);
             var ver = assembly.GetName().Version;
             return ver.ToString();
-        }
-
-        public static SqlConnection GetLocalDb()
-        {
-            var connectionString =
-                "Data Source=(localdb)\\MSSQLLocalDB;AttachDbFilename={{CFG}};Initial Catalog=RealEstateDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=true;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;MultipleActiveResultSets=true";
-            if (connectionString.Contains("{{CFG}}"))
-            {
-                var config = Reader.Read();
-                if (config == null)
-                    return null;
-
-                connectionString = connectionString.Replace("{{CFG}}", config.DbPath);
-            }
-            var connection = new SqlConnection(connectionString);
-            connection.Open();
-            return connection;
         }
 
         public static Dictionary<string, bool> CheckAssembliesVersion()

@@ -954,4 +954,10 @@
   <data name="New" xml:space="preserve">
     <value>جدید</value>
   </data>
+  <data name="ShowDeletedItems" xml:space="preserve">
+    <value>نمایش حذف شده ها</value>
+  </data>
+  <data name="OwnerMobile" xml:space="preserve">
+    <value>موبایل مالک</value>
+  </data>
 </root>

@@ -34,19 +34,23 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public string PageTitle => _localizer["Items"];
 
-        public async Task OnGetAsync(string pageNo, string status, string id, string itemAddress, string itemCategory, string ownerName, string customerId, string features, string facilities, string propertyCategory)
+        public async Task OnGetAsync(string pageNo, string status, string id, string street, string itemCategory, string ownerName, string customerId,
+            string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile)
         {
             SearchInput = new ItemSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
-                Address = itemAddress,
+                Street = street,
                 ItemCategory = itemCategory,
                 Owner = ownerName,
                 ItemId = id,
                 CustomerId = customerId,
                 FeaturesJson = features,
                 FacilitiesJson = facilities,
-                PropertyCategory = propertyCategory
+                PropertyCategory = propertyCategory,
+                District = district,
+                IncludeDeletedItems = deleted,
+                OwnerMobile = ownerMobile
             };
 
             Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)

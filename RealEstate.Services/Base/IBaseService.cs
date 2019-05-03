@@ -387,27 +387,35 @@ namespace RealEstate.Services.Base
             if (entity == null)
                 return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
 
-            var tempEntityBeforeChanges = entity.GetProperties();
+            var oldEntity = entity;
+            var oldProperties = oldEntity.GetPublicProperties();
             changes.Invoke(currentUser);
-            var tempEntityAfterChanges = entity.GetProperties();
+            var newProperties = entity.GetPublicProperties();
 
             var changesIndicator = 0;
-            if (tempEntityBeforeChanges?.Any() == true)
+            if (oldProperties?.Any() == true)
             {
-                var needTypes = tempEntityAfterChanges
-                    .Where(x => x.Value is string
-                                || x.Value is int
-                                || x.Value is decimal
-                                || x.Value is double
-                                || x.Value is IPoint
-                                || x.Value is DateTime
-                                || x.Value is Enum)
-                    .Where(x => x.Key != nameof(entity.Id))
+                var neededProperties = newProperties?
+                    .Where(x => x.PropertyType == typeof(string)
+                                || x.PropertyType == typeof(int)
+                                || x.PropertyType == typeof(decimal)
+                                || x.PropertyType == typeof(double)
+                                || x.PropertyType == typeof(IPoint)
+                                || x.PropertyType == typeof(DateTime)
+                                || x.PropertyType == typeof(Enum))
+                    .Where(x => x.Name != nameof(entity.Id))
                     .ToList();
-                foreach (var (keyAfterChanges, valueAfterChanges) in needTypes)
+                if (neededProperties?.Any() != true)
+                    return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
+
+                foreach (var newProperty in neededProperties)
                 {
-                    var propertyBeforeChanges = tempEntityBeforeChanges.FirstOrDefault(x => x.Key == keyAfterChanges);
-                    if (!propertyBeforeChanges.Value?.Equals(valueAfterChanges) == true)
+                    var oldProperty = oldProperties.Find(x => x.Name == newProperty.Name);
+
+                    var oldValue = oldProperty.GetValue(oldEntity);
+                    var newValue = newProperty.GetValue(entity);
+
+                    if (oldValue?.Equals(newValue) == false)
                         changesIndicator++;
                 }
             }

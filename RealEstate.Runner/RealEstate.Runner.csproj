@@ -88,8 +88,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config\Configuration.cs" />
-    <Compile Include="Config\Reader.cs" />
     <Compile Include="ConsoleWriter.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
@@ -149,6 +147,12 @@
     <Content Include="config.inf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RealEstate.Configuration\RealEstate.Configuration.csproj">
+      <Project>{8f8d2299-bf7b-4266-9add-fa15ba085c71}</Project>
+      <Name>RealEstate.Configuration</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

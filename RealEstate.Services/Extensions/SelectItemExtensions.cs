@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using RealEstate.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using RealEstate.Base;
 
 namespace RealEstate.Services.Extensions
 {
@@ -10,11 +10,22 @@ namespace RealEstate.Services.Extensions
     {
         public static List<SelectListItem> AddNone(this IEnumerable<SelectListItem> selectList)
         {
-            return selectList.Prepend(new SelectListItem
+            if (selectList?.Any() == true)
             {
-                Value = string.Empty,
-                Text = "---"
-            }).ToList();
+                return selectList.Prepend(new SelectListItem
+                {
+                    Value = string.Empty,
+                    Text = "---"
+                }).ToList();
+            }
+            return new List<SelectListItem>
+            {
+                new SelectListItem
+                {
+                    Value = string.Empty,
+                    Text = "---"
+                }
+            };
         }
 
         public static List<SelectListItem> ToSelectList<TEnum>(TEnum defaultValue, Func<TEnum, bool> predicate) where TEnum : Enum

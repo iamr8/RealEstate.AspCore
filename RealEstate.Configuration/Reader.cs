@@ -1,29 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using RealEstate.Base.Config;
 
-namespace RealEstate.Runner.Config
+namespace RealEstate.Configuration
 {
     public static class Reader
     {
-        public static Configuration Read()
+        public static R8Config ReadConfiguration(this Assembly assembly)
         {
-            var dir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            if (assembly == null)
+                return default;
+
+            var dir = Path.GetDirectoryName(assembly.Location);
             const string cfgFile = "config.inf";
 
             var cfg = File.ReadAllLines($"{dir}\\{cfgFile}");
             if (cfg?.Any() != true)
                 return default;
 
-            var model = new Configuration();
-            var dic = model.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary(propertyInfo => propertyInfo.Name, propertyInfo => propertyInfo.GetValue(model, null));
+            var model = new R8Config();
+            var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
 
-            var startIndicator = 0;
             foreach (var line in cfg)
             {
                 var splitter = line.Split(new[]
@@ -34,11 +32,13 @@ namespace RealEstate.Runner.Config
                     continue;
 
                 var key = splitter[0];
-                var prop = dic.FirstOrDefault(x => x.Key == key);
-                if (EqualityComparer<KeyValuePair<string, object>>.Default.Equals(prop, default))
-                    return default;
+                var property = properties.Find(x => x.Name == key);
+                if (property == null)
+                    continue;
 
+                var startIndicator = 0;
                 if (splitter[1].StartsWith(" "))
+                {
                     foreach (var val in splitter[1])
                     {
                         if (val != ' ')
@@ -46,15 +46,10 @@ namespace RealEstate.Runner.Config
 
                         startIndicator++;
                     }
+                }
 
                 var value = splitter[1].Substring(startIndicator);
-
-                var type = model.GetType();
-                var propType = type.GetProperty(prop.Key);
-                if (propType == null)
-                    continue;
-
-                propType.SetValue(model, value);
+                property.SetValue(model, value);
             }
 
             return model;

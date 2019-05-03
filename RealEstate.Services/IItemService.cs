@@ -285,15 +285,41 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<ItemViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
             var query = from item in _items
                         let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
                         let lastRequest = requests.FirstOrDefault()
                         where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+                        let category = item.Category
+                        let property = item.Property
+                        let propertyCategory = property.Category
+                        where category.UserItemCategories.Any(userItemCategory =>
+                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == category.Id)
+                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
+                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
                         select item;
 
             if (searchModel != null)
             {
-                query = query.SearchBy(searchModel.Address, x => x.Property.Address);
+                if (!searchModel.IncludeDeletedItems || !hasPrevillege)
+                    query = query.WhereNotDeleted();
+
+                if (!string.IsNullOrEmpty(searchModel.Owner))
+                    query = query.Where(x =>
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.LikeExpression()))));
+
+                if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
+                    query = query.Where(x =>
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.LikeExpression()))));
+
+                if (!string.IsNullOrEmpty(searchModel.Street))
+                    query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.LikeExpression()));
+
                 query = query.SearchBy(searchModel.ItemId, x => x.Id);
 
                 if (!string.IsNullOrEmpty(searchModel.ItemCategory))
@@ -306,6 +332,11 @@ namespace RealEstate.Services
                 {
                     query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
                                              || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
+                }
+
+                if (!string.IsNullOrEmpty(searchModel.District))
+                {
+                    query = query.Where(x => x.Property.District.Name == searchModel.District);
                 }
 
                 if (searchModel.Facilities?.Any() == true)

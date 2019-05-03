@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.1186</AssemblyVersion>
-    <FileVersion>1.0.0.1186</FileVersion>
+    <AssemblyVersion>1.0.0.1201</AssemblyVersion>
+    <FileVersion>1.0.0.1201</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -68,6 +68,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\RealEstate.Configuration\RealEstate.Configuration.csproj" />
     <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
   </ItemGroup>

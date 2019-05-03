@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using RealEstate.Base;
-using RealEstate.Base.Config;
+using RealEstate.Configuration;
 using RealEstate.Resources;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
@@ -46,7 +46,7 @@ namespace RealEstate.Web
             if (connectionStrings.Contains("{{CFG}}"))
             {
                 // D:\\RSDB\\RSDB.mdf
-                var config = Reader.Read();
+                var config = Assembly.GetEntryAssembly().ReadConfiguration();
                 if (config == null)
                     return;
 
@@ -104,7 +104,7 @@ namespace RealEstate.Web
 
             services.AddElmah(options =>
             {
-//                options.CheckPermissionAction = context => context.User.Identity.IsAuthenticated;
+                //                options.CheckPermissionAction = context => context.User.Identity.IsAuthenticated;
                 options.ConnectionString = connectionStrings;
             });
             services.AddSingleton<LocalizationService>();

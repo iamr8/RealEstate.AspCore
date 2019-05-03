@@ -1,6 +1,13 @@
 ﻿@page
 @model IndexModel
 @{
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districtsSelect = districts?.Select(x => new SelectListItem
+    {
+        Text = x.Name,
+        Value = x.Name
+    }).AddNone();
+
     var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item, FeatureTypeEnum.Property).ConfigureAwait(false);
     var featuresSelect = features?.Select(x => new SelectListItem
     {
@@ -30,6 +37,8 @@
         Text = x.Name,
         Selected = Model.SearchInput?.PropertyCategory == x.Name
     }).ToList()).AddNone();
+
+    var condition = Model.SearchInput.IsUnderCondition();
 }
 <div class="col-12">
     <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
@@ -52,7 +61,7 @@
                                     @SharedLocalizer["ClearSearch"]
                                 </a>
                             </div>
-                            <div id="search" class="collapse">
+                            <div id="search" class="collapse @(condition ? "show" : "")">
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
@@ -64,11 +73,24 @@
                                         </div>
                                         <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Address"></label>
-                                                <input asp-for="SearchInput.Address" class="form-control" />
+                                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
+                                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.District"></label>
+                                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Street"></label>
+                                                <input asp-for="SearchInput.Street" class="form-control" />
                                             </div>
                                         </div>
                                     </div>
+                                    <hr />
                                     <div class="row justify-content-center align-items-center">
                                         <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
@@ -120,6 +142,16 @@
                                     }
                                     <hr />
                                     <div class="row justify-content-center align-items-center">
+                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                                        {
+                                            <div class="col-12">
+                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
+                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
+                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
+                                                </div>
+                                            </div>
+                                        }
+
                                         <div class="col-12">
                                             <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
                                         </div>
@@ -141,69 +173,66 @@
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
+                                <ul class="info-breadcrumb">
+                                    <li>
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@item.Category.Name">@item.Category.Name</a>
+                                    </li>
+                                    <li>
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property.Category.Name">
+                                            @item.Property.Category.Name
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property.District.Name">
+                                            @item.Property.District.Name
+                                        </a>
+                                    </li>
+                                </ul>
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property.Id" target="_blank">
-                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.Property.District.Id" target="_blank">@item.Property.District.Name</a> &mdash;
-                                        @if (!string.IsNullOrEmpty(item.Property.Street))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.Property.Street<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.Property.Alley))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Alley"]: </span>@item.Property.Alley<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.Property.Number))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["BuildingNumber"]: </span>@item.Property.Number<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.Property.BuildingName))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["BuildingName"]: </span>@item.Property.BuildingName<text> &mdash; </text>
-                                        }
-                                        @if (item.Property.Floor > 0)
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Floor"]: </span>@item.Property.Floor<text> &mdash; </text>
-                                        }
-                                        @if (item.Property.Flat > 0)
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Flat"]: </span>@item.Property.Flat
-                                        }
-                                    </a>
-                                    <span class="badge badge-danger">@item.Category?.Name</span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank">@item.Property.Address</a>
                                 </span>
-                                @if (item.Property.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                @if (item.Property.PropertyFacilities?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var ownership in item.Property.CurrentPropertyOwnership.Ownerships)
-                                        {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
-                                        }
+                                        @SharedLocalizer["PropertyFacilities"] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var feature in item.Property.PropertyFacilities)
+                                            {
+                                                <text>
+                                                    <li>@feature.Facility?.Name</li>
+                                                </text>
+                                            }
+                                        </ul>
                                     </span>
-                                }
 
+                                }
+                                @if (item.Property.PropertyFeatures?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer["PropertyFeatures"] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var feature in item.Property.PropertyFeatures)
+                                            {
+                                                <text>
+                                                    <li>@feature.Feature?.Name &mdash; @feature.Value @feature.Feature?.Name.Postfix()</li>
+                                                </text>
+                                            }
+                                        </ul>
+                                    </span>
+
+                                }
                                 @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var feature in item.ItemFeatures)
-                                        {
-                                            string postfix;
-                                            if (feature.Feature.Name.Contains("قیمت"))
+                                        @SharedLocalizer["ItemFeatures"] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var feature in item.ItemFeatures)
                                             {
-                                                postfix = " تومان";
+                                                <text>
+                                                    <li>@feature.Feature?.Name &mdash; @feature.Value @feature.Feature?.Name.Postfix()</li>
+                                                </text>
                                             }
-                                            else if (feature.Feature.Name.Equals("متراژ"))
-                                            {
-                                                postfix = " متر";
-                                            }
-                                            else
-                                            {
-                                                postfix = null;
-                                            }
-                                            <text>
-                                                <span class="badge badge-secondary">@feature.Feature?.Name &mdash; @feature.Value @postfix</span>
-                                            </text>
-                                        }
+                                        </ul>
                                     </span>
 
                                 }
@@ -221,7 +250,8 @@
                                     }*@
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>

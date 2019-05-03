@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Web", "RealEstat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstate.Runner", "RealEstate.Runner\RealEstate.Runner.csproj", "{51A6D247-3050-4780-883F-036D25D79582}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstate.Configuration", "RealEstate.Configuration\RealEstate.Configuration.csproj", "{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{51A6D247-3050-4780-883F-036D25D79582}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51A6D247-3050-4780-883F-036D25D79582}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51A6D247-3050-4780-883F-036D25D79582}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
