@@ -16,7 +16,7 @@ namespace RealEstate.Runner
         {
             InitializeComponent();
             IsAllowed(false);
-            _mode = Modules.Mode.Debug;
+            _mode = Modules.Mode.Release;
             _admin = new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
             _configuration = Assembly.GetEntryAssembly().ReadConfiguration();
         }
@@ -100,18 +100,6 @@ namespace RealEstate.Runner
                     IsAllowed(false);
                     return;
                 }
-            }
-
-            if (_configuration != null)
-            {
-                Log("Configuration found.");
-                IsAllowed(true);
-            }
-            else
-            {
-                Log("Unable to find configuration file.");
-                IsAllowed(false);
-                return;
             }
 
             if (!string.IsNullOrEmpty(_configuration.DbPath))
@@ -204,14 +192,7 @@ namespace RealEstate.Runner
                 Log("Instance not found or not valid.");
 
                 var instanceDeleted = Modules.DbInstance("d", "LocalDB instance \"MSSQLLocalDB\" deleted.");
-                if (instanceDeleted)
-                {
-                    Log("Tried to delete former instance.");
-                }
-                else
-                {
-                    Log("Unable to delete former instance");
-                }
+                Log(instanceDeleted ? "Tried to delete former instance." : "Unable to delete former instance");
 
                 var instanceCreated = Modules.DbInstance("c", "LocalDB instance \"MSSQLLocalDB\" created with");
                 if (instanceCreated)
@@ -245,8 +226,8 @@ namespace RealEstate.Runner
         private string Url { get; set; }
         private const ushort Port = 5566;
         private const string Prefix = "RealEstate";
-        private string MainAssembly => $"{Prefix}.Web";
-        private string MainAssemblyFile => $"{MainAssembly}.dll";
+        private static string MainAssembly => $"{Prefix}.Web";
+        private static string MainAssemblyFile => $"{MainAssembly}.dll";
 
         private void button1_Click(object sender, EventArgs e)
         {

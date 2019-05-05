@@ -72,7 +72,7 @@ namespace RealEstate.Services
                         let requests = user.Employee.EmployeeStatuses.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
                         let lastRequest = requests.FirstOrDefault()
                         where !requests.Any() || lastRequest.Status == EmployeeStatusEnum.Start
-                        where user.Username != "admin"
+                        where !user.Username.Equals("admin", StringComparison.CurrentCultureIgnoreCase)
                         select user;
             var models = await query.ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
@@ -121,12 +121,12 @@ namespace RealEstate.Services
                 Username = viewModel.Username,
                 UserItemCategories = viewModel.UserItemCategories?.Select(x => new UserItemCategoryJsonViewModel
                 {
-                    Id = x.Id,
+                    CategoryId = x.Category?.Id,
                     Name = x.Category?.Name
                 }).ToList(),
                 UserPropertyCategories = viewModel.UserPropertyCategories?.Select(x => new UserPropertyCategoryJsonViewModel
                 {
-                    Id = x.Id,
+                    CategoryId = x.Category?.Id,
                     Name = x.Category?.Name
                 }).ToList(),
                 //                FixedSalary = viewModel.FixedSalaries?.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
@@ -138,15 +138,32 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
         {
-            var models = _users.AsQueryable();
-            models = models.SearchBy(searchModel?.Role, x => x.Role);
-            models = models.SearchBy(searchModel?.UserId, x => x.Id);
-            models = models.SearchBy(searchModel?.Username, x => x.Username);
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<UserViewModel>();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _users.AsQueryable();
+            if (searchModel != null)
+            {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
+                if (searchModel.Role != null)
+                    query = query.Where(x => x.Role == searchModel.Role);
+
+                if (!string.IsNullOrEmpty(searchModel.UserId))
+                    query = query.Where(x => x.Id == searchModel.UserId);
+
+                if (!string.IsNullOrEmpty(searchModel.Username))
+                    query = query.Where(x => EF.Functions.Like(x.Username, searchModel.Username.Like()));
+            }
+
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<User, UserViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
-                    act.GetEmployee();
+                    act.GetEmployee(true);
                     act.GetUserItemCategories(false, act2 => act2.GetCategory());
                     act.GetUserPropertyCategories(false, act2 => act2.GetCategory());
                 })).ConfigureAwait(false);
@@ -170,18 +187,27 @@ namespace RealEstate.Services
             if (model.IsNew)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.IdIsNull, null);
 
+            var user = _baseService.CurrentUser();
+            if (user == null)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.UserIsNull, null);
+
             var entity = await EntityAsync(model.Id, null).ConfigureAwait(false);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 currentUser =>
                 {
-                    entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
-                    if (currentUser.Id != entity.Id) entity.Role = model.Role;
-                }, new[]
-                {
-                    Role.SuperAdmin
-                }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+                    if (!string.IsNullOrEmpty(model.Password))
+                        entity.Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption);
 
-            await SyncAsync(updatedUser, model, false).ConfigureAwait(false);
+                    if (user.Role == Role.SuperAdmin && currentUser.Id != entity.Id)
+                        entity.Role = model.Role;
+                },
+                null,
+                false,
+                StatusEnum.UserIsNull).ConfigureAwait(false);
+
+            if (user.Role == Role.SuperAdmin)
+                await SyncAsync(updatedUser, model, false).ConfigureAwait(false);
+
             return await _baseService.SaveChangesAsync(updatedUser, save).ConfigureAwait(false);
         }
 
@@ -193,9 +219,9 @@ namespace RealEstate.Services
                 (itemCategory, currentUser) => new UserItemCategory
                 {
                     UserId = user.Id,
-                    CategoryId = itemCategory.Id
+                    CategoryId = itemCategory.CategoryId
                 },
-                (inDb, inModel) => inDb.CategoryId == inModel.Id,
+                (inDb, inModel) => inDb.CategoryId == inModel.CategoryId,
                 null,
                 false).ConfigureAwait(false);
 
@@ -205,9 +231,9 @@ namespace RealEstate.Services
                 (propertyCategory, currentUser) => new UserPropertyCategory
                 {
                     UserId = user.Id,
-                    CategoryId = propertyCategory.Id
+                    CategoryId = propertyCategory.CategoryId
                 },
-                (inDb, inModel) => inDb.CategoryId == inModel.Id,
+                (inDb, inModel) => inDb.CategoryId == inModel.CategoryId,
                 null,
                 false).ConfigureAwait(false);
 
@@ -224,10 +250,17 @@ namespace RealEstate.Services
 
         public async Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save)
         {
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.UserIsNull, null);
+
+            if (currentUser.Role != Role.SuperAdmin)
+                return new ValueTuple<StatusEnum, User>(StatusEnum.Forbidden, null);
+
             if (model == null)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
 
-            var existing = await _users.AnyAsync(x => x.Username == model.Username).ConfigureAwait(false);
+            var existing = await _users.AnyAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase)).ConfigureAwait(false);
             if (existing)
                 return new ValueTuple<StatusEnum, User>(StatusEnum.AlreadyExists, null);
 
@@ -235,7 +268,8 @@ namespace RealEstate.Services
             {
                 Username = model.Username,
                 Password = model.Password.Cipher(CryptologyExtension.CypherMode.Encryption),
-                EmployeeId = model.EmployeeId
+                EmployeeId = model.EmployeeId,
+                Role = model.Role
             }, new[]
             {
                 Role.SuperAdmin
@@ -255,6 +289,7 @@ namespace RealEstate.Services
                                    where user.Username == currentUser.Username
                                    where user.Password == currentUser.EncryptedPassword
                                    where user.EmployeeId == currentUser.EmployeeId
+                                   where user.Role == currentUser.Role
                                    select user).FirstOrDefaultAsync().ConfigureAwait(false);
             return foundUser != null;
         }
@@ -264,8 +299,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(userId))
                 return StatusEnum.ParamIsNull;
 
-            var user = await EntityAsync(userId).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _users.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == userId).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin
@@ -285,7 +320,7 @@ namespace RealEstate.Services
         public async Task<StatusEnum> SignInAsync(UserLoginViewModel model)
         {
             var userDb = await _users.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.Username == model.Username)
+                .FirstOrDefaultAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase))
                 .ConfigureAwait(false);
             if (userDb == null) return StatusEnum.UserNotFound;
             try
@@ -306,19 +341,19 @@ namespace RealEstate.Services
             if (employee == null)
                 return StatusEnum.EmployeeIsNull;
 
-            var itemCategoriesJson = userDb.UserItemCategories?.JsonConversion(category => new CategoryJsonViewModel
+            var itemCategoriesJson = userDb.UserItemCategories?.WhereNotDeleted()?.JsonConversion(category => new CategoryJsonViewModel
             {
-                Id = category.Id,
+                CategoryId = category.Category?.Id,
                 Name = category.Category?.Name,
             });
-            var propertyCategoriesJson = userDb.UserPropertyCategories?.JsonConversion(category => new CategoryJsonViewModel
+            var propertyCategoriesJson = userDb.UserPropertyCategories?.WhereNotDeleted()?.JsonConversion(category => new CategoryJsonViewModel
             {
-                Id = category.Id,
+                CategoryId = category.Category?.Id,
                 Name = category.Category?.Name
             });
             var employeeDivisionsJson = userDb.Employee?.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
             {
-                Id = division.Id,
+                DivisionId = division.Division?.Id,
                 Name = division.Division?.Name
             });
             var claims = new List<Claim>

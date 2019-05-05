@@ -30,6 +30,8 @@ namespace RealEstate.Services
 
         Task<Facility> FacilityEntityAsync(string id);
 
+        Task<List<CategoryViewModel>> CategoryListAsync();
+
         Task<(StatusEnum, Feature)> FeatureAddAsync(FeatureInputViewModel model, bool save);
 
         Task<(StatusEnum, Facility)> FacilityAddAsync(FacilityInputViewModel model, bool save);
@@ -190,8 +192,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await FacilityEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _facilities.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -208,8 +210,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await FeatureEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _features.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -226,8 +228,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await CategoryEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _categories.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -369,15 +371,27 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel)
         {
-            var models = _features.AsQueryable();
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<FeatureViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _features.AsQueryable();
 
             if (searchModel != null)
             {
-                models = models.SearchBy(searchModel.Name, x => x.Name);
-                models = models.SearchBy(searchModel.Type, x => x.Type);
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
+                if (!string.IsNullOrEmpty(searchModel.Name))
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
+
+                if (searchModel.Type != null)
+                    query = query.Where(x => x.Type == searchModel.Type);
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Feature, FeatureViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
@@ -386,15 +400,23 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel)
         {
-            var models = _facilities as IQueryable<Facility>;
-            models = models.Include(x => x.PropertyFacilities);
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<FacilityViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _facilities.AsQueryable();
 
             if (searchModel != null)
             {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
                 if (!string.IsNullOrEmpty(searchModel.Name))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
             }
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Facility, FacilityViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
@@ -441,33 +463,45 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
         {
-            var models = _categories as IQueryable<Category>;
-            models = models.Include(x => x.Properties);
-            models = models.Include(x => x.UserItemCategories);
-            models = models.Include(x => x.UserPropertyCategories);
-            models = models.Include(x => x.Items);
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<CategoryViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _categories.AsQueryable();
 
             if (searchModel != null)
             {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
                 if (!string.IsNullOrEmpty(searchModel.Name))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Id))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Id.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Id.Like()));
 
                 if (searchModel.Type != null)
-                    models = models.Where(x => x.Type == searchModel.Type);
+                    query = query.Where(x => x.Type == searchModel.Type);
             }
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Category, CategoryViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
             return result;
         }
 
+        public async Task<List<CategoryViewModel>> CategoryListAsync()
+        {
+            var query = _categories.IgnoreQueryFilters();
+            var categories = await query.ToListAsync().ConfigureAwait(false);
+            return categories.Into<Category, CategoryViewModel>();
+        }
+
         public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege)
         {
-            var query = _categories as IQueryable<Category>;
+            var query = _categories.AsQueryable();
             query = query.WhereNotDeleted();
 
             if (category != null)
@@ -482,12 +516,12 @@ namespace RealEstate.Services
                     switch (category)
                     {
                         case CategoryTypeEnum.Property:
-                            query = query.Where(x => x.UserPropertyCategories.Any(c => c.UserId == user.Id));
+                            query = query.Where(x => user.UserPropertyCategories.Any(c => c.CategoryId == x.Id));
                             break;
 
                         case CategoryTypeEnum.Item:
                         default:
-                            query = query.Where(x => x.UserItemCategories.Any(c => c.UserId == user.Id));
+                            query = query.Where(x => user.UserItemCategories.Any(c => c.CategoryId == x.Id));
                             break;
                     }
                 }

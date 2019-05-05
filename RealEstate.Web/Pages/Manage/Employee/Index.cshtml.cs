@@ -34,7 +34,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [ViewData]
         public string PageTitle => _localizer["Employees"];
 
-        public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone, string employeeAddress, string employeeId, string userId, string divisionId)
+        public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone, string employeeAddress, string employeeId, string userId, string divisionId, bool deleted)
         {
             SearchInput = new EmployeeSearchViewModel
             {
@@ -46,7 +46,8 @@ namespace RealEstate.Web.Pages.Manage.Employee
                 FirstName = employeeFirstName,
                 LastName = employeeLastName,
                 UserId = userId,
-                DivisionId = divisionId
+                DivisionId = divisionId,
+                IncludeDeletedItems = deleted
             };
 
             List = await _employeeService.ListAsync(SearchInput).ConfigureAwait(false);

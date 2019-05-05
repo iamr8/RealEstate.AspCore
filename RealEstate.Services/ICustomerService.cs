@@ -213,8 +213,8 @@ namespace RealEstate.Services
             var query = _customers
                 .WhereNotDeleted()
                 .WhereItIsPublic()
-                .Where(x => EF.Functions.Like(x.Name, name.LikeExpression())
-                || EF.Functions.Like(x.MobileNumber, mobile.LikeExpression()));
+                .Where(x => EF.Functions.Like(x.Name, name.Like())
+                || EF.Functions.Like(x.MobileNumber, mobile.Like()));
 
             var customers = await query.ToListAsync().ConfigureAwait(false);
             var cust = customers.Into<Customer, CustomerViewModel>();
@@ -303,8 +303,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await CustomerEntityAsync(id, null).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _customers.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -406,18 +406,35 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
         {
-            var models = _customers.AsQueryable();
-            models = models.WhereItIsPublic();
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<CustomerViewModel>();
 
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _customers.WhereItIsPublic();
             if (searchModel != null)
             {
-                models = models.SearchBy(searchModel.Id, x => x.Id);
-                models = models.SearchBy(searchModel.Address, x => x.Address);
-                models = models.SearchBy(searchModel.Mobile, x => x.MobileNumber);
-                models = models.SearchBy(searchModel.Name, x => x.Name);
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
+                if (!string.IsNullOrEmpty(searchModel.Id))
+                    query = query.Where(x => x.Id == searchModel.Id);
+
+                if (!string.IsNullOrEmpty(searchModel.Address))
+                    query = query.Where(x => EF.Functions.Like(x.Address, searchModel.Address.Like()));
+
+                if (!string.IsNullOrEmpty(searchModel.Address))
+                    query = query.Where(x => EF.Functions.Like(x.MobileNumber, searchModel.Mobile.Like()));
+
+                if (!string.IsNullOrEmpty(searchModel.Address))
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
+
+                if (!string.IsNullOrEmpty(searchModel.Phone))
+                    query = query.Where(x => EF.Functions.Like(x.PhoneNumber, searchModel.Phone.Like()));
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Customer, CustomerViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
                     act.GetApplicants(false, act2 => act2.GetCustomer());

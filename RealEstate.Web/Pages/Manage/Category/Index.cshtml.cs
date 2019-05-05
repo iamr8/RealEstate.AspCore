@@ -39,14 +39,15 @@ namespace RealEstate.Web.Pages.Manage.Category
         [ViewData]
         public string PageTitle => _localizer["Categories"];
 
-        public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type)
+        public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type, bool deleted)
         {
             SearchInput = new CategorySearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = categoryName,
                 Id = categoryId,
-                Type = type
+                Type = type,
+                IncludeDeletedItems = deleted
             };
 
             List = await _featureService.CategoryListAsync(SearchInput).ConfigureAwait(false);

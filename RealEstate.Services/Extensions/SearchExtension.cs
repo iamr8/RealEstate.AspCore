@@ -1,5 +1,6 @@
-﻿using RealEstate.Base;
-using System;
+﻿using Microsoft.EntityFrameworkCore.Internal;
+using RealEstate.Base;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace RealEstate.Services.Extensions
@@ -10,52 +11,59 @@ namespace RealEstate.Services.Extensions
         {
             const string jsonTerm = "Json";
             var type = model.GetType();
-            var properties = type.GetPublicProperties();
+            var properties = type.GetPublicProperties().Where(x => x.GetSearchParameter() != null && !x.Name.Equals(nameof(model.PageNo))).ToList();
             if (properties?.Any() != true)
                 return true;
 
-            var indicator = 0;
+            var conditions = new List<string>();
             foreach (var property in properties)
             {
-                if (property.Name.Equals(nameof(model.PageNo)))
-                    continue;
-
                 var key = property.Name;
                 var value = property.GetValue(model);
-
                 var searchProperty = property.GetSearchParameter();
-                if (searchProperty == null)
-                    continue;
 
                 var hasJson = searchProperty.Type != null && key.EndsWith(jsonTerm);
                 if (hasJson)
                 {
-                    var jsonObjectName = key.Reverse().ToString().Substring(jsonTerm.Length).Reverse().ToString();
-                    var jsonObjectProperty = type.GetProperty(jsonObjectName);
-                    if (jsonObjectProperty == null)
+                    if (!(value is string jsonString))
                         continue;
+
+                    if (!jsonString.Equals("") || !jsonString.Equals("[]"))
+                        conditions.Add(property.Name);
                 }
                 else
                 {
-                }
-                switch (value)
-                {
-                    case string propValueString:
+                    switch (value)
                     {
-                        if (!string.IsNullOrEmpty(propValueString))
-                            indicator++;
-                        break;
-                    }
-                    case bool propValueBool:
-                    {
-                        if (propValueBool)
-                            indicator++;
-                        break;
+                        case string propValueString:
+                            if (!string.IsNullOrEmpty(propValueString))
+                                conditions.Add(property.Name);
+                            break;
+
+                        case bool propValueBool:
+                            if (propValueBool)
+                                conditions.Add(property.Name);
+                            break;
+
+                        case decimal propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
+
+                        case double propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
+
+                        case int propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
                     }
                 }
             }
 
-            return indicator > 0;
+            return conditions.Count > 0;
         }
     }
 }

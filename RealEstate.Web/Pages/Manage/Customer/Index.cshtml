@@ -1,12 +1,79 @@
 ﻿@page
 @model IndexModel
+@{
+    var condition = Model.SearchInput.IsUnderCondition();
 
+}
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
 
         <section class="container-fluid">
+            <form method="post" class="search">
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
+                            </div>
+                            <div id="search" class="collapse @(condition ? "show" : "")">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Name"></label>
+                                                <input asp-for="SearchInput.Name" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Mobile"></label>
+                                                <input asp-for="SearchInput.Mobile" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Phone"></label>
+                                                <input asp-for="SearchInput.Phone" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Address"></label>
+                                                <input asp-for="SearchInput.Address" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <div class="row justify-content-center align-items-center">
+                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                                        {
+                                            <div class="col-12">
+                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
+                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
+                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
+                                                </div>
+                                            </div>
+                                        }
 
+                                        <div class="col-12">
+                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
             @if (Model.List.Items?.Any() == true)
             {
                 foreach (var item in Model.List.Items)

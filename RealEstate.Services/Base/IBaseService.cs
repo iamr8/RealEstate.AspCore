@@ -291,10 +291,7 @@ namespace RealEstate.Services.Base
 
             if (currentListEntities?.Any() == true)
             {
-                var mustBeLeft = new List<TSource>();
-                if (newList?.Any() == true)
-                    mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
-
+                var mustBeLeft = currentListEntities.Where(source => newList.Any(model => indentifier.Compile().Invoke(source, model))).ToList();
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
@@ -336,9 +333,9 @@ namespace RealEstate.Services.Base
                 Id = claims.Find(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
                 FirstName = claims.Find(x => x.Type == "FirstName")?.Value,
                 LastName = claims.Find(x => x.Type == "LastName")?.Value,
-                UserPropertyCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
-                UserItemCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
                 EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,
+                UserPropertyCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
+                UserItemCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
                 EmployeeDivisions = claims.Find(x => x.Type == "EmployeeDivisions")?.Value.JsonConversion<List<DivisionJsonViewModel>>(),
             };
             return result;

@@ -74,17 +74,20 @@ namespace RealEstate.Base
                 if (string.IsNullOrEmpty(searchParameter))
                     continue;
 
-                var searchParameterType = searchParameterAttribute.Type;
-                if (searchParameterType != null)
+                if (searchParameterAttribute.Type != null)
                 {
+                    // JSON
+
                     if (property.PropertyType != typeof(string))
                         continue;
 
-                    var encodeJson = value.EncodeJson(searchParameterType);
+                    var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
                     routeValues.Add(searchParameter, encodeJson);
                 }
                 else
                 {
+                    // PLAIN
+
                     routeValues.Add(searchParameter, value);
                 }
             }

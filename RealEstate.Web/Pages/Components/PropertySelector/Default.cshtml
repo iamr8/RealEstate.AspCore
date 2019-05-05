@@ -49,7 +49,7 @@
                         pendingRequest = $.ajax({
                             type: 'GET',
                             data: { term: val },
-                            url: '@Url.Action("PropertyAsync", "Search")',
+                            url: '@Url.Action("ItemAsync", "Search")',
                             beforeSend: function() {
                                 if (pendingRequest != null) {
                                     pendingRequest.abort();

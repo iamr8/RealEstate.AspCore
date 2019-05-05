@@ -1275,3 +1275,24 @@ ul.info-breadcrumb {
         }
     }
 }
+
+.custom-control {
+    &-input {
+        &:checked {
+            & ~ .custom-control-label {
+                &:before {
+                    border-color: $sidebarheader-color;
+                    background-color: $sidebarheader-color;
+                }
+            }
+        }
+
+        &:focus {
+            & ~ .custom-control-label {
+                &:before {
+                    box-shadow: 0 0 0 0.2rem mix(transparent,$sidebarheader-color,75);
+                }
+            }
+        }
+    }
+}

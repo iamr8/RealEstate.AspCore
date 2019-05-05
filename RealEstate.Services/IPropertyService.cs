@@ -24,9 +24,9 @@ namespace RealEstate.Services
 
         Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm);
 
-        Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
+        PropertyJsonViewModel MapJson(Property property);
 
-        Task<List<PropertyJsonViewModel>> PropertyListAsync(string district, string category, string street);
+        Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
 
         Task<PropertyJsonViewModel> PropertyJsonAsync(string id);
 
@@ -71,8 +71,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var property = await PropertyEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(property,
+            var entity = await _properties.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -115,35 +115,18 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<List<PropertyJsonViewModel>> PropertyListAsync(string district, string category, string street)
-        {
-            if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
-                return default;
-
-            var query = _properties.WhereNotDeleted().Where(x => EF.Functions.Like(x.Street, street.LikeExpression())
-                                     || EF.Functions.Like(x.District.Name, district.LikeExpression())
-                                     || EF.Functions.Like(x.Category.Name, category.LikeExpression()));
-
-            var models = await query.ToListAsync().ConfigureAwait(false);
-            if (models?.Any() != true)
-                return default;
-
-            var result = models.Select(MapJson).ToList();
-            return result;
-        }
-
         public async Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm)
         {
             if (string.IsNullOrEmpty(searchTerm))
                 return default;
 
             var query = _properties as IQueryable<Property>;
-            query = query.Where(x => EF.Functions.Like(x.Id, searchTerm.LikeExpression())
-                                     || EF.Functions.Like(x.Street, searchTerm.LikeExpression())
-                                     || EF.Functions.Like(x.Alley, searchTerm.LikeExpression())
-                                     || EF.Functions.Like(x.BuildingName, searchTerm.LikeExpression())
-                                     || EF.Functions.Like(x.Category.Name, searchTerm.LikeExpression())
-                                     || EF.Functions.Like(x.District.Name, searchTerm.LikeExpression()));
+            query = query.Where(x => EF.Functions.Like(x.Id, searchTerm.Like())
+                                     || EF.Functions.Like(x.Street, searchTerm.Like())
+                                     || EF.Functions.Like(x.Alley, searchTerm.Like())
+                                     || EF.Functions.Like(x.BuildingName, searchTerm.Like())
+                                     || EF.Functions.Like(x.Category.Name, searchTerm.Like())
+                                     || EF.Functions.Like(x.District.Name, searchTerm.Like()));
 
             var models = await query.ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
@@ -165,13 +148,14 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<PropertyViewModel>> PropertyListAsync(PropertySearchViewModel searchModel)
         {
             var models = _properties.AsQueryable();
+
             models = models.SearchBy(searchModel?.Id, x => x.Id);
             models = models.SearchBy(searchModel?.Category, x => x.Category.Name);
             models = models.SearchBy(searchModel?.District, x => x.District.Name);
             models = models.SearchBy(searchModel?.Address,
-                (x, y) => EF.Functions.Like(x.Street, y.LikeExpression())
-                          || EF.Functions.Like(x.Alley, y.LikeExpression())
-                          || EF.Functions.Like(x.BuildingName, y.LikeExpression()));
+                (x, y) => EF.Functions.Like(x.Street, y.Like())
+                          || EF.Functions.Like(x.Alley, y.Like())
+                          || EF.Functions.Like(x.BuildingName, y.Like()));
             models = models.SearchBy(searchModel?.Owner, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.Name == y)));
             models = models.SearchBy(searchModel?.OwnerMobile, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.MobileNumber == y)));
 
@@ -206,7 +190,7 @@ namespace RealEstate.Services
             return result;
         }
 
-        private PropertyJsonViewModel MapJson(Property property)
+        public PropertyJsonViewModel MapJson(Property property)
         {
             var lastPropOwnership = property.PropertyOwnerships.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastPropOwnership == null)

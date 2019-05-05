@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.Database.Base
 {
@@ -19,8 +20,10 @@ namespace RealEstate.Services.Database.Base
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd();
 
-//            builder.Property(e => e.DateTime)
-//                .HasDefaultValueSql("getdate()");
+            //            builder.Property(e => e.DateTime)
+            //                .HasDefaultValueSql("getdate()");
+
+            builder.WhereNotDeleted();
         }
     }
 }

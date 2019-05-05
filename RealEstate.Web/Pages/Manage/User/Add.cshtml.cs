@@ -1,29 +1,31 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
+using RealEstate.Services.Base;
 using RealEstate.Services.ViewModels.Input;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public class AddModel : PageModel
     {
         private readonly IUserService _userService;
+        private readonly IBaseService _baseService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AddModel(
             IUserService userService,
+            IBaseService baseService,
             IStringLocalizer<SharedResource> sharedLocalizer
             )
         {
             _userService = userService;
             _localizer = sharedLocalizer;
+            _baseService = baseService;
         }
 
         [BindProperty]
@@ -43,6 +45,15 @@ namespace RealEstate.Web.Pages.Manage.User
                     return Forbid();
 
                 model = await _userService.FindInputAsync(id).ConfigureAwait(false);
+            }
+            else
+            {
+                if (User.IsInRole(nameof(Role.User)))
+                {
+                    var currentUser = _baseService.CurrentUser();
+                    if (currentUser != null)
+                        model = await _userService.FindInputAsync(currentUser.Id).ConfigureAwait(false);
+                }
             }
 
             PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];

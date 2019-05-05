@@ -55,8 +55,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await EntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _divisions.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
@@ -79,17 +79,26 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<DivisionViewModel>> ListAsync(DivisionSearchViewModel searchModel)
         {
-            var models = _divisions.AsQueryable();
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<DivisionViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _divisions.AsQueryable();
 
             if (searchModel != null)
             {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
                 if (!string.IsNullOrEmpty(searchModel.Name))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Id))
-                    models = models.Where(x => EF.Functions.Like(x.Id, searchModel.Id.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Id, searchModel.Id.Like()));
             }
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Division, DivisionViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 

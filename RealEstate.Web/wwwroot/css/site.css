@@ -1106,3 +1106,10 @@ ul.info-breadcrumb {
       color: black; }
     ul.info-breadcrumb > li > a {
       color: gray; }
+
+.custom-control-input:checked ~ .custom-control-label:before {
+  border-color: #5110c9;
+  background-color: #5110c9; }
+
+.custom-control-input:focus ~ .custom-control-label:before {
+  box-shadow: 0 0 0 0.2rem rgba(81, 16, 201, 0.25); }

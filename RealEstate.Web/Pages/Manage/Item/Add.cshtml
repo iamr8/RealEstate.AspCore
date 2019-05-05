@@ -33,14 +33,14 @@
         Text = x.Name,
     }).SelectFirstItem();
 
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
     var propertyCategoriesList = propertyCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
     var itemCategoriesList = itemCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,
@@ -316,7 +316,7 @@
                                 @SharedLocalizer["Item"]
                             </a>
                         </div>
-                        <div id="item" class="collapse" data-parent="#accordion">
+                        <div id="item" class="collapse @(Model.NewItem != null && !Model.NewItem.IsNew ? "show" : "")" data-parent="#accordion">
                             <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
                                 @Model.Status.GetDisplayName()
                             </div>
@@ -1005,7 +1005,7 @@
                         category: category,
                         street: street
                     };
-                    $.get("@Url.Action("PropertyAsync", "Search")",
+                    $.get("@Url.Action("ItemAsync", "Search")",
                         model,
                         function(response) {
                             console.log(response);

@@ -5,7 +5,6 @@ using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 
 namespace RealEstate.Services.ViewModels.Search
 {
@@ -14,23 +13,9 @@ namespace RealEstate.Services.ViewModels.Search
         private string _featuresJson;
         private string _facilitiesJson;
 
-        //public bool IsUnderCondition => IncludeDeletedItems
-        //                                || !string.IsNullOrEmpty(Street)
-        //                                || !string.IsNullOrEmpty(ItemCategory)
-        //                                || !string.IsNullOrEmpty(PropertyCategory)
-        //                                || !string.IsNullOrEmpty(OwnerMobile)
-        //                                || !string.IsNullOrEmpty(Owner)
-        //                                || !string.IsNullOrEmpty(District)
-        //                                || Features?.Any() == true
-        //                                || Facilities?.Any() == true;
-
         [Display(ResourceType = typeof(SharedResource), Name = "Street")]
         [SearchParameter("street")]
         public string Street { get; set; }
-
-        [Display(ResourceType = typeof(SharedResource), Name = "ShowDeletedItems")]
-        [SearchParameter("deleted")]
-        public bool IncludeDeletedItems { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "ItemCategory")]
         [SearchParameter("itemCategory")]

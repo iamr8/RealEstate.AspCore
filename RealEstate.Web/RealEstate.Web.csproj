@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.1201</AssemblyVersion>
-    <FileVersion>1.0.0.1201</FileVersion>
+    <AssemblyVersion>1.0.0.1281</AssemblyVersion>
+    <FileVersion>1.0.0.1281</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

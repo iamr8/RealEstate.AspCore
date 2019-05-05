@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.Extensions;
@@ -34,12 +35,14 @@ namespace RealEstate.Web.Pages.Manage.Feature
         [ViewData]
         public string PageTitle => _localizer["Features"];
 
-        public async Task OnGetAsync(string pageNo, string featureName)
+        public async Task OnGetAsync(string pageNo, string featureName, bool deleted, FeatureTypeEnum? type)
         {
             SearchInput = new FeatureSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = featureName,
+                IncludeDeletedItems = deleted,
+                Type = type
             };
 
             List = await _featureService.FeatureListAsync(SearchInput).ConfigureAwait(false);

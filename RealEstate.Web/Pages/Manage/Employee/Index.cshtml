@@ -1,48 +1,89 @@
 ﻿@page
 @model IndexModel
-
+@{
+    var condition = Model.SearchInput.IsUnderCondition();
+}
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewEmployee"]</a>
         </widget-header>
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-                @*<div class="col-12">
-                        <form method="post" class="widget mini-widget bg-white">
-                            <input asp-for="SearchInput.PageNo" />
-                            <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                            <section class="container-fluid margin-bottomed">
-                                <div class="row">
-                                    <div class="col-6 col-lg-3 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.UserId"></label>
-                                        <input asp-for="SearchInput.UserId" class="form-control" />
+            <form method="post">
+                <div class="row justify-content-center align-items-center margin-bottomed">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
+                            </div>
+                            <div id="search" class="collapse @(condition ? "show" : "")">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.FirstName"></label>
+                                                <input asp-for="SearchInput.FirstName" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.LastName"></label>
+                                                <input asp-for="SearchInput.LastName" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Mobile"></label>
+                                                <input asp-for="SearchInput.Mobile" class="form-control" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-6 col-lg-3 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.Username"></label>
-                                        <input asp-for="SearchInput.Username" class="form-control" />
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-xs-12 col-md-4 margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Phone"></label>
+                                                <input asp-for="SearchInput.Phone" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md margin-bottomed">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Address"></label>
+                                                <input asp-for="SearchInput.Address" class="form-control" />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="col-6 col-lg-3 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.Username"></label>
-                                        <select asp-for="SearchInput.Role" asp-items="roles" class="form-control"></select>
+                                    <div class="row justify-content-center align-items-center">
+                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                                        {
+                                            <div class="col-12">
+                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
+                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
+                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-12">
+                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
+                                        </div>
                                     </div>
                                 </div>
-                            </section>
-                            <widget-footer>
-                                <widget-footer-text></widget-footer-text>
-                                <widget-footer-button>
-                                    <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                                </widget-footer-button>
-                            </widget-footer>
-                        </form>
-                    </div>*@
-            </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
             @if (Model.List.Items?.Any() == true)
             {
                 foreach (var item in Model.List.Items)
                 {
-                    var disabledClass = item.CurrentEmployeeStatus?.Status == EmployeeStatusEnum.End ? "disabled" : "";
-                    var disabledTerm = item.CurrentEmployeeStatus?.Status == EmployeeStatusEnum.End ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
+                    var disabledClass = item.IsDeleted ? "disabled" : "";
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
@@ -99,7 +140,11 @@
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
-                                    <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+
+                                    if (User.Identity.Name != item.CurrentUser?.Username)
+                                    {
+                                        <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    }
                                 }
                             </div>
                         </div>

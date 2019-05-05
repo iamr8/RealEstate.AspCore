@@ -4,7 +4,7 @@
     var roles = SelectItemExtensions.ToSelectList(Role.User, role => role != Role.SuperAdmin);
     var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
-    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+    var employees = await EmployeeService.ListAsync(true).ConfigureAwait(false);
 
     var propertyCategorySelect = propertyCategories?.Select(x => new SelectListItem
     {
@@ -122,34 +122,80 @@
                     </div>
                 </div>
             </div>
-            <hr />
-            @if (propertyCategories?.Any() == true)
+            @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
             {
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-12" id="propertyCategories">
-                        <input asp-for="NewUser.UserPropertyCategoriesJson" />
-                        <div class="itemShow adder input-wrapper">
-                            <label class="control-label full-line" for="txtPropertyCategories">@SharedLocalizer["UserPropertyCategories"]</label>
-                            <select asp-items="propertyCategorySelect" class="custom-select" id="txtPropertyCategories"></select>
-                            <button type="button" class="btn btn-sm btn-success" id="addPropertyCategory">@SharedLocalizer["Add"]</button>
+                <hr />
+                if (propertyCategories?.Any() == true)
+                {
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12" id="propertyCategories">
+                            <input asp-for="NewUser.UserPropertyCategoriesJson" />
+                            <div class="itemShow adder input-wrapper">
+                                <label class="control-label full-line" for="txtPropertyCategories">@SharedLocalizer["UserPropertyCategories"]</label>
+                                <select asp-items="propertyCategorySelect" class="custom-select" id="txtPropertyCategories"></select>
+                                <button type="button" class="btn btn-sm btn-success" id="addPropertyCategory">@SharedLocalizer["Add"]</button>
+                            </div>
+                            <div class="items hidden"></div>
                         </div>
-                        <div class="items hidden"></div>
                     </div>
-                </div>
+                }
+                if (itemCategories?.Any() == true)
+                {
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12" id="itemCategories">
+                            <input asp-for="NewUser.UserItemCategoriesJson" />
+                            <div class="itemShow adder input-wrapper">
+                                <label class="control-label full-line" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
+                                <select asp-items="itemCategorySelect" class="custom-select" id="txtItemCategories"></select>
+                                <button type="button" class="btn btn-sm btn-success" id="addItemCategory">@SharedLocalizer["Add"]</button>
+                            </div>
+                            <div class="items hidden"></div>
+                        </div>
+                    </div>
+                }
             }
-            @if (itemCategories?.Any() == true)
+            else
             {
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-12" id="itemCategories">
-                        <input asp-for="NewUser.UserItemCategoriesJson" />
-                        <div class="itemShow adder input-wrapper">
-                            <label class="control-label full-line" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
-                            <select asp-items="itemCategorySelect" class="custom-select" id="txtItemCategories"></select>
-                            <button type="button" class="btn btn-sm btn-success" id="addItemCategory">@SharedLocalizer["Add"]</button>
+                <hr />
+                if (Model.NewUser.UserItemCategories?.Any() == true)
+                {
+
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <div class="itemShow adder input-wrapper">
+                                <label class="control-label full-line" for="txtItemCategories">@SharedLocalizer["UserItemCategories"]</label>
+                            </div>
+                            <div class="items">
+                                @foreach (var itemCategory in Model.NewUser.UserItemCategories)
+                                {
+                                    <a href="#">
+                                        <span>@itemCategory.Name</span>
+                                    </a>
+                                }
+                            </div>
                         </div>
-                        <div class="items hidden"></div>
                     </div>
-                </div>
+                }
+                if (Model.NewUser.UserPropertyCategories?.Any() == true)
+                {
+
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <div class="itemShow adder input-wrapper">
+                                <label class="control-label full-line" for="txtItemCategories">@SharedLocalizer["UserPropertyCategories"]</label>
+                            </div>
+                            <div class="items">
+                                @foreach (var propertyCategory in Model.NewUser.UserPropertyCategories)
+                                {
+                                    <a href="#">
+                                        <span>@propertyCategory.Name</span>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
             }
         </section>
         <footer>
@@ -190,7 +236,7 @@
                 $.each(jsonObject,
                     (index, item) => {
 
-                        const id = item.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id));
+                        const id = item.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId));
                         const name = item
                             .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name));
 
@@ -211,7 +257,7 @@
                 $.each(selectInput.children(),
                     (index, item) => {
                         const id = $(item).val();
-                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) === id);
+                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId)) === id);
                         if (i >= 0) {
                             $(item).addClass("hidden");
                         } else {
@@ -241,14 +287,14 @@
                     return;
 
                 const newItem = {
-                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId)): keyId,
                     @(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name)): keyName
                 };
 
                 addJson(jsonInput,
                     newItem,
-                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
-                    newItem.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)));
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId)));
 
             });
 
@@ -263,7 +309,7 @@
 
                     const index =
                         jsonValue.findIndex(prop => prop
-                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id)) ===
+                            .@(PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.CategoryId)) ===
                             keyId);
                     console.log("Index", index);
 
@@ -306,7 +352,7 @@
                 $.each(jsonObject,
                     (index, item) => {
 
-                        const id = item.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id));
+                        const id = item.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId));
                         const name = item
                             .@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name));
 
@@ -327,7 +373,7 @@
                 $.each(selectInput.children(),
                     (index, item) => {
                         const id = $(item).val();
-                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) === id);
+                        const i = jsonObject.findIndex(obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId)) === id);
                         if (i >= 0) {
                             $(item).addClass("hidden");
                         } else {
@@ -357,14 +403,14 @@
                     return;
 
                 const newItem = {
-                    @(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId)): keyId,
                     @(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name)): keyName
                 };
 
                 addJson(jsonInput,
                     newItem,
-                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) ===
-                    newItem.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)));
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId)));
 
             });
 
@@ -378,7 +424,7 @@
                     console.log("JsonValue", jsonValue);
 
                     const index = jsonValue.findIndex(prop => prop
-                        .@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id)) ===
+                        .@(PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.CategoryId)) ===
                         keyId);
                     console.log("Index", index);
 

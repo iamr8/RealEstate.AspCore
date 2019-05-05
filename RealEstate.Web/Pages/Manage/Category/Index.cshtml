@@ -1,36 +1,69 @@
 ﻿@page
 @model IndexModel
+@{
+    var categories = SelectItemExtensions.ToSelectList<CategoryTypeEnum>().AddNone();
+    var condition = Model.SearchInput.IsUnderCondition();
 
+}
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewCategory"]</a>
         </widget-header>
         <section class="container-fluid">
-
-            @if (Model.List.Items?.Any() == true)
-            {
-                <div class="row justify-content-center align-items-center margin-bottomed">
+            <form method="post" class="search">
+                <div class="row justify-content-center align-items-center">
                     <div class="col-12">
-                        <form method="post" class="widget mini-widget bg-white">
-                            <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                            <section class="container-fluid margin-bottomed">
-                                <div class="row">
-                                    <div class="col-12 margin-bottomed">
-                                        <label class="control-label" asp-for="SearchInput.Name"></label>
-                                        <input asp-for="SearchInput.Name" class="form-control" />
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
+                            </div>
+                            <div id="search" class="collapse @(condition ? "show" : "")">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Name"></label>
+                                                <input asp-for="SearchInput.Name" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Type"></label>
+                                                <select asp-items="categories" asp-for="SearchInput.Type" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <div class="row justify-content-center align-items-center">
+                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                                        {
+                                            <div class="col-12">
+                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
+                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
+                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
+                                                </div>
+                                            </div>
+                                        }
+
+                                        <div class="col-12">
+                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
+                                        </div>
                                     </div>
                                 </div>
-                            </section>
-                            <widget-footer>
-                                <widget-footer-text></widget-footer-text>
-                                <widget-footer-button>
-                                    <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                                </widget-footer-button>
-                            </widget-footer>
-                        </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </form>
+            @if (Model.List.Items?.Any() == true)
+            {
                 foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";

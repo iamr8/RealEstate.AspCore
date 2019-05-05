@@ -2,7 +2,7 @@
 @model AddModel
 @{
     var types = SelectItemExtensions.ToSelectList<PaymentTypeEnum>();
-    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+    var employees = await EmployeeService.ListAsync(false).ConfigureAwait(false);
     var emploo = employees?.Select(x => new SelectListItem
     {
         Text = $"{x.FirstName} {x.LastName}",

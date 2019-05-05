@@ -22,6 +22,7 @@ namespace RealEstate.Services
     public interface ISmsService
     {
         Task<PaginationViewModel<SmsViewModel>> ListAsync(SmsSearchViewModel searchModel);
+
         Task<(StatusEnum, List<Sms>)> SendAsync(List<string> recipients, string message);
 
         Task<(StatusEnum, List<Sms>)> SendAsync(string[] recipients, SmsTemplateEnum templateEnum, params string[] tokens);
@@ -51,6 +52,11 @@ namespace RealEstate.Services
         public async Task<PaginationViewModel<SmsViewModel>> ListAsync(SmsSearchViewModel searchModel)
         {
             var models = _smses.AsQueryable();
+
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser?.Role == Role.SuperAdmin)
+                models = models.IgnoreQueryFilters();
+
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                 item => item.Into<Sms, SmsViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);

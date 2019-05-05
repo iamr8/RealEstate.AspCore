@@ -2,7 +2,7 @@
 @model AddModel
 
 @{
-    var employees = await EmployeeService.ListAsync().ConfigureAwait(false);
+    var employees = await EmployeeService.ListAsync(false).ConfigureAwait(false);
     var emploo = employees?.Select(x => new SelectListItem
     {
         Value = x.Id,
@@ -33,12 +33,12 @@
                 </div>
                 <div class="col-xs-12 col-md-4 margin-bottomed">
                     <label asp-for="NewPresence.Date" class="control-label"></label>
-                    <input asp-for="NewPresence.Date" class="form-control"/>
+                    <input asp-for="NewPresence.Date" class="form-control" />
                     <span asp-validation-for="NewPresence.Date" class="text-danger"></span>
                 </div>
                 <div class="col-xs-12 col-md-4 margin-bottomed">
                     <label asp-for="NewPresence.Time" class="control-label"></label>
-                    <input asp-for="NewPresence.Time" class="form-control"/>
+                    <input asp-for="NewPresence.Time" class="form-control" />
                     <span asp-validation-for="NewPresence.Time" class="text-danger"></span>
                 </div>
             </div>

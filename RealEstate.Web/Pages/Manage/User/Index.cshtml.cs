@@ -37,14 +37,15 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public StatusEnum Status { get; set; }
 
-        public async Task OnGetAsync(string pageNo, string status, string userName, string userId, Role? userRole)
+        public async Task OnGetAsync(string pageNo, string status, string userName, string userId, Role? userRole, bool deleted)
         {
             SearchInput = new UserSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Username = userName,
                 UserId = userId,
-                Role = userRole
+                Role = userRole,
+                IncludeDeletedItems = deleted
             };
 
             Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)

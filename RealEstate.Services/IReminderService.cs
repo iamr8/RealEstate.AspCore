@@ -130,11 +130,17 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel)
         {
+            var models = _reminders.AsQueryable();
+
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
                 return default;
 
-            var models = _reminders.Where(x => x.UserId == currentUser.Id);
+            models = models.Where(x => x.UserId == currentUser.Id);
+
+            if (currentUser?.Role == Role.SuperAdmin)
+                models = models.IgnoreQueryFilters();
+
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
                 item => item.Into<Reminder, ReminderViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);

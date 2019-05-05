@@ -2,7 +2,6 @@
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -62,15 +61,24 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
         {
-            var models = _districts as IQueryable<District>;
-            models = models.Include(x => x.Properties);
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<DistrictViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _districts.AsQueryable();
 
             if (searchModel != null)
             {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
                 if (!string.IsNullOrEmpty(searchModel.Name))
-                    models = models.Where(x => EF.Functions.Like(x.Name, searchModel.Name.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
             }
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<District, DistrictViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
             ).ConfigureAwait(false);
 
@@ -116,8 +124,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await DistrictEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(user,
+            var entity = await _districts.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin

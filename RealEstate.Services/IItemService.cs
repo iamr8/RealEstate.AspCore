@@ -27,6 +27,8 @@ namespace RealEstate.Services
 
         Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory);
 
+        Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street);
+
         Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model);
 
         Task<(StatusEnum, Item)> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
@@ -191,7 +193,7 @@ namespace RealEstate.Services
             var encryptedPass = pass.Cipher(CryptologyExtension.CypherMode.Encryption);
             var userDb = await _users
                 .WhereNotDeleted()
-                .Where(x => x.Username == user && x.Password == encryptedPass)
+                .Where(x => x.Username.Equals(user, StringComparison.CurrentCultureIgnoreCase) && x.Password == encryptedPass)
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
             if (userDb == null)
@@ -283,6 +285,39 @@ namespace RealEstate.Services
             };
         }
 
+        public async Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street)
+        {
+            if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
+                return default;
+
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return default;
+
+            var query = from item in _items.WhereNotDeleted()
+                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+                        let lastRequest = requests.FirstOrDefault()
+                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+                        let itemCategory = item.Category
+                        let property = item.Property
+                        let propertyCategory = property.Category
+                        where itemCategory.UserItemCategories.Any(userItemCategory =>
+                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
+                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
+                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
+                        where EF.Functions.Like(item.Property.Street, street.Like())
+                              || EF.Functions.Like(item.Property.District.Name, district.Like())
+                              || EF.Functions.Like(item.Property.Category.Name, category.Like())
+                        select item;
+
+            var models = await query.Select(x => x.Property).ToListAsync().ConfigureAwait(false);
+            if (models?.Any() != true)
+                return default;
+
+            var result = models.Select(_propertyService.MapJson).ToList();
+            return result;
+        }
+
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
             var currentUser = _baseService.CurrentUser();
@@ -306,19 +341,19 @@ namespace RealEstate.Services
 
             if (searchModel != null)
             {
-                if (!searchModel.IncludeDeletedItems || !hasPrevillege)
-                    query = query.WhereNotDeleted();
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                     query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.LikeExpression()))));
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
                     query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.LikeExpression()))));
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
-                    query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
 
                 query = query.SearchBy(searchModel.ItemId, x => x.Id);
 
@@ -547,8 +582,8 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var property = await ItemEntityAsync(id).ConfigureAwait(false);
-            var result = await _baseService.RemoveAsync(property,
+            var entity = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin

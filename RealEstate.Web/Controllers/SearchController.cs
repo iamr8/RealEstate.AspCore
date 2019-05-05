@@ -9,14 +9,17 @@ namespace RealEstate.Web.Controllers
     {
         private readonly IPropertyService _propertyService;
         private readonly ICustomerService _customerService;
+        private readonly IItemService _itemService;
 
         public SearchController(
             IPropertyService propertyService,
-            ICustomerService customerService
+            ICustomerService customerService,
+            IItemService itemService
             )
         {
             _propertyService = propertyService;
             _customerService = customerService;
+            _itemService = itemService;
         }
 
         //[Route("property/search")]
@@ -26,10 +29,10 @@ namespace RealEstate.Web.Controllers
         //    return new JsonResult(model);
         //}
 
-        [Route("property/search")]
-        public async Task<IActionResult> PropertyAsync(string district, string category, string street)
+        [Route("item/search")]
+        public async Task<IActionResult> ItemAsync(string district, string category, string street)
         {
-            var model = await _propertyService.PropertyListAsync(district, category, street).ConfigureAwait(false);
+            var model = await _itemService.ItemListAsync(district, category, street).ConfigureAwait(false);
             return new JsonResult(model);
         }
 

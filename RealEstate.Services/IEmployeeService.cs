@@ -42,7 +42,7 @@ namespace RealEstate.Services
 
         Task<StatusEnum> LeaveRemoveAsync(string id);
 
-        Task<List<EmployeeViewModel>> ListAsync();
+        Task<List<EmployeeViewModel>> ListAsync(bool justFreeEmployees);
 
         Task<(StatusEnum, Employee)> AddAsync(EmployeeInputViewModel model, bool save);
 
@@ -76,9 +76,14 @@ namespace RealEstate.Services
             _presences = _unitOfWork.Set<Presence>();
         }
 
-        public async Task<List<EmployeeViewModel>> ListAsync()
+        public async Task<List<EmployeeViewModel>> ListAsync(bool justFreeEmployees)
         {
-            var employees = await _employees.WhereNotDeleted().ToListAsync().ConfigureAwait(false);
+            var query = _employees.AsQueryable();
+
+            if (justFreeEmployees)
+                query = query.Where(x => x.Users.Count == 0);
+
+            var employees = await query.ToListAsync().ConfigureAwait(false);
             return employees.Into<Employee, EmployeeViewModel>();
         }
 
@@ -87,30 +92,17 @@ namespace RealEstate.Services
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            if (employee == null)
-                return StatusEnum.EmployeeIsNull;
+            var employee = await _employees.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(employee,
+                    new[]
+                    {
+                        Role.SuperAdmin, Role.Admin
+                    },
+                    true,
+                    true)
+                .ConfigureAwait(false);
 
-            var statuses = employee.EmployeeStatuses;
-            var lastStatus = statuses?.OrderDescendingByCreationDateTime().FirstOrDefault();
-            if (lastStatus == null)
-            {
-                await _baseService.AddAsync(new EmployeeStatus
-                {
-                    EmployeeId = employee.Id,
-                    Status = EmployeeStatusEnum.Start
-                }, null, false).ConfigureAwait(false);
-            }
-            else
-            {
-                await _baseService.AddAsync(new EmployeeStatus
-                {
-                    EmployeeId = employee.Id,
-                    Status = lastStatus.Status == EmployeeStatusEnum.End ? EmployeeStatusEnum.Start : EmployeeStatusEnum.End
-                }, null, false).ConfigureAwait(false);
-            }
-
-            return await _baseService.SaveChangesAsync(true).ConfigureAwait(false);
+            return result;
         }
 
         public async Task<StatusEnum> PresenceRemoveAsync(string id)
@@ -151,33 +143,45 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel)
         {
-            var models = _employees.AsQueryable();
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return new PaginationViewModel<EmployeeViewModel>();
+
+            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
+
+            var query = _employees.AsQueryable();
 
             if (searchModel != null)
             {
+                if (searchModel.IncludeDeletedItems && hasPrevillege)
+                    query = query.IgnoreQueryFilters();
+
                 if (!string.IsNullOrEmpty(searchModel.Id))
-                    models = models.Where(x => x.Id == searchModel.Id);
+                    query = query.Where(x => x.Id == searchModel.Id);
 
                 if (!string.IsNullOrEmpty(searchModel.FirstName))
-                    models = models.Where(x => EF.Functions.Like(x.FirstName, searchModel.FirstName.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.FirstName, searchModel.FirstName.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.LastName))
-                    models = models.Where(x => EF.Functions.Like(x.LastName, searchModel.LastName.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.LastName, searchModel.LastName.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Mobile))
-                    models = models.Where(x => EF.Functions.Like(x.Mobile, searchModel.Mobile.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Mobile, searchModel.Mobile.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Address))
-                    models = models.Where(x => EF.Functions.Like(x.Address, searchModel.Address.LikeExpression()));
+                    query = query.Where(x => EF.Functions.Like(x.Address, searchModel.Address.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.UserId))
-                    models = models.Where(x => x.Users.Any(c => c.Id == searchModel.UserId));
+                    query = query.Where(x => x.Users.Any(c => c.Id == searchModel.UserId));
 
                 if (!string.IsNullOrEmpty(searchModel.DivisionId))
-                    models = models.Where(x => x.EmployeeDivisions.Any(c => c.DivisionId == searchModel.DivisionId));
+                    query = query.Where(x => x.EmployeeDivisions.Any(c => c.DivisionId == searchModel.DivisionId));
+
+                if (!string.IsNullOrEmpty(searchModel.Phone))
+                    query = query.Where(x => EF.Functions.Like(x.Phone, searchModel.Phone.Like()));
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Employee, EmployeeViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
                     act.GetEmployeeDivisions(false, act2 => act2.GetDivision());
@@ -452,12 +456,12 @@ namespace RealEstate.Services
             var lastFixedSalary = employee.FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastFixedSalary == null)
             {
-                if (model.FixedSalary > 0)
+                if (model.FixedSalary != null && model.FixedSalary > 0)
                 {
                     var addFixed = await _baseService.AddAsync(new FixedSalary
                     {
                         EmployeeId = employee.Id,
-                        Value = model.FixedSalary
+                        Value = (double)model.FixedSalary
                     },
                         null,
                         false).ConfigureAwait(false);
@@ -465,12 +469,12 @@ namespace RealEstate.Services
             }
             else
             {
-                if (!lastFixedSalary.Value.Equals(model.FixedSalary))
+                if (!lastFixedSalary.Value.Equals(model.FixedSalary) && model.FixedSalary != null && model.FixedSalary > 0)
                 {
                     var addFixed = await _baseService.AddAsync(new FixedSalary
                     {
                         EmployeeId = employee.Id,
-                        Value = model.FixedSalary
+                        Value = (double)model.FixedSalary
                     },
                         null,
                         false).ConfigureAwait(false);
@@ -480,12 +484,12 @@ namespace RealEstate.Services
             var lastInsurance = employee.Insurances?.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastInsurance == null)
             {
-                if (model.Insurance > 0)
+                if (model.Insurance != null && model.Insurance > 0)
                 {
                     var addFixed = await _baseService.AddAsync(new Insurance
                     {
                         EmployeeId = employee.Id,
-                        Price = model.Insurance
+                        Price = (double)model.Insurance
                     },
                         null,
                         false).ConfigureAwait(false);
@@ -493,12 +497,12 @@ namespace RealEstate.Services
             }
             else
             {
-                if (!lastInsurance.Price.Equals(model.Insurance))
+                if (!lastInsurance.Price.Equals(model.Insurance) && model.Insurance != null && model.Insurance > 0)
                 {
                     var addFixed = await _baseService.AddAsync(new Insurance
                     {
                         EmployeeId = employee.Id,
-                        Price = model.Insurance
+                        Price = (double)model.Insurance
                     },
                         null,
                         false).ConfigureAwait(false);
@@ -510,10 +514,10 @@ namespace RealEstate.Services
                 model.Divisions,
                 (division, currentUser) => new EmployeeDivision
                 {
-                    DivisionId = division.Id,
+                    DivisionId = division.DivisionId,
                     EmployeeId = employee.Id
                 },
-                (inDb, inModel) => inDb.DivisionId == inModel.Id,
+                (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
                 null,
                 false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
@@ -594,7 +598,7 @@ namespace RealEstate.Services
                 FixedSalary = viewModel.CurrentFixedSalary?.Value ?? 0,
                 Divisions = viewModel.EmployeeDivisions?.Select(x => new DivisionJsonViewModel
                 {
-                    Id = x.Division.Id,
+                    DivisionId = x.Division?.Id,
                     Name = x.Division?.Name
                 }).ToList(),
                 Insurance = viewModel.CurrentInsurance?.Price ?? 0

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
@@ -50,7 +51,7 @@ namespace RealEstate.Services.Extensions
                 if (string.IsNullOrEmpty(condString))
                     return source;
 
-                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x).ToString(), condString.LikeExpression()));
+                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x).ToString(), condString.Like()));
             }
             else
             {
@@ -69,7 +70,7 @@ namespace RealEstate.Services.Extensions
                 if (string.IsNullOrEmpty(condString))
                     return source;
 
-                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x, condition).ToString(), condString.LikeExpression()));
+                source = source.Where(x => EF.Functions.Like(expression.Compile().Invoke(x, condition).ToString(), condString.Like()));
             }
             else
             {
@@ -162,6 +163,23 @@ namespace RealEstate.Services.Extensions
                 .Select(entity => entity.Into(includeDeleted, action))
                 .Where(x => x != null)
                 .R8ToList();
+            return result;
+        }
+
+        public static IList<TEntity> WhereNotDeleted<TEntity>(this ICollection<TEntity> entities) where TEntity : BaseEntity
+        {
+            if (entities?.Any() != true)
+                return default;
+
+            var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
+                                                  || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
+            return result.ToList();
+        }
+
+        public static EntityTypeBuilder<TEntity> WhereNotDeleted<TEntity>(this EntityTypeBuilder<TEntity> entities) where TEntity : BaseEntity
+        {
+            var result = entities.HasQueryFilter(entity => string.IsNullOrEmpty(entity.Audit)
+                                                  || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
             return result;
         }
 

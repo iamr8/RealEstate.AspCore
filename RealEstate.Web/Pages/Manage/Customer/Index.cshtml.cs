@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -8,6 +7,7 @@ using RealEstate.Services;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Customer
 {
@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
         [ViewData]
         public string PageTitle => _localizer["Customers"];
 
-        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile)
+        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile, bool deleted)
         {
             SearchInput = new CustomerSearchViewModel
             {
@@ -41,7 +41,8 @@ namespace RealEstate.Web.Pages.Manage.Customer
                 Id = customerId,
                 Address = customerAddress,
                 Phone = customerPhone,
-                Mobile = customerMobile
+                Mobile = customerMobile,
+                IncludeDeletedItems = deleted
             };
 
             List = await _customerService.CustomerListAsync(SearchInput).ConfigureAwait(false);

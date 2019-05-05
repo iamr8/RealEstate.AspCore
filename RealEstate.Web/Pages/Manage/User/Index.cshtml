@@ -1,8 +1,9 @@
 ﻿@page
-@using RealEstate.Services.Extensions
 @model IndexModel
 @{
     var roles = SelectItemExtensions.AddNone(SelectItemExtensions.ToSelectList<Role>());
+    var condition = Model.SearchInput.IsUnderCondition();
+
 }
 <div class="col-12">
     <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
@@ -25,7 +26,7 @@
                                     @SharedLocalizer["ClearSearch"]
                                 </a>
                             </div>
-                            <div id="search" class="collapse">
+                            <div id="search" class="collapse @(condition ? "show" : "")">
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
@@ -43,6 +44,15 @@
                                         </div>
                                     </div>
                                     <div class="row justify-content-center align-items-center">
+                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                                        {
+                                            <div class="col-12">
+                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
+                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
+                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
+                                                </div>
+                                            </div>
+                                        }
                                         <div class="col-12">
                                             <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
                                         </div>
@@ -71,15 +81,23 @@
                                     <b class="title">
                                         @item.Username
                                     </b>
-                                    <span class="badge badge-primary">@item.Employee.FirstName، @item.Employee.LastName</span>
-                                    @if (!string.IsNullOrEmpty(item.Employee.Mobile))
+                                    @if (item.Employee != null)
                                     {
-                                        <span class="badge badge-secondary">@item.Employee.Mobile</span>
+                                        <span class="badge badge-primary">@item.Employee?.FirstName، @item.Employee?.LastName</span>
+                                        if (!string.IsNullOrEmpty(item.Employee?.Mobile))
+                                        {
+                                            <span class="badge badge-secondary">@item.Employee.Mobile</span>
+                                        }
+                                        <span class="badge badge-warning"><b>@SharedLocalizer["Password"]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
+                                        if (!string.IsNullOrEmpty(item.Employee?.Address))
+                                        {
+                                            <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
+                                        }
                                     }
-                                    <span class="badge badge-warning"><b>@SharedLocalizer["Password"]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
-                                    @if (!string.IsNullOrEmpty(item.Employee.Address))
+                                    else
                                     {
-                                        <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Employee.Address</span>
+                                        <span class="badge badge-primary">کارمند غیرفعال شده است</span>
+
                                     }
                                     <a asp-page="@typeof(IndexModel).Page()" asp-route-userRole="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
                                 </span>

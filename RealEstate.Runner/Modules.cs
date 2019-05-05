@@ -160,10 +160,12 @@ namespace RealEstate.Runner
             var resources = $"{prefix}.Resources.dll"; ;
             var services = $"{prefix}.Services.dll";
             var web = $"{prefix}.Web.dll";
+            var configuration = $"{prefix}.Configuration.dll";
 
             var result = new Dictionary<string, bool>();
             var list = new List<string>
             {
+                configuration,
                 @base,
                 resources,
                 services,
