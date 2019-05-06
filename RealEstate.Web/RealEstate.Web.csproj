@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.1281</AssemblyVersion>
-    <FileVersion>1.0.0.1281</FileVersion>
+    <AssemblyVersion>1.0.0.1348</AssemblyVersion>
+    <FileVersion>1.0.0.1348</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -25,22 +25,12 @@
 
   <ItemGroup>
     <None Remove="Config.inf" />
-    <None Remove="Synchronizer.html" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="config.inf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Synchronizer.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Synchronizer.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

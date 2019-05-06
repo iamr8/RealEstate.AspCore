@@ -4,7 +4,9 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    <nav-button page="@typeof(Manage.Reminder.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Reminders"]" />
+    <nav-button controller="Download" action="Synchronizer" icon="~/icons/deal.svg" subject="دانلود بیرون بر" />
+
+    @*<nav-button page="@typeof(Manage.Reminder.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Reminders"]" />*@
     <nav-button icon="~/icons/deal.svg" subject="@SharedLocalizer["Items"]">
         <nav-button page="@typeof(Manage.Item.IndexModel).Page()" icon="~/icons/deal.svg" subject="@SharedLocalizer["List"]" />
         @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
@@ -34,7 +36,7 @@
 
     <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer["Customers"]">
         <nav-button page="@typeof(Manage.Customer.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["List"]"></nav-button>
-        <nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Applicants"]"></nav-button>
+        @*<nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Applicants"]"></nav-button>*@
     </nav-button>
 
     if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))

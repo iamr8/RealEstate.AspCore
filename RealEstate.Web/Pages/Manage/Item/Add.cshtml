@@ -10,8 +10,6 @@
         Value = x.Id,
     }).SelectFirstItem();
 
-    var ownerships = await CustomerService.CustomerListAsync().ConfigureAwait(false);
-
     var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
     var propertyFacilitiesList = propertyFacilities?.Select(x => new SelectListItem
     {
@@ -181,7 +179,7 @@
                                     @SharedLocalizer["Property"]
                                 </a>
                             </div>
-                            <div id="property" class="collapse" data-parent="#accordion">
+                            <div id="property" class="collapse @(Model.NewItem == null ? "show" : "")" data-parent="#accordion">
                                 <div id="propertyMessage" class="status-message hidden"></div>
                                 <div class="card-body">
                                     <form id="newProperty_Form" class="row justify-content-center align-items-center">

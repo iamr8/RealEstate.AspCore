@@ -35,14 +35,17 @@ namespace RealEstate.Web.Pages.Manage.Feature
         [ViewData]
         public string PageTitle => _localizer["Features"];
 
-        public async Task OnGetAsync(string pageNo, string featureName, bool deleted, FeatureTypeEnum? type)
+        public async Task OnGetAsync(string pageNo, string featureName, bool deleted, FeatureTypeEnum? type, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new FeatureSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = featureName,
                 IncludeDeletedItems = deleted,
-                Type = type
+                Type = type,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             List = await _featureService.FeatureListAsync(SearchInput).ConfigureAwait(false);

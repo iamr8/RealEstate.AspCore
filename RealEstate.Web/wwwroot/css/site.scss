@@ -14,10 +14,8 @@ body {
         margin-top: 20px;
         @include transition(all, 0.5s, ease-in-out);
 
-        &.in {
-            @media (min-width:769px) {
-                padding-right: 265px;
-            }
+        @media (min-width:769px) {
+            padding-right: 265px;
         }
     }
 }
@@ -245,13 +243,19 @@ input[type=submit], button {
     right: -250px;
     @include flexbox();
     @include flex-flow(column);
-    @include transition(all, 0.5s, ease-in-out);
     background-color: $nav-background-color;
     overflow: hidden;
     width: 250px;
+    @include transition(all, 0.5s, ease-in-out);
 
-    &.in {
+    @media (min-width:769px) {
         right: 0;
+    }
+
+    @media (max-width:768px) {
+        &.in {
+            right: 0;
+        }
     }
 
     .sideBarFooter {
@@ -420,19 +424,25 @@ input[type=submit], button {
             display: block;
             background-color: rgba(0, 0, 0, 0.5s);
             opacity: 0.6;
-            // -webkit-backdrop-filter: blur(10px);
-            // backdrop-filter: blur(10px);
         }
+    }
+}
+
+@keyframes slide {
+    from {
+        display: block;
+    }
+
+    to {
+        display: none;
     }
 }
 
 .navbar {
     @include transition(all, 0.5s, ease-in-out);
 
-    &.in {
-        @media (min-width:769px) {
-            padding-right: 265px;
-        }
+    @media (min-width:768px) {
+        padding-right: 265px;
     }
 
     .navbar-toggler {
@@ -499,7 +509,7 @@ input[type=submit], button {
     }
 
     &:hover, &:focus {
-        background-color: #e2e2e2;
+        background-color: #eeeeee;
     }
 
     &.disabled {
@@ -587,26 +597,26 @@ input[type=submit], button {
                     }
                 }
             }
-        }
 
-        > .button {
-            margin-right: auto;
-            padding-right: 10px;
-            min-width: 250px;
-            text-align: left;
+            & + .button {
+                margin-right: auto;
+                padding-right: 10px;
+                min-width: 250px;
+                text-align: left;
 
-            > a {
-                display: block;
-                margin-bottom: 10px;
+                > a {
+                    display: block;
+                    margin-bottom: 10px;
+
+                    @media (max-width:768px) {
+                        display: inline-block;
+                        margin-bottom: 0;
+                    }
+                }
 
                 @media (max-width:768px) {
-                    display: inline-block;
-                    margin-bottom: 0;
+                    text-align: center;
                 }
-            }
-
-            @media (max-width:768px) {
-                text-align: center;
             }
         }
     }
@@ -1026,6 +1036,13 @@ input, select, textarea {
 
     &.input-validation-error {
         border-color: red !important;
+    }
+
+    &[data-val-required] {
+        &:not(.input-validation-error) {
+            @include transition(all,.3s,ease-in-out);
+            box-shadow: 0 1px 0 $sidebarheader-color;
+        }
     }
 }
 

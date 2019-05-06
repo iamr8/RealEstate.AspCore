@@ -38,7 +38,6 @@
         Selected = Model.SearchInput?.PropertyCategory == x.Name
     }).ToList()).AddNone();
 
-    var condition = Model.SearchInput.IsUnderCondition();
 }
 <div class="col-12">
     <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
@@ -61,7 +60,7 @@
                                     @SharedLocalizer["ClearSearch"]
                                 </a>
                             </div>
-                            <div id="search" class="collapse @(condition ? "show" : "")">
+                            <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
@@ -140,22 +139,7 @@
                                             </div>
                                         </div>
                                     }
-                                    <hr />
-                                    <div class="row justify-content-center align-items-center">
-                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
-                                        {
-                                            <div class="col-12">
-                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
-                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
-                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
-                                                </div>
-                                            </div>
-                                        }
-
-                                        <div class="col-12">
-                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
-                                        </div>
-                                    </div>
+                                    <vc:admin-search-condition model="@Model.SearchInput" />
                                 </div>
                             </div>
                         </div>
@@ -243,23 +227,22 @@
                                     </span>
                                 }
                             </div>
-                            <div class="button">
-                                @*@if (item.LastState != DealStatusEnum.Requested)
-                                    {
-                                        <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
-                                    }*@
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                            @*@if (item.LastState != DealStatusEnum.Requested)
                                 {
+                                    <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
+                                }*@
+                            @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                            {
+                                <div class="button">
+
                                     <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                }
-                            </div>
+                                </div>
+
+                            }
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs" />
-                        }
+                        <vc:log logs="@item.Logs" />
                     </div>
                 }
 
@@ -272,7 +255,7 @@
                     </h5>
                 </div>
             }
-            <vc:pagination model="@Model.List"></vc:pagination>
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>

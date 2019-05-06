@@ -12,7 +12,7 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("featureName")]
         public string Name { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Subject")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Type")]
         [SearchParameter("type")]
         public FeatureTypeEnum? Type { get; set; }
     }

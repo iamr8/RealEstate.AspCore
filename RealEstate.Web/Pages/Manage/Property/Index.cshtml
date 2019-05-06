@@ -1,71 +1,81 @@
 ﻿@page
-@using RealEstate.Services.Extensions
 @model IndexModel
 @{
-
-    var featuresList = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
-    var features = SelectItemExtensions.AddNone(featuresList?.Select(x => new SelectListItem
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districtsSelect = districts?.Select(x => new SelectListItem
     {
-        Value = x.Name,
-        Text = x.Name
-    }).ToList());
+        Text = x.Name,
+        Value = x.Name
+    }).AddNone();
 
     var categorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
-    var categories = SelectItemExtensions.AddNone(categorieslist?.Select(x => new SelectListItem
+    var categories = (categorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,
         Text = x.Name
-    }).ToList());
-
+    }).ToList()).AddNone();
 }
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
 
-            <div class="col-12">
-                <form method="post" class="widget mini-widget bg-white">
-                    <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                    <section class="container-fluid margin-bottomed">
-                        <div class="row">
-                            <div class="col-12 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.Address"></label>
-                                <input asp-for="SearchInput.Address" class="form-control" />
+            <form method="post" class="search">
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <a class="card-link" data-toggle="collapse" href="#search">
+                                    @SharedLocalizer["Search"]
+                                </a>
+                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
+                                    @SharedLocalizer["ClearSearch"]
+                                </a>
                             </div>
-                            <div class="col-12 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                <input asp-for="SearchInput.Owner" class="form-control" />
-                            </div>
-                            <div class="col-6 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.Category"></label>
-                                <select asp-items="categories" asp-for="SearchInput.Category" class="form-control"></select>
-                            </div>
-                            <div class="col-6 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.District"></label>
-                                <input asp-for="SearchInput.District" class="form-control" />
-                            </div>
-                            <div class="col-6 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.FeatureName"></label>
-                                <select asp-items="features" asp-for="SearchInput.FeatureName" class="form-control"></select>
-                            </div>
-                            <div class="col-6 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.FromValue"></label>
-                                <input asp-for="SearchInput.FromValue" class="form-control" />
-                            </div>
-                            <div class="col-6 col-lg-4 margin-bottomed">
-                                <label class="control-label" asp-for="SearchInput.ToValue"></label>
-                                <input asp-for="SearchInput.ToValue" class="form-control" />
+                            <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
+                                <div class="card-body">
+                                    <div class="row justify-content-center align-items-center">
+                                        <input asp-for="SearchInput.PageNo" />
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                                <input asp-for="SearchInput.Owner" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
+                                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Category"></label>
+                                                <select asp-items="categories" asp-for="SearchInput.Category" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.District"></label>
+                                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.Street"></label>
+                                                <input asp-for="SearchInput.Street" class="form-control" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <vc:admin-search-condition model="@Model.SearchInput" />
+                                </div>
                             </div>
                         </div>
-                    </section>
-                    <widget-footer>
-                        <widget-footer-text></widget-footer-text>
-                        <widget-footer-button>
-                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                        </widget-footer-button>
-                    </widget-footer>
-                </form>
-            </div>
+                    </div>
+                </div>
+            </form>
             @if (Model.List.Items?.Any() == true)
             {
 
@@ -161,10 +171,7 @@
                                 }
                             </div>
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs" />
-                        }
+                        <vc:log logs="@item.Logs" />
                     </div>
                 }
 
@@ -177,7 +184,7 @@
                     </h5>
                 </div>
             }
-            <vc:pagination model="@Model.List"></vc:pagination>
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>

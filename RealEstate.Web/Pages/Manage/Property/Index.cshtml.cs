@@ -34,7 +34,7 @@ namespace RealEstate.Web.Pages.Manage.Property
 
         public string PageTitle => _localizer["Properties"];
 
-        public async Task OnGetAsync(string pageNo, string status, string propertyId, string propertyAddress, string propertyDistrict, string propertyCategory, string propertyOwner, string propertyOwnerMobile)
+        public async Task OnGetAsync(string pageNo, string status, string propertyId, string propertyStreet, string propertyDistrict, string propertyCategory, string propertyOwner, string propertyOwnerMobile, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new PropertySearchViewModel
             {
@@ -42,9 +42,13 @@ namespace RealEstate.Web.Pages.Manage.Property
                 Id = propertyId,
                 District = propertyDistrict,
                 Category = propertyCategory,
-                Address = propertyAddress,
+                Street = propertyStreet,
                 Owner = propertyOwner,
-                OwnerMobile = propertyOwnerMobile
+                OwnerMobile = propertyOwnerMobile,
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;

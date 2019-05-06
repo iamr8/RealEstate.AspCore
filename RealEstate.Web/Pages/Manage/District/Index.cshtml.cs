@@ -32,13 +32,16 @@ namespace RealEstate.Web.Pages.Manage.District
         [ViewData]
         public string PageTitle => _localizer["Districts"];
 
-        public async Task OnGetAsync(string pageNo, string districtName, bool deleted)
+        public async Task OnGetAsync(string pageNo, string districtName, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new DistrictSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = districtName,
-                IncludeDeletedItems = deleted
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             List = await _locationService.DistrictListAsync(SearchInput).ConfigureAwait(false);

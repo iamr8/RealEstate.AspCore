@@ -457,6 +457,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ایجاد کننده.
+        /// </summary>
+        public static string Creator {
+            get {
+                return ResourceManager.GetString("Creator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to کاربری فعلی قابل شناسایی نیست..
         /// </summary>
         public static string CurrentUserIsUnreachable {

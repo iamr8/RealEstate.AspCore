@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Component;
 
 namespace RealEstate.Web.Components

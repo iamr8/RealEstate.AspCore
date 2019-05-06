@@ -1,9 +1,5 @@
 ﻿@page
 @model IndexModel
-@{
-    var condition = Model.SearchInput.IsUnderCondition();
-
-}
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle">
@@ -22,7 +18,7 @@
                                     @SharedLocalizer["ClearSearch"]
                                 </a>
                             </div>
-                            <div id="search" class="collapse @(condition ? "show" : "")">
+                            <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
@@ -33,22 +29,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <hr />
-                                    <div class="row justify-content-center align-items-center">
-                                        @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
-                                        {
-                                            <div class="col-12">
-                                                <div class="custom-control custom-switch input-wrapper" dir="ltr">
-                                                    <input type="checkbox" class="custom-control-input" asp-for="SearchInput.IncludeDeletedItems">
-                                                    <label class="custom-control-label" asp-for="SearchInput.IncludeDeletedItems"></label>
-                                                </div>
-                                            </div>
-                                        }
-
-                                        <div class="col-12">
-                                            <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary btn-block" />
-                                        </div>
-                                    </div>
+                                    <vc:admin-search-condition model="@Model.SearchInput" />
                                 </div>
                             </div>
                         </div>
@@ -79,10 +60,7 @@
                                 }
                             </div>
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs"></vc:log>
-                        }
+                        <vc:log logs="@item.Logs" />
                     </div>
                 }
             }
@@ -94,7 +72,7 @@
                     </h5>
                 </div>
             }
-            <vc:pagination model="@Model.List"></vc:pagination>
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>

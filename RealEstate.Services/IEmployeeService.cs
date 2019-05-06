@@ -143,19 +143,12 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_employees, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<EmployeeViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _employees.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Id))
                     query = query.Where(x => x.Id == searchModel.Id);
 
@@ -179,6 +172,8 @@ namespace RealEstate.Services
 
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.Phone, searchModel.Phone.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
@@ -453,10 +448,10 @@ namespace RealEstate.Services
 
         private async Task<StatusEnum> SyncAsync(Employee employee, EmployeeInputViewModel model, bool save)
         {
-            var lastFixedSalary = employee.FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
-            if (lastFixedSalary == null)
+            if (model.FixedSalary != null && model.FixedSalary > 0)
             {
-                if (model.FixedSalary != null && model.FixedSalary > 0)
+                var lastFixedSalary = employee.FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
+                if (lastFixedSalary?.Value.Equals(model.FixedSalary) != true)
                 {
                     var addFixed = await _baseService.AddAsync(new FixedSalary
                     {
@@ -467,37 +462,10 @@ namespace RealEstate.Services
                         false).ConfigureAwait(false);
                 }
             }
-            else
+            if (model.Insurance != null && model.Insurance > 0)
             {
-                if (!lastFixedSalary.Value.Equals(model.FixedSalary) && model.FixedSalary != null && model.FixedSalary > 0)
-                {
-                    var addFixed = await _baseService.AddAsync(new FixedSalary
-                    {
-                        EmployeeId = employee.Id,
-                        Value = (double)model.FixedSalary
-                    },
-                        null,
-                        false).ConfigureAwait(false);
-                }
-            }
-
-            var lastInsurance = employee.Insurances?.OrderDescendingByCreationDateTime().FirstOrDefault();
-            if (lastInsurance == null)
-            {
-                if (model.Insurance != null && model.Insurance > 0)
-                {
-                    var addFixed = await _baseService.AddAsync(new Insurance
-                    {
-                        EmployeeId = employee.Id,
-                        Price = (double)model.Insurance
-                    },
-                        null,
-                        false).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                if (!lastInsurance.Price.Equals(model.Insurance) && model.Insurance != null && model.Insurance > 0)
+                var lastInsurance = employee.Insurances?.OrderDescendingByCreationDateTime().FirstOrDefault();
+                if (lastInsurance?.Price.Equals(model.Insurance) != true)
                 {
                     var addFixed = await _baseService.AddAsync(new Insurance
                     {
@@ -510,16 +478,16 @@ namespace RealEstate.Services
             }
 
             var result = await _baseService.SyncAsync(
-                employee.EmployeeDivisions,
-                model.Divisions,
-                (division, currentUser) => new EmployeeDivision
-                {
-                    DivisionId = division.DivisionId,
-                    EmployeeId = employee.Id
-                },
-                (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
-                null,
-                false).ConfigureAwait(false);
+                    employee.EmployeeDivisions,
+                    model.Divisions,
+                    (division, currentUser) => new EmployeeDivision
+                    {
+                        DivisionId = division.DivisionId,
+                        EmployeeId = employee.Id
+                    },
+                    (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
+                    null,
+                    false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 

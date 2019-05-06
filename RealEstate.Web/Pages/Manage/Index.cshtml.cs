@@ -1,28 +1,36 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using RealEstate.Base;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.ViewModels;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage
 {
     public class IndexModel : PageModel
     {
-        private readonly IItemService _itemService;
-        private readonly IUserService _userService;
+        private readonly IGlobalService _globalService;
+        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
-            IItemService itemService,
-            IUserService userService
+            IGlobalService globalService,
+            IStringLocalizer<SharedResource> localizer
             )
         {
-            _itemService = itemService;
-            _userService = userService;
+            _globalService = globalService;
+            _localizer = localizer;
         }
 
-        public PaginationViewModel<ItemViewModel> Deals { get; set; }
+        public string PageTitle => _localizer["Properties"];
 
-        public void OnGet()
+        public StatisticsViewModel Statistics { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
         {
+            Statistics = await _globalService.ListAsync().ConfigureAwait(false);
+
+            return Page();
         }
     }
 }

@@ -25,7 +25,7 @@ namespace RealEstate.Services
 
         Task<(StatusEnum, User)> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
-        Task<List<BeneficiaryJsonViewModel>> ListJsonAsync();
+        Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
 
@@ -66,14 +66,15 @@ namespace RealEstate.Services
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
 
-        public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync()
+        public async Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true)
         {
-            var query = from user in _users
-                        let requests = user.Employee.EmployeeStatuses.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
-                        let lastRequest = requests.FirstOrDefault()
-                        where !requests.Any() || lastRequest.Status == EmployeeStatusEnum.Start
-                        where !user.Username.Equals("admin", StringComparison.CurrentCultureIgnoreCase)
-                        select user;
+            var query = _users.AsQueryable();
+            if (includeDeleted)
+                query = query.IgnoreQueryFilters();
+
+            if (exceptAdmin)
+                query = query.Where(x => !x.Username.Equals("admin", StringComparison.CurrentCultureIgnoreCase));
+
             var models = await query.ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
                 return default;
@@ -81,10 +82,7 @@ namespace RealEstate.Services
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Into<User, UserViewModel>(false, act =>
-                {
-                    act.GetEmployee();
-                });
+                var item = user.Into<User, UserViewModel>(false, act => act.GetEmployee());
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -138,18 +136,12 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_users, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<UserViewModel>();
 
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _users.AsQueryable();
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (searchModel.Role != null)
                     query = query.Where(x => x.Role == searchModel.Role);
 
@@ -158,6 +150,8 @@ namespace RealEstate.Services
 
                 if (!string.IsNullOrEmpty(searchModel.Username))
                     query = query.Where(x => EF.Functions.Like(x.Username, searchModel.Username.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,

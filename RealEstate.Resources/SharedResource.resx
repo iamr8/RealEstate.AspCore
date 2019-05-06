@@ -960,4 +960,7 @@
   <data name="OwnerMobile" xml:space="preserve">
     <value>موبایل مالک</value>
   </data>
+  <data name="Creator" xml:space="preserve">
+    <value>ایجاد کننده</value>
+  </data>
 </root>

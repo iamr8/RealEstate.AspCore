@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
         [ViewData]
         public string PageTitle => _localizer["Customers"];
 
-        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile, bool deleted)
+        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new CustomerSearchViewModel
             {
@@ -42,7 +42,10 @@ namespace RealEstate.Web.Pages.Manage.Customer
                 Address = customerAddress,
                 Phone = customerPhone,
                 Mobile = customerMobile,
-                IncludeDeletedItems = deleted
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             List = await _customerService.CustomerListAsync(SearchInput).ConfigureAwait(false);

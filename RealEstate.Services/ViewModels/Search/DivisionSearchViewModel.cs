@@ -11,7 +11,6 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("divisionName")]
         public string Name { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Subject")]
         [SearchParameter("id")]
         public string Id { get; set; }
     }

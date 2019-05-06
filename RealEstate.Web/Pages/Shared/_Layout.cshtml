@@ -16,12 +16,11 @@
 <body>
     <partial name="Config/_NavBar" />
 
-    <main class="container-fluid in" role="main">
+    <main class="container-fluid" role="main">
         <div class="row justify-content-center">
             @RenderBody()
         </div>
     </main>
-    @* <partial name="Config/_BottomNavBar" /> *@
     <partial name="Config/_Scripts" />
 
     @RenderSection("Scripts", required: false)

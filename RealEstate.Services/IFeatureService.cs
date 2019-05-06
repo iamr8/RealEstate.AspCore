@@ -371,24 +371,19 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_features, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<FeatureViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _features.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
                 if (searchModel.Type != null)
                     query = query.Where(x => x.Type == searchModel.Type);
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
@@ -400,21 +395,16 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_facilities, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<FacilityViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _facilities.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Facility, FacilityViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))
@@ -463,19 +453,12 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_categories, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<CategoryViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _categories.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
@@ -484,6 +467,8 @@ namespace RealEstate.Services
 
                 if (searchModel.Type != null)
                     query = query.Where(x => x.Type == searchModel.Type);
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Category, CategoryViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))

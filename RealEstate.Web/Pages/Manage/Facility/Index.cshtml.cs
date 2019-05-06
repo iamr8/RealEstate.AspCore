@@ -32,13 +32,16 @@ namespace RealEstate.Web.Pages.Manage.Facility
         [ViewData]
         public string PageTitle => _localizer["Facilities"];
 
-        public async Task OnGetAsync(string pageNo, string facilityName, bool deleted)
+        public async Task OnGetAsync(string pageNo, string facilityName, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new FacilitySearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = facilityName,
-                IncludeDeletedItems = deleted
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             List = await _featureService.FacilityListAsync(SearchInput).ConfigureAwait(false);

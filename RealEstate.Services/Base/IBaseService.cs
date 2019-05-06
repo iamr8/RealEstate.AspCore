@@ -28,10 +28,16 @@ namespace RealEstate.Services.Base
             Action<TSource, TModel> onUpdate,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
+        IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser)
+            where TSource : BaseEntity where TSearch : BaseSearchModel;
+
         IQueryable<TSource> QueryByRole<TSource>(IQueryable<TSource> source, params Role[] allowedRolesToShowDeletedItems) where TSource : class;
 
         TModel Map<TSource, TModel>(TSource query,
             TModel entity) where TSource : class where TModel : class;
+
+        IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel)
+            where TSource : BaseEntity where TSearch : BaseSearchModel;
 
         Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
@@ -141,6 +147,54 @@ namespace RealEstate.Services.Base
         }
 
         private HttpContext HttpContext => _accessor.HttpContext;
+
+        public IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel) where TSource : BaseEntity where TSearch : BaseSearchModel
+        {
+            var currentUser = CurrentUser();
+            if (currentUser == null)
+                return query;
+
+            if (searchModel == null)
+                return query;
+
+            if (!string.IsNullOrEmpty(searchModel.CreationDateFrom))
+            {
+                var dtFrom = searchModel.CreationDateFrom.PersianToGregorian();
+                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date >= dtFrom.Date);
+            }
+
+            if (!string.IsNullOrEmpty(searchModel.CreationDateTo))
+            {
+                var dtTo = searchModel.CreationDateTo.PersianToGregorian();
+                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date <= dtTo.Date);
+            }
+
+            if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
+            {
+                if (!string.IsNullOrEmpty(searchModel.CreatorId))
+                    query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == searchModel.CreatorId);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(searchModel.CreatorId))
+                    query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
+            }
+
+            return query;
+        }
+
+        public IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel
+        {
+            currentUser = CurrentUser();
+            if (currentUser == null)
+                return null;
+
+            var query = source.AsQueryable();
+            if (searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin))
+                query = query.IgnoreQueryFilters();
+
+            return query;
+        }
 
         public CurrentUserViewModel CurrentUser()
         {

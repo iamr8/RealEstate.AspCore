@@ -32,14 +32,17 @@ namespace RealEstate.Web.Pages.Manage.Division
         [ViewData]
         public string PageTitle => _localizer["Divisions"];
 
-        public async Task OnGetAsync(string pageNo, string divisionName, string id, bool deleted)
+        public async Task OnGetAsync(string pageNo, string divisionName, string id, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
             SearchInput = new DivisionSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
                 Name = divisionName,
                 Id = id,
-                IncludeDeletedItems = deleted
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
             };
 
             List = await _divisionService.ListAsync(SearchInput).ConfigureAwait(false);

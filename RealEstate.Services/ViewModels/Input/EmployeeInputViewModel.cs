@@ -36,11 +36,9 @@ namespace RealEstate.Services.ViewModels.Input
         public string Phone { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "FixedSalary")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public double? FixedSalary { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Insurance")]
-        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public double? Insurance { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Divisions")]

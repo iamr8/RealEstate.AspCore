@@ -147,33 +147,36 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<PropertyViewModel>> PropertyListAsync(PropertySearchViewModel searchModel)
         {
-            var models = _properties.AsQueryable();
-
-            models = models.SearchBy(searchModel?.Id, x => x.Id);
-            models = models.SearchBy(searchModel?.Category, x => x.Category.Name);
-            models = models.SearchBy(searchModel?.District, x => x.District.Name);
-            models = models.SearchBy(searchModel?.Address,
-                (x, y) => EF.Functions.Like(x.Street, y.Like())
-                          || EF.Functions.Like(x.Alley, y.Like())
-                          || EF.Functions.Like(x.BuildingName, y.Like()));
-            models = models.SearchBy(searchModel?.Owner, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.Name == y)));
-            models = models.SearchBy(searchModel?.OwnerMobile, (x, y) => x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => v.Customer.MobileNumber == y)));
+            var query = _baseService.CheckDeletedItemsPrevillege(_properties, searchModel, out var currentUser);
+            if (query == null)
+                return new PaginationViewModel<PropertyViewModel>();
 
             if (searchModel != null)
             {
-                if (!string.IsNullOrEmpty(searchModel.FeatureName))
-                {
-                    models = models.Where(x => x.PropertyFeatures.Any(c => c.Feature.Name == searchModel.FeatureName));
+                if (!string.IsNullOrEmpty(searchModel.Id))
+                    query = query.Where(x => x.Id == searchModel.Id);
 
-                    if (searchModel.FromValue != null && searchModel.FromValue > 0)
-                        models = models.Where(x => x.PropertyFeatures.Any(c => Convert.ToDouble(c.Value) >= searchModel.FromValue));
+                if (!string.IsNullOrEmpty(searchModel.Category))
+                    query = query.Where(x => x.Category.Name == searchModel.Category);
 
-                    if (searchModel.ToValue != null && searchModel.ToValue > 0)
-                        models = models.Where(x => x.PropertyFeatures.Any(c => Convert.ToDouble(c.Value) <= searchModel.ToValue));
-                }
+                if (!string.IsNullOrEmpty(searchModel.District))
+                    query = query.Where(x => x.District.Name == searchModel.District);
+
+                if (!string.IsNullOrEmpty(searchModel.Street))
+                    query = query.Where(x => EF.Functions.Like(x.Street, searchModel.Street.Like()));
+
+                if (!string.IsNullOrEmpty(searchModel.Owner))
+                    query = query.Where(x =>
+                        x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
+
+                if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
+                    query = query.Where(x =>
+                        x.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                     item =>
                     {
                         return new PropertyViewModel(item, _baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>

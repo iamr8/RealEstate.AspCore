@@ -79,24 +79,19 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<DivisionViewModel>> ListAsync(DivisionSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_divisions, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<DivisionViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _divisions.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Id))
                     query = query.Where(x => EF.Functions.Like(x.Id, searchModel.Id.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Division, DivisionViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin))

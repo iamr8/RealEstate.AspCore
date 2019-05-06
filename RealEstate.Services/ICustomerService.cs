@@ -384,15 +384,15 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
-                return default;
+            var query = _baseService.CheckDeletedItemsPrevillege(_applicants, searchModel, out var currentUser);
+            if (query == null)
+                return new PaginationViewModel<ApplicantViewModel>();
 
-            var models = _applicants
+            query = query
                 .Where(x => x.UserId == currentUser.Id)
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<Applicant, ApplicantViewModel>(_baseService.IsAllowed(Role.SuperAdmin), act =>
                 {
                     act.GetCustomer(_baseService.IsAllowed(Role.SuperAdmin));
@@ -406,18 +406,13 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_customers, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<CustomerViewModel>();
 
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _customers.WhereItIsPublic();
+            query = query.WhereItIsPublic();
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Id))
                     query = query.Where(x => x.Id == searchModel.Id);
 
@@ -432,6 +427,8 @@ namespace RealEstate.Services
 
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.PhoneNumber, searchModel.Phone.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,

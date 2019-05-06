@@ -61,21 +61,16 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
         {
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
+            var query = _baseService.CheckDeletedItemsPrevillege(_districts, searchModel, out var currentUser);
+            if (query == null)
                 return new PaginationViewModel<DistrictViewModel>();
-
-            var hasPrevillege = currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin;
-
-            var query = _districts.AsQueryable();
 
             if (searchModel != null)
             {
-                if (searchModel.IncludeDeletedItems && hasPrevillege)
-                    query = query.IgnoreQueryFilters();
-
                 if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
