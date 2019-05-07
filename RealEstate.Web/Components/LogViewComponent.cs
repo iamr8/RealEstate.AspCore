@@ -5,9 +5,20 @@ namespace RealEstate.Web.Components
 {
     public class LogViewComponent : ViewComponent
     {
-        public IViewComponentResult Invoke(LogViewModel logs)
+        public IViewComponentResult Invoke(LogViewModel logs, string cat, string id)
         {
-            return View(logs ?? new LogViewModel());
+            if (logs == null)
+                return View(new BaseLogWrapperViewModel());
+
+            var model = new BaseLogWrapperViewModel
+            {
+                Id = id,
+                Entity = cat,
+                Modifies = logs.Modifies,
+                Create = logs.Create,
+                Deletes = logs.Deletes
+            };
+            return View(model);
         }
     }
 }

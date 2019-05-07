@@ -21,7 +21,7 @@ namespace RealEstate.Base.Attributes
         private void Process(params string[] type)
         {
             ValidTypes = type;
-            ErrorMessage = string.Format(DefaultErrorMessage, string.Join(@" یا ", ValidTypes));
+            ErrorMessage = string.Format(DefaultErrorMessage, string.Join(" یا ", ValidTypes));
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)

@@ -10,39 +10,37 @@ namespace RealEstate.Services.ViewModels
     public class ReminderViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Reminder _entity;
+        public Reminder Entity { get; }
 
         public ReminderViewModel(Reminder entity, bool includeDeleted, Action<ReminderViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public bool IsCheck => _entity?.IsCheck ?? false;
-        public string Description => _entity?.Description;
-        public DateTime Date => _entity?.Date ?? DateTime.Now;
-        public string CheckBank => _entity?.CheckBank;
-        public string CheckNumber => _entity?.CheckNumber;
-        public double Price => (double)(_entity?.Price ?? 0);
+        public bool IsCheck => Entity?.IsCheck ?? false;
+        public string Description => Entity?.Description;
+        public DateTime Date => Entity?.Date ?? DateTime.Now;
+        public string CheckBank => Entity?.CheckBank;
+        public string CheckNumber => Entity?.CheckNumber;
+        public double Price => (double)(Entity?.Price ?? 0);
 
         public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
         {
-            Deal = _entity?.Deal.Into(includeDeleted, action);
+            Deal = Entity?.Deal.Into(includeDeleted, action);
         }
 
         public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            User = Entity?.User.Into(includeDeleted, action);
         }
 
         public void GetPictures(bool includeDeleted = false, Action<PictureViewModel> action = null)
         {
-            Pictures = _entity?.Pictures.Into(includeDeleted, action);
+            Pictures = Entity?.Pictures.Into(includeDeleted, action);
         }
 
         public DealViewModel Deal { get; private set; }

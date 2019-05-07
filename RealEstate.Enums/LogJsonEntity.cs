@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Base
 {
@@ -20,5 +21,17 @@ namespace RealEstate.Base
 
         [JsonProperty("t")]
         public LogTypeEnum Type { get; set; }
+
+        [JsonProperty("f")]
+        public List<LogModifyDetailJsonEntity> Modifies { get; set; }
+    }
+
+    public class LogModifyDetailJsonEntity
+    {
+        [JsonProperty("k")]
+        public string Key { get; set; }
+
+        [JsonProperty("v")]
+        public string Value { get; set; }
     }
 }

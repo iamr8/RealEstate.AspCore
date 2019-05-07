@@ -12,34 +12,33 @@ namespace RealEstate.Services.ViewModels
     public class SmsViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Sms _entity;
+        public Sms Entity { get; }
 
         public SmsViewModel(Sms entity, bool includeDeleted, Action<SmsViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
+
             action?.Invoke(this);
         }
 
-        public string Sender => _entity.Sender;
-        public string Receiver => _entity.Receiver;
-        public string ReferenceId => _entity.ReferenceId;
-        public string Text => _entity.Text;
-        public SmsProvider Provider => _entity.Provider;
-        public string StatusJson => _entity.StatusJson;
+        public string Sender => Entity.Sender;
+        public string Receiver => Entity.Receiver;
+        public string ReferenceId => Entity.ReferenceId;
+        public string Text => Entity.Text;
+        public SmsProvider Provider => Entity.Provider;
+        public string StatusJson => Entity.StatusJson;
 
         public void GetDealRequests(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
-            DealRequests = _entity?.DealRequests.Into(includeDeleted, action);
+            DealRequests = Entity?.DealRequests.Into(includeDeleted, action);
         }
 
         public void GetPayments(bool includeDeleted = false, Action<PaymentViewModel> action = null)
         {
-            Payments = _entity?.Payments.Into(includeDeleted, action);
+            Payments = Entity?.Payments.Into(includeDeleted, action);
         }
 
         private List<DealRequestViewModel> DealRequests { get; set; }

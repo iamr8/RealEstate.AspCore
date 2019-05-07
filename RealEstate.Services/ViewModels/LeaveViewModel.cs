@@ -9,26 +9,24 @@ namespace RealEstate.Services.ViewModels
     public class LeaveViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Leave _entity;
+        public Leave Entity { get; }
 
         public LeaveViewModel(Leave entity, bool includeDeleted, Action<LeaveViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public DateTime From => _entity.From;
-        public DateTime To => _entity.To;
-        public string Reason => _entity.Reason;
+        public DateTime From => Entity.From;
+        public DateTime To => Entity.To;
+        public string Reason => Entity.Reason;
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }

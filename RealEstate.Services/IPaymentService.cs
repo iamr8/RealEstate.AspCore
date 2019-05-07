@@ -149,14 +149,15 @@ namespace RealEstate.Services
 
         public async Task<PaginationViewModel<ManagementPercentViewModel>> ManagementPercentListAsync(ManagementPercentSearchViewModel searchModel)
         {
-            var models = _managementPercents.AsQueryable();
+            var query = _managementPercents.AsQueryable();
 
             if (searchModel != null)
             {
-                models = models.SearchBy(searchModel.Percent, x => x.Percent);
+                if (searchModel.Percent != null && searchModel.Percent > 0)
+                    query = query.Where(x => x.Percent == searchModel.Percent);
             }
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
+            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Into<ManagementPercent, ManagementPercentViewModel>(_baseService.IsAllowed(Role.SuperAdmin, Role.Admin), act =>
                 {
                     act.GetEmployee();

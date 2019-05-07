@@ -349,7 +349,8 @@ namespace RealEstate.Services
                 if (!string.IsNullOrEmpty(searchModel.Street))
                     query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
 
-                query = query.SearchBy(searchModel.ItemId, x => x.Id);
+                if (!string.IsNullOrEmpty(searchModel.ItemId))
+                    query = query.Where(x => x.Id == searchModel.ItemId);
 
                 if (!string.IsNullOrEmpty(searchModel.ItemCategory))
                     query = query.Where(x => x.Category.Name == searchModel.ItemCategory);

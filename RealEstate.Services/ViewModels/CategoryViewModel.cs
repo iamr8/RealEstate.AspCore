@@ -11,41 +11,39 @@ namespace RealEstate.Services.ViewModels
     public class CategoryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Category _entity;
+        public Category Entity { get; }
 
         public CategoryViewModel(Category entity, bool includeDeleted, Action<CategoryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Name => _entity?.Name;
+        public string Name => Entity?.Name;
 
-        public CategoryTypeEnum Type => _entity?.Type ?? CategoryTypeEnum.Property;
+        public CategoryTypeEnum Type => Entity?.Type ?? CategoryTypeEnum.Property;
 
         public void GetItems(bool includeDeleted, Action<ItemViewModel> action = null)
         {
-            Items = _entity?.Items.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
+            Items = Entity?.Items.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
         }
 
         public void GetProperties(bool includeDeleted, Action<PropertyViewModel> action = null)
         {
-            Properties = _entity?.Properties.Into(includeDeleted, action);
+            Properties = Entity?.Properties.Into(includeDeleted, action);
         }
 
         public void GetUserItemCategories(bool includeDeleted, Action<UserItemCategoryViewModel> action = null)
         {
-            UserItemCategories = _entity?.UserItemCategories.Into(includeDeleted, action);
+            UserItemCategories = Entity?.UserItemCategories.Into(includeDeleted, action);
         }
 
         public void GetUserPropertyCategories(bool includeDeleted, Action<UserPropertyCategoryViewModel> action = null)
         {
-            UserPropertyCategories = _entity?.UserPropertyCategories.Into(includeDeleted, action);
+            UserPropertyCategories = Entity?.UserPropertyCategories.Into(includeDeleted, action);
         }
 
         public List<ItemViewModel> Items { get; private set; }

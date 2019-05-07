@@ -12,45 +12,43 @@ namespace RealEstate.Services.ViewModels
     public class ItemViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Item _entity;
+        public Item Entity { get; }
 
         public ItemViewModel(Item entity, bool includeDeleted, Action<ItemViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Description => _entity?.Description;
-        public DealStatusEnum LastState => _entity?.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status ?? DealStatusEnum.Rejected;
+        public string Description => Entity?.Description;
+        public DealStatusEnum LastState => Entity?.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status ?? DealStatusEnum.Rejected;
 
         public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
-            Category = _entity?.Category.Into(includeDeleted, action);
+            Category = Entity?.Category.Into(includeDeleted, action);
         }
 
         public void GetProperty(bool includeDeleted = false, Action<PropertyViewModel> action = null)
         {
-            Property = _entity?.Property.Into(includeDeleted, action);
+            Property = Entity?.Property.Into(includeDeleted, action);
         }
 
         public void GetItemFeatures(bool includeDeleted = false, Action<ItemFeatureViewModel> action = null)
         {
-            ItemFeatures = _entity?.ItemFeatures.Into(includeDeleted, action);
+            ItemFeatures = Entity?.ItemFeatures.Into(includeDeleted, action);
         }
 
         public void GetDealRequests(bool includeDeleted = false, Action<DealRequestViewModel> action = null)
         {
-            DealRequests = _entity?.DealRequests?.Into(includeDeleted, action);
+            DealRequests = Entity?.DealRequests?.Into(includeDeleted, action);
         }
 
         public void GetApplicants(bool includeDeleted, Action<ApplicantViewModel> action = null)
         {
-            Applicants = _entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
+            Applicants = Entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
         public List<ApplicantViewModel> Applicants { get; private set; }

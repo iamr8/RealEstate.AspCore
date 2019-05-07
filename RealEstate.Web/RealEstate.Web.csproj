@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.1348</AssemblyVersion>
-    <FileVersion>1.0.0.1348</FileVersion>
+    <AssemblyVersion>1.0.0.1438</AssemblyVersion>
+    <FileVersion>1.0.0.1438</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -42,7 +42,6 @@
   <ItemGroup>
     <PackageReference Include="CacheManager.Microsoft.Extensions.Caching.Memory" Version="1.2.0" />
     <PackageReference Include="CacheManager.Serialization.Json" Version="1.2.0" />
-    <PackageReference Include="EFSecondLevelCache.Core" Version="1.7.2" />
     <PackageReference Include="ElmahCore" Version="1.2.5" />
     <PackageReference Include="ElmahCore.Sql" Version="1.2.5" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
@@ -60,6 +59,7 @@
   <ItemGroup>
     <ProjectReference Include="..\RealEstate.Configuration\RealEstate.Configuration.csproj" />
     <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
+    <ProjectReference Include="..\RealEstate.Runner\RealEstate.Runner.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
   </ItemGroup>
 

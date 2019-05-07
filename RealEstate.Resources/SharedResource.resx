@@ -963,4 +963,7 @@
   <data name="Creator" xml:space="preserve">
     <value>ایجاد کننده</value>
   </data>
+  <data name="Logs" xml:space="preserve">
+    <value>گزارشات</value>
+  </data>
 </root>

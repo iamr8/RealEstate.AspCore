@@ -61,10 +61,7 @@
                                 }
                             </div>
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs" />
-                        }
+                        <vc:log logs="@item.Logs" cat="District" id="@item.Id" />
                     </div>
                 }
             }

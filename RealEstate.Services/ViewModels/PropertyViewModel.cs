@@ -11,69 +11,67 @@ namespace RealEstate.Services.ViewModels
     public class PropertyViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Property _entity;
+        public Property Entity { get; }
 
         public PropertyViewModel(Property entity, bool includeDeleted, Action<PropertyViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Address => _entity?.Address;
-        public string Street => _entity?.Street;
+        public string Address => Entity?.Address;
+        public string Street => Entity?.Street;
 
-        public string Alley => _entity?.Alley;
+        public string Alley => Entity?.Alley;
 
-        public string BuildingName => _entity?.BuildingName;
-        public string Number => _entity?.Number;
-        public int Floor => _entity?.Floor ?? 0;
-        public int Flat => _entity?.Flat ?? 0;
+        public string BuildingName => Entity?.BuildingName;
+        public string Number => Entity?.Number;
+        public int Floor => Entity?.Floor ?? 0;
+        public int Flat => Entity?.Flat ?? 0;
 
-        public string Description => _entity.Description;
+        public string Description => Entity.Description;
 
         public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
-            Category = _entity?.Category.Into(includeDeleted, action);
+            Category = Entity?.Category.Into(includeDeleted, action);
         }
 
         public void GetItems(bool includeDeleted = false, Action<ItemViewModel> action = null)
         {
-            Items = _entity?.Items.Into(includeDeleted, action);
+            Items = Entity?.Items.Into(includeDeleted, action);
         }
 
         public void GetDistrict(bool includeDeleted = false, Action<DistrictViewModel> action = null)
         {
-            District = _entity?.District.Into(includeDeleted, action);
+            District = Entity?.District.Into(includeDeleted, action);
         }
 
         public void GetPropertyOwnerships(bool includeDeleted = false, Action<PropertyOwnershipViewModel> action = null)
         {
-            PropertyOwnerships = _entity?.PropertyOwnerships.Into(includeDeleted, action);
+            PropertyOwnerships = Entity?.PropertyOwnerships.Into(includeDeleted, action);
         }
 
         public void GetPropertyFeatures(bool includeDeleted = false, Action<PropertyFeatureViewModel> action = null)
         {
-            PropertyFeatures = _entity?.PropertyFeatures.Into(includeDeleted, action);
+            PropertyFeatures = Entity?.PropertyFeatures.Into(includeDeleted, action);
         }
 
         public void GetPropertyFacilities(bool includeDeleted = false, Action<PropertyFacilityViewModel> action = null)
         {
-            PropertyFacilities = _entity?.PropertyFacilities.Into(includeDeleted, action);
+            PropertyFacilities = Entity?.PropertyFacilities.Into(includeDeleted, action);
         }
 
         public void GetPictures(bool includeDeleted = false, Action<PictureViewModel> action = null)
         {
-            Pictures = _entity?.Pictures.Into(includeDeleted, action);
+            Pictures = Entity?.Pictures.Into(includeDeleted, action);
         }
 
         public CategoryViewModel Category { get; private set; }
 
-        public GeolocationViewModel Geolocation => new GeolocationViewModel(_entity.Geolocation);
+        public GeolocationViewModel Geolocation => new GeolocationViewModel(Entity.Geolocation);
 
         public List<ItemViewModel> Items { get; private set; }
 

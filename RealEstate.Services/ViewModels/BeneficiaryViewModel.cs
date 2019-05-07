@@ -9,31 +9,29 @@ namespace RealEstate.Services.ViewModels
     public class BeneficiaryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Beneficiary _entity;
+        public Beneficiary Entity { get; }
 
         public BeneficiaryViewModel(Beneficiary entity, bool includeDeleted, Action<BeneficiaryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public int TipPercent => _entity.TipPercent;
+        public int TipPercent => Entity.TipPercent;
 
-        public int CommissionPercent => _entity.CommissionPercent;
+        public int CommissionPercent => Entity.CommissionPercent;
 
         public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            User = Entity?.User.Into(includeDeleted, action);
         }
 
         public void GetDeal(bool includeDeleted = false, Action<DealViewModel> action = null)
         {
-            Deal = _entity?.Deal.Into(includeDeleted, action);
+            Deal = Entity?.Deal.Into(includeDeleted, action);
         }
 
         public UserViewModel User { get; private set; }

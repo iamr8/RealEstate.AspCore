@@ -6,6 +6,7 @@ using RealEstate.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using RealEstate.Services.BaseLog;
 
 namespace RealEstate.Web.Components
 {
@@ -25,6 +26,7 @@ namespace RealEstate.Web.Components
             var urlHelper =
               _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
 
+            var testPage = new PaginationViewModel<string>();
             var pagination = model.Model;
             if (pagination == null)
                 return View(null);
@@ -34,12 +36,12 @@ namespace RealEstate.Web.Components
             if (genericTypes.Length == 0)
                 throw new Exception("Can't find any generic class");
 
-            var isBaseTypeOk = genericTypes[0].HasBaseType(typeof(BaseAbstractModel));
+            var isBaseTypeOk = genericTypes[0].IsSubclassOf(typeof(BaseLogViewModel));
             if (!isBaseTypeOk)
-                throw new Exception("Model type should be member of BaseAbstractModel");
+                throw new Exception("Model type should be member of BaseLogViewModel");
 
-            var pages = (int)type.GetProperty("Pages").GetValue(pagination);
-            var currentPage = (int)type.GetProperty("CurrentPage").GetValue(pagination);
+            var pages = (int)type.GetProperty(nameof(testPage.Pages)).GetValue(pagination);
+            var currentPage = (int)type.GetProperty(nameof(testPage.CurrentPage)).GetValue(pagination);
 
             var currentUrlData = _actionContextAccessor.ActionContext.RouteData;
             if (currentUrlData?.Values == null

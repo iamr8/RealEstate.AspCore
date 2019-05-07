@@ -6,7 +6,7 @@ namespace RealEstate.Runner
 {
     public class ConsoleWriterEventArgs : EventArgs
     {
-        public string Value { get; private set; }
+        public string Value { get; }
 
         public ConsoleWriterEventArgs(string value)
         {

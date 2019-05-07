@@ -98,7 +98,7 @@ namespace RealEstate.Services.Extensions.TagHelpers
                     var isPage = isCurrent ? currentUrlIsPage : !string.IsNullOrEmpty(Page) && string.IsNullOrEmpty(Action);
                     if (isPage)
                     {
-                        if (array.Equals(@"/"))
+                        if (array.Equals("/"))
                             array += "Index";
                     }
                     else if (array.Count(x => x.Equals('/')) == 1)

@@ -9,27 +9,25 @@ namespace RealEstate.Services.ViewModels
     public class PropertyFacilityViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly PropertyFacility _entity;
+        public PropertyFacility Entity { get; }
 
         public PropertyFacilityViewModel(PropertyFacility entity, bool includeDeleted, Action<PropertyFacilityViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
         public void GetProperty(bool includeDeleted = false, Action<PropertyViewModel> action = null)
         {
-            Property = _entity?.Property.Into(includeDeleted, action);
+            Property = Entity?.Property.Into(includeDeleted, action);
         }
 
         public void GetFacility(bool includeDeleted = false, Action<FacilityViewModel> action = null)
         {
-            Facility = _entity?.Facility.Into(includeDeleted, action);
+            Facility = Entity?.Facility.Into(includeDeleted, action);
         }
 
         public PropertyViewModel Property { get; private set; }

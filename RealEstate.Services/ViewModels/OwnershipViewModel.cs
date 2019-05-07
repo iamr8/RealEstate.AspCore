@@ -9,31 +9,29 @@ namespace RealEstate.Services.ViewModels
     public class OwnershipViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Ownership _entity;
+        public Ownership Entity { get; }
 
         public OwnershipViewModel(Ownership entity, bool includeDeleted, Action<OwnershipViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
         public void GetCustomer(bool includeDeleted = false, Action<CustomerViewModel> action = null)
         {
-            Customer = _entity?.Customer.Into(includeDeleted, action);
+            Customer = Entity?.Customer.Into(includeDeleted, action);
         }
 
         public void GetPropertyOwnership(bool includeDeleted = false, Action<PropertyOwnershipViewModel> action = null)
         {
-            PropertyOwnership = _entity?.PropertyOwnership.Into(includeDeleted, action);
+            PropertyOwnership = Entity?.PropertyOwnership.Into(includeDeleted, action);
         }
 
-        public string Description => _entity.Description;
-        public int Dong => _entity.Dong;
+        public string Description => Entity.Description;
+        public int Dong => Entity.Dong;
         public CustomerViewModel Customer { get; private set; }
         public PropertyOwnershipViewModel PropertyOwnership { get; private set; }
     }

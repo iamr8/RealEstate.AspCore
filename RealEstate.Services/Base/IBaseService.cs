@@ -258,7 +258,7 @@ namespace RealEstate.Services.Base
             }
             else
             {
-                if (entity.LastLog().Type == LogTypeEnum.Delete)
+                if (entity.LastAudit?.Type == LogTypeEnum.Delete)
                 {
                     if (undeleteAllowed)
                         _unitOfWork.UnDelete(entity, currentUser);
@@ -438,43 +438,41 @@ namespace RealEstate.Services.Base
             if (entity == null)
                 return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
 
-            var oldEntity = entity;
-            var oldProperties = oldEntity.GetPublicProperties();
-            changes.Invoke(currentUser);
-            var newProperties = entity.GetPublicProperties();
-
-            var changesIndicator = 0;
-            if (oldProperties?.Any() == true)
+            var oldEntity = entity.GetPublicProperties().Select(x => new
             {
-                var neededProperties = newProperties?
-                    .Where(x => x.PropertyType == typeof(string)
-                                || x.PropertyType == typeof(int)
-                                || x.PropertyType == typeof(decimal)
-                                || x.PropertyType == typeof(double)
-                                || x.PropertyType == typeof(IPoint)
-                                || x.PropertyType == typeof(DateTime)
-                                || x.PropertyType == typeof(Enum))
-                    .Where(x => x.Name != nameof(entity.Id))
-                    .ToList();
-                if (neededProperties?.Any() != true)
-                    return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
+                x.Name,
+                Value = x.GetValue(entity)
+            }).ToList();
+            changes.Invoke(currentUser);
+            var properties = entity.GetPublicProperties().Where(x => (x.PropertyType == typeof(string)
+                                                                     || x.PropertyType == typeof(int)
+                                                                     || x.PropertyType == typeof(decimal)
+                                                                     || x.PropertyType == typeof(double)
+                                                                     || x.PropertyType == typeof(IPoint)
+                                                                     || x.PropertyType == typeof(DateTime)
+                                                                     || x.PropertyType == typeof(Enum))
+                                                                     && x.Name != nameof(entity.Id)
+                                                                     && x.Name != nameof(entity.Audit))
+                .ToList();
 
-                foreach (var newProperty in neededProperties)
-                {
-                    var oldProperty = oldProperties.Find(x => x.Name == newProperty.Name);
-
-                    var oldValue = oldProperty.GetValue(oldEntity);
-                    var newValue = newProperty.GetValue(entity);
-
-                    if (oldValue?.Equals(newValue) == false)
-                        changesIndicator++;
-                }
-            }
-
-            if (changesIndicator <= 0)
+            var changesList = new Dictionary<string, string>();
+            if (properties?.Any() != true)
                 return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
 
-            _unitOfWork.Update(entity, currentUser);
+            foreach (var property in properties)
+            {
+                var name = property.Name;
+                var oldValue = oldEntity.Find(x => x.Name.Equals(name)).Value;
+                var newValue = property.GetValue(entity);
+
+                if (oldValue?.Equals(newValue) == false)
+                    changesList.Add(name, oldValue.ToString());
+            }
+
+            if (changesList?.Any() != true)
+                return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
+
+            _unitOfWork.Update(entity, currentUser, changesList);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 

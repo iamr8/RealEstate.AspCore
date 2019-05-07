@@ -9,24 +9,22 @@ namespace RealEstate.Services.ViewModels
     public class FixedSalaryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly FixedSalary _entity;
+        public FixedSalary Entity { get; }
 
         public FixedSalaryViewModel(FixedSalary entity, bool includeDeleted, Action<FixedSalaryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public double Value => _entity.Value;
+        public double Value => Entity.Value;
 
         public void GetEmployee(bool includeDeleted, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }

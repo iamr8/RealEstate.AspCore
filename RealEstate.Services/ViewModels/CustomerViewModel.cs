@@ -10,33 +10,31 @@ namespace RealEstate.Services.ViewModels
     public class CustomerViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Customer _entity;
+        public Customer Entity { get; }
 
         public CustomerViewModel(Customer entity, bool includeDeleted, Action<CustomerViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Name => _entity?.Name;
-        public string Phone => _entity?.PhoneNumber;
-        public string Address => _entity?.Address;
-        public string Mobile => _entity?.MobileNumber;
-        public bool IsPublic => _entity?.IsPublic == true;
+        public string Name => Entity?.Name;
+        public string Phone => Entity?.PhoneNumber;
+        public string Address => Entity?.Address;
+        public string Mobile => Entity?.MobileNumber;
+        public bool IsPublic => Entity?.IsPublic == true;
 
         public void GetOwnerships(bool includeDeleted = false, Action<OwnershipViewModel> action = null)
         {
-            Ownerships = _entity?.Ownerships.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
+            Ownerships = Entity?.Ownerships.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
         public void GetApplicants(bool includeDeleted = false, Action<ApplicantViewModel> action = null)
         {
-            Applicants = _entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
+            Applicants = Entity?.Applicants.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
         public List<OwnershipViewModel> Ownerships { get; private set; }

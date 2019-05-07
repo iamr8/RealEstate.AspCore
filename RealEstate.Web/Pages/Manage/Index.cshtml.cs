@@ -28,7 +28,7 @@ namespace RealEstate.Web.Pages.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Statistics = await _globalService.ListAsync().ConfigureAwait(false);
+            Statistics = await _globalService.StatisticsAsync().ConfigureAwait(false);
 
             return Page();
         }

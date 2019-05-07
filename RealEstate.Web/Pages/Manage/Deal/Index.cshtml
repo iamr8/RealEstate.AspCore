@@ -97,7 +97,7 @@
                                         @SharedLocalizer["Beneficiaries"]:
                                         @foreach (var beneficiary in item.Beneficiaries)
                                         {
-                                        <span class="badge badge-warning">@beneficiary.User?.Employee?.FirstName @beneficiary.User?.Employee?.LastName &mdash; @beneficiary.CommissionPercent @SharedLocalizer["CommissionPercent"] &mdash; @beneficiary.TipPercent @SharedLocalizer["TipPercent"]</span>
+                                            <span class="badge badge-warning">@beneficiary.User?.Employee?.FirstName @beneficiary.User?.Employee?.LastName &mdash; @beneficiary.CommissionPercent @SharedLocalizer["CommissionPercent"] &mdash; @beneficiary.TipPercent @SharedLocalizer["TipPercent"]</span>
                                         }
                                     </span>
                                 }
@@ -115,10 +115,7 @@
                                 }
                             </div>
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs" />
-                        }
+                        <vc:log logs="@item.Logs" cat="Deal" id="@item.Id" />
                     </div>
                 }
 

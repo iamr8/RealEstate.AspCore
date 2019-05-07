@@ -10,24 +10,22 @@ namespace RealEstate.Services.ViewModels
     public class EmployeeStatusViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly EmployeeStatus _entity;
+        public EmployeeStatus Entity { get; }
 
         public EmployeeStatusViewModel(EmployeeStatus entity, bool includeDeleted, Action<EmployeeStatusViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public EmployeeStatusEnum Status => _entity.Status;
+        public EmployeeStatusEnum Status => Entity.Status;
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }

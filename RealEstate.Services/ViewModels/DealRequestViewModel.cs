@@ -9,32 +9,30 @@ namespace RealEstate.Services.ViewModels
     public class DealRequestViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly DealRequest _entity;
+        public DealRequest Entity { get; }
 
         public DealRequestViewModel(DealRequest entity, bool includeDeleted, Action<DealRequestViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
         public void GetItem(bool includeDeleted, Action<ItemViewModel> action = null)
         {
-            Item = _entity?.Item.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
+            Item = Entity?.Item.Into(includeDeleted, action).ShowBasedOn(x => x.Property);
         }
 
         public void GetDeal(bool includeDeleted, Action<DealViewModel> action = null)
         {
-            Deal = _entity?.Deal.Into(includeDeleted, action);
+            Deal = Entity?.Deal.Into(includeDeleted, action);
         }
 
         public void GetSms(bool includeDeleted, Action<SmsViewModel> action = null)
         {
-            Sms = _entity?.Sms.Into(includeDeleted, action);
+            Sms = Entity?.Sms.Into(includeDeleted, action);
         }
 
         public ItemViewModel Item { get; private set; }

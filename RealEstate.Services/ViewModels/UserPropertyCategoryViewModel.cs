@@ -9,27 +9,26 @@ namespace RealEstate.Services.ViewModels
     public class UserPropertyCategoryViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly UserPropertyCategory _entity;
+        public UserPropertyCategory Entity { get; }
 
         public UserPropertyCategoryViewModel(UserPropertyCategory entity, bool includeDeleted, Action<UserPropertyCategoryViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
+
             action?.Invoke(this);
         }
 
         public void GetUser(bool includeDeleted = false, Action<UserViewModel> action = null)
         {
-            User = _entity?.User.Into(includeDeleted, action);
+            User = Entity?.User.Into(includeDeleted, action);
         }
 
         public void GetCategory(bool includeDeleted = false, Action<CategoryViewModel> action = null)
         {
-            Category = _entity?.Category.Into(includeDeleted, action);
+            Category = Entity?.Category.Into(includeDeleted, action);
         }
 
         public UserViewModel User { get; private set; }

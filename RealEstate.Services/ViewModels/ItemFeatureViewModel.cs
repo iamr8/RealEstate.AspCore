@@ -8,32 +8,28 @@ namespace RealEstate.Services.ViewModels
 {
     public class ItemFeatureViewModel : BaseLogViewModel
     {
-        private string _value;
-
         [JsonIgnore]
-        private readonly ItemFeature _entity;
+        public ItemFeature Entity { get; }
 
         public ItemFeatureViewModel(ItemFeature entity, bool includeDeleted, Action<ItemFeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Value => _entity?.Value?.FixCurrency();
+        public string Value => Entity?.Value?.FixCurrency();
 
         public void GetItem(bool includeDeleted = false, Action<ItemViewModel> action = null)
         {
-            Item = _entity?.Item.Into(includeDeleted, action);
+            Item = Entity?.Item.Into(includeDeleted, action);
         }
 
         public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)
         {
-            Feature = _entity?.Feature.Into(includeDeleted, action);
+            Feature = Entity?.Feature.Into(includeDeleted, action);
         }
 
         public ItemViewModel Item { get; private set; }

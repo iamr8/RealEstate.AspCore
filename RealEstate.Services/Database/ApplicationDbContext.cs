@@ -1,7 +1,4 @@
-﻿using EFSecondLevelCache.Core;
-using EFSecondLevelCache.Core.Contracts;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
@@ -63,7 +60,7 @@ namespace RealEstate.Services.Database
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
 
             modelBuilder.SeedDatabase();
-            
+
             base.OnModelCreating(modelBuilder);
         }
 
@@ -125,23 +122,13 @@ namespace RealEstate.Services.Database
 
         public override int SaveChanges()
         {
-            ChangeTracker.DetectChanges();
-            var changedEntityNames = this.GetChangedEntityNames();
-
             var result = base.SaveChanges();
-            this.GetService<IEFCacheServiceProvider>().InvalidateCacheDependencies(changedEntityNames);
-
             return result;
         }
 
         public async Task<int> SaveChangesAsync()
         {
-            ChangeTracker.DetectChanges();
-            var changedEntityNames = this.GetChangedEntityNames();
-
             var result = await base.SaveChangesAsync().ConfigureAwait(false);
-            this.GetService<IEFCacheServiceProvider>().InvalidateCacheDependencies(changedEntityNames);
-
             return result;
         }
 
@@ -150,9 +137,9 @@ namespace RealEstate.Services.Database
         //    AddTrack(entity, userId, LogTypeEnum.Modify);
         //    return entity;
         //}
-        public TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity
+        public TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user, Dictionary<string, string> changes = null) where TEntity : BaseEntity
         {
-            AddTrack(entity, user, LogTypeEnum.Modify);
+            AddTrack(entity, user, LogTypeEnum.Modify, changes);
             return entity;
         }
 
@@ -162,7 +149,7 @@ namespace RealEstate.Services.Database
             return entity;
         }
 
-        private void AddTrack<TEntity>(TEntity model, CurrentUserViewModel user, LogTypeEnum type) where TEntity : BaseEntity
+        private void AddTrack<TEntity>(TEntity model, CurrentUserViewModel user, LogTypeEnum type, Dictionary<string, string> changes = null) where TEntity : BaseEntity
         {
             if (user == null)
                 return;
@@ -177,7 +164,12 @@ namespace RealEstate.Services.Database
                 UserId = user.Id,
                 DateTime = DateTime.Now,
                 UserFullName = $"{user.FirstName} {user.LastName}",
-                UserMobile = user.Mobile
+                UserMobile = user.Mobile,
+                Modifies = type == LogTypeEnum.Modify ? changes?.Select(x => new LogModifyDetailJsonEntity
+                {
+                    Key = x.Key,
+                    Value = x.Value
+                }).ToList() : default
             });
             model.Audits = currentLogs;
         }

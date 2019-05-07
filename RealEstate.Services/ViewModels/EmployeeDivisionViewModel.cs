@@ -9,27 +9,25 @@ namespace RealEstate.Services.ViewModels
     public class EmployeeDivisionViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly EmployeeDivision _entity;
+        public EmployeeDivision Entity { get; }
 
         public EmployeeDivisionViewModel(EmployeeDivision entity, bool includeDeleted, Action<EmployeeDivisionViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public void GetDivision(bool includeDeleted = false, Action<DivisionViewModel> action = null)
         {
-            Division = _entity?.Division.Into(includeDeleted, action);
+            Division = Entity?.Division.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }

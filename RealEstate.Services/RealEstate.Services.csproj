@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.0.0.1054</AssemblyVersion>
-    <FileVersion>1.0.0.1054</FileVersion>
+    <AssemblyVersion>1.0.0.1132</AssemblyVersion>
+    <FileVersion>1.0.0.1132</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -18,8 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFSecondLevelCache.Core" Version="1.7.2" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.1" />
+    <PackageReference Include="LinqKit.Core" Version="1.1.16" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.4" />
@@ -28,6 +28,7 @@
     <PackageReference Include="morelinq" Version="3.1.1" />
     <PackageReference Include="RestSharp" Version="106.6.9" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
+    <PackageReference Include="SqlTableDependency" Version="8.5.3" />
   </ItemGroup>
 
   <ItemGroup>

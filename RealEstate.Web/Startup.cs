@@ -1,5 +1,4 @@
 using CacheManager.Core;
-using EFSecondLevelCache.Core;
 using ElmahCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -190,8 +189,6 @@ namespace RealEstate.Web
             //.AddStackExchangeRedis();
 
             services
-                .AddEFSecondLevelCache();
-            services
                 .AddSingleton(typeof(ICacheManager<>), typeof(BaseCacheManager<>));
             services
                 .AddSingleton(typeof(ICacheManagerConfiguration),
@@ -283,7 +280,6 @@ namespace RealEstate.Web
             //    });
             //});
 
-            app.UseEFSecondLevelCache();
             app.UseAuthentication();
             app.UseElmah();
 

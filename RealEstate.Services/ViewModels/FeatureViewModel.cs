@@ -11,26 +11,24 @@ namespace RealEstate.Services.ViewModels
     public class FeatureViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Feature _entity;
+        public Feature Entity { get; }
 
         public FeatureViewModel(Feature entity, bool includeDeleted, Action<FeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Name => _entity.Name;
+        public string Name => Entity.Name;
 
-        public FeatureTypeEnum Type => _entity.Type;
+        public FeatureTypeEnum Type => Entity.Type;
 
         public void GetPropertyFeatures(bool includeDeleted, Action<PropertyFeatureViewModel> action = null)
         {
-            PropertyFeatures = _entity?.PropertyFeatures.Into(includeDeleted, action);
+            PropertyFeatures = Entity?.PropertyFeatures.Into(includeDeleted, action);
         }
 
         public List<PropertyFeatureViewModel> PropertyFeatures { get; private set; }

@@ -2,6 +2,7 @@
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.Database
@@ -20,7 +21,7 @@ namespace RealEstate.Services.Database
 
         TEntity Update<TEntity>(TEntity entity) where TEntity : class;
 
-        TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;
+        TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user, Dictionary<string, string> changes = null) where TEntity : BaseEntity;
 
         //        TEntity Update<TEntity>(TEntity entity, string userId) where TEntity : class;
         TEntity UnDelete<TEntity>(TEntity entity, CurrentUserViewModel user) where TEntity : BaseEntity;

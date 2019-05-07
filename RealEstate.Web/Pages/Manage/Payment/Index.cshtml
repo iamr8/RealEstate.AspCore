@@ -48,10 +48,7 @@
                                 </span>
                             </div>
                         </div>
-                        @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                        {
-                            <vc:log logs="@item.Logs"></vc:log>
-                        }
+                        <vc:log logs="@item.Logs" cat="Payment" id="@item.Id" />
                     </div>
                 }
             }

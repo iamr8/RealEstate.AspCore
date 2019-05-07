@@ -9,29 +9,27 @@ namespace RealEstate.Services.ViewModels
     public class ApplicantFeatureViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly ApplicantFeature _entity;
+        public ApplicantFeature Entity { get; }
 
         public ApplicantFeatureViewModel(ApplicantFeature entity, bool includeDeleted, Action<ApplicantFeatureViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public string Value => _entity.Value.FixCurrency();
+        public string Value => Entity.Value.FixCurrency();
 
         public void GetApplicant(bool includeDeleted = false, Action<ApplicantViewModel> action = null)
         {
-            Applicant = _entity?.Applicant.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
+            Applicant = Entity?.Applicant.Into(includeDeleted, action).ShowBasedOn(x => x.Customer);
         }
 
         public void GetFeature(bool includeDeleted = false, Action<FeatureViewModel> action = null)
         {
-            Feature = _entity?.Feature.Into(includeDeleted, action);
+            Feature = Entity?.Feature.Into(includeDeleted, action);
         }
 
         public ApplicantViewModel Applicant { get; private set; }

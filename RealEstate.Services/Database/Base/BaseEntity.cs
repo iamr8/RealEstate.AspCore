@@ -20,6 +20,9 @@ namespace RealEstate.Services.Database.Base
         }
 
         [NotMapped]
+        public LogJsonEntity LastAudit => Audits?.OrderByDescending(x => x.DateTime).FirstOrDefault();
+
+        [NotMapped]
         public bool IsDeleted => !string.IsNullOrEmpty(Audit) && Audits?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Type == LogTypeEnum.Delete;
     }
 }

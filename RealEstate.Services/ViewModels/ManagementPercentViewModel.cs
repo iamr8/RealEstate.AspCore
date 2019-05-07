@@ -9,24 +9,22 @@ namespace RealEstate.Services.ViewModels
     public class ManagementPercentViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly ManagementPercent _entity;
+        public ManagementPercent Entity { get; }
 
         public ManagementPercentViewModel(ManagementPercent entity, bool includeDeleted, Action<ManagementPercentViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public int Percent => _entity.Percent;
+        public int Percent => Entity.Percent;
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }

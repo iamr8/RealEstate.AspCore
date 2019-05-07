@@ -44,15 +44,34 @@ namespace RealEstate.Base
             public object Value { get; set; }
         }
 
+        public static Expression<Func<T, bool>> BuildPredicate<T>(this IQueryable<T> source, string propertyName, string value)
+        {
+            var type = source.ElementType;
+            var property = type.GetProperty(propertyName);
+            var parameter = Expression.Parameter(type, "x");
+            var propExpression = Expression.Property(parameter, property);
+            var valueExpression = Expression.Constant(value);
+            var equal = Expression.Equal(propExpression, valueExpression);
+            var expression = Expression.Lambda<Func<T, bool>>(equal, parameter);
+            return expression;
+        }
+
+        public static Expression<Func<T, TResult>> BuildPredicate<T, TResult>(this IQueryable<T> source, string propertyName)
+        {
+            var type = source.ElementType;
+            var property = type.GetProperty(propertyName);
+            var parameter = Expression.Parameter(type, "x");
+            var propExpression = Expression.Property(parameter, property);
+            var expression = Expression.Lambda<Func<T, TResult>>(propExpression, parameter);
+            return expression;
+        }
+
         public static SearchParameterAttribute GetSearchParameter(this PropertyInfo property)
         {
             if (property == null)
                 return default;
 
             var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
-            if (searchParameterAttribute == null)
-                return default;
-
             return searchParameterAttribute;
         }
 

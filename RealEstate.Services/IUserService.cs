@@ -82,7 +82,7 @@ namespace RealEstate.Services
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Into<User, UserViewModel>(false, act => act.GetEmployee());
+                var item = user.Into<User, UserViewModel>(includeDeleted, act => act.GetEmployee(includeDeleted));
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -356,8 +356,8 @@ namespace RealEstate.Services
                 new Claim(ClaimTypes.Name, userDb.Username),
                 new Claim(ClaimTypes.MobilePhone, userDb.Employee?.Mobile),
                 new Claim(ClaimTypes.Hash,userDb.Password),
-                new Claim("FirstName",userDb.Employee?.FirstName),
-                new Claim("LastName",userDb.Employee?.LastName),
+                new Claim("FirstName", userDb.Employee?.FirstName),
+                new Claim("LastName", userDb.Employee?.LastName),
                 new Claim("EmployeeId", userDb.Employee?.Id),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),

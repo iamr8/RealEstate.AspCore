@@ -9,24 +9,22 @@ namespace RealEstate.Services.ViewModels
     public class InsuranceViewModel : BaseLogViewModel
     {
         [JsonIgnore]
-        private readonly Insurance _entity;
+        public Insurance Entity { get; }
 
         public InsuranceViewModel(Insurance entity, bool includeDeleted, Action<InsuranceViewModel> action = null)
         {
             if (entity == null || (entity.IsDeleted && !includeDeleted))
                 return;
 
-            _entity = entity;
-            Id = entity.Id;
-            Logs = entity.GetLogs();
+            Entity = entity;
             action?.Invoke(this);
         }
 
-        public double Price => _entity.Price;
+        public double Price => Entity.Price;
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {
-            Employee = _entity?.Employee.Into(includeDeleted, action);
+            Employee = Entity?.Employee.Into(includeDeleted, action);
         }
 
         public EmployeeViewModel Employee { get; private set; }
