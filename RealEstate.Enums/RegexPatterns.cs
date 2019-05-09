@@ -10,7 +10,7 @@ namespace RealEstate.Base
         PersianText,
 
         [Description("فقط اعداد انگلیسی در قالب شماره موبایل")]
-        [Display(Name = "(09)([0-9]){9}")]
+        [Display(Name = "(09|۰۹)([0-9]|[۰-۹]){9}")]
         Mobile,
 
         [Description("فقط حروف و اعداد فارسی و انگلیسی و خط فاصله مجاز است")]

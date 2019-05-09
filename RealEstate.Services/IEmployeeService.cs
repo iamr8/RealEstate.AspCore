@@ -55,22 +55,17 @@ namespace RealEstate.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IDivisionService _divisionService;
         private readonly DbSet<Employee> _employees;
-        private readonly DbSet<FixedSalary> _fixedSalaries;
         private readonly DbSet<Leave> _leaves;
         private readonly DbSet<Presence> _presences;
 
         public EmployeeService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService,
-            IDivisionService divisionService
+            IBaseService baseService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
-            _divisionService = divisionService;
-            _fixedSalaries = _unitOfWork.Set<FixedSalary>();
             _employees = _unitOfWork.Set<Employee>();
             _leaves = _unitOfWork.Set<Leave>();
             _presences = _unitOfWork.Set<Presence>();

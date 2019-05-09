@@ -133,7 +133,9 @@ namespace RealEstate.Services
                 foreach (var redundant in mustBeRemoved)
                 {
                     await _baseService.UpdateAsync(redundant,
-                        _ => redundant.ItemId = null, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                        _ => redundant.ItemId = null,
+                        null,
+                        false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
                 }
             }
 
@@ -149,7 +151,9 @@ namespace RealEstate.Services
                     if (appli != null)
                     {
                         await _baseService.UpdateAsync(appli,
-                            _ => appli.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                            _ => appli.ItemId = item.Id, 
+                            null, 
+                            false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
                     }
                     else
                     {
@@ -338,6 +342,13 @@ namespace RealEstate.Services
 
             if (searchModel != null)
             {
+                //query = query.Where(x =>
+                //    x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(SearchExtensions.SearchStringOperand.Like, v => v.Customer.Name, searchModel.Owner)));
+
+                //query = query.Where(x =>
+                //    x.Property.PropertyOwnerships.Any(c =>
+                //        c.Ownerships.Any(SearchExtensions.SearchStringOperand.Like, v => v.Customer.MobileNumber, searchModel.OwnerMobile)));
+
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                     query = query.Where(x =>
                         x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
@@ -349,6 +360,7 @@ namespace RealEstate.Services
                 if (!string.IsNullOrEmpty(searchModel.Street))
                     query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
 
+                //query = query.SearchBy(searchModel.ItemId, x => x.Id);
                 if (!string.IsNullOrEmpty(searchModel.ItemId))
                     query = query.Where(x => x.Id == searchModel.ItemId);
 
@@ -369,6 +381,16 @@ namespace RealEstate.Services
                     query = query.Where(x => x.Property.District.Name == searchModel.District);
                 }
 
+                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Id, searchModel.ItemId);
+                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Category.Name, searchModel.ItemCategory);
+                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Property.Category.Name, searchModel.PropertyCategory);
+                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Property.District.Name, searchModel.District);
+                //query = query.Where(SearchExtensions.SearchStringOperand.Like, x => x.Property.Street, searchModel.Street);
+
+                //query = query.Where(SearchExtensions.SearchComparisonOperand.Or,
+                //    x => x.Applicants.Any(SearchExtensions.SearchStringOperand.Equal, c => c.CustomerId, searchModel.CustomerId),
+                //    x => x.Property.PropertyOwnerships.Any(c =>
+                //        c.Ownerships.Any(SearchExtensions.SearchStringOperand.Equal, v => v.CustomerId, searchModel.CustomerId)));
                 if (searchModel.Facilities?.Any() == true)
                 {
                     query = searchModel.Facilities

@@ -2,13 +2,8 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "font-awesome@5.8.1",
+      "library": "font-awesome@5.8.2",
       "destination": "wwwroot/lib/font-awesome"
-    },
-    {
-      "library": "Chart.js@2.8.0-rc.1",
-      "files": [ "Chart.js", "Chart.min.js" ],
-      "destination": "wwwroot/lib/Chart.js"
     },
     {
       "library": "jquery-validate@1.19.0",
