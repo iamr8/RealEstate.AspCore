@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using MoreLinq;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
@@ -151,8 +150,8 @@ namespace RealEstate.Services
                     if (appli != null)
                     {
                         await _baseService.UpdateAsync(appli,
-                            _ => appli.ItemId = item.Id, 
-                            null, 
+                            _ => appli.ItemId = item.Id,
+                            null,
                             false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
                     }
                     else
