@@ -55,7 +55,7 @@ namespace RealEstate.Services
             return result;
         }
 
-        private List<LogJsonEntity> GetAudits(Type entityType, string entityId, List<object> model)
+        private List<LogJsonEntity> GetAudits(IReflect entityType, string entityId, List<object> model)
         {
             if (model?.Any() != true)
                 return default;

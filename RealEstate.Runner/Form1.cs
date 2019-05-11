@@ -26,6 +26,14 @@ namespace RealEstate.Runner
         private readonly Modules.Mode _mode;
         private readonly bool _admin;
         private readonly R8Config _configuration;
+        private Process Process { get; set; }
+        private string Url { get; set; }
+
+        private string FullUrl { get; set; }
+        private const ushort Port = 5566;
+        private const string Prefix = "RealEstate";
+        private static string MainAssembly => $"{Prefix}.Web";
+        private static string MainAssemblyFile => $"{MainAssembly}.dll";
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -140,8 +148,9 @@ namespace RealEstate.Runner
             var ipCheck = Modules.CheckIp();
             if (ipCheck?.Any() == true)
             {
-                Url = $"http://{ipCheck}:{Port}";
-                Log($"Server IP: {Url}");
+                Url = ipCheck;
+                FullUrl = $"http://{ipCheck}:{Port}";
+                Log($"Server IP: {FullUrl}");
                 IsAllowed(true);
             }
             else
@@ -222,13 +231,6 @@ namespace RealEstate.Runner
         {
         }
 
-        private Process Process { get; set; }
-        private string Url { get; set; }
-        private const ushort Port = 5566;
-        private const string Prefix = "RealEstate";
-        private static string MainAssembly => $"{Prefix}.Web";
-        private static string MainAssemblyFile => $"{MainAssembly}.dll";
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (btnFunc.Text.Equals("Stop"))
@@ -240,7 +242,18 @@ namespace RealEstate.Runner
             }
             else if (btnFunc.Text.Equals("Start"))
             {
-                var sync = Modules.CreateSynchronizer(Url);
+                var portCheck = Modules.IsPortReady(Port.ToString());
+                if (portCheck)
+                {
+                    Log("Port is ready to use.");
+                }
+                else
+                {
+                    Log("Port 5566 is in use. strongly recommended to reboot Machine");
+                    return;
+                }
+
+                var sync = Modules.CreateSynchronizer(FullUrl);
                 if (string.IsNullOrEmpty(sync))
                 {
                     Log("Unable to Create Synchronizer.");
@@ -358,10 +371,10 @@ namespace RealEstate.Runner
                 if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") == true)
                 {
                     Log("Application running successfully.");
-                    if (string.IsNullOrEmpty(Url))
+                    if (string.IsNullOrEmpty(FullUrl))
                         return;
 
-                    Process.Start(new ProcessStartInfo(Url));
+                    Process.Start(new ProcessStartInfo(FullUrl));
                 }
             }
             else
@@ -378,10 +391,10 @@ namespace RealEstate.Runner
                 else if (e.Data?.Contains("Application started. Press Ctrl+C to shut down.") == true)
                 {
                     Log("Application running successfully.");
-                    if (string.IsNullOrEmpty(Url))
+                    if (string.IsNullOrEmpty(FullUrl))
                         return;
 
-                    Process.Start(new ProcessStartInfo(Url));
+                    Process.Start(new ProcessStartInfo(FullUrl));
                 }
             }
         }

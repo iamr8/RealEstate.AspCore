@@ -50,6 +50,37 @@ namespace RealEstate.Runner
             // 2.2.105
         }
 
+        public static bool IsPortReady(string port)
+        {
+            // netstat -o
+            // 192.168.1.34:5566
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "netstat",
+                    Arguments = $"-na | find \"{port}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardInput = true,
+                    Verb = "runas"
+                }
+            };
+            process.Start();
+            var output = "";
+            while (!process.HasExited)
+            {
+                output += process.StandardOutput.ReadToEnd();
+            }
+
+            if (string.IsNullOrEmpty(output))
+                return true;
+
+            return false;
+        }
+
         public static bool DbInstance(string command, string validityCondition)
         {
             const string instance = "MSSQLLocalDB";
