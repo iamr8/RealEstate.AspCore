@@ -966,4 +966,16 @@
   <data name="Logs" xml:space="preserve">
     <value>گزارشات</value>
   </data>
+  <data name="SubmitItem" xml:space="preserve">
+    <value>ثبت مورد</value>
+  </data>
+  <data name="SubmitOwner" xml:space="preserve">
+    <value>ثبت مالک</value>
+  </data>
+  <data name="SubmitProperty" xml:space="preserve">
+    <value>ثبت ملک</value>
+  </data>
+  <data name="Picture" xml:space="preserve">
+    <value>تصویر</value>
+  </data>
 </root>

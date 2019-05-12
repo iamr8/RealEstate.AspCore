@@ -45,59 +45,6 @@
         Text = x.Name,
     }).SelectFirstItem();
 
-    //var itemFeatureSelector = new JsonSelectorComponentModel
-    //{
-    //    IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
-    //    NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
-    //    ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
-    //    ModelName = nameof(Model.NewItem),
-    //    ItemName = nameof(Model.NewItem.ItemFeatures),
-    //    Json = nameof(Model.NewItem.ItemFeaturesJson),
-    //    Title = SharedLocalizer["ItemFeatures"],
-    //    ScriptKey = "itemFeaturesScript",
-    //    SelectListItems = itemFeatures?.Select(x => new SelectListItem
-    //    {
-    //        Text = x.Name,
-    //        Value = x.Id,
-    //    }).SelectFirstItem(),
-    //};
-
-    //const string modelName = nameof(Model.NewItem);
-    //var propertySelectorName = $"{modelName}_Property";
-    //var propertyCreatorModelName = $"{modelName}_NewProperty";
-    //var personSelectorName = $"{propertyCreatorModelName}_Person";
-    //var personCreatorModelName = $"{propertyCreatorModelName}_NewPerson";
-
-    //var propertySelector = new PropertySelectorComplexComponentModel
-    //{
-    //    ParentModelName = modelName,
-    //    PropertySelector = new PropertySelectorComponentModel
-    //    {
-    //        ModelName = propertySelectorName,
-    //        SearchId = $"{propertySelectorName}_Search",
-    //        SearchResultId = $"{propertySelectorName}_Searches",
-    //        ScriptKey = "propertySelector",
-    //        PropertyId = $"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}"
-    //    },
-    //    PropertyCreator = new PropertyCreatorComponentModel
-    //    {
-    //        ModelName = propertyCreatorModelName,
-    //        PropertyId = $"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}",
-    //        ScriptKey = "propertyCreator",
-    //        OwnershipSelectorTitle = SharedLocalizer["Owners"],
-    //        FacilitySelectorTitle = SharedLocalizer["PropertyFacilities"],
-    //        FeaturesSelectorTitle = SharedLocalizer["PropertyFeatures"],
-    //        OwnershipList = ownerships,
-    //        FacilityList = propertyFacilities,
-    //        FeaturesList = propertyFeatures,
-    //        Categories = propertyCategories,
-    //        Districts = districts,
-    //        PersonCreator = new PersonCreatorComponentModel
-    //        {
-    //            ModelName = personCreatorModelName,
-    //        },
-    //    },
-    //};
 }
 
 <div class="col-12">
@@ -108,79 +55,13 @@
                 <div class="col-12" id="accordion">
                     @if (Model.NewItem == null || Model.NewItem.IsNew)
                     {
-
-                        <div class="card">
-                            <div class="card-header">
-                                <a class="card-link" data-toggle="collapse" href="#owner">
-                                    @SharedLocalizer["Owner"]
-                                </a>
-                                <span class="clearSearch">برای ملک جدید</span>
-                            </div>
-                            <div id="owner" class="collapse" data-parent="#accordion">
-                                <div id="customerMessage" class="status-message hidden"></div>
-                                <div class="card-body">
-                                    <form id="newCustomer_Form" class="row justify-content-center align-items-center">
-                                        <div class="col-xs-12 col-lg">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" for="newCustomer_Name">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Name))</label>
-                                                <input asp-for="@owner.Name" id="newCustomer_Name" name="newCustomer.Name" class="form-control" />
-                                                <span class="text-danger" data-valmsg-for="newCustomer.Name" data-valmsg-replace="true"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-lg">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" for="newCustomer_Mobile">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Mobile))</label>
-                                                <input asp-for="@owner.Mobile" id="newCustomer_Mobile" name="newCustomer.Mobile" class="form-control" />
-                                                <span class="text-danger" data-valmsg-for="newCustomer.Mobile" data-valmsg-replace="true"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-lg-2">
-                                            <div class="input-wrapper">
-                                                <input type="button" id="newCustomer_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer["Check"]" />
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <div class="row justify-content-center align-items-center margin-bottomed hidden" id="customer_similar">
-                                        <div class="col-12">
-                                            @SharedLocalizer["SimilarItems"]
-                                            <div class="items"></div>
-                                        </div>
-                                    </div>
-                                    <div id="newCustomer_Detail" class="hidden">
-                                        <hr />
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newCustomer_Phone">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Phone))</label>
-                                                    <input asp-for="@owner.Phone" id="newCustomer_Phone" name="newCustomer.Phone" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newCustomer.Phone" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newCustomer_Address">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Address))</label>
-                                                    <input asp-for="@owner.Address" id="newCustomer_Address" name="newCustomer.Address" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newCustomer.Address" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col">
-                                                <input type="button" id="newCustomer_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer["Submit"]" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <div class="card">
                             <div class="card-header">
                                 <a class="card-link" data-toggle="collapse" href="#property">
-                                    @SharedLocalizer["Property"]
+                                    @SharedLocalizer[SharedResource.Property]
                                 </a>
                             </div>
-                            <div id="property" class="collapse @(Model.NewItem == null ? "show" : "")" data-parent="#accordion">
-                                <div id="propertyMessage" class="status-message hidden"></div>
+                            <div id="property" class="collapse @(Model.NewItem == null ? " show" : "" )" data-parent="#accordion">
                                 <div class="card-body">
                                     <form id="newProperty_Form" class="row justify-content-center align-items-center">
                                         <input asp-for="@property.OwnershipsJson" id="newProperty_OwnershipsJson" name="newProperty.OwnershipsJson" />
@@ -207,13 +88,13 @@
                                         </div>
                                         <div class="col-xs-12 col-lg-2">
                                             <div class="input-wrapper">
-                                                <input type="button" id="newProperty_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer["Check"]" />
+                                                <input type="button" id="newProperty_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
                                             </div>
                                         </div>
                                     </form>
                                     <div class="row justify-content-center align-items-center margin-bottomed hidden" id="property_similar">
                                         <div class="col-12">
-                                            @SharedLocalizer["SimilarItems"]
+                                            @SharedLocalizer[SharedResource.SimilarItems]
                                             <div class="items"></div>
                                         </div>
                                     </div>
@@ -262,11 +143,11 @@
                                                 <div class="col-12" id="property-features-wrapper">
                                                     <div class="itemShow adder input-wrapper">
                                                         <input asp-for="@property.PropertyFeaturesJson" id="newProperty_PropertyFeaturessJson" />
-                                                        <label class="control-label">@SharedLocalizer["Features"]</label>
+                                                        <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
                                                         <select asp-items="propertyFeaturesList" id="propertyFeatures-select" class="custom-select"></select>
-                                                        <label class="control-label">@SharedLocalizer["Value"]</label>
+                                                        <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
                                                         <input class="form-control" id="propertyFeatureValue" />
-                                                        <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
+                                                        <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                                                     </div>
                                                     <div class="items hidden"></div>
                                                 </div>
@@ -279,9 +160,9 @@
                                                 <div class="col-12" id="property-facilities-wrapper">
                                                     <div class="itemShow adder input-wrapper">
                                                         <input asp-for="@property.PropertyFacilitiesJson" id="newProperty_PropertyFacilitiesJson" />
-                                                        <label class="control-label">@SharedLocalizer["Facilities"]</label>
+                                                        <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
                                                         <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
-                                                        <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
+                                                        <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                                                     </div>
                                                     <div class="items hidden"></div>
                                                 </div>
@@ -297,25 +178,84 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row justify-content-center align-items-center">
+                                        <hr />
+                                        <form id="newCustomer_Form" class="row justify-content-center align-items-center">
+                                            <div class="col-12">
+                                                <h5>
+                                                    @SharedLocalizer[SharedResource.Owner]
+                                                </h5>
+                                            </div>
+                                            <div class="col-lg">
+                                                <div class="input-wrapper">
+                                                    <label class="control-label" for="newCustomer_Name">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Name))</label>
+                                                    <input asp-for="@owner.Name" id="newCustomer_Name" name="newCustomer.Name" class="form-control" />
+                                                    <span class="text-danger" data-valmsg-for="newCustomer.Name" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg">
+                                                <div class="input-wrapper">
+                                                    <label class="control-label" for="newCustomer_Mobile">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Mobile))</label>
+                                                    <input asp-for="@owner.Mobile" id="newCustomer_Mobile" name="newCustomer.Mobile" class="form-control" />
+                                                    <span class="text-danger" data-valmsg-for="newCustomer.Mobile" data-valmsg-replace="true"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-2">
+                                                <div class="input-wrapper">
+                                                    <input type="button" id="newCustomer_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
+                                                </div>
+                                            </div>
+                                        </form>
+                                        <div class="row justify-content-center align-items-center margin-bottomed hidden" id="customer_similar">
+                                            <div class="col-12">
+                                                @SharedLocalizer[SharedResource.SimilarItems]
+                                                <div class="items"></div>
+                                            </div>
+                                        </div>
+                                        <div id="newCustomer_Detail" class="hidden">
+                                            <hr />
+                                            <div class="row justify-content-center align-items-center">
+                                                <div class="col-xs-12 col-lg">
+                                                    <div class="input-wrapper">
+                                                        <label class="control-label" for="newCustomer_Phone">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Phone))</label>
+                                                        <input asp-for="@owner.Phone" id="newCustomer_Phone" name="newCustomer.Phone" class="form-control" />
+                                                        <span class="text-danger" data-valmsg-for="newCustomer.Phone" data-valmsg-replace="true"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xs-12 col-lg">
+                                                    <div class="input-wrapper">
+                                                        <label class="control-label" for="newCustomer_Address">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Address))</label>
+                                                        <input asp-for="@owner.Address" id="newCustomer_Address" name="newCustomer.Address" class="form-control" />
+                                                        <span class="text-danger" data-valmsg-for="newCustomer.Address" data-valmsg-replace="true"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row justify-content-center align-items-center">
+                                                <div class="col">
+                                                    <input type="button" id="newCustomer_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[SharedResource.SubmitOwner]" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr />
+                                        <div class="row justify-content-center align-items-center hidden" id="submitProperty">
                                             <div class="col">
-                                                <input type="button" id="newProperty_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer["Submit"]" />
+                                                <input type="button" id="newProperty_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[" SubmitProperty"]" />
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div id="propertyMessage" class="status-message hidden"></div>
                                 </div>
                             </div>
                         </div>
                     }
-
-                    <div class="card">
+                    <div class="card @(Model.NewItem == null || Model.NewItem.IsNew ? "hidden" : "")" id="itemCard">
                         <div class="card-header">
                             <a class="card-link" data-toggle="collapse" href="#item">
-                                @SharedLocalizer["Item"]
+                                @SharedLocalizer[SharedResource.Item]
                             </a>
                         </div>
-                        <div id="item" class="collapse @(Model.NewItem != null && !Model.NewItem.IsNew ? "show" : "")" data-parent="#accordion">
-                            <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
+                        <div id="item" class="collapse @(Model.NewItem != null && !Model.NewItem.IsNew ? " show" : "" )" data-parent="#accordion">
+                            <div class="status-message @(Model.Status == StatusEnum.Ready ? " hidden" : "" )" asp-validation-summary="All">
                                 @Model.Status.GetDisplayName()
                             </div>
                             <div class="card-body">
@@ -339,11 +279,11 @@
                                                 <div class="col-12" id="features-wrapper">
                                                     <div class="itemShow adder input-wrapper">
                                                         <input asp-for="NewItem.ItemFeaturesJson" />
-                                                        <label class="control-label">@SharedLocalizer["Features"]</label>
+                                                        <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
                                                         <select asp-items="itemFeaturesSelect" id="features-select" class="custom-select"></select>
-                                                        <label class="control-label">@SharedLocalizer["Value"]</label>
+                                                        <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
                                                         <input class="form-control" id="featureValue" />
-                                                        <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
+                                                        <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                                                     </div>
                                                     <div class="items hidden"></div>
                                                 </div>
@@ -359,7 +299,7 @@
                                         </div>
                                     </div>
                                     <div class="col">
-                                        <input type="submit" value="@SharedLocalizer["Submit"]" class="btn btn-success btn-block" />
+                                        <input type="submit" value="@SharedLocalizer[SharedResource.SubmitItem]" class="btn btn-success btn-block" />
                                     </div>
                                 </form>
                             </div>
@@ -370,171 +310,8 @@
         </section>
     </div>
 </div>
-@*<div class="col-12" id="searcher">
-        <vc:property-selector-complex model="@propertySelector" />
-    </div>*@
-@*<div class="col-12" id="searcher">
-        <vc:property-selector-complex model="@propertySelector" />
-    </div>
-    <form method="post" class="widget" id="NewItem">
-        <widget-header title="@Model.PageTitle" />
-        <input asp-for="NewItem.PropertyId" />
-        <input asp-for="NewItem.Id" />
-        <section class="container-fluid">
-            <div class="row justify-content-center align-items-center itemShow" id="NewItem_PropertyInfo">
-                <div class="col-12 detail">
-                    <div class="info">
-                        <span class="margin-bottomed">
-                            <a href="#" target="_blank" class="address title"></a>
-                            <a href="#" target="_blank" class="badge badge-primary district"></a>
-                            <a href="#" target="_blank" class="badge badge-warning category"></a>
-                            <a href="#" target="_blank" class="badge badge-danger owner"></a>
-                        </span>
-                        <span class="text-gray text-justify description"></span>
-                    </div>
-                    @if (Model.NewItem == null || Model.NewItem.IsNew)
-                    {
-                        <div class="button">
-                            <a href="#" class="btn btn-sm btn-danger" id="NewItem_ResetProperty">@SharedLocalizer["ResetSelection"]</a>
-                        </div>
-                    }
-                </div>
-            </div>
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12 margin-bottomed">
-                    <label asp-for="NewItem.CategoryId" class="control-label"></label>
-                    <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="form-control"></select>
-                    <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
-                </div>
-            </div>
-            <input asp-for="NewItem.ItemFeaturesJson" />
-            <vc:json-selector model="@itemFeatureSelector" />
-            <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12 margin-bottomed">
-                    <label asp-for="NewItem.Description" class="control-label"></label>
-                    <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
-                    <span asp-validation-for="NewItem.Description" class="text-danger"></span>
-                </div>
-            </div>
-        </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.ItemStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
-    </form>
-
-    @section Scripts
-        {
-        <script>
-            $(document).ready(function() {
-
-                var pendingRequest = null;
-
-                const currentPropertyIdElement = $("#@($"{nameof(Model.NewItem)}_{nameof(Model.NewItem.PropertyId)}")");
-                const searchInput = $("#@propertySelector.PropertySelector.SearchId");
-                const resetPropertyIdSelector = "#NewItem_ResetProperty";
-
-                const newItemWrapper = $("#NewItem");
-                const searchWrapper = $("#searcher");
-                const propertyInfoWrapper = $("#NewItem_PropertyInfo");
-
-                $(document).on("click",
-                    resetPropertyIdSelector,
-                    function (e) {
-                        $(currentPropertyIdElement).val("").trigger("change");
-
-                    });
-
-                $(currentPropertyIdElement).change(function() {
-
-                    $(searchInput).val("");
-                    const currentPropertyId = $(currentPropertyIdElement).val();
-                    console.log("Selected propertyId", currentPropertyId);
-
-                    if (currentPropertyId === null || currentPropertyId === "") {
-                        $(newItemWrapper).fadeOut(function() {
-                            $(searchWrapper).fadeIn();
-                        });
-                    } else {
-                        pendingRequest = $.ajax({
-                            type: 'GET',
-                            data: { id: currentPropertyId },
-                            url: '@Url.Action("PropertyAsync", "Detail")',
-                            beforeSend: function() {
-                                if (pendingRequest != null) {
-                                    pendingRequest.abort();
-                                }
-                            },
-                            success: function(response) {
-                                $(searchWrapper).fadeOut(function() {
-                                    const addressElement = $(".address", propertyInfoWrapper);
-                                    const districtElement = $(".district", propertyInfoWrapper);
-                                    const categoryElement = $(".category", propertyInfoWrapper);
-                                    const descriptionElement = $(".description", propertyInfoWrapper);
-
-                                    const idValue = response
-                                        .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Id));
-                                    const addressValue = response
-                                        .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Address));
-                                    const districtValue = response
-                                        .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.District));
-                                    const categoryValue = response
-                                        .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Category));
-                                    const descriptionValue = response
-                                        .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x=>x.Description));
-
-                                    $(addressElement).html(addressValue);
-                                    $(addressElement).attr("href",
-                                        `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyId=${idValue}`);
-
-                                    $(districtElement).html(districtValue);
-                                    $(districtElement).attr("href",
-                                        `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.District)}/Index")?districtName=${districtValue}`);
-
-                                    $(categoryElement).html(categoryValue);
-                                    $(categoryElement).attr("href",
-                                        `@Url.Page($"/{nameof(Manage)}/{nameof(Manage.Property)}/Index")?propertyCat=${categoryValue}`);
-
-                                    if (descriptionValue === "")
-                                        $(descriptionElement).addClass("d-none");
-                                    else {
-                                        $(descriptionElement).removeClass("d-none");
-                                        $(descriptionElement).html(descriptionValue);
-                                    }
-
-                                    $(newItemWrapper).fadeIn();
-                                });
-                            },
-                            error: function(e) {
-
-                            }
-                        });
-                    }
-                });
-
-                $(currentPropertyIdElement).trigger("change");
-            });
-        </script>
-        <script asp-paste-key="@itemFeatureSelector.ScriptKey"></script>
-
-        <script asp-paste-key="@propertySelector.PropertySelector.ScriptKey"></script>
-        <script asp-paste-key="@propertySelector.PropertyCreator.ScriptKey"></script>
-        <script asp-paste-key="propertyFeaturesScript"></script>
-        <script asp-paste-key="propertyFacilitiesScript"></script>
-        <script asp-paste-key="propertyOwnersScript"></script>
-        <script asp-paste-key="@propertySelector.PropertyCreator.PersonCreator.ScriptKey"></script>
-
-    }*@
-
 @section Scripts
-    {
+            {
 
     <script>
         var customerChanged = true;
@@ -559,6 +336,8 @@
             const detail = $("#newCustomer_Detail");
             const similars = $("#customer_similar");
             const items = $(".items", similars);
+
+            const submitPropertyRow = $("#submitProperty");
 
             function setOwnerStatus(text) {
                 $(status).html(text);
@@ -695,16 +474,17 @@
                             const json = JSON.stringify(model);
                             $(ownersInput).val(json);
 
+                        $(detail).fadeOut();
+                            $(similars).fadeOut();
+
                             setTimeout(function() {
-                                    $(propertyCollapse).collapse("show");
                                     $(phoneInput).val("");
                                     $(addressInput).val("");
-                                    $(nameInput).val("");
-                                    $(mobileInput).val("");
                                     $(detail).addClass("hidden");
                                     $(similars).addClass("hidden");
+                                    $(submitPropertyRow).removeClass("hidden");
                                 },
-                                2000);
+                                500);
 
                         }
                     });
@@ -813,6 +593,8 @@
             const detail = $("#newProptery_Detail");
             const similars = $("#property_similar");
             const items = $(".items", similars);
+
+            const itemCard = $("#itemCard");
 
             function setPropertyStatus(text) {
                 $(status).html(text);
@@ -959,6 +741,7 @@
 
                             const id = response.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.Id));
                             $(propertyIdInput).val(id);
+                            $(itemCard).removeClass("hidden");
                             setTimeout(function() {
                                 $(itemCollapse).collapse("show");
                                     $(ownersInput).val("");

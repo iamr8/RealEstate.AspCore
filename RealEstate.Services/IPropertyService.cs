@@ -30,6 +30,8 @@ namespace RealEstate.Services
 
         Task<PropertyJsonViewModel> PropertyJsonAsync(string id);
 
+        Task<bool> PropertyValidate(string id);
+
         Task<PropertyInputViewModel> PropertyInputAsync(string id);
 
         Task<Property> PropertyEntityAsync(string id);
@@ -94,25 +96,19 @@ namespace RealEstate.Services
 
         public async Task<PropertyJsonViewModel> PropertyJsonAsync(string id)
         {
-            var query = _properties as IQueryable<Property>;
-            query = query.Include(x => x.Items)
-                .Include(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility)
-                .Include(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.District)
-                .Include(x => x.Category)
-                .Include(x => x.District)
-                .Include(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
-
+            var query = _properties.AsQueryable();
             var entity = await query.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null)
                 return default;
 
             var result = MapJson(entity);
             return result;
+        }
+
+        public async Task<bool> PropertyValidate(string id)
+        {
+            var property = await _properties.AnyAsync(x => x.Id == id).ConfigureAwait(false);
+            return property;
         }
 
         public async Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm)

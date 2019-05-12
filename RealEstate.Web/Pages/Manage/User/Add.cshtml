@@ -23,40 +23,6 @@
         Text = $"{x.FirstName} {x.LastName}",
         Value = x.Id
     }).SelectFirstItem();
-
-    //var userPropertySelector = new JsonSelectorComponentModel
-    //{
-    //    IdProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Id),
-    //    NameProperty = PropertyExtensions.GetJsonProperty<UserPropertyCategoryJsonViewModel>(x => x.Name),
-    //    ModelName = nameof(Model.NewUser),
-    //    ItemName = nameof(Model.NewUser.UserPropertyCategories),
-    //    Json = nameof(Model.NewUser.UserPropertyCategoriesJson),
-    //    Title = SharedLocalizer["UserPropertyCategories"],
-    //    ScriptKey = "userPropertyScript",
-    //    SelectListItems = propertyCategories?.Select(x => new SelectListItem
-    //    {
-    //        Text = x.Name,
-    //        Value = x.Id,
-    //    }).SelectFirstItem(),
-
-    //};
-
-    //var userItemSelector = new JsonSelectorComponentModel
-    //{
-    //    IdProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Id),
-    //    NameProperty = PropertyExtensions.GetJsonProperty<UserItemCategoryJsonViewModel>(x => x.Name),
-    //    ModelName = nameof(Model.NewUser),
-    //    ItemName = nameof(Model.NewUser.UserItemCategories),
-    //    Json = nameof(Model.NewUser.UserItemCategoriesJson),
-    //    Title = SharedLocalizer["UserItemCategories"],
-    //    ScriptKey = "useritemScript",
-    //    SelectListItems = itemCategories?.Select(x => new SelectListItem
-    //    {
-    //        Text = x.Name,
-    //        Value = x.Id,
-    //    }).SelectFirstItem(),
-
-    //};
 }
 
 <form method="post" class="col-12">

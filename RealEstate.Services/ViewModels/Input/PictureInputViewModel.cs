@@ -1,17 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
-using RealEstate.Base;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
-    public class PictureInputViewModel : BaseInputViewModel
+    public class PictureInputViewModel
     {
         [R8AllowedFileTypes("jpg", "png")]
-        [Display(ResourceType = typeof(SharedResource), Name = "UploadPhotos")]
-        public IFormFile File { get; set; }
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FileRequired")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Picture")]
+        public IFormFile[] File { get; set; }
 
-        public string Text { get; set; }
+        [HiddenInput]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
+        public string PropertyId { get; set; }
     }
 }

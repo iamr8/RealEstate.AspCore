@@ -3,15 +3,22 @@ using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
+using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services
 {
     public interface IPictureService
     {
-        Task<(StatusEnum, Picture)> PictureAddAsync(PictureInputViewModel model, PictureTypeEnum type, string targetId, bool save);
+        Task<StatusEnum> PropertyPictureAddAsync(PictureInputViewModel model, bool save);
+
+        Task<StatusEnum> PictureRemoveAsync(string pictureId);
+
+        Task<List<PictureViewModel>> PropertyPicturesAsync(string id);
     }
 
     public class PictureService : IPictureService
@@ -33,27 +40,64 @@ namespace RealEstate.Services
             _pictures = _unitOfWork.Set<Picture>();
         }
 
-        public async Task<(StatusEnum, Picture)> PictureAddAsync(PictureInputViewModel model, PictureTypeEnum type, string targetId, bool save)
+        public async Task<List<PictureViewModel>> PropertyPicturesAsync(string id)
+        {
+            var query = await _pictures.Where(x => x.PropertyId == id).ToListAsync().ConfigureAwait(false);
+            if (query?.Any() != true)
+                return default;
+
+            var result = query.Select(x => x.Into<Picture, PictureViewModel>()).ToList();
+            return result;
+        }
+
+        public async Task<StatusEnum> PictureRemoveAsync(string pictureId)
+        {
+            if (string.IsNullOrEmpty(pictureId))
+                return StatusEnum.ParamIsNull;
+
+            var entity = await _pictures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == pictureId).ConfigureAwait(false);
+            var result = await _baseService.RemoveAsync(entity,
+                    new[]
+                    {
+                        Role.SuperAdmin, Role.Admin
+                    },
+                    true,
+                    true)
+                .ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<StatusEnum> PropertyPictureAddAsync(PictureInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Picture>(StatusEnum.ModelIsNull, null);
+                return StatusEnum.ModelIsNull;
 
             // Upload Picture
-            var file = _fileHandler.Upload(model.File);
-            if (file == null)
-                return new ValueTuple<StatusEnum, Picture>(StatusEnum.FileIsNull, null);
+            var files = await _fileHandler.SaveAsync(model.File).ConfigureAwait(false);
+            if (files?.Any() != true)
+                return StatusEnum.FileIsNull;
 
-            var newPicture = await _baseService.AddAsync(new Picture
+            var results = new List<StatusEnum>();
+            foreach (var picture in files)
             {
-                PropertyId = type == PictureTypeEnum.Property ? targetId : null,
-                ReminderId = type == PictureTypeEnum.Reminder ? targetId : null,
-                PaymentId = type == PictureTypeEnum.PaymentId ? targetId : null,
-                DealId = type == PictureTypeEnum.Deal ? targetId : null,
-                EmployeeId = type == PictureTypeEnum.Employee ? targetId : null,
-                Text = model.Text,
-                File = file.File,
-            }, null, save).ConfigureAwait(false);
-            return newPicture;
+                var (newStatus, newPicture) = await _baseService.AddAsync(new Picture
+                {
+                    PropertyId = model.PropertyId,
+                    File = picture,
+                }, null, save).ConfigureAwait(false);
+                results.Add(newStatus);
+            }
+
+            StatusEnum result;
+            if (results.All(x => x == StatusEnum.Success))
+                result = StatusEnum.Success;
+            else if (results.Any(x => x == StatusEnum.Success))
+                result = StatusEnum.PartialSuccess;
+            else
+                result = StatusEnum.Failed;
+
+            return result;
         }
     }
 }

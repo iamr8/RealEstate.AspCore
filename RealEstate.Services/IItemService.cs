@@ -308,9 +308,10 @@ namespace RealEstate.Services
                             userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
                         where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
                             userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
-                        where EF.Functions.Like(item.Property.Street, street.Like())
-                              || EF.Functions.Like(item.Property.District.Name, district.Like())
-                              || EF.Functions.Like(item.Property.Category.Name, category.Like())
+                        where (EF.Functions.Like(item.Property.Street, street.Like())
+                               || EF.Functions.Like(item.Property.Alley, street.Like()))
+                              && item.Property.District.Name == district
+                              && item.Property.Category.Name == category
                         select item;
 
             var models = await query.Select(x => x.Property).ToListAsync().ConfigureAwait(false);
@@ -467,6 +468,7 @@ namespace RealEstate.Services
                         act3.GetPropertyFeatures(false, act4 => act4.GetFeature());
                         act3.GetCategory();
                         act3.GetDistrict();
+                        act3.GetPictures();
                     });
                 })).ConfigureAwait(false);
             return result;

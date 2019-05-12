@@ -1313,3 +1313,36 @@ ul.info-breadcrumb {
         }
     }
 }
+
+.verified {
+    color: dodgerblue !important;
+}
+
+.no-image {
+    .bspImgWrapper {
+        display: none;
+    }
+}
+
+#bsPhotoGalleryModal {
+    .bsp-text-container {
+        display: none;
+    }
+
+    .modal-dialog {
+        height: 100%;
+        display: flex;
+        align-items: center;
+
+        .modal-content {
+            background-color: transparent;
+            background-clip: padding-box;
+            border: none;
+        }
+
+        .bsp-modal-main-image {
+            @include border-radius(10px);
+            box-shadow: 0 0 10px black;
+        }
+    }
+}

@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RealEstate.Base.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
+    [AttributeUsage(AttributeTargets.Property)]
     public class R8AllowedFileTypesAttribute : RequiredAttribute, IClientModelValidator
     {
         private const string DefaultErrorMessage = "فایلهای مجاز: {0}";
@@ -43,7 +44,12 @@ namespace RealEstate.Base.Attributes
                     return new ValidationResult(ErrorMessageString);
             }
 
-            return finalFiles.Any(uploadedFile => uploadedFile != null && !ValidTypes.Any(e => uploadedFile.FileName.EndsWith(e)))
+            return finalFiles.Any(uploadedFile => uploadedFile != null
+                                                  && !ValidTypes.Any(e =>
+                                                  {
+                                                      var ext = Path.GetExtension(uploadedFile.FileName).Substring(1).ToLower();
+                                                      return ext.Equals(e.ToLower());
+                                                  }))
                 ? new ValidationResult(ErrorMessageString)
                 : ValidationResult.Success;
         }

@@ -173,7 +173,13 @@
                                     </li>
                                 </ul>
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank">@item.Property.Address</a>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank">
+                                        @item.Property.Address
+                                        @if (item.Property?.Pictures?.Any() == true)
+                                        {
+                                            <i class="fa fa-check-circle verified"></i>
+                                        }
+                                    </a>
                                 </span>
                                 @if (item.Property.PropertyFacilities?.Any() == true)
                                 {
@@ -220,6 +226,24 @@
                                     </span>
 
                                 }
+                                @if (item.Property?.Pictures?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer[SharedResource.Photos] :
+                                        <ul class="info-breadcrumb gallery no-image">
+                                            @for (var i = 0; i < item.Property.Pictures.Count; i++)
+                                            {
+                                                var imgPath = $"~/{FileHandler.ImgDirectory}/{item.Property.Pictures[i].File}";
+                                                var renderedPath = Url.Content(imgPath);
+                                                <li>
+                                                    <img class="hidden" src="@renderedPath">
+                                                    @*<a href="#">@SharedLocalizer[SharedResource.Picture] @(i + 1)</a>*@
+                                                    @SharedLocalizer[SharedResource.Picture] @(i + 1)
+                                                </li>
+                                            }
+                                        </ul>
+                                    </span>
+                                }
                                 @if (!string.IsNullOrEmpty(item.Description))
                                 {
                                     <span class="text-gray text-justify description">
@@ -231,16 +255,16 @@
                                 {
                                     <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
                                 }*@
-                            @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                            {
-                                <div class="button">
 
+                            <div class="button">
+                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                {
                                     <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                </div>
-
-                            }
+                                }
+                            </div>
                         </div>
                         <vc:log logs="@item.Logs" cat="Item" id="@item.Id" />
                     </div>
@@ -260,8 +284,23 @@
     </div>
 </div>
 
+@section Styles
+{
+    <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
+}
 @section Scripts
-    {
+{
+    <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+
+            const opts = {
+                "classes": "",
+                "hasModal": true
+            }
+            $('.gallery').bsPhotoGallery(opts);
+        });
+    </script>
     <script>
         $(document).ready(function() {
 
@@ -499,7 +538,7 @@
                     obj => obj.@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)) ===
                     newItem.@(PropertyExtensions.GetJsonProperty<ItemFeatureJsonValueViewModel>(x => x.Id)));
 
-            $(fromInput).val("");
+                $(fromInput).val("");
                 $(toInput).val("");
 
             });

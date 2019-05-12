@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services;
 using RealEstate.Web.Pages.Manage.User;
 using System.Threading.Tasks;
+using RealEstate.Base;
 
 namespace RealEstate.Web.Controllers
 {
@@ -21,6 +22,7 @@ namespace RealEstate.Web.Controllers
         private readonly IDealService _dealService;
         private readonly IPaymentService _paymentService;
         private readonly IReminderService _reminderService;
+        private readonly IPictureService _pictureService;
 
         public RemoveController(
             IUserService userService,
@@ -33,8 +35,8 @@ namespace RealEstate.Web.Controllers
             IDealService dealService,
             IPaymentService paymentService,
             IEmployeeService employeeService,
-            IReminderService reminderService
-
+            IReminderService reminderService,
+            IPictureService pictureService
             )
         {
             _userService = userService;
@@ -48,6 +50,7 @@ namespace RealEstate.Web.Controllers
             _employeeService = employeeService;
             _paymentService = paymentService;
             _reminderService = reminderService;
+            _pictureService = pictureService;
         }
 
         [Route("facility/remove")]
@@ -57,6 +60,17 @@ namespace RealEstate.Web.Controllers
             return RedirectToPage(typeof(Pages.Manage.Facility.IndexModel).Page(), new
             {
                 status = model
+            });
+        }
+
+        [Route("property/picture/remove")]
+        public async Task<IActionResult> PropertyPictureAsync(string id, string propertyId)
+        {
+            var model = await _pictureService.PictureRemoveAsync(id).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Item.PictureModel).Page(), new
+            {
+                status = model.GetDisplayName(),
+                id = propertyId
             });
         }
 

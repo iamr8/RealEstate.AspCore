@@ -1,0 +1,64 @@
+﻿@page
+@model PictureModel
+
+<form method="post" class="col-12 margin-bottomed" enctype="multipart/form-data">
+    <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? "hidden" : "")" asp-validation-summary="All">
+        @Model.Status
+    </div>
+    <div class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <input asp-for="NewPicture.PropertyId" />
+        <section class="container-fluid">
+            <div class="row justify-content-center align-content-center">
+                <div class="col-12">
+                    <div class="input-wrapper">
+                        <label asp-for="NewPicture.File" class="control-label"></label>
+                        <input type="file" asp-for="NewPicture.File" class="form-control-file" multiple />
+                        <span asp-validation-for="NewPicture.File" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <input type="submit" value="@SharedLocalizer[SharedResource.Submit]" class="btn-success btn-block" />
+        </footer>
+    </div>
+</form>
+@if (Model.Pictures?.Any() == true)
+{
+    <div class="col-12">
+        <ul class="row justify-content-center align-content-center gallery">
+            @foreach (var picture in Model.Pictures)
+            {
+                var imgPath = $"~/{FileHandler.ImgDirectory}/{picture.File}";
+                var renderedPath = Url.Content(imgPath);
+                <li>
+                    <img src="@renderedPath" class="img-fluid  img-thumbnail" />
+
+                    @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+                    {
+                        <a asp-controller="Remove" asp-action="PropertyPictureAsync" asp-route-id="@picture.Id" asp-route-propertyId="@Model.NewPicture.PropertyId">حذف تصویر</a>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}
+@section Styles
+{
+    <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
+}
+@section Scripts
+{
+    <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+
+            const opts = {
+                "classes": "col-12 col-md",
+                "hasModal": true
+            }
+            $('.gallery').bsPhotoGallery(opts);
+        });
+    </script>
+}
