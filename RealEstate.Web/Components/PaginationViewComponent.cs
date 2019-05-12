@@ -1,31 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RealEstate.Base;
+using RealEstate.Services.BaseLog;
+using RestSharp.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using RealEstate.Services.BaseLog;
 
 namespace RealEstate.Web.Components
 {
     public class PaginationViewComponent : ViewComponent
     {
-        private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly IUrlHelperFactory _urlHelperFactory;
-
-        public PaginationViewComponent(IActionContextAccessor actionContextAccessor, IUrlHelperFactory urlHelperFactory)
-        {
-            _actionContextAccessor = actionContextAccessor;
-            _urlHelperFactory = urlHelperFactory;
-        }
-
         public IViewComponentResult Invoke(ModelExpression model)
         {
-            var urlHelper =
-              _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
-
             var testPage = new PaginationViewModel<string>();
             var pagination = model.Model;
             if (pagination == null)
@@ -43,7 +30,7 @@ namespace RealEstate.Web.Components
             var pages = (int)type.GetProperty(nameof(testPage.Pages)).GetValue(pagination);
             var currentPage = (int)type.GetProperty(nameof(testPage.CurrentPage)).GetValue(pagination);
 
-            var currentUrlData = _actionContextAccessor.ActionContext.RouteData;
+            var currentUrlData = ViewContext.RouteData;
             if (currentUrlData?.Values == null
                 || currentUrlData.Values.Count == 0
                 || currentUrlData.Values.Values.Count == 0)
@@ -55,21 +42,38 @@ namespace RealEstate.Web.Components
             var currentUrlRoutes = currentUrlData.Values.Values;
 
             var final = new List<PaginationPassModel>();
+            var queryString = ViewContext.HttpContext.Request.QueryString.Value;
+            var routeTemplate = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                queryString = queryString.Substring(queryString.StartsWith("?") ? 1 : 0);
+                if (!string.IsNullOrEmpty(queryString))
+                {
+                    routeTemplate = queryString.Split("&").Where(x => x.Split("=")[0] != "pageNo")
+                        .ToDictionary(x => x.Split("=")[0], x => x.Split("=")[1].UrlDecode());
+                }
+            }
+
             for (var x = 0; x < pages; x++)
             {
                 var page = x + 1;
+                var routes = new Dictionary<string, string>(routeTemplate)
+                {
+                    {
+                        "pageNo", page.ToString()
+                    }
+                };
 
                 string currentUrl;
-                var routes = new { pageNo = page };
                 if (currentUrlIsPage)
                 {
                     var str = currentUrlRoutes.FirstOrDefault()?.ToString();
-                    currentUrl = urlHelper.Page(str, routes);
+                    currentUrl = Url.Page(str, routes);
                 }
                 else
                 {
                     var arr = currentUrlRoutes.Take(2).Cast<string>().ToArray();
-                    currentUrl = urlHelper.Action(arr[1], arr[0], routes);
+                    currentUrl = Url.Action(arr[1], arr[0], routes);
                 }
 
                 final.Add(new PaginationPassModel

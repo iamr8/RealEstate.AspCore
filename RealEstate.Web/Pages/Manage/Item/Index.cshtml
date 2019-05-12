@@ -204,7 +204,7 @@
                                             @foreach (var feature in item.Property.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name &mdash; @feature.Value @feature.Feature?.Name.Postfix()</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
@@ -219,7 +219,7 @@
                                             @foreach (var feature in item.ItemFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name &mdash; @feature.Value @feature.Feature?.Name.Postfix()</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
