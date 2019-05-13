@@ -8,7 +8,6 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace RealEstate.Services
 {
     public interface IDivisionService
     {
-        Task<(StatusEnum, Division)> UpdateAsync(DivisionInputViewModel model, bool save);
+        Task<MethodStatus<Division>> UpdateAsync(DivisionInputViewModel model, bool save);
 
         Task<PaginationViewModel<DivisionViewModel>> ListAsync(DivisionSearchViewModel searchModel);
 
@@ -27,11 +26,11 @@ namespace RealEstate.Services
 
         Task<DivisionInputViewModel> InputAsync(string id);
 
-        Task<(StatusEnum, Division)> AddOrUpdateAsync(DivisionInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Division>> AddOrUpdateAsync(DivisionInputViewModel model, bool update, bool save);
 
         Task<Division> EntityAsync(string id);
 
-        Task<(StatusEnum, Division)> AddAsync(DivisionInputViewModel model, bool save);
+        Task<MethodStatus<Division>> AddAsync(DivisionInputViewModel model, bool save);
     }
 
     public class DivisionService : IDivisionService
@@ -109,20 +108,20 @@ namespace RealEstate.Services
             return result;
         }
 
-        public Task<(StatusEnum, Division)> AddOrUpdateAsync(DivisionInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Division>> AddOrUpdateAsync(DivisionInputViewModel model, bool update, bool save)
         {
             return update
                 ? UpdateAsync(model, save)
                 : AddAsync(model, save);
         }
 
-        public async Task<(StatusEnum, Division)> UpdateAsync(DivisionInputViewModel model, bool save)
+        public async Task<MethodStatus<Division>> UpdateAsync(DivisionInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Division>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Division>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Division>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Division>(StatusEnum.IdIsNull, null);
 
             var entity = await EntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
@@ -154,13 +153,13 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Division)> AddAsync(DivisionInputViewModel model, bool save)
+        public async Task<MethodStatus<Division>> AddAsync(DivisionInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Division>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Division>(StatusEnum.ModelIsNull, null);
 
             if (string.IsNullOrEmpty(model.Name))
-                return new ValueTuple<StatusEnum, Division>(StatusEnum.NameIsNull, null);
+                return new MethodStatus<Division>(StatusEnum.NameIsNull, null);
 
             var add = await _baseService.AddAsync(new Division
             {

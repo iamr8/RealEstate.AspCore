@@ -9,7 +9,6 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ namespace RealEstate.Services
 {
     public interface IPropertyService
     {
-        Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save);
+        Task<MethodStatus<Property>> PropertyAddAsync(PropertyInputViewModel model, bool save);
 
         Task<StatusEnum> PropertyRemoveAsync(string id);
 
@@ -26,7 +25,7 @@ namespace RealEstate.Services
 
         PropertyJsonViewModel MapJson(Property property);
 
-        Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
+        Task<MethodStatus<Property>> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save);
 
         Task<PropertyJsonViewModel> PropertyJsonAsync(string id);
 
@@ -38,7 +37,7 @@ namespace RealEstate.Services
 
         Task<PaginationViewModel<PropertyViewModel>> PropertyListAsync(PropertySearchViewModel searchModel);
 
-        Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save);
+        Task<MethodStatus<PropertyOwnership>> PropertyOwnershipAddAsync(string propertyId, bool save);
     }
 
     public class PropertyService : IPropertyService
@@ -285,13 +284,13 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Property)> PropertyAddAsync(PropertyInputViewModel model, bool save)
+        public async Task<MethodStatus<Property>> PropertyAddAsync(PropertyInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
 
             if (model.Ownerships?.Any() != true)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
 
             var (propertyAddStatus, newProperty) = await _baseService.AddAsync(new Property
             {
@@ -308,11 +307,11 @@ namespace RealEstate.Services
             }, null, false).ConfigureAwait(false);
 
             if (propertyAddStatus != StatusEnum.Success)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.PropertyIsNull, null);
 
             var (propertyOwnershipAddStatus, newPropertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false).ConfigureAwait(false);
             if (propertyOwnershipAddStatus != StatusEnum.Success)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyOwnershipIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.PropertyOwnershipIsNull, null);
 
             await PropertySyncAsync(newProperty, newPropertyOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
@@ -365,23 +364,23 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, Property)> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save)
+        public Task<MethodStatus<Property>> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save)
         {
             return model?.IsNew != true
                 ? PropertyUpdateAsync(model, save)
                 : PropertyAddAsync(model, save);
         }
 
-        private async Task<(StatusEnum, Property)> PropertyUpdateAsync(PropertyInputViewModel model, bool save)
+        private async Task<MethodStatus<Property>> PropertyUpdateAsync(PropertyInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.IdIsNull, null);
 
             if (model.Ownerships?.Any() != true)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
 
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,
@@ -399,16 +398,16 @@ namespace RealEstate.Services
                 }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
 
             if (updatedProperty == null)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.PropertyIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.PropertyIsNull, null);
 
             if (updatedProperty.CurrentOwnership == null)
-                return new ValueTuple<StatusEnum, Property>(StatusEnum.OwnershipIsNull, null);
+                return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
 
             await PropertySyncAsync(updatedProperty, updatedProperty.CurrentOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedProperty, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, PropertyOwnership)> PropertyOwnershipAddAsync(string propertyId, bool save)
+        public async Task<MethodStatus<PropertyOwnership>> PropertyOwnershipAddAsync(string propertyId, bool save)
         {
             var newPropertyOwnership = await _baseService.AddAsync(new PropertyOwnership
             {

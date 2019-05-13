@@ -34,7 +34,8 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [ViewData]
         public string PageTitle => _localizer["Employees"];
 
-        public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone, string employeeAddress, string employeeId, string userId, string divisionId, bool deleted)
+        public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone,
+            string employeeAddress, string employeeId, string userId, string divisionId, bool deleted)
         {
             SearchInput = new EmployeeSearchViewModel
             {

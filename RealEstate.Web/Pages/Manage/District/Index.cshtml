@@ -51,6 +51,7 @@
                                     <b class="title">
                                         @item.Name
                                     </b>
+                                    <a class="badge badge-primary" asp-page="@typeof(Item.IndexModel).Page()" target="_blank" asp-route-district="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
                                 </span>
                             </div>
                             <div class="button">

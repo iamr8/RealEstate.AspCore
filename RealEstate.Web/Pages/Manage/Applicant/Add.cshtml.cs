@@ -58,7 +58,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _customerService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _customerService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             ApplicantStatus = finalStatus.GetDisplayName();

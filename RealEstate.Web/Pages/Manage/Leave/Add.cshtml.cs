@@ -66,7 +66,7 @@ namespace RealEstate.Web.Pages.Manage.Leave
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _employeeService.LeaveAddOrUpdateAsync(NewLeave, !NewLeave.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _employeeService.LeaveAddOrUpdateAsync(NewLeave, !NewLeave.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             LeaveStatus = finalStatus.GetDisplayName();

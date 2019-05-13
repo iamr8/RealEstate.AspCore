@@ -23,7 +23,7 @@ namespace RealEstate.Services
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
-        Task<(StatusEnum, User)> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
+        Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true);
 
@@ -173,17 +173,17 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, User)> UpdateAsync(UserInputViewModel model, bool save)
+        public async Task<MethodStatus<User>> UpdateAsync(UserInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<User>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<User>(StatusEnum.IdIsNull, null);
 
             var user = _baseService.CurrentUser();
             if (user == null)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<User>(StatusEnum.UserIsNull, null);
 
             var entity = await EntityAsync(model.Id, null).ConfigureAwait(false);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
@@ -235,28 +235,28 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, User)> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
         {
             return update
                 ? UpdateAsync(model, save)
                 : AddAsync(model, save);
         }
 
-        public async Task<(StatusEnum, User)> AddAsync(UserInputViewModel model, bool save)
+        public async Task<MethodStatus<User>> AddAsync(UserInputViewModel model, bool save)
         {
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<User>(StatusEnum.UserIsNull, null);
 
             if (currentUser.Role != Role.SuperAdmin)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.Forbidden, null);
+                return new MethodStatus<User>(StatusEnum.Forbidden, null);
 
             if (model == null)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<User>(StatusEnum.ModelIsNull, null);
 
             var existing = await _users.AnyAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase)).ConfigureAwait(false);
             if (existing)
-                return new ValueTuple<StatusEnum, User>(StatusEnum.AlreadyExists, null);
+                return new MethodStatus<User>(StatusEnum.AlreadyExists, null);
 
             var (userAddStatus, newUser) = await _baseService.AddAsync(new User
             {

@@ -10,7 +10,6 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,29 +18,29 @@ namespace RealEstate.Services
 {
     public interface ICustomerService
     {
-        Task<(StatusEnum, Customer)> CustomerAddAsync(CustomerInputViewModel model, bool isForApplicantUse, bool save);
+        Task<MethodStatus<Customer>> CustomerAddAsync(CustomerInputViewModel model, bool isForApplicantUse, bool save);
 
-        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Applicant>> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save);
 
         Task<CustomerJsonViewModel> CustomerJsonAsync(string id);
 
-        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
+        Task<MethodStatus<Applicant>> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
 
         Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
         Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id);
 
-        Task<(StatusEnum, Database.Tables.Customer)> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Customer>> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save);
+        Task<MethodStatus<Applicant>> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save);
 
-        Task<(StatusEnum, Ownership)> OwnershipAddAsync(Ownership model, bool save);
+        Task<MethodStatus<Ownership>> OwnershipAddAsync(Ownership model, bool save);
 
         Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel);
 
-        Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
+        Task<MethodStatus<Ownership>> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
-        Task<(StatusEnum, Database.Tables.Customer)> CustomerUpdateAsync(CustomerInputViewModel model, bool save);
+        Task<MethodStatus<Customer>> CustomerUpdateAsync(CustomerInputViewModel model, bool save);
 
         Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel);
 
@@ -55,11 +54,11 @@ namespace RealEstate.Services
 
         Task<StatusEnum> ApplicantRemoveAsync(string id);
 
-        Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
+        Task<MethodStatus<Ownership>> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
 
         Task<Customer> CustomerEntityAsync(string id, string mobile, bool includeApplicants = true, bool includeOwnerships = true, bool includeSmses = true);
 
-        Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string dealId, bool save);
+        Task<MethodStatus<Applicant>> ApplicantPlugItemRequestAsync(string applicantId, string dealId, bool save);
 
         Task<StatusEnum> CustomerRemoveAsync(string id);
 
@@ -336,10 +335,10 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Database.Tables.Applicant)> ApplicantPlugItemRequestAsync(string applicantId, string itemId, bool save)
+        public async Task<MethodStatus<Applicant>> ApplicantPlugItemRequestAsync(string applicantId, string itemId, bool save)
         {
             if (string.IsNullOrEmpty(applicantId) || string.IsNullOrEmpty(itemId))
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ParamIsNull, null);
+                return new MethodStatus<Applicant>(StatusEnum.ParamIsNull, null);
 
             var applicant = await ApplicantEntityAsync(applicantId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(applicant,
@@ -441,10 +440,10 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save)
+        public async Task<MethodStatus<Ownership>> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save)
         {
             if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(propertyOwnershipId))
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ParamIsNull, null);
+                return new MethodStatus<Ownership>(StatusEnum.ParamIsNull, null);
 
             var ownership = await OwnershipEntityAsync(ownerId).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(ownership,
@@ -454,17 +453,17 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Applicant)> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save)
+        public async Task<MethodStatus<Applicant>> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Applicant>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Applicant>(StatusEnum.IdIsNull, null);
 
             var entity = await ApplicantEntityAsync(model.Id).ConfigureAwait(false);
             if (entity?.Customer?.IsPublic == true || entity?.Item?.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status == DealStatusEnum.Finished)
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ApplicantIsNull, null);
+                return new MethodStatus<Applicant>(StatusEnum.ApplicantIsNull, null);
 
             var (updateStatus, updatedApplicant) = await _baseService.UpdateAsync(entity,
                 currentUser =>
@@ -497,10 +496,10 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(updatedApplicant, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, Applicant)> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save)
+        public async Task<MethodStatus<Applicant>> ApplicantAddAsync(ApplicantInputViewModel model, string itemId, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Applicant>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Applicant>(StatusEnum.ModelIsNull, null);
 
             var customer = await CustomerEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (customer == null)
@@ -516,7 +515,7 @@ namespace RealEstate.Services
                 if (customerAddStatus == StatusEnum.Success)
                     customer = newCustomer;
                 else
-                    return new ValueTuple<StatusEnum, Applicant>(customerAddStatus, null);
+                    return new MethodStatus<Applicant>(customerAddStatus, null);
             }
 
             var (addStatus, newApplicant) = await _baseService.AddAsync(currentUser => new Applicant
@@ -544,19 +543,19 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(newApplicant, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(Ownership model, bool save)
+        public async Task<MethodStatus<Ownership>> OwnershipAddAsync(Ownership model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Ownership>(StatusEnum.ModelIsNull, null);
 
             var addStatus = await _baseService.AddAsync(model, null, save).ConfigureAwait(false);
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Ownership)> OwnershipAddAsync(OwnershipInputViewModel model, bool save)
+        public async Task<MethodStatus<Ownership>> OwnershipAddAsync(OwnershipInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Ownership>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Ownership>(StatusEnum.ModelIsNull, null);
 
             var existingCustomer = await CustomerEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (existingCustomer == null)
@@ -569,7 +568,7 @@ namespace RealEstate.Services
                     Phone = model.Phone,
                 }, false, true).ConfigureAwait(false);
                 if (customerAddStatus != StatusEnum.Success)
-                    return new ValueTuple<StatusEnum, Ownership>(customerAddStatus, null);
+                    return new MethodStatus<Ownership>(customerAddStatus, null);
 
                 existingCustomer = newCustomer;
             }
@@ -583,19 +582,19 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Customer)> CustomerAddAsync(CustomerInputViewModel model, bool isForApplicantUse, bool save)
+        public async Task<MethodStatus<Customer>> CustomerAddAsync(CustomerInputViewModel model, bool isForApplicantUse, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Customer>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Customer>(StatusEnum.ModelIsNull, null);
 
             var existing = await CustomerEntityAsync(null, model.Mobile).ConfigureAwait(false);
             if (existing != null)
             {
                 if (existing.IsPublic)
-                    return new ValueTuple<StatusEnum, Customer>(StatusEnum.AlreadyExists, existing);
+                    return new MethodStatus<Customer>(StatusEnum.AlreadyExists, existing);
 
                 if (isForApplicantUse)
-                    return new ValueTuple<StatusEnum, Customer>(StatusEnum.Success, existing);
+                    return new MethodStatus<Customer>(StatusEnum.Success, existing);
             }
 
             var addStatus = await _baseService.AddAsync(new Customer
@@ -608,27 +607,27 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public Task<(StatusEnum, Applicant)> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Applicant>> ApplicantAddOrUpdateAsync(ApplicantInputViewModel model, bool update, bool save)
         {
             return update
                 ? ApplicantUpdateAsync(model, save)
                 : ApplicantAddAsync(model, null, save);
         }
 
-        public Task<(StatusEnum, Customer)> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Customer>> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save)
         {
             return update
                 ? CustomerUpdateAsync(model, save)
                 : CustomerAddAsync(model, false, save);
         }
 
-        public async Task<(StatusEnum, Customer)> CustomerUpdateAsync(CustomerInputViewModel model, bool save)
+        public async Task<MethodStatus<Customer>> CustomerUpdateAsync(CustomerInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Customer>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Customer>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Customer>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Customer>(StatusEnum.IdIsNull, null);
 
             var entity = await CustomerEntityAsync(model.Id, null).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,

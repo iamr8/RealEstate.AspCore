@@ -1,0 +1,115 @@
+﻿@page
+@model DetailModel
+@{
+  var payments = SelectItemExtensions.ToSelectList<PaymentTypeEnum>().Where(x => x.Text != PaymentTypeEnum.Remain.GetDisplayName() && x.Text != PaymentTypeEnum.Beneficiary.GetDisplayName()).SelectFirstItem();
+}
+<div class="col-12">
+  <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? "hidden" : "")" asp-validation-summary="All">
+    <span>@Model.Status</span>
+    <a href="#" class="close-status" onclick=""><i class="fa fa-times"></i></a>
+  </div>
+  <div class="widget">
+    <widget-header title="@Model.PageTitle" />
+    <section class="container-fluid">
+      <div class="row justify-content-center align-content-center">
+        <div class="col-12" id="accordion">
+          <div class="card">
+            <div class="card-header">
+              <a class="card-link" data-toggle="collapse" href="#financial">
+                @SharedLocalizer[SharedResource.Financial]
+              </a>
+            </div>
+            <div id="financial" class="collapse show" data-parent="#accordion">
+              <div class="card-body">
+                <div class="row justify-content-center align-content-center margin-bottomed">
+                  <div class="col-md text-center text-md-right">
+                    <b>@SharedLocalizer[SharedResource.Obligee] :</b>
+                    <span class="text-success">@(Model.Detail.Payments?.Obligee ?? 0) تومان</span>
+                  </div>
+                  <div class="col-md text-center text-md-left">
+                    <b>@SharedLocalizer[SharedResource.Obligor] :</b>
+                    <span class="text-danger">@(Model.Detail.Payments?.Obligor ?? 0) تومان</span>
+                  </div>
+                </div>
+                <hr />
+                <form method="post" asp-page-handler="Payment" class="row justify-content-center align-content-center">
+                  <input asp-for="NewPayment.EmployeeId" />
+                  <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                      <label class="control-label" asp-for="NewPayment.Value"></label>
+                      <input asp-for="NewPayment.Value" class="form-control" />
+                      <span asp-validation-for="NewPayment.Value" class="text-danger"></span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                      <label class="control-label" asp-for="NewPayment.Type"></label>
+                      <select asp-for="NewPayment.Type" asp-items="payments" class="custom-select"></select>
+                      <span asp-validation-for="NewPayment.Type" class="text-danger"></span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                      <label class="control-label" asp-for="NewPayment.Text"></label>
+                      <input asp-for="NewPayment.Text" class="form-control" />
+                      <span asp-validation-for="NewPayment.Text" class="text-danger"></span>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <input type="submit" class="btn btn-success btn-sm btn-block" value="@SharedLocalizer[SharedResource.Submit]" />
+                  </div>
+                </form>
+                @if (Model.Detail.Payments?.List?.Any() == true)
+                {
+                  <hr />
+                  @foreach (var payment in Model.Detail.Payments.List)
+                   {
+                     string color;
+                     switch (payment.Type)
+                     {
+
+                       case PaymentTypeEnum.Salary:
+                         color = "success";
+                         break;
+                       case PaymentTypeEnum.Gift:
+                         color = "info";
+                         break;
+                       case PaymentTypeEnum.Forfeit:
+                         color = "danger";
+                         break;
+                       case PaymentTypeEnum.Advance:
+                         color = "warning";
+                         break;
+                       case PaymentTypeEnum.ForgiveOfForfeit:
+                       default:
+                         color = "success";
+                         break;
+                     }
+                    <div class="row justify-content-center align-content-center itemShow">
+                      <div class="col-12 detail">
+                        <div class="info">
+                          <span>
+                            <b class="title">@SharedLocalizer[SharedResource.Price]:</b> @payment.Value تومان
+                            <span class="badge badge-@color">@payment.Type.GetDisplayName()</span>
+                          </span>
+                          @if (!string.IsNullOrEmpty(payment.Text))
+                          {
+                            <span>
+                              <b>@SharedLocalizer[SharedResource.For]:</b>
+                              @payment.Text
+                            </span>
+                          }
+                        </div>
+                      </div>
+                      <vc:log logs="@payment.Logs" cat="Payment" id="@payment.Id" />
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

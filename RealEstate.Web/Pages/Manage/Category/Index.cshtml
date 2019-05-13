@@ -54,11 +54,21 @@
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
+                                <ul class="info-breadcrumb">
+                                    <li>@item.Type.GetDisplayName()</li>
+                                </ul>
                                 <span>
                                     <b class="title">
                                         @item.Name
                                     </b>
-                                    <span class="badge badge-primary">@item.Type.GetDisplayName()</span>
+                                    @if (item.Type == CategoryTypeEnum.Item)
+                                    {
+                                        <a class="badge badge-primary" asp-page="@typeof(Item.IndexModel).Page()" target="_blank" asp-route-itemCategory="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="badge badge-primary" asp-page="@typeof(Item.IndexModel).Page()" target="_blank" asp-route-propertyCategory="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
+                                    }
                                 </span>
                             </div>
                             <div class="button">

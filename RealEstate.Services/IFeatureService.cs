@@ -24,7 +24,7 @@ namespace RealEstate.Services
 
         Task<StatusEnum> FacilityRemoveAsync(string id);
 
-        Task<(StatusEnum, Feature)> FeatureUpdateAsync(FeatureInputViewModel model, bool save);
+        Task<MethodStatus<Feature>> FeatureUpdateAsync(FeatureInputViewModel model, bool save);
 
         Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel);
 
@@ -32,19 +32,19 @@ namespace RealEstate.Services
 
         Task<List<CategoryViewModel>> CategoryListAsync();
 
-        Task<(StatusEnum, Feature)> FeatureAddAsync(FeatureInputViewModel model, bool save);
+        Task<MethodStatus<Feature>> FeatureAddAsync(FeatureInputViewModel model, bool save);
 
-        Task<(StatusEnum, Facility)> FacilityAddAsync(FacilityInputViewModel model, bool save);
+        Task<MethodStatus<Facility>> FacilityAddAsync(FacilityInputViewModel model, bool save);
 
         Task<List<FeatureJsonViewModel>> FeatureListJsonAsync(FeatureTypeEnum type);
 
-        Task<(StatusEnum, Facility)> FacilityUpdateAsync(FacilityInputViewModel model, bool save);
+        Task<MethodStatus<Facility>> FacilityUpdateAsync(FacilityInputViewModel model, bool save);
 
         Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] type);
 
         Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel);
 
-        Task<(StatusEnum, Feature)> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Feature>> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save);
 
         Task<StatusEnum> FeatureRemoveAsync(string id);
 
@@ -54,17 +54,17 @@ namespace RealEstate.Services
 
         Task<CategoryInputViewModel> CategoryInputAsync(string id);
 
-        Task<(StatusEnum, Category)> CategoryAddOrUpdateAsync(CategoryInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Category>> CategoryAddOrUpdateAsync(CategoryInputViewModel model, bool update, bool save);
 
         Task<StatusEnum> CategoryRemoveAsync(string id);
 
-        Task<(StatusEnum, Facility)> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Facility>> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Category)> CategoryAddAsync(CategoryInputViewModel model, bool save);
+        Task<MethodStatus<Category>> CategoryAddAsync(CategoryInputViewModel model, bool save);
 
         Task<FacilityInputViewModel> FacilityInputAsync(string id);
 
-        Task<(StatusEnum, Category)> CategoryUpdateAsync(CategoryInputViewModel model, bool save);
+        Task<MethodStatus<Category>> CategoryUpdateAsync(CategoryInputViewModel model, bool save);
 
         Task<Category> CategoryEntityAsync(string id);
 
@@ -241,13 +241,13 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Feature)> FeatureUpdateAsync(FeatureInputViewModel model, bool save)
+        public async Task<MethodStatus<Feature>> FeatureUpdateAsync(FeatureInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Feature>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Feature>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Feature>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Feature>(StatusEnum.IdIsNull, null);
 
             var entity = await FeatureEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
@@ -262,13 +262,13 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Facility)> FacilityUpdateAsync(FacilityInputViewModel model, bool save)
+        public async Task<MethodStatus<Facility>> FacilityUpdateAsync(FacilityInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Facility>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Facility>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Facility>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Facility>(StatusEnum.IdIsNull, null);
 
             var entity = await FacilityEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
@@ -280,13 +280,13 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Category)> CategoryUpdateAsync(CategoryInputViewModel model, bool save)
+        public async Task<MethodStatus<Category>> CategoryUpdateAsync(CategoryInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Category>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Category>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Category>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Category>(StatusEnum.IdIsNull, null);
 
             var entity = await CategoryEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
@@ -301,31 +301,31 @@ namespace RealEstate.Services
             return updateStatus;
         }
 
-        public Task<(StatusEnum, Facility)> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Facility>> FacilityAddOrUpdateAsync(FacilityInputViewModel model, bool update, bool save)
         {
             return update
                 ? FacilityUpdateAsync(model, save)
                 : FacilityAddAsync(model, save);
         }
 
-        public Task<(StatusEnum, Feature)> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Feature>> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save)
         {
             return update
                 ? FeatureUpdateAsync(model, save)
                 : FeatureAddAsync(model, save);
         }
 
-        public Task<(StatusEnum, Category)> CategoryAddOrUpdateAsync(CategoryInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Category>> CategoryAddOrUpdateAsync(CategoryInputViewModel model, bool update, bool save)
         {
             return update
                 ? CategoryUpdateAsync(model, save)
                 : CategoryAddAsync(model, save);
         }
 
-        public async Task<(StatusEnum, Facility)> FacilityAddAsync(FacilityInputViewModel model, bool save)
+        public async Task<MethodStatus<Facility>> FacilityAddAsync(FacilityInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Facility>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Facility>(StatusEnum.ModelIsNull, null);
 
             var addStatus = await _baseService.AddAsync(new Facility
             {
@@ -337,10 +337,10 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Feature)> FeatureAddAsync(FeatureInputViewModel model, bool save)
+        public async Task<MethodStatus<Feature>> FeatureAddAsync(FeatureInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Feature>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Feature>(StatusEnum.ModelIsNull, null);
 
             var addStatus = await _baseService.AddAsync(new Feature
             {
@@ -353,10 +353,10 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Category)> CategoryAddAsync(CategoryInputViewModel model, bool save)
+        public async Task<MethodStatus<Category>> CategoryAddAsync(CategoryInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Category>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Category>(StatusEnum.ModelIsNull, null);
 
             var addStatus = await _baseService.AddAsync(new Category
             {

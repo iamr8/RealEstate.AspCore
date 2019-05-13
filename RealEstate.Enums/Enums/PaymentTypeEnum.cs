@@ -26,5 +26,8 @@ namespace RealEstate.Base.Enums
 
         [Display(ResourceType = typeof(SharedResource), Name = "Beneficiary")]
         Beneficiary, // ذینفغ از قرارداد
+
+        [Display(ResourceType = typeof(SharedResource), Name = "ForgiveOfForfeit")]
+        ForgiveOfForfeit, // بخشش جریمه
     }
 }

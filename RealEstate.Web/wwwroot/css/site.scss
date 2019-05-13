@@ -1141,6 +1141,13 @@ div[class|="col"] {
     background-color: $nav-background-color;
     width: 100%;
     padding: 10px;
+
+    > .close-status {
+        color: black;
+        font-size: 12pt;
+        padding: 0 10px;
+        float: left;
+    }
 }
 
 .itemShow {

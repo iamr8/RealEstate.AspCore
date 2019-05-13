@@ -27,6 +27,7 @@ namespace RealEstate.Services.ViewModels
         public string Text => Entity.Text;
 
         public PaymentTypeEnum Type => Entity.Type;
+        public bool IsCheckedOut => !string.IsNullOrEmpty(Entity.CheckoutId);
 
         public void GetEmployee(bool includeDeleted = false, Action<EmployeeViewModel> action = null)
         {

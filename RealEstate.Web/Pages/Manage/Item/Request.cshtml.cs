@@ -46,7 +46,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _itemService.RequestAsync(NewDealRequest, true).ConfigureAwait(false)).Item1
+                ? (await _itemService.RequestAsync(NewDealRequest, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             Status = finalStatus.GetDisplayName();

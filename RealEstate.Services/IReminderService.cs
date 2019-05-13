@@ -8,7 +8,6 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,7 +19,7 @@ namespace RealEstate.Services
 
         Task<StatusEnum> ReminderRemoveAsync(string id);
 
-        Task<(StatusEnum, Reminder)> ReminderAddOrUpdateAsync(ReminderInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Reminder>> ReminderAddOrUpdateAsync(ReminderInputViewModel model, bool update, bool save);
 
         Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel);
     }
@@ -61,7 +60,7 @@ namespace RealEstate.Services
             return result;
         }
 
-        public Task<(StatusEnum, Reminder)> ReminderAddOrUpdateAsync(ReminderInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Reminder>> ReminderAddOrUpdateAsync(ReminderInputViewModel model, bool update, bool save)
         {
             return update
                 ? ReminderUpdateAsync(model, save)
@@ -86,14 +85,14 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Reminder)> ReminderAddAsync(ReminderInputViewModel model, bool save)
+        public async Task<MethodStatus<Reminder>> ReminderAddAsync(ReminderInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Reminder>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Reminder>(StatusEnum.ModelIsNull, null);
 
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, Reminder>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<Reminder>(StatusEnum.UserIsNull, null);
 
             var addStatus = await _baseService.AddAsync(new Reminder
             {
@@ -107,13 +106,13 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Reminder)> ReminderUpdateAsync(ReminderInputViewModel model, bool save)
+        public async Task<MethodStatus<Reminder>> ReminderUpdateAsync(ReminderInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Reminder>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Reminder>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Reminder>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Reminder>(StatusEnum.IdIsNull, null);
 
             var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,

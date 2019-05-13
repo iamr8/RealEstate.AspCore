@@ -24,27 +24,29 @@ namespace RealEstate.Services
 
         Task<PaginationViewModel<LeaveViewModel>> LeaveListAsync(LeaveSearchViewModel searchModel);
 
-        Task<(StatusEnum, Leave)> LeaveAddOrUpdateAsync(LeaveInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Leave>> LeaveAddOrUpdateAsync(LeaveInputViewModel model, bool update, bool save);
 
         Task<StatusEnum> PresenceRemoveAsync(string id);
 
-        Task<(StatusEnum, Presence)> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Presence>> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save);
 
         Task<PaginationViewModel<PresenceViewModel>> PresenceListAsync(PresenceSearchViewModel searchModel);
 
         Task<EmployeeInputViewModel> FindInputAsync(string id);
 
-        Task<(StatusEnum, Employee)> AddOrUpdateAsync(EmployeeInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Employee>> AddOrUpdateAsync(EmployeeInputViewModel model, bool update, bool save);
 
         Task<LeaveInputViewModel> LeaveInputAsync(string id);
 
-        Task<(StatusEnum, Employee)> UpdateAsync(EmployeeInputViewModel model, bool save);
+        Task<MethodStatus<Employee>> UpdateAsync(EmployeeInputViewModel model, bool save);
 
         Task<StatusEnum> LeaveRemoveAsync(string id);
 
         Task<List<EmployeeViewModel>> ListAsync(bool justFreeEmployees);
 
-        Task<(StatusEnum, Employee)> AddAsync(EmployeeInputViewModel model, bool save);
+        Task<EmployeeDetailViewModel> DetailAsync(string id);
+
+        Task<MethodStatus<Employee>> AddAsync(EmployeeInputViewModel model, bool save);
 
         Task<StatusEnum> EmployeeRemoveAsync(string id);
 
@@ -69,6 +71,30 @@ namespace RealEstate.Services
             _employees = _unitOfWork.Set<Employee>();
             _leaves = _unitOfWork.Set<Leave>();
             _presences = _unitOfWork.Set<Presence>();
+        }
+
+        public async Task<EmployeeDetailViewModel> DetailAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var employee = await _employees.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = employee?.Into<Employee, EmployeeViewModel>(true, act =>
+            {
+                act.GetPayments(true);
+            });
+            if (viewModel == null)
+                return default;
+
+            var result = new EmployeeDetailViewModel
+            {
+                Id = viewModel.Id,
+                Payments = new EmployeeDetailPaymentViewModel
+                {
+                    List = viewModel.Payments
+                }
+            };
+            return result;
         }
 
         public async Task<List<EmployeeViewModel>> ListAsync(bool justFreeEmployees)
@@ -228,20 +254,20 @@ namespace RealEstate.Services
             return result;
         }
 
-        public Task<(StatusEnum, Employee)> AddOrUpdateAsync(EmployeeInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Employee>> AddOrUpdateAsync(EmployeeInputViewModel model, bool update, bool save)
         {
             return update
                 ? UpdateAsync(model, save)
                 : AddAsync(model, save);
         }
 
-        public async Task<(StatusEnum, Employee)> UpdateAsync(EmployeeInputViewModel model, bool save)
+        public async Task<MethodStatus<Employee>> UpdateAsync(EmployeeInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Employee>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Employee>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Employee>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Employee>(StatusEnum.IdIsNull, null);
 
             var entity = await _employees
                 .Include(x => x.FixedSalaries)
@@ -265,13 +291,13 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(updatedEmployee, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, Employee)> AddAsync(EmployeeInputViewModel model, bool save)
+        public async Task<MethodStatus<Employee>> AddAsync(EmployeeInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Employee>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Employee>(StatusEnum.ModelIsNull, null);
 
             if (string.IsNullOrEmpty(model.DivisionsJson))
-                return new ValueTuple<StatusEnum, Employee>(StatusEnum.DivisionIdIsNull, null);
+                return new MethodStatus<Employee>(StatusEnum.DivisionIdIsNull, null);
 
             var (employeeAddStatus, newEmployee) = await _baseService.AddAsync(new Employee
             {
@@ -289,38 +315,38 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(newEmployee, save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, Presence)> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Presence>> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save)
         {
             return update
                 ? PresenceUpdateAsync(model, save)
                 : PresenceAddAsync(model, save);
         }
 
-        public Task<(StatusEnum, Leave)> LeaveAddOrUpdateAsync(LeaveInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Leave>> LeaveAddOrUpdateAsync(LeaveInputViewModel model, bool update, bool save)
         {
             return update
                 ? LeaveUpdateAsync(model, save)
                 : LeaveAddAsync(model, save);
         }
 
-        public async Task<(StatusEnum, Leave)> LeaveUpdateAsync(LeaveInputViewModel model, bool save)
+        public async Task<MethodStatus<Leave>> LeaveUpdateAsync(LeaveInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.IdIsNull, null);
 
             var entity = await _leaves.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             if (entity == null)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.LeaveIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.LeaveIsNull, null);
 
             var creationDate = entity.Audits.Find(x => x.Type == LogTypeEnum.Create);
             if (creationDate == null)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.EntityIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.EntityIsNull, null);
 
             if (DateTime.Now.Subtract(creationDate.DateTime) >= TimeSpan.FromHours(1))
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.Forbidden, null);
+                return new MethodStatus<Leave>(StatusEnum.Forbidden, null);
 
             var fromDt = model.FromDate.PersianToGregorian();
             var fromDDD = new DateTime(fromDt.Year, fromDt.Month, fromDt.Day, model.FromHour, 0, 0);
@@ -337,30 +363,30 @@ namespace RealEstate.Services
                         entity.To = toDDD;
                     }, new[]
                     {
-                    Role.SuperAdmin
+                        Role.SuperAdmin
                     }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
 
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Presence)> PresenceUpdateAsync(PresenceInputViewModel model, bool save)
+        public async Task<MethodStatus<Presence>> PresenceUpdateAsync(PresenceInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.IdIsNull, null);
 
             var entity = await _presences.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             if (entity == null)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.LeaveIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.LeaveIsNull, null);
 
             var creationDate = entity.Audits.Find(x => x.Type == LogTypeEnum.Create);
             if (creationDate == null)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.EntityIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.EntityIsNull, null);
 
             if (DateTime.Now.Subtract(creationDate.DateTime) >= TimeSpan.FromMinutes(30))
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.Forbidden, null);
+                return new MethodStatus<Presence>(StatusEnum.Forbidden, null);
 
             var timeFa = model.Time.Split(':');
             var hour = int.Parse(timeFa[0]);
@@ -376,22 +402,22 @@ namespace RealEstate.Services
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
 
             return updateStatus;
         }
 
-        public async Task<(StatusEnum, Presence)> PresenceAddAsync(PresenceInputViewModel model, bool save)
+        public async Task<MethodStatus<Presence>> PresenceAddAsync(PresenceInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.ModelIsNull, null);
 
             if (string.IsNullOrEmpty(model.EmployeeId))
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.EmployeeIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.EmployeeIsNull, null);
 
             var employee = await EntityAsync(model.EmployeeId).ConfigureAwait(false);
             if (employee == null)
-                return new ValueTuple<StatusEnum, Presence>(StatusEnum.EmployeeIsNull, null);
+                return new MethodStatus<Presence>(StatusEnum.EmployeeIsNull, null);
 
             var timeFa = model.Time.Split(':');
             var hour = int.Parse(timeFa[0]);
@@ -410,17 +436,17 @@ namespace RealEstate.Services
             return addStatus;
         }
 
-        public async Task<(StatusEnum, Leave)> LeaveAddAsync(LeaveInputViewModel model, bool save)
+        public async Task<MethodStatus<Leave>> LeaveAddAsync(LeaveInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.ModelIsNull, null);
 
             if (string.IsNullOrEmpty(model.EmployeeId))
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.EmployeeIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.EmployeeIsNull, null);
 
             var employee = await EntityAsync(model.EmployeeId).ConfigureAwait(false);
             if (employee == null)
-                return new ValueTuple<StatusEnum, Leave>(StatusEnum.EmployeeIsNull, null);
+                return new MethodStatus<Leave>(StatusEnum.EmployeeIsNull, null);
 
             var fromDt = model.FromDate.PersianToGregorian();
             var fromDDD = new DateTime(fromDt.Year, fromDt.Month, fromDt.Day, model.FromHour, 0, 0);

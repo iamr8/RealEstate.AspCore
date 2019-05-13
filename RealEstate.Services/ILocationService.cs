@@ -8,7 +8,6 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace RealEstate.Services
 {
     public interface ILocationService
     {
-        Task<(StatusEnum, District)> DistrictAddAsync(DistrictInputViewModel model, bool save);
+        Task<MethodStatus<District>> DistrictAddAsync(DistrictInputViewModel model, bool save);
 
         Task<District> DistrictEntityAsync(string id);
 
@@ -25,11 +24,11 @@ namespace RealEstate.Services
 
         Task<List<DistrictViewModel>> DistrictListAsync();
 
-        Task<(StatusEnum, District)> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save);
+        Task<MethodStatus<District>> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save);
 
         Task<DistrictInputViewModel> DistrictInputAsync(string id);
 
-        Task<(StatusEnum, District)> DistrictUpdateAsync(DistrictInputViewModel model, bool save);
+        Task<MethodStatus<District>> DistrictUpdateAsync(DistrictInputViewModel model, bool save);
 
         Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel);
     }
@@ -80,7 +79,7 @@ namespace RealEstate.Services
             return result;
         }
 
-        public Task<(StatusEnum, District)> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<District>> DistrictAddOrUpdateAsync(DistrictInputViewModel model, bool update, bool save)
         {
             return update
                 ? DistrictUpdateAsync(model, save)
@@ -96,13 +95,13 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, District)> DistrictUpdateAsync(DistrictInputViewModel model, bool save)
+        public async Task<MethodStatus<District>> DistrictUpdateAsync(DistrictInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, District>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<District>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, District>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<District>(StatusEnum.IdIsNull, null);
 
             var entity = await DistrictEntityAsync(model.Id).ConfigureAwait(false);
             var updateStatus = await _baseService.UpdateAsync(entity,
@@ -132,10 +131,10 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, District)> DistrictAddAsync(DistrictInputViewModel model, bool save)
+        public async Task<MethodStatus<District>> DistrictAddAsync(DistrictInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, District>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<District>(StatusEnum.ModelIsNull, null);
 
             var addStatus = await _baseService.AddAsync(new District
             {

@@ -9,7 +9,6 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.Search;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,11 +16,11 @@ namespace RealEstate.Services
 {
     public interface IDealService
     {
-        Task<(StatusEnum, Deal)> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Deal>> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save);
 
         Task<PaginationViewModel<DealViewModel>> ListAsync(DealSearchViewModel searchModel);
 
-        Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save);
+        Task<MethodStatus<Deal>> AddAsync(DealInputViewModel model, bool save);
 
         Task<DealInputViewModel> DealInputAsync(string itemId);
     }
@@ -152,24 +151,24 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Deal)> AddAsync(DealInputViewModel model, bool save)
+        public async Task<MethodStatus<Deal>> AddAsync(DealInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.ModelIsNull, null);
 
             if (string.IsNullOrEmpty(model.ItemId))
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.ItemIsNull, null);
 
             var item = await _items.FirstOrDefaultAsync(x => x.Id == model.ItemId).ConfigureAwait(false);
             if (item == null)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ItemIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.ItemIsNull, null);
 
             var lastRequest = item.DealRequests.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastRequest == null)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealRequestIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.DealRequestIsNull, null);
 
             if (lastRequest.Status != DealStatusEnum.Requested)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealRequestIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.DealRequestIsNull, null);
 
             var (addStatus, newDeal) = await _baseService.AddAsync(new Deal
             {
@@ -223,13 +222,13 @@ namespace RealEstate.Services
             return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
         }
 
-        private async Task<(StatusEnum, Deal)> UpdateAsync(DealInputViewModel model, bool save)
+        private async Task<MethodStatus<Deal>> UpdateAsync(DealInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.IdIsNull, null);
 
             var entity = await _deals.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedDeal) = await _baseService.UpdateAsync(entity,
@@ -243,13 +242,13 @@ namespace RealEstate.Services
                 false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
 
             if (updatedDeal == null)
-                return new ValueTuple<StatusEnum, Deal>(StatusEnum.DealIsNull, null);
+                return new MethodStatus<Deal>(StatusEnum.DealIsNull, null);
 
             await SyncAsync(updatedDeal, model, true).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedDeal, save).ConfigureAwait(false);
         }
 
-        public Task<(StatusEnum, Deal)> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Deal>> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save)
         {
             return update
                 ? UpdateAsync(model, save)

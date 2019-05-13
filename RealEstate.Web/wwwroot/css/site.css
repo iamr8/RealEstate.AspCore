@@ -1027,6 +1027,11 @@ div[class|="col"] > .input-wrapper {
   background-color: #e0e0e0;
   width: 100%;
   padding: 10px; }
+  .status-message > .close-status {
+    color: black;
+    font-size: 12pt;
+    padding: 0 10px;
+    float: left; }
 
 .itemShow.input-wrapper {
   margin-bottom: 0 !important; }

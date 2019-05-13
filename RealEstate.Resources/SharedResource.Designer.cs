@@ -241,6 +241,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بعنوان.
+        /// </summary>
+        public static string As {
+            get {
+                return ResourceManager.GetString("As", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to موردهای موجود.
+        /// </summary>
+        public static string AvailableItems {
+            get {
+                return ResourceManager.GetString("AvailableItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to بانک.
         /// </summary>
         public static string Bank {
@@ -646,6 +664,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to جزئیات.
+        /// </summary>
+        public static string Detail {
+            get {
+                return ResourceManager.GetString("Detail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to منطقه.
         /// </summary>
         public static string District {
@@ -988,6 +1015,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بابت.
+        /// </summary>
+        public static string For {
+            get {
+                return ResourceManager.GetString("For", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شما اجازه دسترسی به این درخواست را ندارید.
         /// </summary>
         public static string Forbidden {
@@ -1011,6 +1047,15 @@ namespace RealEstate.Resources {
         public static string Forfeit {
             get {
                 return ResourceManager.GetString("Forfeit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to بخشش جریمه.
+        /// </summary>
+        public static string ForgiveOfForfeit {
+            get {
+                return ResourceManager.GetString("ForgiveOfForfeit", resourceCulture);
             }
         }
         
@@ -1533,6 +1578,24 @@ namespace RealEstate.Resources {
         public static string NullParam {
             get {
                 return ResourceManager.GetString("NullParam", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to بستانکار.
+        /// </summary>
+        public static string Obligee {
+            get {
+                return ResourceManager.GetString("Obligee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to بدهکار.
+        /// </summary>
+        public static string Obligor {
+            get {
+                return ResourceManager.GetString("Obligor", resourceCulture);
             }
         }
         

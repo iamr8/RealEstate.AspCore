@@ -29,6 +29,9 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("propertyCategory")]
         public string PropertyCategory { get; set; }
 
+        [SearchParameter("hasFeature")]
+        public string HasFeature { get; set; }
+
         [Display(ResourceType = typeof(SharedResource), Name = "Owner")]
         [SearchParameter("ownerName")]
         public string Owner { get; set; }

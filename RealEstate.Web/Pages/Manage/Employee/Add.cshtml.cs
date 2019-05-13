@@ -60,7 +60,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             return RedirectToPage(finalStatus != StatusEnum.Success

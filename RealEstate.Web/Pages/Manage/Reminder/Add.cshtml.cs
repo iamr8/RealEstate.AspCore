@@ -63,7 +63,7 @@ namespace RealEstate.Web.Pages.Manage.Reminder
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _reminderService.ReminderAddOrUpdateAsync(NewReminder, !NewReminder.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _reminderService.ReminderAddOrUpdateAsync(NewReminder, !NewReminder.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             ReminderStatus = finalStatus.GetDisplayName();

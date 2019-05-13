@@ -57,7 +57,7 @@ namespace RealEstate.Web.Pages.Manage.ManagementPercent
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _paymentService.ManagementPercentAddOrUpdateAsync(NewManagementPercent, !NewManagementPercent.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _paymentService.ManagementPercentAddOrUpdateAsync(NewManagementPercent, !NewManagementPercent.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             ManagementPercentStatus = finalStatus.GetDisplayName();

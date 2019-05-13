@@ -978,4 +978,25 @@
   <data name="Picture" xml:space="preserve">
     <value>تصویر</value>
   </data>
+  <data name="Detail" xml:space="preserve">
+    <value>جزئیات</value>
+  </data>
+  <data name="AvailableItems" xml:space="preserve">
+    <value>موردهای موجود</value>
+  </data>
+  <data name="For" xml:space="preserve">
+    <value>بابت</value>
+  </data>
+  <data name="As" xml:space="preserve">
+    <value>بعنوان</value>
+  </data>
+  <data name="Obligee" xml:space="preserve">
+    <value>بستانکار</value>
+  </data>
+  <data name="Obligor" xml:space="preserve">
+    <value>بدهکار</value>
+  </data>
+  <data name="ForgiveOfForfeit" xml:space="preserve">
+    <value>بخشش جریمه</value>
+  </data>
 </root>

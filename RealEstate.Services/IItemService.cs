@@ -30,9 +30,9 @@ namespace RealEstate.Services
 
         Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model);
 
-        Task<(StatusEnum, Item)> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
+        Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
 
-        Task<(StatusEnum, Item)> RequestAsync(DealRequestInputViewModel model, bool save);
+        Task<MethodStatus<Item>> RequestAsync(DealRequestInputViewModel model, bool save);
 
         Task<Item> ItemEntityAsync(string id);
 
@@ -40,7 +40,7 @@ namespace RealEstate.Services
 
         Task<ItemViewModel> ItemAsync(string id, DealStatusEnum? specificStatus);
 
-        Task<(StatusEnum, Item)> ItemAddAsync(ItemInputViewModel model, bool save);
+        Task<MethodStatus<Item>> ItemAddAsync(ItemInputViewModel model, bool save);
     }
 
     public class ItemService : IItemService
@@ -95,18 +95,18 @@ namespace RealEstate.Services
             return requestStatus;
         }
 
-        private async Task<(StatusEnum, DealRequest)> RequestAddStateAsync(string itemId, DealStatusEnum newState)
+        private async Task<MethodStatus<DealRequest>> RequestAddStateAsync(string itemId, DealStatusEnum newState)
         {
             if (string.IsNullOrEmpty(itemId))
-                return new ValueTuple<StatusEnum, DealRequest>(StatusEnum.ItemIsNull, null);
+                return new MethodStatus<DealRequest>(StatusEnum.ItemIsNull, null);
 
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, DealRequest>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<DealRequest>(StatusEnum.UserIsNull, null);
 
             var lastRequest = await _dealRequests.OrderDescendingByCreationDateTime().Where(x => x.ItemId == itemId).FirstOrDefaultAsync().ConfigureAwait(false);
             if (lastRequest?.Status == newState)
-                return new ValueTuple<StatusEnum, DealRequest>(StatusEnum.AlreadyExists, null);
+                return new MethodStatus<DealRequest>(StatusEnum.AlreadyExists, null);
 
             var addState = await _baseService.AddAsync(new DealRequest
             {
@@ -349,6 +349,10 @@ namespace RealEstate.Services
                 //    x.Property.PropertyOwnerships.Any(c =>
                 //        c.Ownerships.Any(SearchExtensions.SearchStringOperand.Like, v => v.Customer.MobileNumber, searchModel.OwnerMobile)));
 
+                if (!string.IsNullOrEmpty(searchModel.HasFeature))
+                    query = query.Where(x =>
+                        x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
+
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                     query = query.Where(x =>
                         x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
@@ -492,21 +496,21 @@ namespace RealEstate.Services
             return result;
         }
 
-        public async Task<(StatusEnum, Item)> RequestAsync(DealRequestInputViewModel model, bool save)
+        public async Task<MethodStatus<Item>> RequestAsync(DealRequestInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
 
             if (model?.Customers?.Any() != true)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ApplicantsEmpty, null);
+                return new MethodStatus<Item>(StatusEnum.ApplicantsEmpty, null);
 
             var item = await _items.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             if (item == null)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ItemIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
             var (requestAddStatus, newState) = await RequestAddStateAsync(item.Id, DealStatusEnum.Requested).ConfigureAwait(false);
             if (requestAddStatus != StatusEnum.Success)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.DealRequestIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.DealRequestIsNull, null);
 
             await SyncApplicantsAsync(item, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(item, save).ConfigureAwait(false);
@@ -614,20 +618,20 @@ namespace RealEstate.Services
             return result;
         }
 
-        public Task<(StatusEnum, Item)> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save)
         {
             return update
                 ? ItemUpdateAsync(model, save)
                 : ItemAddAsync(model, save);
         }
 
-        private async Task<(StatusEnum, Item)> ItemUpdateAsync(ItemInputViewModel model, bool save)
+        private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
 
             if (model.IsNew)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.IdIsNull, null);
 
             var entity = await ItemEntityAsync(model.Id).ConfigureAwait(false);
             var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
@@ -639,16 +643,16 @@ namespace RealEstate.Services
                 }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
 
             if (updatedItem == null)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ItemIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
             await ItemSyncAsync(updatedItem, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(updatedItem, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, Item)> ItemAddAsync(ItemInputViewModel model, bool save)
+        public async Task<MethodStatus<Item>> ItemAddAsync(ItemInputViewModel model, bool save)
         {
             if (model == null)
-                return new ValueTuple<StatusEnum, Item>(StatusEnum.ModelIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
 
             var (itemAddStatus, newItem) = await _baseService.AddAsync(new Item
             {

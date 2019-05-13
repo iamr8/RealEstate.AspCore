@@ -57,7 +57,7 @@ namespace RealEstate.Web.Pages.Manage.Facility
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _featureService.FacilityAddOrUpdateAsync(NewFacility, !NewFacility.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _featureService.FacilityAddOrUpdateAsync(NewFacility, !NewFacility.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             FacilityStatus = finalStatus.GetDisplayName();

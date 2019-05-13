@@ -3,7 +3,7 @@
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewEmployee"]</a>
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewEmployee]</a>
         </widget-header>
         <section class="container-fluid">
             <form method="post">
@@ -67,7 +67,7 @@
                 foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
@@ -85,7 +85,7 @@
                                     }
                                     @if (!string.IsNullOrEmpty(item.Address))
                                     {
-                                        <span class="badge badge-success"><b>@SharedLocalizer["Address"]:</b> @item.Address</span>
+                                        <span class="badge badge-success"><b>@SharedLocalizer[SharedResource.Address]:</b> @item.Address</span>
                                     }
                                     @if (item.CurrentInsurance?.Price > 0)
                                     {
@@ -101,7 +101,7 @@
                                 @if (item.EmployeeDivisions?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["Divisions"]:
+                                        @SharedLocalizer[SharedResource.Divisions]:
                                         @foreach (var division in item.EmployeeDivisions)
                                         {
                                             <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@division.Division.Id" target="_blank" class="badge badge-primary">@division.Division?.Name</a>
@@ -112,7 +112,7 @@
                                 @if (item.Users?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["Users"]:
+                                        @SharedLocalizer[SharedResource.Users]:
                                         @foreach (var user in item.Users)
                                         {
                                             <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-id="@user.Id" target="_blank" class="badge badge-primary">@user.Username</a>
@@ -123,11 +123,12 @@
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                                    <a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
 
                                     if (User.Identity.Name != item.CurrentUser?.Username)
                                     {
-                                        <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                        <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                     }
                                 }
                             </div>

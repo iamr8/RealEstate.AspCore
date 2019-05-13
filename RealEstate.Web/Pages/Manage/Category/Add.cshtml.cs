@@ -59,7 +59,7 @@ namespace RealEstate.Web.Pages.Manage.Category
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _featureService.CategoryAddOrUpdateAsync(NewCategory, !NewCategory.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _featureService.CategoryAddOrUpdateAsync(NewCategory, !NewCategory.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             CategoryStatus = finalStatus.GetDisplayName();

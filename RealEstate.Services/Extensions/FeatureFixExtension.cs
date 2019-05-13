@@ -30,9 +30,12 @@ namespace RealEstate.Services.Extensions
 
                 case "وام":
                 case "قیمت نهایی":
+                    var words1 = featureValue.CurrencyToWords();
+                    return $"{featureName} : {words1} تومان";
+
                 case "قیمت هر متر":
-                    var words = featureValue.CurrencyToWords();
-                    return $"{featureName} : {words} تومان";
+                    var words2 = featureValue.CurrencyToWords();
+                    return $"متری {words2} تومان";
 
                 case "تعداد واحدهای مجتمع":
                     return $"{featureValue} واحده";

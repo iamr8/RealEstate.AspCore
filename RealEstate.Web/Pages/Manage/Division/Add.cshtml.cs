@@ -60,7 +60,7 @@ namespace RealEstate.Web.Pages.Manage.Division
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _divisionService.AddOrUpdateAsync(NewDivision, !NewDivision.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _divisionService.AddOrUpdateAsync(NewDivision, !NewDivision.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             DivisionStatus = finalStatus.GetDisplayName();

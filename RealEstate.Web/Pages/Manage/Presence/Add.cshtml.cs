@@ -64,7 +64,7 @@ namespace RealEstate.Web.Pages.Manage.Presence
         public async Task<IActionResult> OnPostAsync()
         {
             var finalStatus = ModelState.IsValid
-                ? (await _employeeService.PresenceAddOrUpdateAsync(NewPresence, !NewPresence.IsNew, true).ConfigureAwait(false)).Item1
+                ? (await _employeeService.PresenceAddOrUpdateAsync(NewPresence, !NewPresence.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
             PresenceStatus = finalStatus.GetDisplayName();

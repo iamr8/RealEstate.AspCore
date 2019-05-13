@@ -39,21 +39,21 @@ namespace RealEstate.Services.Base
         IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel)
             where TSource : BaseEntity where TSearch : BaseSearchModel;
 
-        Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
+        Task<MethodStatus<TSource>> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
-        Task<(StatusEnum, TSource)> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
+        Task<MethodStatus<TSource>> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
         Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save)
             where TEntity : BaseEntity;
 
-        Task<(StatusEnum, TSource)> AddAsync<TSource>(TSource entity,
+        Task<MethodStatus<TSource>> AddAsync<TSource>(TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
         bool IsAllowed(params Role[] roles);
 
-        Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
+        Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel)
@@ -78,7 +78,7 @@ namespace RealEstate.Services.Base
             bool save)
             where TSource : BaseEntity;
 
-        Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
+        Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
 
         CurrentUserViewModel CurrentUser(List<Claim> claims);
     }
@@ -206,40 +206,40 @@ namespace RealEstate.Services.Base
             return CurrentUser(claims);
         }
 
-        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
+        public async Task<MethodStatus<TSource>> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var duplicate = await entities.FirstOrDefaultAsync(duplicateCondition).ConfigureAwait(false);
             if (duplicate != null)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.AlreadyExists, null);
+                return new MethodStatus<TSource>(StatusEnum.AlreadyExists, null);
 
             return await AddAsync(entity, allowedRoles, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
+        public async Task<MethodStatus<TSource>> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<TSource>(StatusEnum.UserIsNull, null);
 
             if (!IsAllowed(allowedRoles))
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
+                return new MethodStatus<TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
             var finalEntity = entity.Invoke(currentUser);
             _unitOfWork.Add(finalEntity, currentUser);
             return await SaveChangesAsync(finalEntity, save).ConfigureAwait(false);
         }
 
-        public async Task<(StatusEnum, TSource)> AddAsync<TSource>(TSource entity,
+        public async Task<MethodStatus<TSource>> AddAsync<TSource>(TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<TSource>(StatusEnum.UserIsNull, null);
 
             if (!IsAllowed(allowedRoles))
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
+                return new MethodStatus<TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
             _unitOfWork.Add(entity, currentUser);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
@@ -425,18 +425,18 @@ namespace RealEstate.Services.Base
             return roles?.Any() != true || roles.Any(x => x == currentUser.Role);
         }
 
-        public async Task<(StatusEnum, TSource)> UpdateAsync<TSource>(TSource entity,
+        public async Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
          Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<TSource>(StatusEnum.UserIsNull, null);
 
             if (!IsAllowed(allowedRoles))
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.Forbidden, null);
+                return new MethodStatus<TSource>(StatusEnum.Forbidden, null);
 
             if (entity == null)
-                return new ValueTuple<StatusEnum, TSource>(modelNullStatus, null);
+                return new MethodStatus<TSource>(modelNullStatus, null);
 
             var oldEntity = entity.GetPublicProperties().Select(x => new
             {
@@ -457,7 +457,7 @@ namespace RealEstate.Services.Base
 
             var changesList = new Dictionary<string, string>();
             if (properties?.Any() != true)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
+                return new MethodStatus<TSource>(StatusEnum.NoNeedToSave, entity);
 
             foreach (var property in properties)
             {
@@ -470,7 +470,7 @@ namespace RealEstate.Services.Base
             }
 
             if (changesList?.Any() != true)
-                return new ValueTuple<StatusEnum, TSource>(StatusEnum.NoNeedToSave, entity);
+                return new MethodStatus<TSource>(StatusEnum.NoNeedToSave, entity);
 
             _unitOfWork.Update(entity, currentUser, changesList);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
@@ -487,15 +487,15 @@ namespace RealEstate.Services.Base
                 : StatusEnum.UnableToSave;
         }
 
-        public async Task<(StatusEnum, TModel)> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class
+        public async Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class
         {
             if (!save)
-                return new ValueTuple<StatusEnum, TModel>(model == null ? StatusEnum.Failed : StatusEnum.Success, model);
+                return new MethodStatus<TModel>(model == null ? StatusEnum.Failed : StatusEnum.Success, model);
 
             var saveStatus = await _unitOfWork.SaveChangesAsync().ConfigureAwait(false) > 0;
             return saveStatus
-                ? new ValueTuple<StatusEnum, TModel>(StatusEnum.Success, model)
-                : new ValueTuple<StatusEnum, TModel>(StatusEnum.UnableToSave, null);
+                ? new MethodStatus<TModel>(StatusEnum.Success, model)
+                : new MethodStatus<TModel>(StatusEnum.UnableToSave, null);
         }
     }
 }
