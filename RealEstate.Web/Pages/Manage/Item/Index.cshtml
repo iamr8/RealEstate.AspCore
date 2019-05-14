@@ -159,81 +159,81 @@
                             <div class="info">
                                 <ul class="info-breadcrumb">
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@item.Category.Name">@item.Category.Name</a>
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@item.Category.Value.Name">@item.Category.Value.Name</a>
                                     </li>
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property.Category.Name">
-                                            @item.Property.Category.Name
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property.Value.Category.Value.Name">
+                                            @item.Property.Value.Category.Value.Name
                                         </a>
                                     </li>
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property.District.Name">
-                                            @item.Property.District.Name
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property.Value.District.Value.Name">
+                                            @item.Property.Value.District.Value.Name
                                         </a>
                                     </li>
                                 </ul>
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Id" target="_blank">
-                                        @item.Property.Address
-                                        @if (item.Property?.Pictures?.Any() == true)
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Value.Id" target="_blank">
+                                        @item.Property.Value.Address
+                                        @if (item.Property.Value?.Pictures.Value?.Any() == true)
                                         {
                                             <i class="fa fa-check-circle verified"></i>
                                         }
                                     </a>
                                 </span>
-                                @if (item.Property.PropertyFacilities?.Any() == true)
+                                @if (item.Property.Value.PropertyFacilities.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["PropertyFacilities"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property.PropertyFacilities)
+                                            @foreach (var feature in item.Property.Value.PropertyFacilities.Value)
                                             {
                                                 <text>
-                                                    <li>@feature.Facility?.Name</li>
+                                                    <li>@feature.Facility.Value?.Name</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.Property.PropertyFeatures?.Any() == true)
+                                @if (item.Property.Value.PropertyFeatures.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["PropertyFeatures"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property.PropertyFeatures)
+                                            @foreach (var feature in item.Property.Value.PropertyFeatures.Value)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.ItemFeatures?.Any() == true)
+                                @if (item.ItemFeatures.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["ItemFeatures"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.ItemFeatures)
+                                            @foreach (var feature in item.ItemFeatures.Value)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.Property?.Pictures?.Any() == true)
+                                @if (item.Property.Value?.Pictures.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Photos] :
                                         <ul class="info-breadcrumb gallery no-image">
-                                            @for (var i = 0; i < item.Property.Pictures.Count; i++)
+                                            @for (var i = 0; i < item.Property.Value.Pictures.Value.Count; i++)
                                             {
-                                                var imgPath = $"~/{FileHandler.ImgDirectory}/{item.Property.Pictures[i].File}";
+                                                var imgPath = $"~/{FileHandler.ImgDirectory}/{item.Property.Value.Pictures.Value[i].File}";
                                                 var renderedPath = Url.Content(imgPath);
                                                 <li>
                                                     <img class="hidden" src="@renderedPath">
@@ -257,10 +257,10 @@
                                 }*@
 
                             <div class="button">
-                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
+                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property.Value.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
+                                    <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Value.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }

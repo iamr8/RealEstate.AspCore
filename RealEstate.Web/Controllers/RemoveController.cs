@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RealEstate.Base;
 using RealEstate.Services;
 using RealEstate.Web.Pages.Manage.User;
 using System.Threading.Tasks;
-using RealEstate.Base;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Controllers
 {
@@ -81,6 +82,17 @@ namespace RealEstate.Web.Controllers
             return RedirectToPage(typeof(Pages.Manage.DealRequest.IndexModel).Page(), new
             {
                 status = model
+            });
+        }
+
+        [Route("employee/payment/remove")]
+        public async Task<IActionResult> PaymentAsync(string id, string employeeId)
+        {
+            var model = await _paymentService.PaymentRemoveAsync(id, employeeId).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Employee.DetailModel).Page(), new
+            {
+                status = model,
+                id = employeeId
             });
         }
 

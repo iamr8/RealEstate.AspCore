@@ -5,6 +5,7 @@ using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.ViewModels;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Pages.Manage
 {

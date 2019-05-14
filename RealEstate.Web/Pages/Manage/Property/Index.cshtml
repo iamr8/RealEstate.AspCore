@@ -88,7 +88,7 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District?.Id" target="_blank">@item.District?.Name</a> &mdash;
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Value?.Id" target="_blank">@item.District.Value?.Name</a> &mdash;
                                         @if (!string.IsNullOrEmpty(item.Street))
                                         {
                                             <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.Street<text> &mdash; </text>
@@ -115,43 +115,43 @@
                                         }
                                     </b>
 
-                                    <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category?.Name</a>
-                                    @if (item.CurrentPropertyOwnership?.Ownerships?.Any() != true)
+                                    <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category.Value?.Name</a>
+                                    @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() != true)
                                     {
                                         <span class="badge badge-dark">مالک ثبت نشده است</span>
                                     }
                                     else
                                     {
-                                        if (item.CurrentPropertyOwnership.Ownerships.Sum(x => x.Dong) != 6)
+                                        if (item.CurrentPropertyOwnership().Ownerships.Value.Sum(x => x.Dong) != 6)
                                         {
                                             <span class="badge badge-dark">خطا در ثبت تعداد دانگ ها</span>
                                         }
                                     }
                                 </span>
-                                @if (item.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var owner in item.CurrentPropertyOwnership.Ownerships)
+                                        @foreach (var owner in item.CurrentPropertyOwnership().Ownerships.Value)
                                         {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Customer.Name - @owner.Customer?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
                                         }
                                     </span>
                                 }
-                                @if (item.PropertyFacilities?.Any() == true || item.PropertyFeatures?.Any() == true)
+                                @if (item.PropertyFacilities.Value?.Any() == true || item.PropertyFeatures.Value?.Any() == true)
                                 {
                                     <span>
-                                        @if (item.PropertyFacilities?.Any() == true)
+                                        @if (item.PropertyFacilities.Value?.Any() == true)
                                         {
-                                            foreach (var facility in item.PropertyFacilities)
+                                            foreach (var facility in item.PropertyFacilities.Value)
                                             {
-                                                <span class="badge badge-secondary">@facility.Facility?.Name</span>
+                                                <span class="badge badge-secondary">@facility.Facility.Value?.Name</span>
                                             }
                                         }
-                                        @if (item.PropertyFeatures?.Any() == true)
+                                        @if (item.PropertyFeatures.Value?.Any() == true)
                                         {
-                                            foreach (var feature in item.PropertyFeatures)
+                                            foreach (var feature in item.PropertyFeatures.Value)
                                             {
-                                                <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value</span>
+                                                <span class="badge badge-success">@feature.Feature.Value?.Name &mdash; @feature.Value</span>
                                             }
                                         }
                                     </span>

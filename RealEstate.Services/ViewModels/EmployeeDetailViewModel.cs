@@ -1,4 +1,6 @@
 ﻿using RealEstate.Base;
+using RealEstate.Base.Enums;
+using RealEstate.Services.ViewModels.ModelBind;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
@@ -10,8 +12,8 @@ namespace RealEstate.Services.ViewModels
 
     public class EmployeeDetailPaymentViewModel
     {
-        public double Obligee { get; set; }
-        public double Obligor { get; set; }
+        public double Current { get; set; }
+        public ObligStatusEnum Status { get; set; }
         public List<PaymentViewModel> List { get; set; }
     }
 }

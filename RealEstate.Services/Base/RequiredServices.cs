@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using RealEstate.Services.Extensions.KavenNegarProvider;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Services.Base
 {

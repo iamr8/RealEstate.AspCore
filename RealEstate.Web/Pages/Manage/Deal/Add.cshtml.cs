@@ -8,6 +8,8 @@ using RealEstate.Services;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Web.Pages.Manage.Deal
 {

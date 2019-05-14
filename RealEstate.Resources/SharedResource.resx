@@ -999,4 +999,7 @@
   <data name="ForgiveOfForfeit" xml:space="preserve">
     <value>بخشش جریمه</value>
   </data>
+  <data name="Checkout" xml:space="preserve">
+    <value>تسویه حساب</value>
+  </data>
 </root>

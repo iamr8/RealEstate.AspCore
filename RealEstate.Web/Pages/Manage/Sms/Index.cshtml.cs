@@ -9,7 +9,9 @@ using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 
 namespace RealEstate.Web.Pages.Manage.Sms

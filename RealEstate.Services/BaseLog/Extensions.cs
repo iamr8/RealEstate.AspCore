@@ -11,15 +11,12 @@ namespace RealEstate.Services.BaseLog
             return collection.Where(x => x != null || x?.Id != null).ToList();
         }
 
-        public static TModel ShowBasedOn<TModel, TCondition>(this TModel model, Func<TModel, TCondition> condition, bool includeDeleted = false) where TModel : BaseLogViewModel where TCondition : BaseLogViewModel
+        public static TModel ShowBasedOn<TModel, TCondition>(this TModel model, Func<TModel, TCondition> condition) where TModel : BaseLogViewModel where TCondition : BaseLogViewModel
         {
             if (model == null)
                 return default;
 
             var cond = condition.Invoke(model);
-            if (includeDeleted)
-                return cond == null ? default : model;
-
             return cond?.IsDeleted == true ? default : model;
         }
 

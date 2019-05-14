@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
 
@@ -33,7 +33,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnGetAsync(string id)
         {
             var model = await _itemService.ItemAsync(id, DealStatusEnum.Rejected).ConfigureAwait(false);
-            if (model?.LastState != DealStatusEnum.Rejected)
+            if (model?.LastState() != DealStatusEnum.Rejected)
                 return RedirectToPage(typeof(IndexModel).Page());
 
             NewDealRequest = new DealRequestInputViewModel

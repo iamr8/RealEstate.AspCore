@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Services.Tracker
 {

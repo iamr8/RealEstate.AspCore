@@ -16,18 +16,19 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static TModel Into<TEntity, TModel>(this TEntity model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static TModel Into<TEntity, TModel>(this TEntity model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model == null)
                 return default;
 
-            var ignoreDeletedItems = !includeDeleted;
-            var currentDeleteState = model.IsDeleted;
-            if (ignoreDeletedItems && currentDeleteState)
-                return default;
-
-            var ty = Activator.CreateInstance(typeof(TModel), model, includeDeleted, action) as TModel;
+            var ty = Activator.CreateInstance(typeof(TModel), model) as TModel;
             return ty;
+        }
+
+        public static T Last<T>(this List<T> list) where T : BaseLogViewModel
+        {
+            var result = list?.OrderDescendingByCreationDateTime().FirstOrDefault();
+            return result;
         }
 
         public static IOrderedEnumerable<TSource> OrderDescendingByCreationDateTime<TSource>(this ICollection<TSource> sources) where TSource : BaseEntity
@@ -38,31 +39,37 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
+        public static IOrderedEnumerable<TModel> OrderByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
+        {
+            var source = sources.OrderBy(x => x.Logs.Create.DateTime);
+            return source;
+        }
+
         public static IOrderedEnumerable<TModel> OrderDescendingByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
         {
             var source = sources.OrderByDescending(x => x.Logs.Create.DateTime);
             return source;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
-                .Select(entity => entity.Into(includeDeleted, action))
+                .Select(entity => entity.Into<TEntity, TModel>())
                 .Where(x => x?.Id != null)
                 .R8ToList();
             return result;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model, bool includeDeleted = false, Action<TModel> action = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
-                .Select(entity => entity.Into(includeDeleted, action))
+                .Select(entity => entity.Into<TEntity, TModel>())
                 .Where(x => x != null)
                 .R8ToList();
             return result;

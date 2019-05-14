@@ -9,6 +9,7 @@ using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 
 namespace RealEstate.Web.Pages.Manage.Division

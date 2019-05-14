@@ -6,12 +6,13 @@ using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace RealEstate.Services.BaseLog
 {
     public class BaseLogViewModel
     {
-        public string Id
+        private PropertyInfo EntityProperty
         {
             get
             {
@@ -24,11 +25,19 @@ namespace RealEstate.Services.BaseLog
                 if (entityProp?.PropertyType.IsSubclassOf(typeof(BaseEntity)) != true)
                     return default;
 
-                var entity = entityProp.GetValue(this);
+                return entityProp;
+            }
+        }
+
+        public string Id
+        {
+            get
+            {
+                var entity = EntityProperty?.GetValue(this);
                 if (entity == null)
                     return default;
 
-                var idProp = entityProp.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Id"));
+                var idProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Id"));
                 if (idProp == null)
                     return default;
 
@@ -42,20 +51,11 @@ namespace RealEstate.Services.BaseLog
         {
             get
             {
-                var type = GetType();
-                var properties = type.GetProperties().ToList();
-                if (properties?.Any() != true)
-                    return default;
-
-                var entityProp = properties.Find(x => x.Name.Equals("Entity", StringComparison.CurrentCulture));
-                if (entityProp?.PropertyType.IsSubclassOf(typeof(BaseEntity)) != true)
-                    return default;
-
-                var entity = entityProp.GetValue(this);
+                var entity = EntityProperty?.GetValue(this);
                 if (entity == null)
                     return default;
 
-                var auditsProp = entityProp.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Audits"));
+                var auditsProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Audits"));
                 if (auditsProp == null)
                     return default;
 

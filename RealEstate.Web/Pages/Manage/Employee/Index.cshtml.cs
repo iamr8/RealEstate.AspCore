@@ -9,6 +9,8 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Web.Pages.Manage.Employee
 {

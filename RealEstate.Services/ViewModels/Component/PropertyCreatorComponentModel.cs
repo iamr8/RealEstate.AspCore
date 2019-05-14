@@ -5,6 +5,7 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using System.Collections.Generic;
 using System.Linq;
+using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Services.ViewModels.Component
 {

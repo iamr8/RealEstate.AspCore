@@ -10,6 +10,8 @@ using RealEstate.Services.ViewModels.Input;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {

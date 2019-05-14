@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Controllers
 {

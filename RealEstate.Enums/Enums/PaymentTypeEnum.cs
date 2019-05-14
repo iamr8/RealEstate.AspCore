@@ -21,13 +21,10 @@ namespace RealEstate.Base.Enums
         [Display(ResourceType = typeof(SharedResource), Name = "Advance")]
         Advance, // مساعده
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Remain")]
-        Remain,  // مانده حساب
-
         [Display(ResourceType = typeof(SharedResource), Name = "Beneficiary")]
         Beneficiary, // ذینفغ از قرارداد
 
-        [Display(ResourceType = typeof(SharedResource), Name = "ForgiveOfForfeit")]
-        ForgiveOfForfeit, // بخشش جریمه
+        [Display(ResourceType = typeof(SharedResource), Name = "Checkout")]
+        Checkout
     }
 }

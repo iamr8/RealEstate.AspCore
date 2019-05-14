@@ -87,33 +87,34 @@
                                     {
                                         <span class="badge badge-success"><b>@SharedLocalizer[SharedResource.Address]:</b> @item.Address</span>
                                     }
-                                    @if (item.CurrentInsurance?.Price > 0)
+                                    @if (item.CurrentInsurance()?.Price > 0)
                                     {
-                                        <span class="badge badge-warning"><b>مبلغ بیمه:</b> @item.CurrentInsurance.Price</span>
+                                        <span class="badge badge-warning"><b>مبلغ بیمه:</b> @item.CurrentInsurance().Price</span>
 
                                     }
-                                    @if (item.CurrentFixedSalary?.Value > 0)
+                                    @if (item.CurrentFixedSalary()?.Value > 0)
                                     {
-                                        <span class="badge badge-warning"><b>حقوق ثابت:</b> @item.CurrentFixedSalary.Value</span>
+                                        <span class="badge badge-warning"><b>حقوق ثابت:</b> @item.CurrentFixedSalary().Value</span>
 
                                     }
                                 </span>
-                                @if (item.EmployeeDivisions?.Any() == true)
+                                @if (item.EmployeeDivisions.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Divisions]:
-                                        @foreach (var division in item.EmployeeDivisions)
+                                        @foreach (var employeeDivision in item.EmployeeDivisions.Value)
                                         {
-                                            <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@division.Division.Id" target="_blank" class="badge badge-primary">@division.Division?.Name</a>
+                                            var value = employeeDivision.Division.Value;
+                                            <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@value?.Id" target="_blank" class="badge badge-primary">@value?.Name</a>
                                         }
                                     </span>
 
                                 }
-                                @if (item.Users?.Any() == true)
+                                @if (item.Users.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Users]:
-                                        @foreach (var user in item.Users)
+                                        @foreach (var user in item.Users.Value)
                                         {
                                             <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-id="@user.Id" target="_blank" class="badge badge-primary">@user.Username</a>
                                         }
@@ -126,7 +127,7 @@
                                     <a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
 
-                                    if (User.Identity.Name != item.CurrentUser?.Username)
+                                    if (User.Identity.Name != item.CurrentUser()?.Username)
                                     {
                                         <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                     }

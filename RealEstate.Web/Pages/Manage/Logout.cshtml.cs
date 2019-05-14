@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RealEstate.Services;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Pages.Manage
 {

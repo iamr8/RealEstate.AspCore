@@ -41,7 +41,7 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.Employee?.FirstName @item.Employee?.LastName
+                                        @item.Employee.Value?.FirstName @item.Employee.Value?.LastName
                                     </b>
                                     <span class="badge badge-success">@item.Status.GetDisplayName()</span>
                                     <span class="badge badge-primary">@item.Date.GregorianToPersian(true) @item.Hour:@item.Minute</span>

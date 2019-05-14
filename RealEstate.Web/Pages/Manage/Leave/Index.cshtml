@@ -41,7 +41,7 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @item.Employee?.FirstName @item.Employee?.LastName
+                                        @item.Employee.Value?.FirstName @item.Employee.Value?.LastName
                                     </b>
                                     <span class="badge badge-primary">@SharedLocalizer["From"] @item.From.GregorianToPersian(true)</span>
                                     <span class="badge badge-primary">@SharedLocalizer["To"] @item.From.GregorianToPersian(true)</span>
