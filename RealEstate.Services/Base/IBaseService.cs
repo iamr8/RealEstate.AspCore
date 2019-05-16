@@ -87,14 +87,17 @@ namespace RealEstate.Services.Base
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _accessor;
+        private readonly IFileHandler _fileHandler;
         private readonly DbSet<User> _users;
 
         public BaseService(
             IUnitOfWork unitOfWork,
+            IFileHandler fileHandler,
             IHttpContextAccessor accessor
             )
         {
             _unitOfWork = unitOfWork;
+            _fileHandler = fileHandler;
             _accessor = accessor;
             _users = _unitOfWork.Set<User>();
         }
@@ -465,7 +468,9 @@ namespace RealEstate.Services.Base
                 var oldValue = oldEntity.Find(x => x.Name.Equals(name)).Value;
                 var newValue = property.GetValue(entity);
 
-                if (oldValue?.Equals(newValue) == false)
+                if (oldValue == null && newValue != null)
+                    changesList.Add(name, null);
+                else if (oldValue != null && !oldValue.Equals(newValue))
                     changesList.Add(name, oldValue.ToString());
             }
 

@@ -91,6 +91,10 @@ namespace RealEstate.Base.Enums
         LeaveIsNull,
         Ready,
         CredentialError,
-        PriceIsNull
+        PriceIsNull,
+        PaymentsAreEmpty,
+        CheckoutIsNull,
+        RemainIsNull,
+        PaymentIsNull
     }
 }

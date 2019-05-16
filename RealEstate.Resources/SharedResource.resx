@@ -1002,4 +1002,10 @@
   <data name="Checkout" xml:space="preserve">
     <value>تسویه حساب</value>
   </data>
+  <data name="Pay" xml:space="preserve">
+    <value>پرداخت</value>
+  </data>
+  <data name="ObliNone" xml:space="preserve">
+    <value>بی حساب</value>
+  </data>
 </root>

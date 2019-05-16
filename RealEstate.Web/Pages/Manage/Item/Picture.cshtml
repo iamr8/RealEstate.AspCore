@@ -7,14 +7,14 @@
     </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
-        <input asp-for="NewPicture.PropertyId" />
+        <input asp-for="NewPropertyPicture.PropertyId" />
         <section class="container-fluid">
             <div class="row justify-content-center align-content-center">
                 <div class="col-12">
                     <div class="input-wrapper">
-                        <label asp-for="NewPicture.File" class="control-label"></label>
-                        <input type="file" asp-for="NewPicture.File" class="form-control-file" multiple />
-                        <span asp-validation-for="NewPicture.File" class="text-danger"></span>
+                        <label asp-for="NewPropertyPicture.Pictures" class="control-label"></label>
+                        <input type="file" asp-for="NewPropertyPicture.Pictures" class="form-control-file" multiple />
+                        <span asp-validation-for="NewPropertyPicture.Pictures" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -37,7 +37,7 @@
 
                     @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
                     {
-                        <a asp-controller="Remove" asp-action="PropertyPictureAsync" asp-route-id="@picture.Id" asp-route-propertyId="@Model.NewPicture.PropertyId">حذف تصویر</a>
+                        <a asp-controller="Remove" asp-action="PropertyPictureAsync" asp-route-id="@picture.Id" asp-route-propertyId="@Model.NewPropertyPicture.PropertyId">حذف تصویر</a>
                     }
                 </li>
             }

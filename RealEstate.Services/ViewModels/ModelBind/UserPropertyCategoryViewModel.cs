@@ -20,9 +20,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         }
 
         public Lazy<UserViewModel> User =>
-            LazyLoadExtension.LazyLoad(() => Entity?.User.Into<User, UserViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
 
         public Lazy<CategoryViewModel> Category =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Category.Into<Category, CategoryViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Category.Map<Category, CategoryViewModel>());
     }
 }

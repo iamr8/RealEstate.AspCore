@@ -2,13 +2,11 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer;
-using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Web.Pages.Manage.Employee
 {

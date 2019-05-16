@@ -11,27 +11,27 @@ namespace RealEstate.Services.ViewModels.Input
         [Display(ResourceType = typeof(SharedResource), Name = "Mobile")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [JsonProperty("mob")]
-        [R8Validator(RegexPatterns.Mobile)]
+        [ValueValidation(RegexPatterns.Mobile)]
         public string Mobile { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "FirstName")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [JsonProperty("nm")]
-        [R8Validator(RegexPatterns.PersianText)]
+        [ValueValidation(RegexPatterns.PersianText)]
         public string Name { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "PhoneNumber")]
-        [R8Validator(RegexPatterns.NumbersOnly)]
+        [ValueValidation(RegexPatterns.NumbersOnly)]
         [JsonProperty("phn")]
         public string Phone { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Address")]
-        [R8Validator(RegexPatterns.SafeText)]
+        [ValueValidation(RegexPatterns.SafeText)]
         [JsonProperty("ad")]
         public string Address { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]
-        [R8Validator(RegexPatterns.SafeText)]
+        [ValueValidation(RegexPatterns.SafeText)]
         [JsonProperty("desc")]
         public string Description { get; set; }
     }

@@ -14,12 +14,12 @@ namespace RealEstate.Services.ViewModels.Input
 
         [Display(ResourceType = typeof(SharedResource), Name = "Date")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        [R8Validator(RegexPatterns.IranDate)]
+        [ValueValidation(RegexPatterns.IranDate)]
         public string Date { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Time")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        [R8Validator(RegexPatterns.Time)]
+        [ValueValidation(RegexPatterns.Time)]
         public string Time { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Employee")]

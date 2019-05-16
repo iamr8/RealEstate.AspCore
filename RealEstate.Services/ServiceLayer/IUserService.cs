@@ -82,7 +82,7 @@ namespace RealEstate.Services.ServiceLayer
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Into<User, UserViewModel>();
+                var item = user.Map<User, UserViewModel>();
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -102,7 +102,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Into<User, UserViewModel>();
+            var viewModel = model?.Map<User, UserViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -149,7 +149,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<User, UserViewModel>()).ConfigureAwait(false);
+                item => item.Map<User, UserViewModel>()).ConfigureAwait(false);
             return result;
         }
 

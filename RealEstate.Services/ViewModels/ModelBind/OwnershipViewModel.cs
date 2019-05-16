@@ -23,9 +23,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public int Dong => Entity?.Dong ?? 0;
 
         public Lazy<CustomerViewModel> Customer =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Customer.Into<Customer, CustomerViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Customer.Map<Customer, CustomerViewModel>());
 
         public Lazy<PropertyOwnershipViewModel> PropertyOwnership =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyOwnership.Into<PropertyOwnership, PropertyOwnershipViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.PropertyOwnership.Map<PropertyOwnership, PropertyOwnershipViewModel>());
     }
 }

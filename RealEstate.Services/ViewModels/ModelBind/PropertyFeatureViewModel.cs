@@ -22,9 +22,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Value => Entity?.Value;
 
         public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Into<Property, PropertyViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
 
         public Lazy<FeatureViewModel> Feature =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Into<Feature, FeatureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Map<Feature, FeatureViewModel>());
     }
 }

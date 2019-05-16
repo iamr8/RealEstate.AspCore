@@ -55,7 +55,7 @@ namespace RealEstate.Services.ServiceLayer
             query = query.WhereNotDeleted();
 
             var districts = await query.ToListAsync().ConfigureAwait(false);
-            return districts.Into<District, DistrictViewModel>();
+            return districts.Map<District, DistrictViewModel>();
         }
 
         public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
@@ -73,7 +73,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<District, DistrictViewModel>()
+                item => item.Map<District, DistrictViewModel>()
             ).ConfigureAwait(false);
 
             return result;
@@ -155,7 +155,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = model.Into<District, DistrictViewModel>();
+            var viewModel = model.Map<District, DistrictViewModel>();
             if (viewModel == null)
                 return default;
 

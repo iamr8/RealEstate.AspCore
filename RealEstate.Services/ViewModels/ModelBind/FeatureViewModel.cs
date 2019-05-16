@@ -26,6 +26,6 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public FeatureTypeEnum Type => Entity?.Type ?? FeatureTypeEnum.Property;
 
         public Lazy<List<PropertyFeatureViewModel>> PropertyFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Into<PropertyFeature, PropertyFeatureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Map<PropertyFeature, PropertyFeatureViewModel>());
     }
 }

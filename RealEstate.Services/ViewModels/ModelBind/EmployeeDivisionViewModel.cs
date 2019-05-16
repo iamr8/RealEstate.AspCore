@@ -19,7 +19,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
             Entity = entity;
         }
 
-        public Lazy<EmployeeViewModel> Employee => LazyLoadExtension.LazyLoad(() => Entity?.Employee.Into<Employee, EmployeeViewModel>());
-        public Lazy<DivisionViewModel> Division => LazyLoadExtension.LazyLoad(() => Entity?.Division.Into<Division, DivisionViewModel>());
+        public Lazy<EmployeeViewModel> Employee => LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
+        public Lazy<DivisionViewModel> Division => LazyLoadExtension.LazyLoad(() => Entity?.Division.Map<Division, DivisionViewModel>());
     }
 }

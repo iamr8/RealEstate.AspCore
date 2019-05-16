@@ -26,18 +26,18 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public DealStatusEnum LastState() => DealRequests.LazyLoadLast()?.Status ?? DealStatusEnum.Rejected;
 
         public Lazy<CategoryViewModel> Category =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Category.Into<Category, CategoryViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Category.Map<Category, CategoryViewModel>());
 
         public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Into<Property, PropertyViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
 
         public Lazy<List<ApplicantViewModel>> Applicants =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Into<Applicant, ApplicantViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Map<Applicant, ApplicantViewModel>());
 
         public Lazy<List<ItemFeatureViewModel>> ItemFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.ItemFeatures.Into<ItemFeature, ItemFeatureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.ItemFeatures.Map<ItemFeature, ItemFeatureViewModel>());
 
         public Lazy<List<DealRequestViewModel>> DealRequests =>
-            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Into<DealRequest, DealRequestViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Map<DealRequest, DealRequestViewModel>());
     }
 }

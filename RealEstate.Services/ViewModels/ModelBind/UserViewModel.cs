@@ -27,14 +27,14 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Password => Entity?.DecryptedPassword;
 
         public Lazy<List<UserItemCategoryViewModel>> UserItemCategories =>
-            LazyLoadExtension.LazyLoad(() => Entity?.UserItemCategories.Into<UserItemCategory, UserItemCategoryViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.UserItemCategories.Map<UserItemCategory, UserItemCategoryViewModel>());
 
         public Lazy<List<UserPropertyCategoryViewModel>> UserPropertyCategories =>
-            LazyLoadExtension.LazyLoad(() => Entity?.UserPropertyCategories.Into<UserPropertyCategory, UserPropertyCategoryViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.UserPropertyCategories.Map<UserPropertyCategory, UserPropertyCategoryViewModel>());
 
-        public Lazy<List<ApplicantViewModel>> Applicants => LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Into<Applicant, ApplicantViewModel>());
-        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Into<Beneficiary, BeneficiaryViewModel>());
-        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Into<Reminder, ReminderViewModel>());
-        public Lazy<EmployeeViewModel> Employee => LazyLoadExtension.LazyLoad(() => Entity?.Employee.Into<Employee, EmployeeViewModel>());
+        public Lazy<List<ApplicantViewModel>> Applicants => LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Map<Applicant, ApplicantViewModel>());
+        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Map<Beneficiary, BeneficiaryViewModel>());
+        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Map<Reminder, ReminderViewModel>());
+        public Lazy<EmployeeViewModel> Employee => LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
     }
 }

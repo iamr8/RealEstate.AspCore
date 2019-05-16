@@ -1,29 +1,27 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace RealEstate.Base.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class R8ValidatorAttribute : ValidationAttribute, IClientModelValidator
+    public class ValueValidationAttribute : ValidationAttribute, IClientModelValidator
     {
-        public string Pattern { get; set; }
-        public string Caution { get; set; }
+        public string RegularExpression { get; set; }
 
-        public R8ValidatorAttribute(RegexPatterns pattern)
+        public ValueValidationAttribute(RegexPatterns pattern) : base(() => pattern.GetDescription())
         {
-            Pattern = pattern.GetDisplayName();
-            Caution = pattern.GetDescription();
+            RegularExpression = pattern.GetDisplayName();
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             if (value == null) return ValidationResult.Success;
 
-            return !Regex.Match(value.ToString(), Pattern).Success
-                ? new ValidationResult(Caution)
+            return !Regex.Match(value.ToString(), RegularExpression).Success
+                ? new ValidationResult(ErrorMessageString)
                 : ValidationResult.Success;
         }
 
@@ -33,8 +31,8 @@ namespace RealEstate.Base.Attributes
                 throw new ArgumentNullException(nameof(context));
 
             MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-regex", Caution);
-            MergeAttribute(context.Attributes, "data-val-regex-pattern", Pattern);
+            MergeAttribute(context.Attributes, "data-val-regex", ErrorMessageString);
+            MergeAttribute(context.Attributes, "data-val-regex-pattern", RegularExpression);
         }
 
         private void MergeAttribute(IDictionary<string, string> attributes, string key, string value)

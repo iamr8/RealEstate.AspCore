@@ -12,6 +12,7 @@ using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -244,7 +245,7 @@ namespace RealEstate.Services.ServiceLayer
             var result = new List<ItemOutJsonViewModel>();
             foreach (var model in items)
             {
-                var converted = model.Into<Item, ItemViewModel>();
+                var converted = model.Map<Item, ItemViewModel>();
                 if (converted == null)
                     continue;
 
@@ -449,7 +450,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Item, ItemViewModel>()).ConfigureAwait(false);
+                item => item.Map<Item, ItemViewModel>()).ConfigureAwait(false);
             return result;
         }
 
@@ -462,7 +463,7 @@ namespace RealEstate.Services.ServiceLayer
                         select item;
 
             var result = await _baseService.PaginateAsync(query, model?.PageNo ?? 1,
-                item => item.Into<Item, ItemViewModel>()).ConfigureAwait(false);
+                item => item.Map<Item, ItemViewModel>()).ConfigureAwait(false);
             return result;
         }
 
@@ -491,7 +492,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Into<Item, ItemViewModel>();
+            var viewModel = entity?.Map<Item, ItemViewModel>();
 
             if (viewModel == null)
                 return default;
@@ -546,7 +547,7 @@ namespace RealEstate.Services.ServiceLayer
             if (entity == null)
                 return default;
 
-            var viewModel = entity?.Into<Item, ItemViewModel>();
+            var viewModel = entity?.Map<Item, ItemViewModel>();
             return viewModel;
         }
 

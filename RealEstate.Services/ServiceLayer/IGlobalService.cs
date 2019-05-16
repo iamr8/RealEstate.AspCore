@@ -123,7 +123,7 @@ namespace RealEstate.Services.ServiceLayer
             if (models?.Any() != true)
                 return default;
 
-            var viewModels = models?.Select(x => x.Into<Item, ItemViewModel>()).ToList();
+            var viewModels = models?.Select(x => x.Map<Item, ItemViewModel>()).ToList();
             if (viewModels?.Any() != true)
                 return default;
 

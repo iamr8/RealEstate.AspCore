@@ -215,7 +215,7 @@ namespace RealEstate.Services.ServiceLayer
                 || EF.Functions.Like(x.MobileNumber, mobile.Like()));
 
             var customers = await query.ToListAsync().ConfigureAwait(false);
-            var cust = customers.Into<Customer, CustomerViewModel>();
+            var cust = customers.Map<Customer, CustomerViewModel>();
             return cust?.Select(x => new CustomerJsonViewModel
             {
                 Id = x.Id,
@@ -233,7 +233,7 @@ namespace RealEstate.Services.ServiceLayer
                 .WhereItIsPublic();
 
             var customers = await query.ToListAsync().ConfigureAwait(false);
-            return customers.Into<Customer, CustomerViewModel>();
+            return customers.Map<Customer, CustomerViewModel>();
         }
 
         public async Task<Applicant> ApplicantEntityAsync(string id)
@@ -262,7 +262,7 @@ namespace RealEstate.Services.ServiceLayer
             var entity = await _customers.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = entity.Into<Customer, CustomerViewModel>();
+            var viewModel = entity.Map<Customer, CustomerViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -283,7 +283,7 @@ namespace RealEstate.Services.ServiceLayer
             var entity = await OwnershipEntityAsync(id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = entity.Into<Ownership, OwnershipViewModel>();
+            var viewModel = entity.Map<Ownership, OwnershipViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -352,7 +352,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _applicants.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Into<Applicant, ApplicantViewModel>();
+            var viewModel = entity?.Map<Applicant, ApplicantViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -387,7 +387,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Applicant, ApplicantViewModel>().ShowBasedOn(x => x.Customer.Value)
+                item => item.Map<Applicant, ApplicantViewModel>().ShowBasedOn(x => x.Customer.Value)
             ).ConfigureAwait(false);
 
             return result;
@@ -421,7 +421,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Customer, CustomerViewModel>()
+                item => item.Map<Customer, CustomerViewModel>()
             ).ConfigureAwait(false);
 
             return result;

@@ -9,7 +9,7 @@ namespace RealEstate.Services.ViewModels.Input
     {
         [Display(ResourceType = typeof(SharedResource), Name = "FromDate")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        [R8Validator(RegexPatterns.IranDate)]
+        [ValueValidation(RegexPatterns.IranDate)]
         public string FromDate { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "FromHour")]
@@ -18,7 +18,7 @@ namespace RealEstate.Services.ViewModels.Input
         public int FromHour { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "ToDate")]
-        [R8Validator(RegexPatterns.IranDate)]
+        [ValueValidation(RegexPatterns.IranDate)]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string ToDate { get; set; }
 

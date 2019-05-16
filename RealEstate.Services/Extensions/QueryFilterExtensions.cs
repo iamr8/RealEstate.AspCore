@@ -16,7 +16,7 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static TModel Into<TEntity, TModel>(this TEntity model) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static TModel Map<TEntity, TModel>(this TEntity model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model == null)
                 return default;
@@ -51,25 +51,25 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this ICollection<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static List<TModel> Map<TEntity, TModel>(this ICollection<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
-                .Select(entity => entity.Into<TEntity, TModel>())
+                .Select(entity => entity.Map<TEntity, TModel>())
                 .Where(x => x?.Id != null)
                 .R8ToList();
             return result;
         }
 
-        public static List<TModel> Into<TEntity, TModel>(this List<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static List<TModel> Map<TEntity, TModel>(this List<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
-                .Select(entity => entity.Into<TEntity, TModel>())
+                .Select(entity => entity.Map<TEntity, TModel>())
                 .Where(x => x != null)
                 .R8ToList();
             return result;

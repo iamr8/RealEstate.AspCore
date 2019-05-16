@@ -8,6 +8,9 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +25,10 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<StatusEnum> ManagementPercentRemoveAsync(string id);
 
+        Task<(double, List<Payment>)> PaymentLastStateAsync(Employee employee);
+
+        Task<MethodStatus<Payment>> PayAsync(string paymentId, bool save);
+
         Task<PaginationViewModel<PaymentViewModel>> PaymentListAsync(PaymentSearchViewModel searchModel);
 
         Task<ManagementPercentInputViewModel> ManagementPercentInputAsync(string id);
@@ -30,6 +37,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<PaginationViewModel<ManagementPercentViewModel>> ManagementPercentListAsync(ManagementPercentSearchViewModel searchModel);
 
+        Task<(double, List<Payment>)> PaymentLastStateAsync(string employeeId);
+
         Task<MethodStatus<FixedSalary>> FixedSalarySyncAsync(double value, string employeeId, bool save);
     }
 
@@ -37,6 +46,7 @@ namespace RealEstate.Services.ServiceLayer
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IPictureService _pictureService;
         private readonly DbSet<FixedSalary> _fixedSalaries;
         private readonly DbSet<Payment> _payments;
         private readonly DbSet<Employee> _employees;
@@ -44,15 +54,111 @@ namespace RealEstate.Services.ServiceLayer
 
         public PaymentService(
             IBaseService baseService,
+            IPictureService pictureService,
             IUnitOfWork unitOfWork
             )
         {
             _baseService = baseService;
+            _pictureService = pictureService;
             _unitOfWork = unitOfWork;
             _fixedSalaries = _unitOfWork.Set<FixedSalary>();
             _employees = _unitOfWork.Set<Employee>();
             _payments = _unitOfWork.Set<Payment>();
             _managementPercents = _unitOfWork.Set<ManagementPercent>();
+        }
+
+        public async Task<(double, List<Payment>)> PaymentLastStateAsync(string employeeId)
+        {
+            var employee = await _employees.IgnoreQueryFilters().OrderDescendingByCreationDateTime().Where(x => x.Id == employeeId).FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+            return await PaymentLastStateAsync(employee);
+        }
+
+        public async Task<(double, List<Payment>)> PaymentLastStateAsync(Employee employee)
+        {
+            if (employee == null)
+                return default;
+
+            var payments = employee.Payments.OrderDescendingByCreationDateTime().ToList();
+            if (payments?.Any() != true)
+                return default;
+
+            var lastFixedSalary = employee.FixedSalaries.OrderDescendingByCreationDateTime().FirstOrDefault();
+            if (lastFixedSalary == null)
+            {
+                var (addFixedSalaryStatus, fixedSalaryEntity) = await _baseService.AddAsync(new FixedSalary
+                {
+                    Value = 0,
+                    EmployeeId = employee.Id,
+                }, null, true).ConfigureAwait(false);
+                if (addFixedSalaryStatus == StatusEnum.Success)
+                {
+                    lastFixedSalary = fixedSalaryEntity;
+                }
+                else
+                    throw new NullReferenceException($"Unable to create new {nameof(FixedSalary)}");
+            }
+
+            var currentDt = new PersianDateTime(DateTime.Now);
+            var startofMonth = new DateTime(currentDt.Year, currentDt.Month, 1, new PersianCalendar());
+            var endOfMonth = new DateTime(currentDt.Year, currentDt.Month, currentDt.MonthDays, new PersianCalendar());
+
+            var fixedSalaryForThisMonth = lastFixedSalary.Audits.Count > 0
+                                          && lastFixedSalary.Audits.Find(x => x.Type == LogTypeEnum.Create).DateTime.Date < startofMonth.Date;
+            if (fixedSalaryForThisMonth)
+            {
+                var fixedSalaryThisMonth = payments.FirstOrDefault(x => x.Type == PaymentTypeEnum.FixedSalary
+                                                                        && x.Audits.Count > 0
+                                                                        && x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date >= startofMonth.Date
+                                                                        && x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date <= endOfMonth.Date);
+                if (fixedSalaryThisMonth == null && lastFixedSalary.Value > 0)
+                {
+                    var paymentForFixed = await _baseService.AddAsync(new Payment
+                    {
+                        Value = lastFixedSalary.Value,
+                        EmployeeId = employee.Id,
+                        Type = PaymentTypeEnum.FixedSalary,
+                    }, null, true).ConfigureAwait(false);
+                }
+            }
+
+            payments = await _payments.IgnoreQueryFilters().Where(x => x.EmployeeId == employee.Id).OrderDescendingByCreationDateTime().ToListAsync().ConfigureAwait(false);
+            if (payments?.Any() != true)
+                return default;
+            var populatedPayments = payments.GroupBy(x => x.CheckoutId);
+
+            var list = payments;
+            var currentMoney = list.Calculate();
+            return new ValueTuple<double, List<Payment>>(currentMoney, list);
+        }
+
+        public async Task<MethodStatus<Payment>> PayAsync(string paymentId, bool save)
+        {
+            if (string.IsNullOrEmpty(paymentId))
+                return new MethodStatus<Payment>(StatusEnum.ParamIsNull, null);
+
+            var payment = await _payments.FirstOrDefaultAsync(x => x.Id == paymentId).ConfigureAwait(false);
+            if (payment == null)
+                return new MethodStatus<Payment>(StatusEnum.PaymentIsNull, null);
+
+            if (payment.Type != PaymentTypeEnum.Gift && payment.Type != PaymentTypeEnum.FixedSalary)
+                return new MethodStatus<Payment>(StatusEnum.Forbidden, null);
+
+            var (checkStatus, newCheckout) = await _baseService.AddAsync(new Payment
+            {
+                Value = payment.Value,
+                EmployeeId = payment.EmployeeId,
+                Type = PaymentTypeEnum.Pay
+            }, null, true).ConfigureAwait(false);
+            if (checkStatus != StatusEnum.Success)
+                return new MethodStatus<Payment>(StatusEnum.CheckoutIsNull, null);
+
+            var updateStatus = await _baseService.UpdateAsync(payment,
+                currentUser =>
+                {
+                    payment.CheckoutId = newCheckout.Id;
+                }, null, save, StatusEnum.PaymentIsNull).ConfigureAwait(false);
+            return updateStatus;
         }
 
         public async Task<MethodStatus<Payment>> PaymentAddAsync(PaymentInputViewModel model, bool save)
@@ -66,17 +172,59 @@ namespace RealEstate.Services.ServiceLayer
             if (model.Value <= 0)
                 return new MethodStatus<Payment>(StatusEnum.PriceIsNull, null);
 
-            var addStatus = await _baseService.AddAsync(new Payment
+            var result = new List<StatusEnum>();
+            Payment finalPayment;
+            if (model.Type == PaymentTypeEnum.Pay)
             {
-                Type = model.Type,
-                EmployeeId = model.EmployeeId,
-                Value = model.Value,
-                Text = model.Text,
-            }, new[]
+                //var (currentMoney, pays) = await PaymentLastStateAsync(model.EmployeeId).ConfigureAwait(false);
+                //if (currentMoney <= 0)
+                //    return new MethodStatus<Payment>(StatusEnum.PaymentsAreEmpty, null);
+
+                var (checkStatus, newCheckout) = await _baseService.AddAsync(new Payment
+                {
+                    Value = model.Value,
+                    EmployeeId = model.EmployeeId,
+                    Text = model.Text,
+                    Type = PaymentTypeEnum.Pay
+                }, null, true).ConfigureAwait(false);
+                if (checkStatus != StatusEnum.Success)
+                    return new MethodStatus<Payment>(StatusEnum.CheckoutIsNull, null);
+
+                //foreach (var pay in pays)
+                //{
+                //    var payment = await _payments.FirstOrDefaultAsync(x => x.Id == pay.Id).ConfigureAwait(false);
+                //    var updateStatus = await _baseService.UpdateAsync(payment,
+                //        currentUser =>
+                //        {
+                //            payment.CheckoutId = newCheckout.Id;
+                //        }, null, true, StatusEnum.PaymentIsNull).ConfigureAwait(false);
+                //    result.Add(updateStatus.Status);
+                //}
+                finalPayment = newCheckout;
+            }
+            else
             {
-                Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
-            return addStatus;
+                var (addStatus, newPayment) = await _baseService.AddAsync(new Payment
+                {
+                    Type = model.Type,
+                    EmployeeId = model.EmployeeId,
+                    Value = model.Value,
+                    Text = model.Text,
+                }, new[]
+                {
+                        Role.SuperAdmin, Role.Admin
+                    }, save).ConfigureAwait(false);
+                result.Add(addStatus);
+                finalPayment = newPayment;
+            }
+
+            var finalResult = result.Populate();
+            if (finalResult == StatusEnum.Success)
+                await _pictureService.PictureAddAsync(model.Pictures, null, null, null, null, finalPayment.Id, null, true).ConfigureAwait(false);
+
+            return finalResult == StatusEnum.Success
+                ? new MethodStatus<Payment>(StatusEnum.Success, finalPayment)
+                : new MethodStatus<Payment>(StatusEnum.Failed, null);
         }
 
         public async Task<StatusEnum> PaymentRemoveAsync(string id, string employeeId)
@@ -155,7 +303,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity.Into<ManagementPercent, ManagementPercentViewModel>();
+            var viewModel = entity.Map<ManagementPercent, ManagementPercentViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -177,7 +325,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = query.Where(x => x.Percent == searchModel.Percent);
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<ManagementPercent, ManagementPercentViewModel>()
+                item => item.Map<ManagementPercent, ManagementPercentViewModel>()
             ).ConfigureAwait(false);
 
             return result;
@@ -188,7 +336,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _payments.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<Payment, PaymentViewModel>()
+                item => item.Map<Payment, PaymentViewModel>()
             ).ConfigureAwait(false);
             return result;
         }

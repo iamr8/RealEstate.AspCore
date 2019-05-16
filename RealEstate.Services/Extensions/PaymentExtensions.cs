@@ -1,21 +1,49 @@
 ﻿using RealEstate.Base.Enums;
-using RealEstate.Services.ViewModels;
+using RealEstate.Services.Database.Base;
+using RealEstate.Services.Database.Tables;
 using System.Collections.Generic;
 using System.Linq;
-using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Services.Extensions
 {
     public static class PaymentExtensions
     {
-        public static EmployeeDetailPaymentViewModel Calculate(this List<PaymentViewModel> payments)
+        private static double CalculateCore(this double currentMoney, PaymentTypeEnum type, double value)
+        {
+            switch (type)
+            {
+                case PaymentTypeEnum.Advance:
+                case PaymentTypeEnum.Forfeit:
+                case PaymentTypeEnum.Pay:
+                    currentMoney -= value;
+                    break;
+
+                case PaymentTypeEnum.Beneficiary:
+                case PaymentTypeEnum.Gift:
+                default:
+                    currentMoney += value;
+                    break;
+            }
+
+            return currentMoney;
+        }
+
+        public static List<Payment> PaymentsRemained(this List<Payment> payments, BaseEntity lastRemain)
+        {
+            var pays = payments.Where(x =>
+                x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime > lastRemain.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime).ToList();
+
+            // last remain, pardakhtaye anjam nashodeye ghabli ra neshan nemidahad
+            return pays;
+        }
+
+        public static double Calculate(this ICollection<Payment> payments)
         {
             if (payments?.Any() != true)
                 return default;
 
-            var pays = payments.OrderByCreationDateTime().ToList();
             double currentMoney = 0;
-            foreach (var payment in pays)
+            foreach (var payment in payments)
             {
                 var type = payment.Type;
                 var value = payment.Value;
@@ -23,40 +51,15 @@ namespace RealEstate.Services.Extensions
                 if (payment.IsDeleted)
                     continue;
 
-                switch (type)
-                {
-                    case PaymentTypeEnum.Advance:
-                        currentMoney -= value;
-                        break;
+                if (!string.IsNullOrEmpty(payment.CheckoutId))
+                    continue;
 
-                    case PaymentTypeEnum.Beneficiary:
-                        currentMoney += value;
-                        break;
+                if (payment.Type == PaymentTypeEnum.Pay)
+                    continue;
 
-                    case PaymentTypeEnum.Forfeit:
-                        currentMoney -= value;
-                        break;
-
-                    case PaymentTypeEnum.Gift:
-                        currentMoney += value;
-                        break;
-
-                    case PaymentTypeEnum.Checkout:
-                        currentMoney -= value;
-                        break;
-
-                    case PaymentTypeEnum.Salary:
-                    default:
-                        currentMoney += value;
-                        break;
-                }
+                currentMoney = currentMoney.CalculateCore(type, value);
             }
-            return new EmployeeDetailPaymentViewModel
-            {
-                Current = currentMoney < 0 ? currentMoney * -1 : currentMoney,
-                Status = currentMoney < 0 ? ObligStatusEnum.Obligor : ObligStatusEnum.Obligee,
-                List = pays.OrderDescendingByCreationDateTime().ToList()
-            };
+            return currentMoney;
         }
     }
 }

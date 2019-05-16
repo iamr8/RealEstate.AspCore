@@ -64,7 +64,7 @@ namespace RealEstate.Services.Extensions
             }
             else
             {
-                processResult = "";
+                processResult = "صفر";
             }
 
             return processResult;

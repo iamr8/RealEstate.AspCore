@@ -5,13 +5,6 @@ namespace RealEstate.Base.Enums
 {
     public enum PaymentTypeEnum
     {
-        // Credit => Beneficiary + Gift - Forfeit - Advance = Salary
-        // Checkout => Salary ( Above items updates paymentId to checkoutId )
-        // Remain => Credit - Checkout
-
-        [Display(ResourceType = typeof(SharedResource), Name = "Salary")]
-        Salary, // حقوق
-
         [Display(ResourceType = typeof(SharedResource), Name = "Gift")]
         Gift, // هدیه
 
@@ -24,7 +17,10 @@ namespace RealEstate.Base.Enums
         [Display(ResourceType = typeof(SharedResource), Name = "Beneficiary")]
         Beneficiary, // ذینفغ از قرارداد
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Checkout")]
-        Checkout
+        [Display(ResourceType = typeof(SharedResource), Name = "Pay")]
+        Pay, // پرداخت,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "FixedSalary")]
+        FixedSalary
     }
 }

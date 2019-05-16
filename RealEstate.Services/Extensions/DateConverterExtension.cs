@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RealEstate.Base;
+using System;
 using System.Globalization;
 
 namespace RealEstate.Services.Extensions
@@ -29,25 +30,14 @@ namespace RealEstate.Services.Extensions
 
         public static string GregorianToPersian(this DateTime dt, bool truncateTime, bool showSecs = false)
         {
-            var persianCalendar = new PersianCalendar();
-            var time = string.Empty;
+            var pc = new PersianDateTime(dt)
+            {
+                ShowTime = !truncateTime,
+                ShowTimeSecond = showSecs
+            };
 
-            var year = persianCalendar.GetYear(dt).ToString("0000");
-            var month = persianCalendar.GetMonth(dt).ToString("00");
-            var day = persianCalendar.GetDayOfMonth(dt).ToString("00");
-            var date = $"{year}/{month}/{day}";
-
-            if (truncateTime) return $"{date}{time}";
-
-            var hour = persianCalendar.GetHour(dt).ToString("00");
-            var minute = persianCalendar.GetMinute(dt).ToString("00");
-
-            var sec = string.Empty;
-            if (showSecs)
-                sec = $":{persianCalendar.GetSecond(dt):00}";
-
-            time = $" {hour}:{minute}{sec}";
-            return $"{date}{time}";
+            var pdt = pc.ToString();
+            return pdt;
         }
     }
 }

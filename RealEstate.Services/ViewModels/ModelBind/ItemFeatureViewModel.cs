@@ -22,9 +22,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Value => Entity?.Value?.FixCurrency();
 
         public Lazy<ItemViewModel> Item =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Item.Into<Item, ItemViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
 
         public Lazy<FeatureViewModel> Feature =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Into<Feature, FeatureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Map<Feature, FeatureViewModel>());
     }
 }

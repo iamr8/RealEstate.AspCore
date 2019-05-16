@@ -22,8 +22,8 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public DealStatusEnum Status => Entity?.Status ?? DealStatusEnum.Rejected;
 
-        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Into<Item, ItemViewModel>());
-        public Lazy<DealViewModel> Deal => LazyLoadExtension.LazyLoad(() => Entity?.Deal.Into<Deal, DealViewModel>());
-        public Lazy<SmsViewModel> Sms => LazyLoadExtension.LazyLoad(() => Entity?.Sms.Into<Sms, SmsViewModel>());
+        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
+        public Lazy<DealViewModel> Deal => LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
+        public Lazy<SmsViewModel> Sms => LazyLoadExtension.LazyLoad(() => Entity?.Sms.Map<Sms, SmsViewModel>());
     }
 }

@@ -6,12 +6,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Payment : BaseEntity
     {
-        public Payment()
-        {
-            Pictures = new HashSet<Picture>();
-        }
-
-        // Calculation Method : Sum(Salary) + Sum(Gift) - Sum(Forfeit) - Sum(Advance)
         public double Value { get; set; }
 
         public string Text { get; set; }

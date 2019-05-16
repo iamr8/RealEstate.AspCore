@@ -1,11 +1,12 @@
 ﻿@page
 @model DetailModel
 @{
-  var payments = SelectItemExtensions.ToSelectList<PaymentTypeEnum>().Where(x => x.Text != PaymentTypeEnum.Beneficiary.GetDisplayName()).SelectFirstItem();
-  var currentObliStatus = Model.Detail.Payments?.Status == ObligStatusEnum.Obligee ? "success" : "danger";
+  var payments = SelectItemExtensions.ToSelectList<PaymentTypeEnum>
+  ().Where(x => x.Text != PaymentTypeEnum.FixedSalary.GetDisplayName() && x.Text != PaymentTypeEnum.Beneficiary.GetDisplayName()).SelectFirstItem();
+  var currentObliStatus = Model.Detail.Payments.Status == ObligStatusEnum.None ? "secondary" : Model.Detail.Payments?.Status == ObligStatusEnum.Obligee ? "success" : "danger";
 }
 <div class="col-12">
-  <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? "hidden" : "")" asp-validation-summary="All">
+  <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? " hidden" : "" )" asp-validation-summary="All">
     <span>@Model.Status</span>
     <a href="#" class="close-status" onclick=""><i class="fa fa-times"></i></a>
   </div>
@@ -29,7 +30,7 @@
                   </h3>
                 </div>
                 <hr />
-                <form method="post" asp-page-handler="Payment" class="row justify-content-center align-content-center">
+                <form method="post" enctype="multipart/form-data" asp-page-handler="Payment" class="row justify-content-center align-content-center">
                   <input asp-for="NewPayment.EmployeeId" />
                   <div class="col-12 col-md">
                     <div class="input-wrapper">
@@ -53,61 +54,113 @@
                     </div>
                   </div>
                   <div class="col-12">
+                    <div class="input-wrapper">
+                      <label asp-for="NewPayment.Pictures" class="control-label"></label>
+                      <input type="file" asp-for="NewPayment.Pictures" class="form-control-file" multiple />
+                      <span asp-validation-for="NewPayment.Pictures" class="text-danger"></span>
+                    </div>
+                  </div>
+                  <div class="col-12">
                     <input type="submit" class="btn btn-success btn-sm btn-block" value="@SharedLocalizer[SharedResource.Submit]" />
                   </div>
                 </form>
                 @if (Model.Detail.Payments?.List?.Any() == true)
                 {
+                  var ind = 0;
+                  var groupedPayments = Model.Detail.Payments.List.GroupBy(x => x.CheckoutId);
                   <hr />
-                  @foreach (var payment in Model.Detail.Payments.List)
-                  {
-                    var disabledClass = payment.IsDeleted ? "disabled" : "";
-                    var disabledTerm = payment.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
-                    string color;
-                    switch (payment.Type)
+                  <div class="col-12" id="payments">
+                    @foreach (var groupedPayment in groupedPayments)
                     {
-
-                      case PaymentTypeEnum.Salary:
-                        color = "success";
-                        break;
-                      case PaymentTypeEnum.Gift:
-                        color = "info";
-                        break;
-                      case PaymentTypeEnum.Forfeit:
-                        color = "danger";
-                        break;
-                      case PaymentTypeEnum.Advance:
-                        color = "warning";
-                        break;
-                      case PaymentTypeEnum.Checkout:
-                        color = "secondary";
-                        break;
-                      default:
-                        color = "success";
-                        break;
-                    }
-                    <div class="row justify-content-center align-content-center itemShow @disabledClass">
-                      <div class="col-12 detail">
-                        <div class="info">
-                          <span>
-                            <b class="title">@SharedLocalizer[SharedResource.Price]:</b> @payment.Value.ToString().CurrencyToWords() تومان
-                            <span class="badge badge-@color">@payment.Type.GetDisplayName()</span>
-                          </span>
-                          @if (!string.IsNullOrEmpty(payment.Text))
-                          {
-                            <span>
-                              <b>@SharedLocalizer[SharedResource.For]:</b>
-                              @payment.Text
-                            </span>
-                          }
+                      var key = $"pay_{ind}";
+                      <div class="card">
+                        <div class="card-header">
+                          <a class="card-link" data-toggle="collapse" href="#@key">
+                            @(string.IsNullOrEmpty(groupedPayment.Key) ? "در انتظار پرداخت" : "پرداخت شده")
+                          </a>
                         </div>
-                        <div class="button">
-                          <a asp-controller="Remove" asp-action="PaymentAsync" asp-route-id="@payment.Id" asp-route-employeeId="@Model.Detail.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                        <div id="@key" class="collapse @(string.IsNullOrEmpty(groupedPayment.Key) ? "show" : "")" data-parent="#payments">
+                          <div class="card-body">
+                            @foreach (var payment in groupedPayment)
+                            {
+                              var disabledClass = payment.IsDeleted ? "disabled" : "";
+                              var disabledTerm = payment.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
+                              string color;
+                              switch (payment.Type)
+                              {
+
+                                case PaymentTypeEnum.Gift:
+                                  color = "info";
+                                  break;
+                                case PaymentTypeEnum.Forfeit:
+                                  color = "danger";
+                                  break;
+                                case PaymentTypeEnum.Advance:
+                                  color = "warning";
+                                  break;
+                                case PaymentTypeEnum.Pay:
+                                  color = "secondary";
+                                  break;
+                                default:
+                                  color = "success";
+                                  break;
+                              }
+                              <div class="row justify-content-center align-content-center itemShow @disabledClass">
+                                <div class="col-12 detail">
+                                  <div class="info">
+                                    <span>
+                                      <b class="title">@SharedLocalizer[SharedResource.Price]:</b> @payment.Value.ToString().CurrencyToWords() تومان
+                                      <span class="badge badge-@color">@payment.Type.GetDisplayName()</span>
+                                    </span>
+                                    @if (payment.Pictures.Value?.Any() == true)
+                                    {
+                                      <span>
+                                        @SharedLocalizer[SharedResource.Photos] :
+                                        <ul class="info-breadcrumb gallery no-image">
+                                          @for (var i = 0; i < payment.Pictures.Value.Count; i++)
+                                          {
+                                            var imgPath = $"~/{FileHandler.ImgDirectory}/{payment.Pictures.Value[i].File}";
+                                            var renderedPath = Url.Content(imgPath);
+                                            <li>
+                                              <img class="hidden" src="@renderedPath">
+                                              @SharedLocalizer[SharedResource.Picture] @(i + 1)
+                                            </li>
+                                          }
+                                        </ul>
+                                      </span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(payment.Text))
+                                    {
+                                      <span>
+                                        <b>@SharedLocalizer[SharedResource.For]:</b>
+                                        @payment.Text
+                                      </span>
+                                    }
+                                  </div>
+                                  <div class="button">
+                                    @if (!payment.IsCheckedOut)
+                                    {
+                                      @*if (payment.Type == PaymentTypeEnum.Gift || payment.Type == PaymentTypeEnum.FixedSalary)
+                                      {
+                                        <a asp-controller="Add" asp-action="PayAsync" asp-route-id="@payment.Id" asp-route-employeeId="@Model.Detail.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-warning @disabledClass">پرداخت شد</a>
+                                      }*@
+                                      if (payment.Type != PaymentTypeEnum.Pay)
+                                      {
+                                        <a asp-controller="Remove" asp-action="PaymentAsync" asp-route-id="@payment.Id" asp-route-employeeId="@Model.Detail.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                      }
+                                    }
+                                  </div>
+                                </div>
+                                <vc:log logs="@payment.Logs" cat="Payment" id="@payment.Id" />
+                              </div>
+                            }
+                          </div>
                         </div>
                       </div>
-                      <vc:log logs="@payment.Logs" cat="Payment" id="@payment.Id" />
-                    </div>
-                  }
+                      ind++;
+                    }
+                  </div>
+
                 }
               </div>
             </div>
@@ -117,3 +170,21 @@
     </section>
   </div>
 </div>
+@section Styles
+  {
+  <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
+}
+@section Scripts
+  {
+  <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
+  <script>
+    $(document).ready(function () {
+
+      const opts = {
+        "classes": "",
+        "hasModal": true
+      }
+      $('.gallery').bsPhotoGallery(opts);
+    });
+  </script>
+}

@@ -25,9 +25,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public double CommissionPrice => (double)(Entity?.CommissionPrice ?? 0);
         public string Barcode => Entity?.Barcode;
 
-        public Lazy<DealRequestViewModel> DealRequest => LazyLoadExtension.LazyLoad(() => Entity?.DealRequest.Into<DealRequest, DealRequestViewModel>());
-        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Into<Reminder, ReminderViewModel>());
-        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Into<Beneficiary, BeneficiaryViewModel>());
-        public Lazy<List<PictureViewModel>> Pictures => LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Into<Picture, PictureViewModel>());
+        public Lazy<DealRequestViewModel> DealRequest => LazyLoadExtension.LazyLoad(() => Entity?.DealRequest.Map<DealRequest, DealRequestViewModel>());
+        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Map<Reminder, ReminderViewModel>());
+        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Map<Beneficiary, BeneficiaryViewModel>());
+        public Lazy<List<PictureViewModel>> Pictures => LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
     }
 }

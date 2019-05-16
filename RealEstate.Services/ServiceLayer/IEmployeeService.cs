@@ -58,17 +58,20 @@ namespace RealEstate.Services.ServiceLayer
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IPaymentService _paymentService;
         private readonly DbSet<Employee> _employees;
         private readonly DbSet<Leave> _leaves;
         private readonly DbSet<Presence> _presences;
 
         public EmployeeService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService
+            IBaseService baseService,
+            IPaymentService paymentService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _paymentService = paymentService;
             _employees = _unitOfWork.Set<Employee>();
             _leaves = _unitOfWork.Set<Leave>();
             _presences = _unitOfWork.Set<Presence>();
@@ -79,16 +82,28 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var employee = await _employees.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = employee?.Into<Employee, EmployeeViewModel>();
+            var employee = await _employees
+                .IgnoreQueryFilters()
+                .Include(x => x.Payments)
+                .ThenInclude(x => x.Checkout)
+                .FirstOrDefaultAsync(x => x.Id == id)
+                .ConfigureAwait(false);
+            var viewModel = employee?.Map<Employee, EmployeeViewModel>();
             if (viewModel == null)
                 return default;
 
+            var (currentMoney, pays) = await _paymentService.PaymentLastStateAsync(employee);
             var result = new EmployeeDetailViewModel
             {
                 Id = viewModel.Id,
-                Payments = viewModel.Payments.Value.Calculate()
+                Payments = new EmployeeDetailPaymentViewModel
+                {
+                    Current = currentMoney < 0 ? currentMoney * -1 : currentMoney,
+                    Status = currentMoney == 0 ? ObligStatusEnum.None : currentMoney < 0 ? ObligStatusEnum.Obligor : ObligStatusEnum.Obligee,
+                    List = pays?.Select(item => item.Map<Payment, PaymentViewModel>()).ToList()
+                }
             };
+
             return result;
         }
 
@@ -100,7 +115,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = query.Where(x => x.Users.Count == 0);
 
             var employees = await query.ToListAsync().ConfigureAwait(false);
-            return employees.Into<Employee, EmployeeViewModel>();
+            return employees.Map<Employee, EmployeeViewModel>();
         }
 
         public async Task<StatusEnum> EmployeeRemoveAsync(string id)
@@ -193,7 +208,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Employee, EmployeeViewModel>()).ConfigureAwait(false);
+                item => item.Map<Employee, EmployeeViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -206,7 +221,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _presences.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<Presence, PresenceViewModel>()).ConfigureAwait(false);
+                item => item.Map<Presence, PresenceViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -219,7 +234,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _leaves.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Into<Leave, LeaveViewModel>()).ConfigureAwait(false);
+                item => item.Map<Leave, LeaveViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -500,7 +515,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await _leaves.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = model?.Into<Leave, LeaveViewModel>();
+            var viewModel = model?.Map<Leave, LeaveViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -523,7 +538,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await _presences.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = model?.Into<Presence, PresenceViewModel>();
+            var viewModel = model?.Map<Presence, PresenceViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -543,7 +558,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Into<Employee, EmployeeViewModel>();
+            var viewModel = model?.Map<Employee, EmployeeViewModel>();
             if (viewModel == null)
                 return default;
 

@@ -21,7 +21,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public string Value => Entity.Value.FixCurrency();
 
-        public Lazy<ApplicantViewModel> Applicant => LazyLoadExtension.LazyLoad(() => Entity?.Applicant.Into<Applicant, ApplicantViewModel>());
-        public Lazy<FeatureViewModel> Feature => LazyLoadExtension.LazyLoad(() => Entity?.Feature.Into<Feature, FeatureViewModel>());
+        public Lazy<ApplicantViewModel> Applicant => LazyLoadExtension.LazyLoad(() => Entity?.Applicant.Map<Applicant, ApplicantViewModel>());
+        public Lazy<FeatureViewModel> Feature => LazyLoadExtension.LazyLoad(() => Entity?.Feature.Map<Feature, FeatureViewModel>());
     }
 }

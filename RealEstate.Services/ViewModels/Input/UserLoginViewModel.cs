@@ -9,7 +9,7 @@ namespace RealEstate.Services.ViewModels.Input
     public class UserLoginViewModel
     {
         [Display(ResourceType = typeof(SharedResource), Name = "Username")]
-        [R8Validator(RegexPatterns.EnglishText)]
+        [ValueValidation(RegexPatterns.EnglishText)]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [MinLength(4, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "MinLength")]
         public string Username { get; set; }

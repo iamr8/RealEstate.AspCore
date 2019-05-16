@@ -33,9 +33,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public PaymentViewModel CurrentPayment() => Payments?.LazyLoadLast();
 
         private Lazy<List<DealRequestViewModel>> DealRequests =>
-            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Into<DealRequest, DealRequestViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Map<DealRequest, DealRequestViewModel>());
 
         private Lazy<List<PaymentViewModel>> Payments =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Into<Payment, PaymentViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Map<Payment, PaymentViewModel>());
     }
 }

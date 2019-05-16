@@ -13,7 +13,7 @@ namespace RealEstate.Services.ViewModels.Input
 
         [Display(ResourceType = typeof(SharedResource), Name = "Date")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        [R8Validator(RegexPatterns.IranDate)]
+        [ValueValidation(RegexPatterns.IranDate)]
         public string Date { get; set; }
     }
 }

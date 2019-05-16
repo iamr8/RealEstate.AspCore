@@ -33,7 +33,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         }
 
         [BindProperty]
-        public PictureInputViewModel NewPicture { get; set; }
+        public PropertyPictureInputViewModel NewPropertyPicture { get; set; }
 
         public List<PictureViewModel> Pictures { get; set; }
 
@@ -52,7 +52,7 @@ namespace RealEstate.Web.Pages.Manage.Item
                 return RedirectToPage(typeof(IndexModel).Page());
 
             Pictures = await _pictureService.PropertyPicturesAsync(id).ConfigureAwait(false);
-            NewPicture = new PictureInputViewModel
+            NewPropertyPicture = new PropertyPictureInputViewModel
             {
                 PropertyId = id
             };
@@ -77,15 +77,16 @@ namespace RealEstate.Web.Pages.Manage.Item
                 var message = string.Join("<br/>", errors);
                 return RedirectToPage(typeof(PictureModel).Page(), new
                 {
-                    id = NewPicture?.PropertyId,
+                    id = NewPropertyPicture?.PropertyId,
                     status = message
                 });
             }
 
-            var status = await _pictureService.PropertyPictureAddAsync(NewPicture, true).ConfigureAwait(false);
+            var status = await _pictureService.PictureAddAsync(NewPropertyPicture.Pictures, null, NewPropertyPicture.PropertyId, null, null, null, null, true)
+                .ConfigureAwait(false);
             return RedirectToPage(typeof(PictureModel).Page(), new
             {
-                id = NewPicture?.PropertyId,
+                id = NewPropertyPicture?.PropertyId,
                 status = status.GetDisplayName()
             });
         }

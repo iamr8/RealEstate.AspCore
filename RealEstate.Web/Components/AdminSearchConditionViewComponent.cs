@@ -8,7 +8,7 @@ namespace RealEstate.Web.Components
     {
         public IViewComponentResult Invoke(ModelExpression model)
         {
-            var test = new AdminSearchConditionViewModel();
+            AdminSearchConditionViewModel test;
 
             var searchModel = model.Model;
             if (searchModel == null)

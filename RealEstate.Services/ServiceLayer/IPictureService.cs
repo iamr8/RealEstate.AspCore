@@ -1,20 +1,22 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
     public interface IPictureService
     {
-        Task<StatusEnum> PropertyPictureAddAsync(PictureInputViewModel model, bool save);
+        Task<StatusEnum> PictureAddAsync(IFormFile[] pictures, string text, string propertyId, string dealId, string employeeId, string paymentId,
+            string reminderId, bool save);
 
         Task<StatusEnum> PictureRemoveAsync(string pictureId);
 
@@ -46,7 +48,7 @@ namespace RealEstate.Services.ServiceLayer
             if (query?.Any() != true)
                 return default;
 
-            var result = query.Select(x => x.Into<Picture, PictureViewModel>()).ToList();
+            var result = query.Select(x => x.Map<Picture, PictureViewModel>()).ToList();
             return result;
         }
 
@@ -68,13 +70,12 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<StatusEnum> PropertyPictureAddAsync(PictureInputViewModel model, bool save)
+        public async Task<StatusEnum> PictureAddAsync(IFormFile[] pictures, string text, string propertyId, string dealId, string employeeId, string paymentId, string reminderId, bool save)
         {
-            if (model == null)
-                return StatusEnum.ModelIsNull;
+            if (pictures?.Any() != true)
+                return StatusEnum.Success;
 
-            // Upload Picture
-            var files = await _fileHandler.SaveAsync(model.File).ConfigureAwait(false);
+            var files = await _fileHandler.SaveAsync(pictures).ConfigureAwait(false);
             if (files?.Any() != true)
                 return StatusEnum.FileIsNull;
 
@@ -83,21 +84,18 @@ namespace RealEstate.Services.ServiceLayer
             {
                 var (newStatus, newPicture) = await _baseService.AddAsync(new Picture
                 {
-                    PropertyId = model.PropertyId,
+                    PropertyId = !string.IsNullOrEmpty(propertyId) ? propertyId : null,
+                    DealId = !string.IsNullOrEmpty(dealId) ? dealId : null,
+                    EmployeeId = !string.IsNullOrEmpty(employeeId) ? employeeId : null,
+                    PaymentId = !string.IsNullOrEmpty(paymentId) ? paymentId : null,
+                    ReminderId = !string.IsNullOrEmpty(reminderId) ? reminderId : null,
+                    Text = text,
                     File = picture,
                 }, null, save).ConfigureAwait(false);
                 results.Add(newStatus);
             }
 
-            StatusEnum result;
-            if (results.All(x => x == StatusEnum.Success))
-                result = StatusEnum.Success;
-            else if (results.Any(x => x == StatusEnum.Success))
-                result = StatusEnum.PartialSuccess;
-            else
-                result = StatusEnum.Failed;
-
-            return result;
+            return results.Populate();
         }
     }
 }

@@ -7,12 +7,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
-    public class PictureInputViewModel
+    public class PropertyPictureInputViewModel
     {
-        [R8AllowedFileTypes("jpg", "png")]
+        [FileTypeValidation("jpg", "png")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FileRequired")]
         [Display(ResourceType = typeof(SharedResource), Name = "Picture")]
-        public IFormFile[] File { get; set; }
+        public IFormFile[] Pictures { get; set; }
 
         [HiddenInput]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]

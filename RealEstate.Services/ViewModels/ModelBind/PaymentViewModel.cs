@@ -25,22 +25,23 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public string Text => Entity?.Text;
 
-        public PaymentTypeEnum Type => Entity?.Type ?? PaymentTypeEnum.Salary;
-        public bool IsCheckedOut => !string.IsNullOrEmpty(Entity?.CheckoutId);
+        public PaymentTypeEnum Type => Entity?.Type ?? PaymentTypeEnum.FixedSalary;
+        public bool IsCheckedOut => !string.IsNullOrEmpty(CheckoutId);
+        public string CheckoutId => Entity?.CheckoutId;
 
         public Lazy<EmployeeViewModel> Employee =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Into<Employee, EmployeeViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
 
         public Lazy<PaymentViewModel> Checkout =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Checkout.Into<Payment, PaymentViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Checkout.Map<Payment, PaymentViewModel>());
 
         public Lazy<SmsViewModel> Sms =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Sms.Into<Sms, SmsViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Sms.Map<Sms, SmsViewModel>());
 
         public Lazy<List<PaymentViewModel>> Payments =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Into<Payment, PaymentViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Map<Payment, PaymentViewModel>());
 
         public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Into<Picture, PictureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
     }
 }

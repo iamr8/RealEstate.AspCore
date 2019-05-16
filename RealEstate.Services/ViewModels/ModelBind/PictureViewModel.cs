@@ -23,18 +23,18 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Text => Entity?.Text;
 
         public Lazy<DealViewModel> Deal =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Into<Deal, DealViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
 
         public Lazy<PaymentViewModel> Payment =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payment.Into<Payment, PaymentViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Payment.Map<Payment, PaymentViewModel>());
 
         public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Into<Property, PropertyViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
 
         public Lazy<ReminderViewModel> Reminder =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Reminder.Into<Reminder, ReminderViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Reminder.Map<Reminder, ReminderViewModel>());
 
         public Lazy<EmployeeViewModel> Employee =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Into<Employee, EmployeeViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
     }
 }

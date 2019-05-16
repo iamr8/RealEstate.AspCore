@@ -22,6 +22,6 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public double Value => Entity?.Value ?? 0;
 
         public Lazy<EmployeeViewModel> Employee =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Into<Employee, EmployeeViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
     }
 }

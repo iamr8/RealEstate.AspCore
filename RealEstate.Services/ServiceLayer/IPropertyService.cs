@@ -172,7 +172,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                    item => item.Into<Property, PropertyViewModel>())
+                    item => item.Map<Property, PropertyViewModel>())
                 .ConfigureAwait(false);
 
             return result;
@@ -227,7 +227,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Into<Property, PropertyViewModel>();
+            var viewModel = entity?.Map<Property, PropertyViewModel>();
             if (viewModel == null)
                 return default;
 

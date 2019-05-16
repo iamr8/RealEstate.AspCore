@@ -28,12 +28,12 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public double Price => (double)(Entity?.Price ?? 0);
 
         public Lazy<DealViewModel> Deal =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Into<Deal, DealViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
 
         public Lazy<UserViewModel> User =>
-            LazyLoadExtension.LazyLoad(() => Entity?.User.Into<User, UserViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
 
         public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Into<Picture, PictureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
     }
 }

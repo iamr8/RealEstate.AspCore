@@ -279,17 +279,17 @@ namespace RealEstate.Base
 
         public static (IHtmlContent, IHtmlContent) GetRegularExpression<TModel>(this Expression<Func<TModel, object>> property, bool requireTag = true)
         {
-            var validator = property.GetPropertyAttribute<TModel, R8ValidatorAttribute>();
+            var validator = property.GetPropertyAttribute<TModel, ValueValidationAttribute>();
             if (validator != null)
             {
                 return new ValueTuple<IHtmlContent, IHtmlContent>
                 {
                     Item1 = requireTag
-                        ? new HtmlString($"data-val-regex-pattern=\"{validator.Pattern}\"")
-                        : new HtmlString(validator.Pattern),
+                        ? new HtmlString($"data-val-regex-pattern=\"{validator.RegularExpression}\"")
+                        : new HtmlString(validator.RegularExpression),
                     Item2 = requireTag
-                        ? new HtmlString($"data-val-regex=\"{validator.Caution}\"")
-                        : new HtmlString(validator.Caution)
+                        ? new HtmlString($"data-val-regex=\"{validator.ErrorMessage}\"")
+                        : new HtmlString(validator.ErrorMessage)
                 };
             }
 

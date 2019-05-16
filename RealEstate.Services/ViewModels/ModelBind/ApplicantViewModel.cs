@@ -24,9 +24,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Description => Entity?.Description;
         public ApplicantTypeEnum Type => Entity?.Type ?? ApplicantTypeEnum.Applicant;
 
-        public Lazy<CustomerViewModel> Customer => LazyLoadExtension.LazyLoad(() => Entity?.Customer.Into<Customer, CustomerViewModel>());
-        public Lazy<UserViewModel> User => LazyLoadExtension.LazyLoad(() => Entity?.User.Into<User, UserViewModel>());
-        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Into<Item, ItemViewModel>());
-        public Lazy<List<ApplicantFeatureViewModel>> ApplicantFeatures => LazyLoadExtension.LazyLoad(() => Entity?.ApplicantFeatures.Into<ApplicantFeature, ApplicantFeatureViewModel>());
+        public Lazy<CustomerViewModel> Customer => LazyLoadExtension.LazyLoad(() => Entity?.Customer.Map<Customer, CustomerViewModel>());
+        public Lazy<UserViewModel> User => LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
+        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
+        public Lazy<List<ApplicantFeatureViewModel>> ApplicantFeatures => LazyLoadExtension.LazyLoad(() => Entity?.ApplicantFeatures.Map<ApplicantFeature, ApplicantFeatureViewModel>());
     }
 }

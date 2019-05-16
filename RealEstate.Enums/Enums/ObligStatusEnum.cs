@@ -9,6 +9,9 @@ namespace RealEstate.Base.Enums
         Obligor,
 
         [Display(ResourceType = typeof(SharedResource), Name = "Obligee")]
-        Obligee
+        Obligee,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "ObliNone")]
+        None
     }
 }

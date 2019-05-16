@@ -2,10 +2,9 @@
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Resources;
-using RealEstate.Services;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Controllers
 {
@@ -14,15 +13,18 @@ namespace RealEstate.Web.Controllers
     public class AddController : ControllerBase
     {
         private readonly ICustomerService _customerService;
+        private readonly IPaymentService _paymentService;
         private readonly IPropertyService _propertyService;
         private readonly IStringLocalizer<SharedResource> _localizer;
 
         public AddController(
             ICustomerService customerService,
             IPropertyService propertyService,
+            IPaymentService paymentService,
             IStringLocalizer<SharedResource> localizer)
         {
             _customerService = customerService;
+            _paymentService = paymentService;
             _propertyService = propertyService;
             _localizer = localizer;
         }
@@ -36,6 +38,17 @@ namespace RealEstate.Web.Controllers
                 StatusCode = (int)status,
                 Id = newCustomer?.Id,
                 Message = status.GetDisplayName()
+            });
+        }
+
+        [Route("employee/payment/pay")]
+        public async Task<IActionResult> PayAsync(string id, string employeeId)
+        {
+            var (status, newCustomer) = await _paymentService.PayAsync(id, true).ConfigureAwait(false);
+            return RedirectToPage(typeof(Pages.Manage.Employee.DetailModel).Page(), new
+            {
+                status,
+                id = employeeId
             });
         }
 

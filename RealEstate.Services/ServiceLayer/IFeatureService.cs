@@ -104,7 +104,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.PropertyFeatures);
 
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Into<Feature, FeatureViewModel>();
+            var viewModel = entity.Map<Feature, FeatureViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -126,7 +126,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.PropertyFacilities);
 
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Into<Facility, FacilityViewModel>();
+            var viewModel = entity.Map<Facility, FacilityViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -145,7 +145,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var query = _categories.Where(x => x.Id == id);
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Into<Category, CategoryViewModel>();
+            var viewModel = entity.Map<Category, CategoryViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -386,7 +386,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Feature, FeatureViewModel>()
+                item => item.Map<Feature, FeatureViewModel>()
             ).ConfigureAwait(false);
 
             return result;
@@ -406,7 +406,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Facility, FacilityViewModel>()
+                item => item.Map<Facility, FacilityViewModel>()
             ).ConfigureAwait(false);
 
             return result;
@@ -435,7 +435,7 @@ namespace RealEstate.Services.ServiceLayer
             query = query.WhereNotDeleted();
 
             var facilities = await query.ToListAsync().ConfigureAwait(false);
-            return facilities.Into<Facility, FacilityViewModel>();
+            return facilities.Map<Facility, FacilityViewModel>();
         }
 
         public async Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] types)
@@ -447,7 +447,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = query.Where(x => types.Contains(x.Type));
 
             var features = await query.ToListAsync().ConfigureAwait(false);
-            return features.Into<Feature, FeatureViewModel>();
+            return features.Map<Feature, FeatureViewModel>();
         }
 
         public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
@@ -470,7 +470,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Into<Category, CategoryViewModel>()
+                item => item.Map<Category, CategoryViewModel>()
             ).ConfigureAwait(false);
 
             return result;
@@ -480,7 +480,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var query = _categories.IgnoreQueryFilters();
             var categories = await query.ToListAsync().ConfigureAwait(false);
-            return categories.Into<Category, CategoryViewModel>();
+            return categories.Map<Category, CategoryViewModel>();
         }
 
         public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege)
@@ -512,7 +512,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var categories = await query.ToListAsync().ConfigureAwait(false);
-            return categories.Into<Category, CategoryViewModel>();
+            return categories.Map<Category, CategoryViewModel>();
         }
     }
 }

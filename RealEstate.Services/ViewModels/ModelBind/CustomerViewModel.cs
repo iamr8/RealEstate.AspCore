@@ -27,9 +27,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public bool IsPublic => Entity?.IsPublic == true;
 
         public Lazy<List<OwnershipViewModel>> Ownerships =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Ownerships.Into<Ownership, OwnershipViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Ownerships.Map<Ownership, OwnershipViewModel>());
 
         public Lazy<List<ApplicantViewModel>> Applicants =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Into<Applicant, ApplicantViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Map<Applicant, ApplicantViewModel>());
     }
 }

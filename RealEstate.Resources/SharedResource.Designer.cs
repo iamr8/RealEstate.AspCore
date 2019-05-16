@@ -1609,6 +1609,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بی حساب.
+        /// </summary>
+        public static string ObliNone {
+            get {
+                return ResourceManager.GetString("ObliNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to اپراتورها.
         /// </summary>
         public static string Operators {
@@ -1686,6 +1695,15 @@ namespace RealEstate.Resources {
         public static string Password {
             get {
                 return ResourceManager.GetString("Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to پرداخت.
+        /// </summary>
+        public static string Pay {
+            get {
+                return ResourceManager.GetString("Pay", resourceCulture);
             }
         }
         

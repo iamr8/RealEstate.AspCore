@@ -36,24 +36,24 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public PropertyOwnershipViewModel CurrentPropertyOwnership() => PropertyOwnerships?.LazyLoadLast();
 
         public Lazy<CategoryViewModel> Category =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Category.Into<Category, CategoryViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Category.Map<Category, CategoryViewModel>());
 
         public Lazy<DistrictViewModel> District =>
-            LazyLoadExtension.LazyLoad(() => Entity?.District.Into<District, DistrictViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.District.Map<District, DistrictViewModel>());
 
         public Lazy<List<ItemViewModel>> Items =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Items.Into<Item, ItemViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Items.Map<Item, ItemViewModel>());
 
         public Lazy<List<PropertyOwnershipViewModel>> PropertyOwnerships =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyOwnerships.Into<PropertyOwnership, PropertyOwnershipViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.PropertyOwnerships.Map<PropertyOwnership, PropertyOwnershipViewModel>());
 
         public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Into<Picture, PictureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
 
         public Lazy<List<PropertyFacilityViewModel>> PropertyFacilities =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFacilities.Into<PropertyFacility, PropertyFacilityViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFacilities.Map<PropertyFacility, PropertyFacilityViewModel>());
 
         public Lazy<List<PropertyFeatureViewModel>> PropertyFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Into<PropertyFeature, PropertyFeatureViewModel>());
+            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Map<PropertyFeature, PropertyFeatureViewModel>());
     }
 }

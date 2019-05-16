@@ -3,31 +3,32 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 
 namespace RealEstate.Base.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class R8AllowedFileTypesAttribute : RequiredAttribute, IClientModelValidator
+    public class FileTypeValidationAttribute : ValidationAttribute, IClientModelValidator
     {
-        private const string DefaultErrorMessage = "فایلهای مجاز: {0}";
         public IEnumerable<string> ValidTypes { get; set; }
+        private string Expectation => string.Join(" یا ", ValidTypes);
 
-        public R8AllowedFileTypesAttribute(params string[] type)
-        {
-            Process(type);
-        }
-
-        private void Process(params string[] type)
+        public FileTypeValidationAttribute(params string[] type) : base(() => $"فایلهای مجاز: {string.Join(" یا ", type)}")
         {
             ValidTypes = type;
-            ErrorMessage = string.Format(DefaultErrorMessage, string.Join(" یا ", ValidTypes));
+        }
+
+        public override string FormatErrorMessage(string name)
+        {
+            return string.Format(CultureInfo.CurrentCulture, ErrorMessageString, name, Expectation);
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (value == null) return new ValidationResult(ErrorMessageString);
+            if (value == null)
+                return ValidationResult.Success;
 
             var finalFiles = new List<IFormFile>();
             switch (value)
@@ -44,12 +45,8 @@ namespace RealEstate.Base.Attributes
                     return new ValidationResult(ErrorMessageString);
             }
 
-            return finalFiles.Any(uploadedFile => uploadedFile != null
-                                                  && !ValidTypes.Any(e =>
-                                                  {
-                                                      var ext = Path.GetExtension(uploadedFile.FileName).Substring(1).ToLower();
-                                                      return ext.Equals(e.ToLower());
-                                                  }))
+            return finalFiles.Any(uploadedFile =>
+                uploadedFile != null && !ValidTypes.Any(e => Path.GetExtension(uploadedFile.FileName).Substring(1).ToLower().Equals(e.ToLower())))
                 ? new ValidationResult(ErrorMessageString)
                 : ValidationResult.Success;
         }
@@ -60,8 +57,7 @@ namespace RealEstate.Base.Attributes
                 throw new ArgumentNullException(nameof(context));
 
             MergeAttribute(context.Attributes, "data-val", "true");
-            MergeAttribute(context.Attributes, "data-val-filetype",
-                string.Format(DefaultErrorMessage, string.Join(", ", ValidTypes)));
+            MergeAttribute(context.Attributes, "data-val-filetype", ErrorMessageString);
             MergeAttribute(context.Attributes, "data-val-validtypes", string.Join(",", ValidTypes));
         }
 

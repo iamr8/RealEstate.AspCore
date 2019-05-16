@@ -135,8 +135,8 @@ body {
         .widget > header > .other > *:last-child {
           margin-left: 0; }
   .widget > section {
-    padding: 10px;
-    padding-top: 20px; }
+    padding: 20px 10px 10px;
+  }
     .widget > section > div {
       /*margin-bottom: 10px;*/ }
   .widget > footer {
@@ -151,7 +151,6 @@ body {
     align-items: center;
     height: 50px;
     padding: 10px;
-    background-color: transparent;
     margin-top: auto;
     background-color: #e0e0e0; }
     .widget > footer > .messages {

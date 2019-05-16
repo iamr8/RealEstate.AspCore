@@ -23,7 +23,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public int CommissionPercent => Entity.CommissionPercent;
 
-        public Lazy<UserViewModel> User => LazyLoadExtension.LazyLoad(() => Entity?.User.Into<User, UserViewModel>());
-        public Lazy<DealViewModel> Deal => LazyLoadExtension.LazyLoad(() => Entity?.Deal.Into<Deal, DealViewModel>());
+        public Lazy<UserViewModel> User => LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
+        public Lazy<DealViewModel> Deal => LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
     }
 }
