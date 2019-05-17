@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -339,18 +339,31 @@ namespace RealEstate.Services.ServiceLayer
                 DivisionId = division.Division?.Id,
                 Name = division.Division?.Name
             });
+
+            var id = userDb.Id;
+            var username = userDb.Username;
+            var mobilePhone = userDb.Employee?.Mobile;
+            var password = userDb.Password;
+            var firstname = userDb.Employee?.FirstName;
+            var lastname = userDb.Employee?.LastName;
+            var employeeId = userDb.Employee?.Id;
+            var role = userDb.Role.ToString();
+            itemCategoriesJson = string.IsNullOrEmpty(itemCategoriesJson) ? "[]" : itemCategoriesJson;
+            propertyCategoriesJson = string.IsNullOrEmpty(propertyCategoriesJson) ? "[]" : propertyCategoriesJson;
+            employeeDivisionsJson = string.IsNullOrEmpty(employeeDivisionsJson) ? "[]" : employeeDivisionsJson;
+
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, userDb.Id),
-                new Claim(ClaimTypes.Name, userDb.Username),
-                new Claim(ClaimTypes.MobilePhone, userDb.Employee?.Mobile),
-                new Claim(ClaimTypes.Hash,userDb.Password),
-                new Claim("FirstName", userDb.Employee?.FirstName),
-                new Claim("LastName", userDb.Employee?.LastName),
-                new Claim("EmployeeId", userDb.Employee?.Id),
+                new Claim(ClaimTypes.NameIdentifier, id),
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.MobilePhone, mobilePhone),
+                new Claim(ClaimTypes.Hash,password),
+                new Claim("FirstName", firstname),
+                new Claim("LastName", lastname),
+                new Claim("EmployeeId", employeeId),
                 new Claim("ItemCategories",itemCategoriesJson),
                 new Claim("PropertyCategories",propertyCategoriesJson),
-                new Claim(ClaimTypes.Role, userDb.Role.ToString()),
+                new Claim(ClaimTypes.Role, role),
                 new Claim("EmployeeDivisions", employeeDivisionsJson)
             };
 
