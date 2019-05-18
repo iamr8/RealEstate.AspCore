@@ -1,6 +1,7 @@
 ﻿using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.Database.Tables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,13 +15,12 @@ namespace RealEstate.Services.Extensions
             {
                 case PaymentTypeEnum.Advance:
                 case PaymentTypeEnum.Forfeit:
-                case PaymentTypeEnum.Pay:
                     currentMoney -= value;
                     break;
 
                 case PaymentTypeEnum.Beneficiary:
                 case PaymentTypeEnum.Gift:
-                default:
+                case PaymentTypeEnum.FixedSalary:
                     currentMoney += value;
                     break;
             }
@@ -48,16 +48,31 @@ namespace RealEstate.Services.Extensions
                 var type = payment.Type;
                 var value = payment.Value;
 
-                if (payment.IsDeleted)
+                if (payment.IsDeleted) // already deleted
                     continue;
 
-                if (!string.IsNullOrEmpty(payment.CheckoutId))
+                if (!string.IsNullOrEmpty(payment.CheckoutId)) // already payed
                     continue;
 
-                if (payment.Type == PaymentTypeEnum.Pay)
+                if (payment.Type == PaymentTypeEnum.Remain)
                     continue;
 
                 currentMoney = currentMoney.CalculateCore(type, value);
+            }
+
+            var payed = payments.Where(x => x.Type == PaymentTypeEnum.Pay).ToList();
+            var payRange = new Dictionary<Payment, (DateTime, DateTime)>();
+            foreach (var payment in payed)
+            {
+                var type = payment.Type;
+                var value = payment.Value;
+
+                if (payment.IsDeleted) // already deleted
+                    continue;
+
+//                var startRange 
+
+//                payRange.Add(payment);
             }
             return currentMoney;
         }

@@ -4,11 +4,11 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
-using RealEstate.Services.Base;
 using RealEstate.Services.ViewModels.Input;
 using System.Linq;
 using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Web.Pages.Manage.User
 {

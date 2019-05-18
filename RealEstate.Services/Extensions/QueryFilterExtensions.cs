@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
@@ -13,6 +14,24 @@ namespace RealEstate.Services.Extensions
         public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
             var source = entities.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+            return source;
+        }
+
+        public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
+        {
+            var source = entities.OrderBy(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+            return source;
+        }
+
+        public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
+        {
+            var source = entities.OrderByDescending(x => x.Audits.FirstOrDefault(predicate).DateTime);
+            return source;
+        }
+
+        public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
+        {
+            var source = entities.OrderBy(x => x.Audits.FirstOrDefault(predicate).DateTime);
             return source;
         }
 
@@ -31,10 +50,40 @@ namespace RealEstate.Services.Extensions
             return result;
         }
 
+        public static T First<T>(this List<T> list) where T : BaseLogViewModel
+        {
+            var result = list?.OrderByCreationDateTime().FirstOrDefault();
+            return result;
+        }
+
         public static IOrderedEnumerable<TSource> OrderDescendingByCreationDateTime<TSource>(this ICollection<TSource> sources) where TSource : BaseEntity
         {
             var source = sources
                 .OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+
+            return source;
+        }
+
+        public static IOrderedEnumerable<TSource> OrderDescendingByCreationDateTime<TSource>(this ICollection<TSource> sources, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
+        {
+            var source = sources
+                .OrderByDescending(x => x.Audits.FirstOrDefault(predicate).DateTime);
+
+            return source;
+        }
+
+        public static IOrderedEnumerable<TSource> OrderByCreationDateTime<TSource>(this ICollection<TSource> sources) where TSource : BaseEntity
+        {
+            var source = sources
+                .OrderBy(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+
+            return source;
+        }
+
+        public static IOrderedEnumerable<TSource> OrderByCreationDateTime<TSource>(this ICollection<TSource> sources, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
+        {
+            var source = sources
+                .OrderBy(x => x.Audits.FirstOrDefault(predicate).DateTime);
 
             return source;
         }
@@ -45,9 +94,21 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
+        public static IOrderedEnumerable<TModel> OrderByCreationDateTime<TModel>(this List<TModel> sources, Func<TModel, bool> predicate) where TModel : BaseLogViewModel
+        {
+            var source = sources.OrderBy(predicate);
+            return source;
+        }
+
         public static IOrderedEnumerable<TModel> OrderDescendingByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
         {
             var source = sources.OrderByDescending(x => x.Logs.Create.DateTime);
+            return source;
+        }
+
+        public static IOrderedEnumerable<TModel> OrderDescendingByCreationDateTime<TModel>(this List<TModel> sources, Func<TModel, bool> predicate) where TModel : BaseLogViewModel
+        {
+            var source = sources.OrderByDescending(predicate);
             return source;
         }
 

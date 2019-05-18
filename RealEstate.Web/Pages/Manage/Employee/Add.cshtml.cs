@@ -41,7 +41,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
                 if (!User.IsInRole(nameof(Role.SuperAdmin)))
                     return Forbid();
 
-                var model = await _employeeService.FindInputAsync(id).ConfigureAwait(false);
+                var model = await _employeeService.EmployeeInputAsync(id).ConfigureAwait(false);
                 if (model == null)
                     return RedirectToPage(typeof(IndexModel).Page());
 

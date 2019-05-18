@@ -1008,4 +1008,22 @@
   <data name="ObliNone" xml:space="preserve">
     <value>بی حساب</value>
   </data>
+  <data name="FullList" xml:space="preserve">
+    <value>لیست کامل</value>
+  </data>
+  <data name="Zoonkan" xml:space="preserve">
+    <value>زونکن</value>
+  </data>
+  <data name="DownloadSynchronizer" xml:space="preserve">
+    <value>دانلود بیرون بر</value>
+  </data>
+  <data name="ShowAllItems" xml:space="preserve">
+    <value>مشاهده همه موارد</value>
+  </data>
+  <data name="Advantages" xml:space="preserve">
+    <value>مزایا</value>
+  </data>
+  <data name="ContactWay" xml:space="preserve">
+    <value>راه ارتباطی</value>
+  </data>
 </root>

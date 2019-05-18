@@ -86,74 +86,93 @@
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
+                                <ul class="info-breadcrumb">
+                                    <li>
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Value?.Id" target="_blank">@item.District.Value?.Name</a>
+                                    </li>
+                                    <li>
+                                        <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()">@item.Category.Value?.Name</a>
+                                    </li>
+                                </ul>
                                 <span>
                                     <b class="title">
-                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Value?.Id" target="_blank">@item.District.Value?.Name</a> &mdash;
-                                        @if (!string.IsNullOrEmpty(item.Street))
+                                        @item.Address
+                                        @if (item.Pictures.Value?.Any() == true)
                                         {
-                                            <span class="text-gray">@SharedLocalizer["Street"]: </span>@item.Street<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.Alley))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Alley"]: </span>@item.Alley<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.Number))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["BuildingNumber"]: </span>@item.Number<text> &mdash; </text>
-                                        }
-                                        @if (!string.IsNullOrEmpty(item.BuildingName))
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["BuildingName"]: </span>@item.BuildingName<text> &mdash; </text>
-                                        }
-                                        @if (item.Floor > 0)
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["Floor"]: </span>@item.Floor<text> &mdash; </text>
-                                        }
-                                        @if (item.Flat > 0)
-                                        {
-                                            <span class="text-gray">@SharedLocalizer["FlatNumber"]: </span>@item.Flat
+                                            <i class="fa fa-check-circle verified"></i>
                                         }
                                     </b>
-
-                                    <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()" class="badge badge-primary">@item.Category.Value?.Name</a>
-                                    @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() != true)
-                                    {
-                                        <span class="badge badge-dark">مالک ثبت نشده است</span>
-                                    }
-                                    else
-                                    {
-                                        if (item.CurrentPropertyOwnership().Ownerships.Value.Sum(x => x.Dong) != 6)
-                                        {
-                                            <span class="badge badge-dark">خطا در ثبت تعداد دانگ ها</span>
-                                        }
-                                    }
                                 </span>
-                                @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() == true)
+                                <span>
+                                    @SharedLocalizer[SharedResource.Owners]:
+                                    <ul class="info-breadcrumb">
+                                        @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() != true)
+                                        {
+                                            <li>مالک ثبت نشده است</li>
+                                        }
+                                        else
+                                        {
+                                            if (item.CurrentPropertyOwnership().Ownerships.Value.Sum(x => x.Dong) != 6)
+                                            {
+                                                <li>خطا در ثبت تعداد دانگ ها</li>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var owner in item.CurrentPropertyOwnership().Ownerships.Value)
+                                                {
+                                                    <li>
+                                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank">@owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                                    </li>
+                                                }
+                                            }
+                                        }
+                                    </ul>
+                                </span>
+
+                                @if (item.PropertyFacilities.Value?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var owner in item.CurrentPropertyOwnership().Ownerships.Value)
-                                        {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank" class="badge badge-danger">@SharedLocalizer["Owner"]: @owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
-                                        }
+                                        @SharedLocalizer[SharedResource.PropertyFacilities] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var feature in item.PropertyFacilities.Value)
+                                            {
+                                                <text>
+                                                    <li>@feature.Facility.Value?.Name</li>
+                                                </text>
+                                            }
+                                        </ul>
                                     </span>
+
                                 }
-                                @if (item.PropertyFacilities.Value?.Any() == true || item.PropertyFeatures.Value?.Any() == true)
+                                @if (item.PropertyFeatures.Value?.Any() == true)
                                 {
                                     <span>
-                                        @if (item.PropertyFacilities.Value?.Any() == true)
-                                        {
-                                            foreach (var facility in item.PropertyFacilities.Value)
+                                        @SharedLocalizer[SharedResource.PropertyFeatures] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var feature in item.PropertyFeatures.Value)
                                             {
-                                                <span class="badge badge-secondary">@facility.Facility.Value?.Name</span>
+                                                <text>
+                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
+                                                </text>
                                             }
-                                        }
-                                        @if (item.PropertyFeatures.Value?.Any() == true)
-                                        {
-                                            foreach (var feature in item.PropertyFeatures.Value)
+                                        </ul>
+                                    </span>
+
+                                }
+                                @if (item.Pictures.Value?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer[SharedResource.Photos] :
+                                        <ul class="info-breadcrumb gallery no-image">
+                                            @for (var i = 0; i < item.Pictures.Value.Count; i++)
                                             {
-                                                <span class="badge badge-success">@feature.Feature.Value?.Name &mdash; @feature.Value</span>
+                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Pictures.Value[i].File}");
+                                                <li>
+                                                    <img class="hidden" src="@imgPath">
+                                                    @SharedLocalizer[SharedResource.Picture] @(i + 1)
+                                                </li>
                                             }
-                                        }
+                                        </ul>
                                     </span>
                                 }
                                 @if (!string.IsNullOrEmpty(item.Description))
@@ -188,3 +207,22 @@
         </section>
     </div>
 </div>
+
+@section Styles
+{
+    <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
+}
+@section Scripts
+{
+    <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+
+            const opts = {
+                "classes": "",
+                "hasModal": true
+            }
+            $('.gallery').bsPhotoGallery(opts);
+        });
+    </script>
+}

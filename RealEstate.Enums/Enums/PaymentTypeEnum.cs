@@ -21,6 +21,9 @@ namespace RealEstate.Base.Enums
         Pay, // پرداخت,
 
         [Display(ResourceType = typeof(SharedResource), Name = "FixedSalary")]
-        FixedSalary
+        FixedSalary,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Remain")]
+        Remain
     }
 }

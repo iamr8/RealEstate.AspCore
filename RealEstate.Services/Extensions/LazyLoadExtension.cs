@@ -14,7 +14,7 @@ namespace RealEstate.Services.Extensions
 
         public static T LazyLoadLast<T>(this Lazy<List<T>> model) where T : BaseLogViewModel
         {
-            var result = model.IsValueCreated ? model.Value.Last() : default;
+            var result = model.Value.Last();
             return result;
         }
     }

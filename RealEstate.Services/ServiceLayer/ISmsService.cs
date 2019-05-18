@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.Extensions.KavenNegarProvider;
-using RealEstate.Services.Extensions.KavenNegarProvider.Response;
-using RealEstate.Services.Extensions.KavenNegarProvider.Response.ResultModels;
+using RealEstate.Services.KavenNegarProvider;
+using RealEstate.Services.KavenNegarProvider.Response;
+using RealEstate.Services.KavenNegarProvider.Response.ResultModels;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 

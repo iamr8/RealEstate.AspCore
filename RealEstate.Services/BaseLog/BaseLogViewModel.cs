@@ -33,11 +33,12 @@ namespace RealEstate.Services.BaseLog
         {
             get
             {
+                BaseEntity baser;
                 var entity = EntityProperty?.GetValue(this);
                 if (entity == null)
                     return default;
 
-                var idProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Id"));
+                var idProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals(nameof(baser.Id)));
                 if (idProp == null)
                     return default;
 
@@ -51,11 +52,12 @@ namespace RealEstate.Services.BaseLog
         {
             get
             {
+                BaseEntity baser;
                 var entity = EntityProperty?.GetValue(this);
                 if (entity == null)
                     return default;
 
-                var auditsProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals("Audits"));
+                var auditsProp = EntityProperty?.PropertyType.GetPublicProperties().Find(x => x.Name.Equals(nameof(baser.Audits)));
                 if (auditsProp == null)
                     return default;
 
@@ -70,44 +72,5 @@ namespace RealEstate.Services.BaseLog
 
         [JsonIgnore]
         public bool IsDeleted => Logs?.Last?.Type == LogTypeEnum.Delete;
-    }
-
-    public class LogViewModel
-    {
-        public LogDetailViewModel Create { get; set; }
-        public List<LogDetailViewModel> Modifies { get; set; }
-        public List<LogDetailViewModel> Deletes { get; set; }
-
-        public LogDetailViewModel Last
-        {
-            get
-            {
-                var populate = new List<LogDetailViewModel>();
-
-                if (Create != null)
-                    populate.Add(Create);
-
-                if (Modifies?.Any() == true)
-                    populate.AddRange(Modifies);
-
-                if (Deletes?.Any() == true)
-                    populate.AddRange(Deletes);
-
-                populate = populate.OrderByDescending(x => x.DateTime).ToList();
-                return populate.FirstOrDefault();
-            }
-        }
-    }
-
-    public class LogDetailViewModel
-    {
-        public LogTypeEnum Type { get; set; }
-        public DateTime DateTime { get; set; }
-        public string UserId { get; set; }
-
-        public string UserFullName { get; set; }
-
-        public string UserMobile { get; set; }
-        public Dictionary<string, string> Modifies { get; set; }
     }
 }

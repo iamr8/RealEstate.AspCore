@@ -1,4 +1,5 @@
 ﻿@page
+@using RealEstate.Services.ServiceLayer.Base
 @model IndexModel
 @{
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
@@ -63,6 +64,21 @@
                             <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
                                 <div class="card-body">
                                     <div class="row justify-content-center align-items-center">
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
+                                                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-md">
+                                            <div class="input-wrapper">
+                                                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
+                                                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <div class="row justify-content-center align-items-center">
                                         <input asp-for="SearchInput.PageNo" />
                                         <div class="col-xs-12 col-md">
                                             <div class="input-wrapper">
@@ -89,21 +105,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <hr />
-                                    <div class="row justify-content-center align-items-center">
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
-                                                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
-                                                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                     @if (features?.Any() == true)
                                     {
                                         <hr />
@@ -233,10 +235,9 @@
                                         <ul class="info-breadcrumb gallery no-image">
                                             @for (var i = 0; i < item.Property.Value.Pictures.Value.Count; i++)
                                             {
-                                                var imgPath = $"~/{FileHandler.ImgDirectory}/{item.Property.Value.Pictures.Value[i].File}";
-                                                var renderedPath = Url.Content(imgPath);
+                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property.Value.Pictures.Value[i].File}");
                                                 <li>
-                                                    <img class="hidden" src="@renderedPath">
+                                                    <img class="hidden" src="@imgPath">
                                                     @SharedLocalizer[SharedResource.Picture] @(i + 1)
                                                 </li>
                                             }

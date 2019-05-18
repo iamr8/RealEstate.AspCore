@@ -75,38 +75,58 @@
                                     <b class="title">
                                         @item.FirstName @item.LastName
                                     </b>
-                                    @if (!string.IsNullOrEmpty(item.Mobile))
-                                    {
-                                        <span class="badge badge-secondary">@item.Mobile</span>
-                                    }
-                                    @if (!string.IsNullOrEmpty(item.Phone))
-                                    {
-                                        <span class="badge badge-secondary">@item.Phone</span>
-                                    }
-                                    @if (!string.IsNullOrEmpty(item.Address))
-                                    {
-                                        <span class="badge badge-success"><b>@SharedLocalizer[SharedResource.Address]:</b> @item.Address</span>
-                                    }
-                                    @if (item.CurrentInsurance()?.Price > 0)
-                                    {
-                                        <span class="badge badge-warning"><b>مبلغ بیمه:</b> @item.CurrentInsurance().Price</span>
-
-                                    }
-                                    @if (item.CurrentFixedSalary()?.Value > 0)
-                                    {
-                                        <span class="badge badge-warning"><b>حقوق ثابت:</b> @item.CurrentFixedSalary().Value</span>
-
-                                    }
+                                </span>
+                                <span>
+                                    @SharedLocalizer[SharedResource.ContactWay]
+                                    <ul class="info-breadcrumb">
+                                        @if (!string.IsNullOrEmpty(item.Mobile))
+                                        {
+                                            <li>
+                                                <a href="tel:@item.Mobile">
+                                                    @item.Mobile
+                                                </a>
+                                            </li>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Phone))
+                                        {
+                                            <li>
+                                                <a href="tel:@item.Phone">
+                                                    @item.Phone
+                                                </a>
+                                            </li>
+                                        }
+                                        @if (!string.IsNullOrEmpty(item.Address))
+                                        {
+                                            <li>
+                                                @item.Address
+                                            </li>
+                                        }
+                                    </ul>
+                                </span>
+                                <span>
+                                    @SharedLocalizer[SharedResource.Advantages]:
+                                    <ul class="info-breadcrumb">
+                                        <li>
+                                            <b>@SharedLocalizer[SharedResource.Insurance]:</b> @((item.CurrentInsurance()?.Price ?? 0).ToString().CurrencyToWords()) تومان
+                                        </li>
+                                        <li>
+                                            <b>@SharedLocalizer[SharedResource.FixedSalary]:</b> @((item.CurrentFixedSalary()?.Value ?? 0).ToString().CurrencyToWords()) تومان
+                                        </li>
+                                    </ul>
                                 </span>
                                 @if (item.EmployeeDivisions.Value?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Divisions]:
-                                        @foreach (var employeeDivision in item.EmployeeDivisions.Value)
-                                        {
-                                            var value = employeeDivision.Division.Value;
-                                            <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@value?.Id" target="_blank" class="badge badge-primary">@value?.Name</a>
-                                        }
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var employeeDivision in item.EmployeeDivisions.Value)
+                                            {
+                                                var value = employeeDivision.Division.Value;
+                                                <li>
+                                                    <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@value?.Id" target="_blank">@value?.Name</a>
+                                                </li>
+                                            }
+                                        </ul>
                                     </span>
 
                                 }
@@ -114,10 +134,14 @@
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Users]:
-                                        @foreach (var user in item.Users.Value)
-                                        {
-                                            <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-id="@user.Id" target="_blank" class="badge badge-primary">@user.Username</a>
-                                        }
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var user in item.Users.Value)
+                                            {
+                                                <li>
+                                                    <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-id="@user.Id" target="_blank">@user.Username</a>
+                                                </li>
+                                            }
+                                        </ul>
                                     </span>
                                 }
                             </div>

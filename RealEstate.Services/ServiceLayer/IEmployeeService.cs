@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
@@ -33,7 +33,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<PaginationViewModel<PresenceViewModel>> PresenceListAsync(PresenceSearchViewModel searchModel);
 
-        Task<EmployeeInputViewModel> FindInputAsync(string id);
+        Task<EmployeeInputViewModel> EmployeeInputAsync(string id);
 
         Task<MethodStatus<Employee>> AddOrUpdateAsync(EmployeeInputViewModel model, bool update, bool save);
 
@@ -552,7 +552,7 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<EmployeeInputViewModel> FindInputAsync(string id)
+        public async Task<EmployeeInputViewModel> EmployeeInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return default;
@@ -562,6 +562,8 @@ namespace RealEstate.Services.ServiceLayer
             if (viewModel == null)
                 return default;
 
+            var fixedSalary = viewModel.CurrentFixedSalary();
+            var insurance = viewModel.CurrentInsurance();
             var result = new EmployeeInputViewModel
             {
                 FirstName = viewModel.FirstName,
@@ -570,13 +572,13 @@ namespace RealEstate.Services.ServiceLayer
                 Address = viewModel.Address,
                 Phone = viewModel.Phone,
                 Id = viewModel.Id,
-                FixedSalary = viewModel.CurrentFixedSalary()?.Value ?? 0,
+                FixedSalary = fixedSalary?.Value ?? 0,
                 Divisions = viewModel.EmployeeDivisions.Value?.Select(x => new DivisionJsonViewModel
                 {
                     DivisionId = x.Division.Value?.Id,
                     Name = x.Division.Value?.Name
                 }).ToList(),
-                Insurance = viewModel.CurrentInsurance()?.Price ?? 0
+                Insurance = insurance?.Price ?? 0
             };
             return result;
         }

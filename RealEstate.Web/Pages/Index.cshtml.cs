@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RealEstate.Base.Enums;
 using RealEstate.Services;
-using RealEstate.Services.Base;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Web.Pages
 {

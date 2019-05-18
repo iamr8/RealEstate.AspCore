@@ -151,6 +151,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مزایا.
+        /// </summary>
+        public static string Advantages {
+            get {
+                return ResourceManager.GetString("Advantages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to کوچه.
         /// </summary>
         public static string Alley {
@@ -466,6 +475,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to راه ارتباطی.
+        /// </summary>
+        public static string ContactWay {
+            get {
+                return ResourceManager.GetString("ContactWay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ایجاد.
         /// </summary>
         public static string Create {
@@ -714,6 +732,15 @@ namespace RealEstate.Resources {
         public static string Dong {
             get {
                 return ResourceManager.GetString("Dong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to دانلود بیرون بر.
+        /// </summary>
+        public static string DownloadSynchronizer {
+            get {
+                return ResourceManager.GetString("DownloadSynchronizer", resourceCulture);
             }
         }
         
@@ -1092,6 +1119,15 @@ namespace RealEstate.Resources {
         public static string FromHour {
             get {
                 return ResourceManager.GetString("FromHour", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to لیست کامل.
+        /// </summary>
+        public static string FullList {
+            get {
+                return ResourceManager.GetString("FullList", resourceCulture);
             }
         }
         
@@ -2122,6 +2158,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to مشاهده همه موارد.
+        /// </summary>
+        public static string ShowAllItems {
+            get {
+                return ResourceManager.GetString("ShowAllItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to نمایش حذف شده ها.
         /// </summary>
         public static string ShowDeletedItems {
@@ -2730,6 +2775,15 @@ namespace RealEstate.Resources {
         public static string WrongPassword {
             get {
                 return ResourceManager.GetString("WrongPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to زونکن.
+        /// </summary>
+        public static string Zoonkan {
+            get {
+                return ResourceManager.GetString("Zoonkan", resourceCulture);
             }
         }
     }

@@ -1,0 +1,39 @@
+﻿@page
+@model ZoonkanModel
+
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@Model.PageTitle" />
+        <section class="container-fluid">
+            <div class="row justify-content-start align-content-center">
+                @if (Model.Zoonkans?.Any() == true)
+                {
+                    foreach (var zoonkan in Model.Zoonkans)
+                    {
+                        var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{zoonkan.Picture}");
+
+                        <div class="col-12 col-sm-6 col-lg-4 col-xl-3 margin-bottomed">
+                            <div class="card">
+                                <div class="card-image" style="background-image: url('@imgPath')"></div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <b class="text-black-50">@SharedLocalizer[SharedResource.ItemCategory]:</b> @zoonkan.ItemCategory
+                                    </li>
+                                    <li class="list-group-item">
+                                        <b class="text-black-50">@SharedLocalizer[SharedResource.PropertyCategory]:</b> @zoonkan.PropertyCategory
+                                    </li>
+                                </ul>
+                                <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@zoonkan.ItemCategory" asp-route-propertyCategory="@zoonkan.PropertyCategory" target="_blank" class="btn btn-primary">
+                                    @SharedLocalizer[SharedResource.ShowAllItems]
+                                </a>
+                                <div class="card-footer text-muted text-center">
+                                    @zoonkan.Count @SharedLocalizer[SharedResource.Item]
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+    </div>
+</div>

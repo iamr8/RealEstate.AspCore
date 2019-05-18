@@ -1,108 +1,126 @@
 ﻿@mixin flexbox {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
 }
 
 @mixin justify-content($mode) {
-  -webkit-justify-content: $mode;
-  justify-content: $mode;
+    -webkit-justify-content: $mode;
+    justify-content: $mode;
 }
 
 @mixin flex-flow($mode) {
-  -moz-flex-flow: $mode;
-  -ms-flex-flow: $mode;
-  -o-flex-flow: $mode;
-  -webkit-flex-flow: $mode;
-  flex-flow: $mode;
+    -moz-flex-flow: $mode;
+    -ms-flex-flow: $mode;
+    -o-flex-flow: $mode;
+    -webkit-flex-flow: $mode;
+    flex-flow: $mode;
 
-  @if $mode == row {
-    -webkit-box-orient: horizontal;
-  } @else {
-    -webkit-box-orient: vertical;
-  }
+    @if $mode == row {
+        -webkit-box-orient: horizontal;
+    }
+    @else {
+        -webkit-box-orient: vertical;
+    }
 
-  -webkit-box-direction: normal;
+    -webkit-box-direction: normal;
 }
 
 @mixin transition($mode, $duration, $state) {
-  -webkit-transition: $mode $duration $state;
-  transition: $mode $duration $state;
+    -webkit-transition: $mode $duration $state;
+    transition: $mode $duration $state;
 }
 
 @mixin transform($mode) {
-  -webkit-transform: $mode;
-  transform: $mode;
+    -webkit-transform: $mode;
+    transform: $mode;
 }
 
 @mixin animation-iteration-count($num) {
-  -webkit-animation-iteration-count: $num;
-  animation-iteration-count: $num;
+    -webkit-animation-iteration-count: $num;
+    animation-iteration-count: $num;
 }
 
 @mixin animation-duration($duration) {
-  -webkit-animation-duration: $duration;
-  animation-duration: $duration;
+    -webkit-animation-duration: $duration;
+    animation-duration: $duration;
 }
 
 @mixin animation-name($name) {
-  -webkit-animation-name: $name;
-  animation-name: $name;
+    -webkit-animation-name: $name;
+    animation-name: $name;
 }
 
 @mixin user-select($mode) {
-  -webkit-user-select: $mode;
-  -moz-user-select: $mode;
-  -ms-user-select: $mode;
-  user-select: $mode;
+    -webkit-user-select: $mode;
+    -moz-user-select: $mode;
+    -ms-user-select: $mode;
+    user-select: $mode;
 }
 
 @mixin align-items($mode) {
-  -ms-align-items: $mode;
-  -webkit-align-items: $mode;
-  -webkit-box-align: $mode;
-  align-items: $mode;
+    -ms-align-items: $mode;
+    -webkit-align-items: $mode;
+    -webkit-box-align: $mode;
+    align-items: $mode;
 }
 
 @mixin div-image($backcolor) {
-  background-repeat: $mode;
-  background-position: $mode;
-  background-size: cover;
-  background-color: $backcolor;
+    background-repeat: $mode;
+    background-position: $mode;
+    background-size: cover;
+    background-color: $backcolor;
 }
 
 @mixin border-top-left-radius($mode) {
-  -webkit-border-top-left-radius: $mode;
-  -moz-border-top-left-radius: $mode;
-  -o-border-top-left-radius: $mode;
-  border-top-left-radius: $mode;
+    -webkit-border-top-left-radius: $mode;
+    -moz-border-top-left-radius: $mode;
+    -o-border-top-left-radius: $mode;
+    border-top-left-radius: $mode;
 }
 
 @mixin border-top-right-radius($mode) {
-  -webkit-border-top-right-radius: $mode;
-  -moz-border-top-right-radius: $mode;
-  -o-border-top-right-radius: $mode;
-  border-top-right-radius: $mode;
+    -webkit-border-top-right-radius: $mode;
+    -moz-border-top-right-radius: $mode;
+    -o-border-top-right-radius: $mode;
+    border-top-right-radius: $mode;
 }
 
 @mixin border-bottom-right-radius($mode) {
-  -webkit-border-bottom-right-radius: $mode;
-  -moz-border-bottom-right-radius: $mode;
-  -o-border-bottom-right-radius: $mode;
-  border-bottom-right-radius: $mode;
+    -webkit-border-bottom-right-radius: $mode;
+    -moz-border-bottom-right-radius: $mode;
+    -o-border-bottom-right-radius: $mode;
+    border-bottom-right-radius: $mode;
 }
 
 @mixin border-bottom-left-radius($mode) {
-  -webkit-border-bottom-left-radius: $mode;
-  -moz-border-bottom-left-radius: $mode;
-  -o-border-bottom-left-radius: $mode;
-  border-bottom-left-radius: $mode;
+    -webkit-border-bottom-left-radius: $mode;
+    -moz-border-bottom-left-radius: $mode;
+    -o-border-bottom-left-radius: $mode;
+    border-bottom-left-radius: $mode;
 }
 
 @mixin border-radius($radius) {
-  border-radius: $radius;
-  -webkit-border-radius: $radius;
-  -moz-border-radius: $radius;
-  -ms-border-radius: $radius;
-  -o-border-radius: $radius;
+    border-radius: $radius;
+    -webkit-border-radius: $radius;
+    -moz-border-radius: $radius;
+    -ms-border-radius: $radius;
+    -o-border-radius: $radius;
+}
+
+@mixin background-repeat($mode) {
+    -ms-background-repeat: $mode;
+    background-repeat: $mode;
+}
+
+@mixin background-position($mode) {
+    -ms-background-position: $mode;
+    background-position: $mode;
+}
+
+@mixin background-image-div() {
+    @include background-repeat(no-repeat);
+    @include background-position(center);
+    background-size: cover;
+    background-color: lightgray;
 }

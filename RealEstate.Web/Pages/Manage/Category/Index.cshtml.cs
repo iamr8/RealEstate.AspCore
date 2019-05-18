@@ -6,12 +6,12 @@ using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services;
-using RealEstate.Services.Base;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.ModelBind;
 
 namespace RealEstate.Web.Pages.Manage.Category

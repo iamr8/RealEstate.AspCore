@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -83,6 +83,28 @@ namespace RealEstate.Services.ServiceLayer
             if (payments?.Any() != true)
                 return default;
 
+            var syncSalary = await SyncFixedSalaryToPaymentsAsync(employee).ConfigureAwait(false);
+            if (syncSalary != StatusEnum.Success)
+                return default;
+
+            payments = await _payments.IgnoreQueryFilters().Where(x => x.EmployeeId == employee.Id).OrderByCreationDateTime().ToListAsync().ConfigureAwait(false);
+            if (payments?.Any() != true)
+                return default;
+            // bad az mohasebeye pardakht va bedehi o bestani, ba tavajoh be mablagh, item ha ra bycot konad, va bad yek satre mande hesab besazad
+
+            var currentMoney = payments.Calculate();
+            return new ValueTuple<double, List<Payment>>(currentMoney, payments.OrderDescendingByCreationDateTime().ToList());
+        }
+
+        private async Task<StatusEnum> SyncFixedSalaryToPaymentsAsync(Employee employee)
+        {
+            if (employee == null)
+                return StatusEnum.EmployeeIsNull;
+
+            var payments = employee.Payments;
+            if (payments?.Any() != true)
+                return StatusEnum.PaymentsAreEmpty;
+
             var lastFixedSalary = employee.FixedSalaries.OrderDescendingByCreationDateTime().FirstOrDefault();
             if (lastFixedSalary == null)
             {
@@ -92,9 +114,7 @@ namespace RealEstate.Services.ServiceLayer
                     EmployeeId = employee.Id,
                 }, null, true).ConfigureAwait(false);
                 if (addFixedSalaryStatus == StatusEnum.Success)
-                {
                     lastFixedSalary = fixedSalaryEntity;
-                }
                 else
                     throw new NullReferenceException($"Unable to create new {nameof(FixedSalary)}");
             }
@@ -105,31 +125,23 @@ namespace RealEstate.Services.ServiceLayer
 
             var fixedSalaryForThisMonth = lastFixedSalary.Audits.Count > 0
                                           && lastFixedSalary.Audits.Find(x => x.Type == LogTypeEnum.Create).DateTime.Date < startofMonth.Date;
-            if (fixedSalaryForThisMonth)
-            {
-                var fixedSalaryThisMonth = payments.FirstOrDefault(x => x.Type == PaymentTypeEnum.FixedSalary
+            if (!fixedSalaryForThisMonth)
+                return StatusEnum.Success;
+
+            var fixedSalaryThisMonth = payments.FirstOrDefault(x => x.Type == PaymentTypeEnum.FixedSalary
                                                                         && x.Audits.Count > 0
                                                                         && x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date >= startofMonth.Date
                                                                         && x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date <= endOfMonth.Date);
-                if (fixedSalaryThisMonth == null && lastFixedSalary.Value > 0)
+            if (fixedSalaryThisMonth == null && lastFixedSalary.Value > 0)
+            {
+                await _baseService.AddAsync(new Payment
                 {
-                    var paymentForFixed = await _baseService.AddAsync(new Payment
-                    {
-                        Value = lastFixedSalary.Value,
-                        EmployeeId = employee.Id,
-                        Type = PaymentTypeEnum.FixedSalary,
-                    }, null, true).ConfigureAwait(false);
-                }
+                    Value = lastFixedSalary.Value,
+                    EmployeeId = employee.Id,
+                    Type = PaymentTypeEnum.FixedSalary,
+                }, null, true).ConfigureAwait(false);
             }
-
-            payments = await _payments.IgnoreQueryFilters().Where(x => x.EmployeeId == employee.Id).OrderDescendingByCreationDateTime().ToListAsync().ConfigureAwait(false);
-            if (payments?.Any() != true)
-                return default;
-            var populatedPayments = payments.GroupBy(x => x.CheckoutId);
-
-            var list = payments;
-            var currentMoney = list.Calculate();
-            return new ValueTuple<double, List<Payment>>(currentMoney, list);
+            return StatusEnum.Success;
         }
 
         public async Task<MethodStatus<Payment>> PayAsync(string paymentId, bool save)
@@ -176,6 +188,9 @@ namespace RealEstate.Services.ServiceLayer
             Payment finalPayment;
             if (model.Type == PaymentTypeEnum.Pay)
             {
+                var moneyToPay = model.Value;
+                // bayad bege che itemaei shamele in ragham mishan, va chi nesfe nime'as
+
                 //var (currentMoney, pays) = await PaymentLastStateAsync(model.EmployeeId).ConfigureAwait(false);
                 //if (currentMoney <= 0)
                 //    return new MethodStatus<Payment>(StatusEnum.PaymentsAreEmpty, null);

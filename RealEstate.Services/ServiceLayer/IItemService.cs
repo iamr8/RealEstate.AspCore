@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
-using RealEstate.Services.Base;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
+using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -33,6 +34,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
 
+        Task<List<ZoonkanViewModel>> ZoonkansAsync();
+
         Task<MethodStatus<Item>> RequestAsync(DealRequestInputViewModel model, bool save);
 
         Task<Item> ItemEntityAsync(string id);
@@ -59,6 +62,7 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Feature> _features;
         private readonly DbSet<User> _users;
+        private readonly DbSet<Category> _categories;
 
         public ItemService(
             IBaseService baseService,
@@ -81,6 +85,34 @@ namespace RealEstate.Services.ServiceLayer
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
             _users = _unitOfWork.Set<User>();
+            _categories = _unitOfWork.Set<Category>();
+        }
+
+        public async Task<List<ZoonkanViewModel>> ZoonkansAsync()
+        {
+            var categories = await _items.GroupBy(x => new
+            {
+                ItemCategory = x.Category.Name,
+                PropertyCategory = x.Property.Category.Name
+            })
+                .Select(x => new
+                {
+                    x.Key.ItemCategory,
+                    x.Key.PropertyCategory,
+                    Count = x.Count(),
+                    Pictures = x.SelectMany(c => c.Property.Pictures)
+                }).ToListAsync().ConfigureAwait(false);
+            if (categories?.Any() != true)
+                return default;
+
+            var result = categories.Select(x => new ZoonkanViewModel
+            {
+                ItemCategory = x.ItemCategory,
+                PropertyCategory = x.PropertyCategory,
+                Count = x.Count,
+                Picture = x.Pictures.SelectRandom()?.File
+            }).ToList();
+            return result;
         }
 
         public async Task<StatusEnum> RequestRejectAsync(string itemId, bool save)

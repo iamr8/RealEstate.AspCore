@@ -4,13 +4,11 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
@@ -34,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public StatusEnum Status { get; set; }
 
-        public string PageTitle => _localizer["Items"];
+        public string PageTitle => _localizer[SharedResource.Items];
 
         public async Task OnGetAsync(string pageNo, string status, string id, string street, string itemCategory, string ownerName, string customerId,
             string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile, string dateFrom, string dateTo, string creatorId, string hasFeature)

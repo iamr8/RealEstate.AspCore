@@ -8,7 +8,7 @@ namespace RealEstate.Services.BaseLog
     {
         public static List<TModel> R8ToList<TModel>(this IEnumerable<TModel> collection) where TModel : BaseLogViewModel
         {
-            return collection.Where(x => x != null || x?.Id != null).ToList();
+            return collection.Where(x => x != null).ToList();
         }
 
         public static TModel ShowBasedOn<TModel, TCondition>(this TModel model, Func<TModel, TCondition> condition) where TModel : BaseLogViewModel where TCondition : BaseLogViewModel
