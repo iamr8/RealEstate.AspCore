@@ -2,17 +2,17 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Reminder
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IReminderService _reminderService;
@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Reminder
         public PaginationViewModel<ReminderViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Reminders"];
+        public string PageTitle => _localizer[SharedResource.Reminders];
 
         public async Task OnGetAsync(string pageNo)
         {

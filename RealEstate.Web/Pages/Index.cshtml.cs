@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
-using RealEstate.Services;
-using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ServiceLayer.Base;
+using RealEstate.Services.ViewModels.Input;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IUserService _userService;

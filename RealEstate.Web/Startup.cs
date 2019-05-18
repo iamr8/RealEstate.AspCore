@@ -290,6 +290,7 @@ namespace RealEstate.Web
                 routes.MapRoute(
                     "default",
                     "{controller=Setting}/{action=Index}/{id?}");
+
             });
         }
     }

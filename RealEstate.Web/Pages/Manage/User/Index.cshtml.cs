@@ -3,19 +3,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User
 {
     [Authorize(Roles = "Admin,SuperAdmin")]
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IUserService _userService;
@@ -35,7 +35,7 @@ namespace RealEstate.Web.Pages.Manage.User
         public PaginationViewModel<UserViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Users"];
+        public string PageTitle => _localizer[SharedResource.Users];
 
         public StatusEnum Status { get; set; }
 

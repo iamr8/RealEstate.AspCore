@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class RequestModel : PageModel
     {
         private readonly IItemService _itemService;
@@ -28,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public string Status { get; set; }
 
-        public string PageTitle => _localizer["ItemRequest"];
+        public string PageTitle => _localizer[SharedResource.DealRequest];
 
         public async Task<IActionResult> OnGetAsync(string id)
         {

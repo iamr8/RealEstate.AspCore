@@ -1,16 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
+using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class AddModel : PageModel
     {
         private readonly IItemService _itemService;
@@ -58,15 +60,16 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                    () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true))
+                .ConfigureAwait(false);
 
-            return RedirectToPage(finalStatus != StatusEnum.Success
+            return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()
                 : typeof(IndexModel).Page(), new
                 {
-                    status = (int)finalStatus
+                    status = message,
+                    id = status != StatusEnum.Success ? NewItem.Id : null
                 });
         }
     }

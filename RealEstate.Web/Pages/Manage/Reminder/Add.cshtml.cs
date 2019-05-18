@@ -1,18 +1,19 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
-using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.Input;
+using System;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Reminder
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class AddModel : PageModel
     {
         private readonly IReminderService _reminderService;

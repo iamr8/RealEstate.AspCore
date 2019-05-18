@@ -4,6 +4,7 @@ using RealEstate.Base.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.Extensions
@@ -32,6 +33,25 @@ namespace RealEstate.Services.Extensions
             }
 
             return new ValueTuple<bool, List<string>>(false, errors);
+        }
+
+        public static async Task<ModelStateValidation> IsValidAsync(this ModelStateDictionary modelState, Func<ConfiguredTaskAwaitable<StatusEnum>> action, string specificModel = null)
+        {
+            var (isValid, errors) = modelState.IsValid(specificModel);
+            string message;
+            StatusEnum state;
+            if (isValid)
+            {
+                var method = await action();
+                message = method.GetDisplayName();
+                state = method;
+            }
+            else
+            {
+                message = string.Join("<br>", errors);
+                state = StatusEnum.RetryAfterReview;
+            }
+            return new ModelStateValidation(state, message);
         }
 
         public static async Task<ModelStateValidation> IsValidAsync(this ModelStateDictionary modelState, Func<Task<StatusEnum>> action, string specificModel = null)

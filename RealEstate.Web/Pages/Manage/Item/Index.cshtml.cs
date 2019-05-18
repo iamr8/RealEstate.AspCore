@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IItemService _itemService;

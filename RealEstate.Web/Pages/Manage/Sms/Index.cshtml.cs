@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
-using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Sms
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly ISmsService _smsService;

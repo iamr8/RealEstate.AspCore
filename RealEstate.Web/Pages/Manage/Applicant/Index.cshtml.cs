@@ -2,18 +2,18 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Applicant
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly ICustomerService _customerService;

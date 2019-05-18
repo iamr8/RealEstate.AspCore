@@ -50,12 +50,17 @@ namespace RealEstate.Services.TagHelpers
             public string Link { get; set; }
             public string Current { get; set; }
             public bool Matched { get; set; }
+
+            public override string ToString()
+            {
+                var match = Matched ? "Matched" : "NotMatched";
+                return $"{match}: Link: \"{Link}\" vs Current: \"{Current}\"";
+            }
         }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var urlHelper =
-                _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
+            var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
 
             var contentContext = await output.GetChildContentAsync().ConfigureAwait(false);
             var content = contentContext.GetContent();
@@ -78,56 +83,13 @@ namespace RealEstate.Services.TagHelpers
                     : string.IsNullOrEmpty(Controller)
                         ? urlHelper.Action(Action)
                         : urlHelper.Action(Action, Controller);
-                var current = string.Join("", _actionContextAccessor.ActionContext.RouteData.Values.Values);
-                current = current.EndsWith("/Index", StringComparison.CurrentCultureIgnoreCase)
-                    ? link.EndsWith("/Index", StringComparison.CurrentCultureIgnoreCase)
-                        ? current
-                        : current.Split("/Index")[0]
+
+                var current = _actionContextAccessor.ActionContext.HttpContext.Items.FirstOrDefault(x => x.Key == "NavHelper").Value?.ToString();
+                current = current?.StartsWith("/") == true ? current : $"/{current}";
+                current = current?.EndsWith("/Index", StringComparison.CurrentCultureIgnoreCase) == true
+                    ? string.Join("", current.Split("/Index")[0])
                     : current;
-
-                var linkArr = link?.Split("/");
-                var currentArr = current?.Split("/");
-                linkArr = linkArr?.Skip(string.IsNullOrEmpty(linkArr[0]) ? 1 : 0).ToArray();
-                currentArr = currentArr?.Skip(string.IsNullOrEmpty(currentArr[0]) ? 1 : 0).ToArray();
-                if (linkArr == null || linkArr.Length == 0 || currentArr == null || currentArr.Length == 0)
-                {
-                    output.SuppressOutput();
-                    return;
-                }
-
-                List<UrlChecker> checker;
-                if (linkArr.Length > currentArr.Length)
-                {
-                    checker = (from url in linkArr
-                               let index = Array.IndexOf(linkArr, url)
-                               let crnt = index >= currentArr.Length || index >= linkArr.Length
-                                   ? ""
-                                   : currentArr[index]
-                               let matched = url == crnt
-                               select new UrlChecker
-                               {
-                                   Link = url,
-                                   Current = crnt,
-                                   Matched = matched
-                               }).ToList();
-                }
-                else
-                {
-                    checker = (from url in currentArr
-                               let index = Array.IndexOf(currentArr, url)
-                               let lnk = index >= currentArr.Length || index >= linkArr.Length
-                                   ? ""
-                                   : linkArr[index]
-                               let matched = url == lnk
-                               select new UrlChecker
-                               {
-                                   Link = lnk,
-                                   Current = url,
-                                   Matched = matched
-                               }).ToList();
-                }
-
-                var success = checker.All(x => x.Matched);
+                var success = !string.IsNullOrEmpty(link) && !string.IsNullOrEmpty(current) && current == link;
                 if (success)
                 {
                     if (HideOnTrigger)

@@ -2,17 +2,17 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Facility
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IFeatureService _featureService;
@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Facility
         public PaginationViewModel<FacilityViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Facilities"];
+        public string PageTitle => _localizer[SharedResource.Facilities];
 
         public async Task OnGetAsync(string pageNo, string facilityName, bool deleted, string dateFrom, string dateTo, string creatorId)
         {

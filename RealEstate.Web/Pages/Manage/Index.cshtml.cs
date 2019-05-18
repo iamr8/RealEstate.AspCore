@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
+using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Pages.Manage
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IGlobalService _globalService;
@@ -23,14 +24,13 @@ namespace RealEstate.Web.Pages.Manage
             _localizer = localizer;
         }
 
-        public string PageTitle => _localizer["Properties"];
+        public string PageTitle => _localizer[SharedResource.Properties];
 
         public StatisticsViewModel Statistics { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
             Statistics = await _globalService.StatisticsAsync().ConfigureAwait(false);
-
             return Page();
         }
     }

@@ -1,20 +1,18 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Employee
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
+    [NavBarHelper(typeof(IndexModel))]
     public class IndexModel : PageModel
     {
         private readonly IEmployeeService _employeeService;
@@ -34,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
         public PaginationViewModel<EmployeeViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Employees"];
+        public string PageTitle => _localizer[SharedResource.Employees];
 
         public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone,
             string employeeAddress, string employeeId, string userId, string divisionId, bool deleted)

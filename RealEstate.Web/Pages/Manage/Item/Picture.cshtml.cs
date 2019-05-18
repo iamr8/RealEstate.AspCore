@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Input;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class PictureModel : PageModel
     {
         private readonly IPictureService _pictureService;
@@ -64,30 +62,15 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
-            {
-                var invalids = ModelState.Values.Where(x => x.ValidationState == ModelValidationState.Invalid).ToList();
-                var errors = new List<string>();
-                foreach (var entry in invalids)
-                {
-                    var thisError = string.Join(" | ", entry.Errors.Select(x => x.ErrorMessage));
-                    errors.Add(thisError);
-                }
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _pictureService.PictureAddAsync(NewPropertyPicture.Pictures, null, NewPropertyPicture.PropertyId, null, null, null, null, true)
+                    .ConfigureAwait(false)
+            ).ConfigureAwait(false);
 
-                var message = string.Join("<br/>", errors);
-                return RedirectToPage(typeof(PictureModel).Page(), new
-                {
-                    id = NewPropertyPicture?.PropertyId,
-                    status = message
-                });
-            }
-
-            var status = await _pictureService.PictureAddAsync(NewPropertyPicture.Pictures, null, NewPropertyPicture.PropertyId, null, null, null, null, true)
-                .ConfigureAwait(false);
             return RedirectToPage(typeof(PictureModel).Page(), new
             {
                 id = NewPropertyPicture?.PropertyId,
-                status = status.GetDisplayName()
+                status = message
             });
         }
     }

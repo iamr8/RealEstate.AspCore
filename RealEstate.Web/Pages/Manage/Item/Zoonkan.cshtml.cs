@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Item
 {
+    [NavBarHelper(typeof(ZoonkanModel))]
     public class ZoonkanModel : PageModel
     {
         private readonly IStringLocalizer<SharedResource> _localizer;

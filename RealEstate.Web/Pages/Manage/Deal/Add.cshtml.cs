@@ -2,17 +2,17 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
+using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Deal
 {
+    [NavBarHelper(typeof(IndexModel))]
     public class AddModel : PageModel
     {
         private readonly IDealService _dealService;
