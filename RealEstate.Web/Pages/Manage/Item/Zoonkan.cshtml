@@ -11,10 +11,10 @@
                     foreach (var zoonkan in Model.Zoonkans)
                     {
                         var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{zoonkan.Picture}");
-
+                        var imgStyle = imgPath.Equals("/img/", StringComparison.CurrentCultureIgnoreCase) ? "" : $"style=\"background-image: url(\'{imgPath}\')\"";
                         <div class="col-12 col-sm-6 col-lg-4 col-xl-3 margin-bottomed">
                             <div class="card">
-                                <div class="card-image" style="background-image: url('@imgPath')"></div>
+                                <div class="card-image" @Html.Raw(imgStyle)></div>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
                                         <b class="text-black-50">@SharedLocalizer[SharedResource.ItemCategory]:</b> @zoonkan.ItemCategory
