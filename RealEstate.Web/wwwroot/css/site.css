@@ -1,4 +1,5 @@
-﻿@font-face {
+﻿@charset "UTF-8";
+@font-face {
   font-family: 'IranSansWeb';
   font-weight: 500;
   src: url("../fonts/iransansweb_black.woff2") format("woff2"), url("../fonts/iransansweb_black.woff") format("woff"), url("../fonts/iransansweb_black.ttf") format("truetype"), url("../fonts/iransansweb_black.eot") format("embedded-opentype"); }
@@ -354,7 +355,13 @@ input[type=submit], button {
       -webkit-border-radius: 50%;
       -moz-border-radius: 50%;
       -ms-border-radius: 50%;
-      -o-border-radius: 50%; }
+      -o-border-radius: 50%;
+      -ms-background-repeat: no-repeat;
+      background-repeat: no-repeat;
+      -ms-background-position: center;
+      background-position: center;
+      background-size: cover;
+      background-color: lightgray; }
     .sidenav .sideBarHeader .user-name {
       font-weight: bold;
       color: white;
@@ -1195,7 +1202,27 @@ ul.info-breadcrumb {
     background-position: center;
     background-size: cover;
     background-color: lightgray;
-    height: 200px; }
+    height: 200px;
+    position: relative; }
+    .card > .card-image.no-img:before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      content: "بدون تصویر";
+      font-weight: bold;
+      font-size: 15pt;
+      color: white;
+      width: 100%;
+      height: 100%;
+      display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-justify-content: center;
+      justify-content: center;
+      -ms-align-items: center;
+      -webkit-align-items: center;
+      -webkit-box-align: center;
+      align-items: center; }
   .card > .btn {
     border-radius: 0 !important;
     -webkit-border-radius: 0 !important;
