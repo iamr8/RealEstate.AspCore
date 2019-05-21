@@ -456,9 +456,9 @@ namespace RealEstate.Runner
             if (!dotNetCheck)
                 return;
 
-            var checkHosts = CheckHostsFile();
-            if (!checkHosts)
-                return;
+            //var checkHosts = CheckHostsFile();
+            //if (!checkHosts)
+            //    return;
 
             var checkInstance = CheckDbInstance();
             if (!checkInstance)
