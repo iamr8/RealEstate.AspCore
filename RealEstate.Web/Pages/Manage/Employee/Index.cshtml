@@ -1,70 +1,58 @@
 ﻿@page
 @model IndexModel
 <div class="col-12">
+    <status>
+        @Model.Status
+    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewEmployee]</a>
         </widget-header>
         <section class="container-fluid">
-            <form method="post">
-                <div class="row justify-content-center align-items-center margin-bottomed">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <a class="card-link" data-toggle="collapse" href="#search">
-                                    @SharedLocalizer["Search"]
-                                </a>
-                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
-                                    @SharedLocalizer["ClearSearch"]
-                                </a>
+            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+                <form method="post">
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="SearchInput.PageNo" />
+                        <div class="col-xs-12 col-md margin-bottomed">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.FirstName"></label>
+                                <input asp-for="SearchInput.FirstName" class="form-control" />
                             </div>
-                            <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
-                                <div class="card-body">
-                                    <div class="row justify-content-center align-items-center">
-                                        <input asp-for="SearchInput.PageNo" />
-                                        <div class="col-xs-12 col-md margin-bottomed">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.FirstName"></label>
-                                                <input asp-for="SearchInput.FirstName" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md margin-bottomed">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.LastName"></label>
-                                                <input asp-for="SearchInput.LastName" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md margin-bottomed">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Mobile"></label>
-                                                <input asp-for="SearchInput.Mobile" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row justify-content-center align-items-center">
-                                        <div class="col-xs-12 col-md-4 margin-bottomed">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Phone"></label>
-                                                <input asp-for="SearchInput.Phone" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md margin-bottomed">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Address"></label>
-                                                <input asp-for="SearchInput.Address" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <vc:admin-search-condition model="@Model.SearchInput" />
-                                </div>
+                        </div>
+                        <div class="col-xs-12 col-md margin-bottomed">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.LastName"></label>
+                                <input asp-for="SearchInput.LastName" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md margin-bottomed">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Mobile"></label>
+                                <input asp-for="SearchInput.Mobile" class="form-control" />
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-            @if (Model.List.Items?.Any() == true)
-            {
-                foreach (var item in Model.List.Items)
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-xs-12 col-md-4 margin-bottomed">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Phone"></label>
+                                <input asp-for="SearchInput.Phone" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-md margin-bottomed">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Address"></label>
+                                <input asp-for="SearchInput.Address" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <vc:admin-search-condition model="@Model.SearchInput" />
+                </form>
+            </search-pane>
+
+            <item-viewer model="@Model.List.Items">
+
+                @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
@@ -138,7 +126,7 @@
                                             @foreach (var user in item.Users.Value)
                                             {
                                                 <li>
-                                                    <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-id="@user.Id" target="_blank">@user.Username</a>
+                                                    <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-userId="@user.Id" target="_blank">@user.Username</a>
                                                 </li>
                                             }
                                         </ul>
@@ -161,16 +149,7 @@
                         <vc:log logs="@item.Logs" cat="Employee" id="@item.Id" />
                     </div>
                 }
-
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
+            </item-viewer>
             <vc:pagination model="@Model.List" />
         </section>
     </div>

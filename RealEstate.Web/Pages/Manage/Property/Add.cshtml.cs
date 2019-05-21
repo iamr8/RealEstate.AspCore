@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
@@ -31,10 +31,9 @@ namespace RealEstate.Web.Pages.Manage.Property
 
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string PropertyStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -52,26 +51,26 @@ namespace RealEstate.Web.Pages.Manage.Property
             {
                 PageTitle = _localizer["NewProperty"];
             }
+
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _propertyService.PropertyAddOrUpdateAsync(NewProperty, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _propertyService.PropertyAddOrUpdateAsync(NewProperty, true)
+            ).ConfigureAwait(false);
 
-            PropertyStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewProperty.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewProperty = default;
-
-            return RedirectToPage(typeof(Applicant.AddModel).Page(), new
-            {
-                id = NewProperty?.Id
-            });
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = message,
+                    id = status != StatusEnum.Success ? NewProperty?.Id : null
+                });
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
@@ -27,15 +27,14 @@ namespace RealEstate.Web.Pages.Manage.Customer
         }
 
         [BindProperty]
-        public CustomerInputViewModel NewApplicant { get; set; }
+        public CustomerInputViewModel NewCustomer { get; set; }
 
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string ApplicantStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -46,35 +45,33 @@ namespace RealEstate.Web.Pages.Manage.Customer
                 if (model == null)
                     return RedirectToPage(typeof(Applicant.IndexModel).Page());
 
-                NewApplicant = model;
-                PageTitle = _localizer["EditCustomer"];
+                NewCustomer = model;
+                PageTitle = _localizer[SharedResource.EditCustomer];
             }
             else
             {
-                PageTitle = _localizer["NewCustomer"];
+                PageTitle = _localizer[SharedResource.NewCustomer];
             }
+
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            //            var finalStatus = ModelState.IsValid
-            //                ? (await _contactService.CategoryAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Item1
-            //                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _customerService.CustomerAddOrUpdateAsync(NewCustomer, !NewCustomer.IsNew, true)
+            ).ConfigureAwait(false);
 
-            //            ApplicantStatus = finalStatus.GetDisplayName();
-            //            if (finalStatus != StatusEnum.Success || !NewApplicant.IsNew)
-            //                return Page();
-
-            ModelState.Clear();
-            NewApplicant = default;
-
-            var routeAnonymous = new
-            {
-                id = NewApplicant?.Id
-            };
-            var routeValues = HtmlHelper.AnonymousObjectToHtmlAttributes(routeAnonymous);
-            return RedirectToPage(typeof(AddModel).Page(), routeValues);
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = message,
+                    id = status != StatusEnum.Success ? NewCustomer?.Id : null
+                });
         }
     }
 }

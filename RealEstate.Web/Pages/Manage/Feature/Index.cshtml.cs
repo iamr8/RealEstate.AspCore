@@ -37,7 +37,9 @@ namespace RealEstate.Web.Pages.Manage.Feature
         [ViewData]
         public string PageTitle => _localizer[SharedResource.Features];
 
-        public async Task OnGetAsync(string pageNo, string featureName, bool deleted, FeatureTypeEnum? type, string dateFrom, string dateTo, string creatorId)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string featureName, bool deleted, FeatureTypeEnum? type, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new FeatureSearchViewModel
             {
@@ -50,6 +52,9 @@ namespace RealEstate.Web.Pages.Manage.Feature
                 CreationDateTo = dateTo
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _featureService.FeatureListAsync(SearchInput).ConfigureAwait(false);
         }
 

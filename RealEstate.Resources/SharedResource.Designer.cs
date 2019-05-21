@@ -1852,6 +1852,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to دسترسی ها.
+        /// </summary>
+        public static string Previlleges {
+            get {
+                return ResourceManager.GetString("Previlleges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مبلغ.
         /// </summary>
         public static string Price {

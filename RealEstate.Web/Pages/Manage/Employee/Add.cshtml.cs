@@ -5,6 +5,7 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [ViewData]
         public string PageTitle { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public string Status { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
@@ -47,29 +48,30 @@ namespace RealEstate.Web.Pages.Manage.Employee
                     return RedirectToPage(typeof(IndexModel).Page());
 
                 NewEmployee = model;
-                PageTitle = _localizer["EditEmployee"];
+                PageTitle = _localizer[SharedResource.EditEmployee];
             }
             else
             {
-                PageTitle = _localizer["NewEmployee"];
+                PageTitle = _localizer[SharedResource.NewEmployee];
             }
-            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
-                ? (StatusEnum)statusInt
-                : StatusEnum.Ready;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true)
+            ).ConfigureAwait(false);
 
-            return RedirectToPage(finalStatus != StatusEnum.Success
+            return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()
                 : typeof(IndexModel).Page(), new
                 {
-                    status = (int)finalStatus
+                    status = message,
+                    id = status != StatusEnum.Success ? NewEmployee?.Id : null
                 });
         }
     }

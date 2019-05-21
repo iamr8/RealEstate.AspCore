@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -38,7 +38,7 @@ namespace RealEstate.Web.Pages.Manage.Deal
         [ViewData]
         public string PageTitle { get; set; }
 
-        public string DealStatus { get; set; }
+        public string Status { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
@@ -62,32 +62,25 @@ namespace RealEstate.Web.Pages.Manage.Deal
                 PageTitle = model == null ? _localizer["NewDeal"] : _localizer["EditDeal"];
             }
 
-            DealStatus = !string.IsNullOrEmpty(status) ? status.To<StatusEnum>().GetDisplayName() : null;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _dealService.AddOrUpdateAsync(NewDeal, !NewDeal.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _dealService.AddOrUpdateAsync(NewDeal, !NewDeal.IsNew, true)
+            ).ConfigureAwait(false);
 
-            DealStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewDeal.IsNew)
-                return RedirectToPage(typeof(Deal.AddModel).Page(), new
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
                 {
-                    id = NewDeal?.Id,
-                    status = finalStatus
+                    status = message,
+                    id = status != StatusEnum.Success ? NewDeal?.Id : null
                 });
-
-            ModelState.Clear();
-            NewDeal = default;
-
-            return RedirectToPage(typeof(Deal.AddModel).Page(), new
-            {
-                id = NewDeal?.Id,
-                status = StatusEnum.Success
-            });
         }
     }
 }

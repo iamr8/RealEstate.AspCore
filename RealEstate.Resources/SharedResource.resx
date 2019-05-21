@@ -1026,4 +1026,7 @@
   <data name="ContactWay" xml:space="preserve">
     <value>راه ارتباطی</value>
   </data>
+  <data name="Previlleges" xml:space="preserve">
+    <value>دسترسی ها</value>
+  </data>
 </root>

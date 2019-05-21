@@ -53,7 +53,9 @@ namespace RealEstate.Web.Pages.Manage.Property
                 CreationDateTo = dateTo
             };
 
-            Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _propertyService.PropertyListAsync(SearchInput).ConfigureAwait(false);
         }
 

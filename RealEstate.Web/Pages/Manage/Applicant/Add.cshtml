@@ -24,7 +24,7 @@
     {
         ModelName = nameof(Model.NewApplicant),
         ScriptKey = "applicantCreatorScript",
-        
+
     };
 }
 <form method="post" class="col-12">
@@ -33,31 +33,31 @@
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-12 margin-bottomed">
-                    <label asp-for="NewApplicant.Type" class="control-label"></label>
-                    <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="form-control"></select>
-                    <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
+                <div class="col-12">
+                    <div class="input-wrapper">
+                        <label asp-for="NewApplicant.Type" class="control-label"></label>
+                        <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="form-control"></select>
+                        <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
+                    </div>
                 </div>
             </div>
             <hr />
             <vc:person-creator model="@personCreator" />
             <div class="row justify-content-center align-items-center">
                 <div class="col-12">
-                    <input asp-for="NewApplicant.ApplicantFeaturesJson" />
-                    <vc:json-selector model="@applicantFeatures" />
+                    <div class="input-wrapper">
+                        <input asp-for="NewApplicant.ApplicantFeaturesJson" />
+                        <vc:json-selector model="@applicantFeatures" />
+                    </div>
                 </div>
             </div>
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.ApplicantStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <submit />
+            <status>
+                @Model.Status
+            </status>
+        </footer>
     </div>
 </form>
 @section Scripts

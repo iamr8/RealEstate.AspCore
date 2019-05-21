@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
@@ -32,10 +32,9 @@ namespace RealEstate.Web.Pages.Manage.Division
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string DivisionStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -47,32 +46,28 @@ namespace RealEstate.Web.Pages.Manage.Division
                     return RedirectToPage(typeof(IndexModel).Page());
 
                 NewDivision = model;
-                PageTitle = _localizer["EditDivision"];
+                //                PageTitle = _localizer[SharedResource.EditDivision];
             }
             else
             {
-                PageTitle = _localizer["NewDivision"];
+                //                PageTitle = _localizer[SharedResource.NewDivision];
             }
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _divisionService.AddOrUpdateAsync(NewDivision, !NewDivision.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _divisionService.AddOrUpdateAsync(NewDivision, !NewDivision.IsNew, true)
+            ).ConfigureAwait(false);
 
-            DivisionStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewDivision.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewDivision = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
-            {
-                id = NewDivision?.Id
-            });
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = message,
+                    id = status != StatusEnum.Success ? NewDivision?.Id : null
+                });
         }
     }
 }

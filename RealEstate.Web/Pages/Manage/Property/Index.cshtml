@@ -16,11 +16,53 @@
     }).ToList()).AddNone();
 }
 <div class="col-12">
+    <status>
+        @Model.Status
+    </status>
     <div class="widget">
-        <widget-header title="@Model.PageTitle" />
+        <widget-header title="@Model.PageTitle"/>
         <section class="container-fluid">
-
-            <form method="post" class="search">
+            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+                <form method="post">
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="SearchInput.PageNo"/>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                <input asp-for="SearchInput.Owner" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
+                                <input asp-for="SearchInput.OwnerMobile" class="form-control"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Category"></label>
+                                <select asp-items="categories" asp-for="SearchInput.Category" class="custom-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.District"></label>
+                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Street"></label>
+                                <input asp-for="SearchInput.Street" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+                    <vc:admin-search-condition model="@Model.SearchInput"/>
+                </form>
+            </search-pane>
+            @*<form method="post" class="search">
                 <div class="row justify-content-center align-items-center">
                     <div class="col-12">
                         <div class="card">
@@ -34,52 +76,15 @@
                             </div>
                             <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
                                 <div class="card-body">
-                                    <div class="row justify-content-center align-items-center">
-                                        <input asp-for="SearchInput.PageNo" />
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                                <input asp-for="SearchInput.Owner" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
-                                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Category"></label>
-                                                <select asp-items="categories" asp-for="SearchInput.Category" class="custom-select"></select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row justify-content-center align-items-center">
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.District"></label>
-                                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Street"></label>
-                                                <input asp-for="SearchInput.Street" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <vc:admin-search-condition model="@Model.SearchInput" />
+                                  
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </form>
-            @if (Model.List.Items?.Any() == true)
-            {
-
-                foreach (var item in Model.List.Items)
+            </form>*@
+            <item-viewer model="@Model.List.Items">
+                @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
@@ -119,11 +124,11 @@
                                             else
                                             {
                                                 @foreach (var owner in item.CurrentPropertyOwnership().Ownerships.Value)
-                                                {
-                                                    <li>
-                                                        <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank">@owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
-                                                    </li>
-                                                }
+                                                 {
+                                                     <li>
+                                                         <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank">@owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                                     </li>
+                                                 }
                                             }
                                         }
                                     </ul>
@@ -190,20 +195,11 @@
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="Property" id="@item.Id" />
+                        <vc:log logs="@item.Logs" cat="Property" id="@item.Id"/>
                     </div>
                 }
-
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
-            <vc:pagination model="@Model.List" />
+            </item-viewer>
+            <vc:pagination model="@Model.List"/>
         </section>
     </div>
 </div>

@@ -2,16 +2,16 @@
 @model IndexModel
 
 <div class="col-12">
+    <status>
+        @Model.Status
+    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
         </widget-header>
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-            </div>
-            @if (Model.List.Items?.Any() == true)
-            {
-                foreach (var item in Model.List.Items)
+            <item-viewer model="@Model.List.Items">
+                @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
@@ -21,7 +21,6 @@
                                 <span>
                                     <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest.Value?.Item.Value?.Property.Value?.Id" target="_blank">
                                         <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.DealRequest.Value?.Item.Value?.Property.Value?.District.Value?.Id" target="_blank">@item.DealRequest.Value?.Item.Value?.Property.Value?.District.Value?.Name</a> &mdash;
-                                       
                                     </a>
                                     <span class="badge badge-danger">@item.DealRequest.Value?.Item.Value?.Category.Value.Name</span>
                                     <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest.Value?.Item.Value?.Property.Value?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
@@ -92,19 +91,10 @@
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="Deal" id="@item.Id" />
+                        <vc:log logs="@item.Logs" cat="Deal" id="@item.Id"/>
                     </div>
                 }
-
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
+            </item-viewer>
             <vc:pagination model="@Model.List"></vc:pagination>
         </section>
     </div>

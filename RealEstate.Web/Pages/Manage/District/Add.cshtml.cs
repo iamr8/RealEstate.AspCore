@@ -8,6 +8,7 @@ using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
 using System.Threading.Tasks;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Web.Pages.Manage.District
 {
@@ -32,10 +33,9 @@ namespace RealEstate.Web.Pages.Manage.District
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string DistrictStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -47,32 +47,33 @@ namespace RealEstate.Web.Pages.Manage.District
                     return RedirectToPage(typeof(IndexModel).Page());
 
                 NewDistrict = model;
-                PageTitle = _localizer["EditDistrict"];
+                PageTitle = _localizer[SharedResource.EditDistrict];
             }
             else
             {
-                PageTitle = _localizer["NewDistrict"];
+                PageTitle = _localizer[SharedResource.NewDistrict];
             }
+
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _locationService.DistrictAddOrUpdateAsync(NewDistrict, !NewDistrict.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _locationService.DistrictAddOrUpdateAsync(NewDistrict, !NewDistrict.IsNew, true)
+            ).ConfigureAwait(false);
 
-            DistrictStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewDistrict.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewDistrict = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
             {
-                id = NewDistrict?.Id
+                status = message,
+                id = status != StatusEnum.Success ? NewDistrict?.Id : null
             });
+
         }
     }
 }

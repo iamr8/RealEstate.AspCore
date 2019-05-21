@@ -9,27 +9,27 @@
         <input asp-for="NewCategory.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-6 margin-bottomed">
-                    <label asp-for="NewCategory.Name" class="control-label"></label>
-                    <input asp-for="NewCategory.Name" class="form-control" />
-                    <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                <div class="col-12 col-md-6">
+                    <div class="input-wrapper">
+                        <label asp-for="NewCategory.Name" class="control-label"></label>
+                        <input asp-for="NewCategory.Name" class="form-control" />
+                        <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                    </div>
                 </div>
-                <div class="col-xs-12 col-6 margin-bottomed">
-                    <label asp-for="NewCategory.Type" class="control-label"></label>
-                    <select asp-items="types" asp-for="NewCategory.Type" class="form-control"></select>
-                    <span asp-validation-for="NewCategory.Type" class="text-danger"></span>
+                <div class="col-12 col-md-6">
+                    <div class="input-wrapper">
+                        <label asp-for="NewCategory.Type" class="control-label"></label>
+                        <select asp-items="types" asp-for="NewCategory.Type" class="custom-select"></select>
+                        <span asp-validation-for="NewCategory.Type" class="text-danger"></span>
+                    </div>
                 </div>
             </div>
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.CategoryStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <submit full-width="true" />
+            <status>
+                @Model.Status
+            </status>
+        </footer>
     </div>
 </form>

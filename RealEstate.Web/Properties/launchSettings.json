@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:5566/",
+      "applicationUrl": "http://localhost:8080/",
       "sslPort": 0
     }
   },
@@ -11,19 +11,20 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5566/",
+      "launchUrl": "http://localhost:8080/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "ancmHostingModel": "InProcess"
     },
     "RealEstate___Madagascar": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5566/",
+      "launchUrl": "http://localhost:8080/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5566/"
+      "applicationUrl": "http://localhost:8080/"
     }
   }
 }

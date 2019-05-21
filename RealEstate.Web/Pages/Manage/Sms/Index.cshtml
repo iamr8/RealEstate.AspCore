@@ -5,32 +5,8 @@
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-
-            @if (Model.List.Items?.Any() == true)
-            {
-                @*<div class="row justify-content-center align-items-center margin-bottomed">
-                        <div class="col-12">
-                            <form method="post" class="widget mini-widget bg-white">
-                                <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                                <section class="container-fluid margin-bottomed">
-                                    <div class="row">
-                                        <div class="col-12 margin-bottomed">
-                                            <label class="control-label" asp-for="SearchInput.Name"></label>
-                                            <input asp-for="SearchInput.Name" class="form-control" />
-                                        </div>
-                                    </div>
-                                </section>
-                                <widget-footer>
-                                    <widget-footer-text></widget-footer-text>
-                                    <widget-footer-button>
-                                        <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                                    </widget-footer-button>
-                                </widget-footer>
-                            </form>
-                        </div>
-                    </div>*@
-
-                foreach (var item in Model.List.Items)
+            <item-viewer model="@Model.List.Items">
+                @foreach (var item in Model.List.Items)
                 {
                     <div class="row justify-content-center itemShow">
                         <div class="col-12 detail">
@@ -49,15 +25,7 @@
                         <vc:log logs="@item.Logs" cat="Sms" id="@item.Id" />
                     </div>
                 }
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
+            </item-viewer>
             <vc:pagination model="@Model.List"></vc:pagination>
         </section>
     </div>

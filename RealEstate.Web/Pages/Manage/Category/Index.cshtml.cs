@@ -39,9 +39,11 @@ namespace RealEstate.Web.Pages.Manage.Category
         public PaginationViewModel<CategoryViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Categories"];
+        public string PageTitle => _localizer[SharedResource.Categories];
 
-        public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type, bool deleted, string dateFrom, string dateTo, string creatorId)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new CategorySearchViewModel
             {
@@ -55,6 +57,9 @@ namespace RealEstate.Web.Pages.Manage.Category
                 CreatorId = creatorId
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _featureService.CategoryListAsync(SearchInput).ConfigureAwait(false);
         }
 

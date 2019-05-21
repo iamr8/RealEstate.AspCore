@@ -37,7 +37,7 @@ namespace RealEstate.Web.Pages.Manage.User
         [ViewData]
         public string PageTitle => _localizer[SharedResource.Users];
 
-        public StatusEnum Status { get; set; }
+        public string Status { get; set; }
 
         public async Task OnGetAsync(string pageNo, string status, string userName, string userId, Role? userRole, bool deleted, string dateFrom, string dateTo, string creatorId)
         {
@@ -53,9 +53,9 @@ namespace RealEstate.Web.Pages.Manage.User
                 CreationDateTo = dateTo
             };
 
-            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
-                ? (StatusEnum)statusInt
-                : StatusEnum.Ready;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _userService.ListAsync(SearchInput).ConfigureAwait(false);
         }
 

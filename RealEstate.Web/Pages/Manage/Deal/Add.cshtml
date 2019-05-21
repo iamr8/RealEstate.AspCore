@@ -157,16 +157,12 @@
                 </div>
             </div>
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.DealStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <submit full-width="true" />
+            <status>
+                @Model.Status
+            </status>
+        </footer>
     </form>
 </div>
 

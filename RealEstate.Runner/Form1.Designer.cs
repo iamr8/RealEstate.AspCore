@@ -47,7 +47,6 @@
             this.txtConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtConsole.Size = new System.Drawing.Size(968, 485);
             this.txtConsole.TabIndex = 1;
-            this.txtConsole.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // btnFunc
             // 

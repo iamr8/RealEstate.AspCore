@@ -1,43 +1,14 @@
 ﻿@page
 @model IndexModel
 <div class="col-12">
+    <status>
+        @Model.Status
+    </status>
     <div class="widget">
-        <widget-header title="@Model.PageTitle" />
+        <widget-header title="@Model.PageTitle"/>
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-            </div>
-            @if (Model.List.Items?.Any() == true)
-            {
-                @*<div class="row justify-content-center align-items-center margin-bottomed">
-                        <div class="col-12">
-                            <form method="post" class="widget mini-widget bg-white">
-                                <widget-header title="@SharedLocalizer["Search"]"></widget-header>
-                                <section class="container-fluid margin-bottomed">
-                                    <div class="row">
-                                        <div class="col-6 margin-bottomed">
-                                            <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                            <input asp-for="SearchInput.Owner" class="form-control" />
-                                        </div>
-                                        <div class="col-6 margin-bottomed">
-                                            <label class="control-label" asp-for="SearchInput.CategoryId"></label>
-                                            <select asp-items="categories" asp-for="SearchInput.CategoryId" class="form-control"></select>
-                                        </div>
-                                        <div class="col-12 margin-bottomed">
-                                            <label class="control-label" asp-for="SearchInput.Address"></label>
-                                            <input asp-for="SearchInput.Address" class="form-control" />
-                                        </div>
-                                    </div>
-                                </section>
-                                <widget-footer>
-                                    <widget-footer-text></widget-footer-text>
-                                    <widget-footer-button>
-                                        <input type="submit" value="@SharedLocalizer["Search"]" class="btn btn-primary" />
-                                    </widget-footer-button>
-                                </widget-footer>
-                            </form>
-                        </div>
-                    </div>*@
-                foreach (var item in Model.List.Items)
+            <item-viewer model="@Model.List.Items">
+                @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
@@ -94,19 +65,10 @@
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="DealRequest" id="@item.Id" />
+                        <vc:log logs="@item.Logs" cat="DealRequest" id="@item.Id"/>
                     </div>
                 }
-
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
+            </item-viewer>
             <vc:pagination model="@Model.List"></vc:pagination>
         </section>
     </div>

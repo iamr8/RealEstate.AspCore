@@ -2,15 +2,12 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
-using RealEstate.Base.Enums;
 using RealEstate.Resources;
-using RealEstate.Services;
 using RealEstate.Services.Extensions;
-using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.DealRequest
 {
@@ -34,7 +31,7 @@ namespace RealEstate.Web.Pages.Manage.DealRequest
 
         public string Status { get; set; }
 
-        public string PageTitle => _localizer["DealRequests"];
+        public string PageTitle => _localizer[SharedResource.DealRequests];
 
         public async Task OnGetAsync(string pageNo, string status)
         {
@@ -43,7 +40,9 @@ namespace RealEstate.Web.Pages.Manage.DealRequest
                 PageNo = pageNo.FixPageNumber()
             };
 
-            Status = int.TryParse(status, out var statusCode) ? ((StatusEnum)statusCode).GetDisplayName() : null;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _itemService.RequestListAsync(SearchInput).ConfigureAwait(false);
         }
 

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
-using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
@@ -32,7 +31,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public PaginationViewModel<ItemViewModel> List { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public string Status { get; set; }
 
         public string PageTitle => _localizer[SharedResource.Items];
 
@@ -59,9 +58,9 @@ namespace RealEstate.Web.Pages.Manage.Item
                 HasFeature = hasFeature
             };
 
-            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
-                ? (StatusEnum)statusInt
-                : StatusEnum.Ready;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _itemService.ItemListAsync(SearchInput).ConfigureAwait(false);
         }
 

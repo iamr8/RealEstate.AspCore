@@ -77,7 +77,7 @@ body {
             font-size: 12pt;
             margin-top: auto;
             margin-bottom: auto;
-            font-weight: 500;
+            font-weight: 400;
             color: $widget-header-footer-foreground-color;
         }
 
@@ -112,6 +112,8 @@ body {
 
     > footer {
         @include widget-headerfooter();
+        @include flex-flow(column);
+        height: auto !important;
         margin-top: auto;
         background-color: #e0e0e0;
 
@@ -648,6 +650,7 @@ input[type=submit], button {
 
     &.btn-primary {
         background-color: $sidebarheader-color;
+        border-color: mix(transparent, $sidebarheader-color, 10);
 
         &.disabled {
             background-color: mix(white, $sidebarheader-color, 10) !important;
@@ -658,6 +661,32 @@ input[type=submit], button {
             background-color: mix(white, $sidebarheader-color, 10) !important;
             border-color: mix(white, $sidebarheader-color, 10) !important;
         }
+
+        &:focus, &.focus {
+            box-shadow: 0 0 0 0.2rem mix(transparent, $sidebarheader-color, 10);
+        }
+
+        &:not(:disabled) {
+            &:not(.disabled) {
+                &:active, &.active {
+                    background-color: mix(transparent, $sidebarheader-color, 10);
+                    border-color: mix(transparent, $sidebarheader-color, 10);
+
+                    &:focus {
+                        box-shadow: 0 0 0 0.2rem mix(transparent, $sidebarheader-color, 70);
+                    }
+                }
+            }
+        }
+        /*&:not(:disabled) {
+                &:not(.disabled) {
+                    &:active {
+                        &:focus {
+                            box-shadow: 0 0 0 0.2rem mix(transparent, $sidebarheader-color, 10);
+                        }
+                    }
+                }
+            }*/
     }
 }
 
@@ -1364,5 +1393,29 @@ ul.info-breadcrumb {
     > .card-image {
         @include background-image-div();
         height: 200px;
+    }
+
+    > .btn {
+        @include border-radius(0 !important);
+        border: none;
+    }
+}
+
+.title-bar {
+    margin-top: .5rem;
+    margin-bottom: .5rem;
+    @include flexbox();
+    @include flex-flow(row);
+    @include justify-content(flex-start);
+    @include align-items(center);
+
+    > span {
+        color: rgba(0, 0, 0, 0.4);
+        flex: 1 0 auto;
+        margin-left: 15px;
+    }
+
+    > hr {
+        width: 100%;
     }
 }

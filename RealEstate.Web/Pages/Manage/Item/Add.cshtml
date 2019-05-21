@@ -178,13 +178,8 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <hr />
+                                        <hr subject="@SharedLocalizer[SharedResource.Owner]" />
                                         <form id="newCustomer_Form" class="row justify-content-center align-items-center">
-                                            <div class="col-12">
-                                                <h5>
-                                                    @SharedLocalizer[SharedResource.Owner]
-                                                </h5>
-                                            </div>
                                             <div class="col-lg">
                                                 <div class="input-wrapper">
                                                     <label class="control-label" for="newCustomer_Name">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Name))</label>
@@ -255,9 +250,6 @@
                             </a>
                         </div>
                         <div id="item" class="collapse @(Model.NewItem != null && !Model.NewItem.IsNew ? " show" : "" )" data-parent="#accordion">
-                            <div class="status-message @(Model.Status == StatusEnum.Ready ? " hidden" : "" )" asp-validation-summary="All">
-                                @Model.Status.GetDisplayName()
-                            </div>
                             <div class="card-body">
                                 <form method="post" class="row justify-content-center align-items-center">
                                     <input asp-for="NewItem.PropertyId" />
@@ -298,9 +290,12 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col">
-                                        <input type="submit" value="@SharedLocalizer[SharedResource.SubmitItem]" class="btn btn-success btn-block" />
-                                    </div>
+                                    <footer>
+                                        <submit full-width="true" />
+                                        <status>
+                                            @Model.Status
+                                        </status>
+                                    </footer>
                                 </form>
                             </div>
                         </div>

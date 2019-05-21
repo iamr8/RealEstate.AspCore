@@ -32,9 +32,11 @@ namespace RealEstate.Web.Pages.Manage.Division
         public PaginationViewModel<DivisionViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Divisions"];
+        public string PageTitle => _localizer[SharedResource.Divisions];
 
-        public async Task OnGetAsync(string pageNo, string divisionName, string id, bool deleted, string dateFrom, string dateTo, string creatorId)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string divisionName, string id, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new DivisionSearchViewModel
             {
@@ -47,6 +49,9 @@ namespace RealEstate.Web.Pages.Manage.Division
                 CreationDateTo = dateTo
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _divisionService.ListAsync(SearchInput).ConfigureAwait(false);
         }
 

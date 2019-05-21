@@ -20,6 +20,7 @@ using RealEstate.Configuration;
 using RealEstate.Resources;
 using RealEstate.Services.Database;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.Tracker;
 using System;
 using System.Data.SqlClient;
@@ -27,7 +28,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
-using RealEstate.Services.ServiceLayer.Base;
 using WebMarkupMin.AspNetCore2;
 using WebMarkupMin.Core;
 using ConfigurationBuilder = CacheManager.Core.ConfigurationBuilder;
@@ -113,7 +113,10 @@ namespace RealEstate.Web
             services.AddLocalization(options => options.ResourcesPath = "");
 
             services
-                .AddMvc()
+                .AddMvc(options =>
+                {
+                    options.ModelBinderProviders.Insert(0, new StringModelBinderProvider());
+                })
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.AuthorizeFolder($"/{nameof(RealEstate.Web.Pages.Manage)}");
@@ -290,7 +293,6 @@ namespace RealEstate.Web
                 routes.MapRoute(
                     "default",
                     "{controller=Setting}/{action=Index}/{id?}");
-
             });
         }
     }

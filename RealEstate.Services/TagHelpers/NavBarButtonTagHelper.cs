@@ -107,13 +107,21 @@ namespace RealEstate.Services.TagHelpers
                 output.TagName = "a";
             }
 
-            var imgWrapper = new TagBuilder("div");
-            imgWrapper.AddCssClass("img");
+            TagBuilder imgWrapper;
+            if (string.IsNullOrEmpty(content))
+            {
+                imgWrapper = new TagBuilder("div");
+                imgWrapper.AddCssClass("img");
 
-            var img = new TagBuilder("img");
-            img.Attributes.Add("src", urlHelper.Content(Icon));
-            img.Attributes.Add("alt", Subject);
-            imgWrapper.InnerHtml.AppendHtml(img);
+                var img = new TagBuilder("img");
+                img.Attributes.Add("src", urlHelper.Content(Icon));
+                img.Attributes.Add("alt", Subject);
+                imgWrapper.InnerHtml.AppendHtml(img);
+            }
+            else
+            {
+                imgWrapper = null;
+            }
 
             var txtWrapper = new TagBuilder("div");
             txtWrapper.AddCssClass("text");
@@ -136,7 +144,10 @@ namespace RealEstate.Services.TagHelpers
                 foreach (var @class in classes)
                     output.AddClass(@class, HtmlEncoder.Default);
 
-            output.Content.AppendHtml(imgWrapper).AppendHtml(txtWrapper);
+            if (imgWrapper != null)
+                output.Content.AppendHtml(imgWrapper);
+
+            output.Content.AppendHtml(txtWrapper);
             output.TagMode = TagMode.StartTagAndEndTag;
             base.Process(context, output);
         }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
@@ -36,7 +37,7 @@ namespace RealEstate.Web.Pages.Manage.User
         [ViewData]
         public string PageTitle { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public string Status { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
@@ -60,10 +61,10 @@ namespace RealEstate.Web.Pages.Manage.User
 
             PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];
             NewUser = model;
-            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
-                ? (StatusEnum)statusInt
-                : StatusEnum.Ready;
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             if (!string.IsNullOrEmpty(id) && model == null)
                 return RedirectToPage(typeof(IndexModel).Page());
 
@@ -72,15 +73,16 @@ namespace RealEstate.Web.Pages.Manage.User
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _userService.AddOrUpdateAsync(NewUser, !NewUser.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _userService.AddOrUpdateAsync(NewUser, !NewUser.IsNew, true)
+            ).ConfigureAwait(false);
 
-            return RedirectToPage(finalStatus != StatusEnum.Success
+            return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()
                 : typeof(IndexModel).Page(), new
                 {
-                    status = (int)finalStatus
+                    status = message,
+                    id = status != StatusEnum.Success ? NewUser?.Id : null
                 });
         }
     }

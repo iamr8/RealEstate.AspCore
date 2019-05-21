@@ -34,13 +34,18 @@ namespace RealEstate.Web.Pages.Manage.Reminder
         [ViewData]
         public string PageTitle => _localizer[SharedResource.Reminders];
 
-        public async Task OnGetAsync(string pageNo)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string status)
         {
             SearchInput = new ReminderSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _reminderService.ReminderListAsync(SearchInput).ConfigureAwait(false);
         }
 

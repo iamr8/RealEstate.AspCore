@@ -33,7 +33,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         [ViewData]
         public string PageTitle { get; set; }
 
-        public StatusEnum Status { get; set; }
+        public string Status { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
@@ -48,9 +48,9 @@ namespace RealEstate.Web.Pages.Manage.Item
 
             PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];
             NewItem = model;
-            Status = !string.IsNullOrEmpty(status) && int.TryParse(status, out var statusInt)
-                ? (StatusEnum)statusInt
-                : StatusEnum.Ready;
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
 
             if (!string.IsNullOrEmpty(id) && model == null)
                 return RedirectToPage(typeof(IndexModel).Page());
@@ -61,15 +61,15 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnPostAsync()
         {
             var (status, message) = await ModelState.IsValidAsync(
-                    () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true))
-                .ConfigureAwait(false);
+                () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true)
+            ).ConfigureAwait(false);
 
             return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()
                 : typeof(IndexModel).Page(), new
                 {
                     status = message,
-                    id = status != StatusEnum.Success ? NewItem.Id : null
+                    id = status != StatusEnum.Success ? NewItem?.Id : null
                 });
         }
     }

@@ -34,7 +34,9 @@ namespace RealEstate.Web.Pages.Manage.Facility
         [ViewData]
         public string PageTitle => _localizer[SharedResource.Facilities];
 
-        public async Task OnGetAsync(string pageNo, string facilityName, bool deleted, string dateFrom, string dateTo, string creatorId)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string facilityName, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new FacilitySearchViewModel
             {
@@ -46,6 +48,9 @@ namespace RealEstate.Web.Pages.Manage.Facility
                 CreationDateTo = dateTo
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _featureService.FacilityListAsync(SearchInput).ConfigureAwait(false);
         }
 

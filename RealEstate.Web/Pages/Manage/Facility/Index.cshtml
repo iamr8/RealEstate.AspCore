@@ -1,45 +1,30 @@
 ﻿@page
 @model IndexModel
 <div class="col-12">
+    <status>
+        @Model.Status
+    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewFacility"]</a>
         </widget-header>
         <section class="container-fluid">
-            <form method="post" class="search">
-                <div class="row justify-content-center align-items-center">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <a class="card-link" data-toggle="collapse" href="#search">
-                                    @SharedLocalizer["Search"]
-                                </a>
-                                <a class="card-link clearSearch" asp-page="@typeof(IndexModel).Page()">
-                                    @SharedLocalizer["ClearSearch"]
-                                </a>
-                            </div>
-                            <div id="search" class="collapse @(Model.SearchInput.IsUnderCondition ? "show" : "")">
-                                <div class="card-body">
-                                    <div class="row justify-content-center align-items-center">
-                                        <input asp-for="SearchInput.PageNo" />
-                                        <div class="col-xs-12 col-md">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" asp-for="SearchInput.Name"></label>
-                                                <input asp-for="SearchInput.Name" class="form-control" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <vc:admin-search-condition model="@Model.SearchInput" />
-                                </div>
+            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+                <form method="post" class="search">
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="SearchInput.PageNo" />
+                        <div class="col-xs-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Name"></label>
+                                <input asp-for="SearchInput.Name" class="form-control" />
                             </div>
                         </div>
                     </div>
-                </div>
-            </form>
-            @if (Model.List.Items?.Any() == true)
-            {
-
-                foreach (var item in Model.List.Items)
+                    <vc:admin-search-condition model="@Model.SearchInput" />
+                </form>
+            </search-pane>
+            <item-viewer model="@Model.List.Items">
+                @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
@@ -64,15 +49,7 @@
                         <vc:log logs="@item.Logs" cat="Facility" id="@item.Id" />
                     </div>
                 }
-            }
-            else
-            {
-                <div class="row justify-content-center align-items-center">
-                    <h5>
-                        @SharedLocalizer["NoItemToShow"]
-                    </h5>
-                </div>
-            }
+            </item-viewer>
             <vc:pagination model="@Model.List" />
         </section>
     </div>

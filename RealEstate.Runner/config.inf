@@ -1,1 +1,8 @@
 ﻿DbPath=>D:\RSDB\RSDB.mdf
+Domain=>www.amlaki.com
+Port=>8080
+Prefix=>RealEstate
+Assemblies=>Base|Resources|Services|Web|Configuration
+Startup=>Web
+RunMode=>Release
+Instance=>MSSQLLocalDB

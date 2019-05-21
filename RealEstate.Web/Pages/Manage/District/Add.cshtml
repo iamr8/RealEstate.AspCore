@@ -7,22 +7,20 @@
         <input asp-for="NewDistrict.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-12 margin-bottomed">
-                    <label asp-for="NewDistrict.Name" class="control-label"></label>
-                    <input asp-for="NewDistrict.Name" class="form-control" />
-                    <span asp-validation-for="NewDistrict.Name" class="text-danger"></span>
+                <div class="col-12">
+                    <div class="input-wrapper">
+                        <label asp-for="NewDistrict.Name" class="control-label"></label>
+                        <input asp-for="NewDistrict.Name" class="form-control" />
+                        <span asp-validation-for="NewDistrict.Name" class="text-danger"></span>
+                    </div>
                 </div>
             </div>
         </section>
-        <widget-footer>
-            <widget-footer-text>
-                <div asp-validation-summary="All">
-                    @Model.DistrictStatus
-                </div>
-            </widget-footer-text>
-            <widget-footer-button>
-                <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success" />
-            </widget-footer-button>
-        </widget-footer>
+        <footer>
+            <submit full-width="true" />
+            <status>
+                @Model.Status
+            </status>
+        </footer>
     </div>
 </form>

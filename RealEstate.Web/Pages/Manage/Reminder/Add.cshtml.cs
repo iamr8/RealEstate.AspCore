@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
-using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
@@ -34,10 +33,9 @@ namespace RealEstate.Web.Pages.Manage.Reminder
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string ReminderStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -59,26 +57,26 @@ namespace RealEstate.Web.Pages.Manage.Reminder
                 };
                 PageTitle = _localizer["NewReminder"];
             }
+
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var finalStatus = ModelState.IsValid
-                ? (await _reminderService.ReminderAddOrUpdateAsync(NewReminder, !NewReminder.IsNew, true).ConfigureAwait(false)).Status
-                : StatusEnum.RetryAfterReview;
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _reminderService.ReminderAddOrUpdateAsync(NewReminder, !NewReminder.IsNew, true)
+            ).ConfigureAwait(false);
 
-            ReminderStatus = finalStatus.GetDisplayName();
-            if (finalStatus != StatusEnum.Success || !NewReminder.IsNew)
-                return Page();
-
-            ModelState.Clear();
-            NewReminder = default;
-
-            return RedirectToPage(typeof(AddModel).Page(), new
-            {
-                id = NewReminder?.Id
-            });
+            return RedirectToPage(status != StatusEnum.Success
+                ? typeof(AddModel).Page()
+                : typeof(IndexModel).Page(), new
+                {
+                    status = message,
+                    id = status != StatusEnum.Success ? NewReminder?.Id : null
+                });
         }
     }
 }

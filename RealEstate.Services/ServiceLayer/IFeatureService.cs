@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -12,6 +9,9 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -356,6 +356,10 @@ namespace RealEstate.Services.ServiceLayer
         {
             if (model == null)
                 return new MethodStatus<Category>(StatusEnum.ModelIsNull, null);
+
+            var category = await _categories.FirstOrDefaultAsync(x => x.Name.Equals(model.Name)).ConfigureAwait(false);
+            if (category != null)
+                return new MethodStatus<Category>(StatusEnum.AlreadyExists, null);
 
             var addStatus = await _baseService.AddAsync(new Category
             {

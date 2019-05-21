@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
@@ -14,7 +15,7 @@ namespace RealEstate.Web
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseUrls("http://*:5566")
+                .UseUrls("http://*:8080")
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
@@ -26,7 +27,5 @@ namespace RealEstate.Web
                     config.AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
                     config.AddEnvironmentVariables();
                 });
-
-       
     }
 }

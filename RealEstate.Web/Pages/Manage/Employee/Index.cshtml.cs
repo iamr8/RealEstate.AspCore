@@ -34,8 +34,10 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [ViewData]
         public string PageTitle => _localizer[SharedResource.Employees];
 
+        public string Status { get; set; }
+
         public async Task OnGetAsync(string pageNo, string employeeFirstName, string employeeLastName, string employeeMobile, string employeePhone,
-            string employeeAddress, string employeeId, string userId, string divisionId, bool deleted)
+            string employeeAddress, string employeeId, string userId, string divisionId, bool deleted, string status)
         {
             SearchInput = new EmployeeSearchViewModel
             {
@@ -51,6 +53,9 @@ namespace RealEstate.Web.Pages.Manage.Employee
                 IncludeDeletedItems = deleted
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _employeeService.ListAsync(SearchInput).ConfigureAwait(false);
         }
 

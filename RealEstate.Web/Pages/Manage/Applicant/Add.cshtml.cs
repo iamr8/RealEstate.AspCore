@@ -32,10 +32,9 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         [ViewData]
         public string PageTitle { get; set; }
 
-        [TempData]
-        public string ApplicantStatus { get; set; }
+        public string Status { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             if (!string.IsNullOrEmpty(id))
             {
@@ -47,12 +46,15 @@ namespace RealEstate.Web.Pages.Manage.Applicant
                     return RedirectToPage(typeof(Applicant.IndexModel).Page());
 
                 NewApplicant = model;
-                PageTitle = _localizer["EditApplicant"];
+                PageTitle = _localizer[SharedResource.EditApplicant];
             }
             else
             {
-                PageTitle = _localizer["NewApplicant"];
+                PageTitle = _localizer[SharedResource.NewApplicant];
             }
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             return Page();
         }
 
@@ -62,7 +64,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
                 ? (await _customerService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true).ConfigureAwait(false)).Status
                 : StatusEnum.RetryAfterReview;
 
-            ApplicantStatus = finalStatus.GetDisplayName();
+            Status = finalStatus.GetDisplayName();
             if (finalStatus != StatusEnum.Success || !NewApplicant.IsNew)
                 return Page();
 

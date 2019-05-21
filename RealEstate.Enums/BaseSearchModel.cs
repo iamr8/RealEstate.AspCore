@@ -29,44 +29,47 @@ namespace RealEstate.Base
                     var value = property.GetValue(this);
                     var searchProperty = property.GetSearchParameter();
 
-                    var hasJson = searchProperty.Type != null && key.EndsWith(jsonTerm);
-                    if (hasJson)
-                    {
-                        if (!(value is string jsonString))
-                            continue;
+                    if (value == null)
+                        continue;
 
-                        if (!jsonString.Equals("") || !jsonString.Equals("[]"))
+                    switch (value)
+                    {
+                        case Enum propValueEnum:
                             conditions.Add(property.Name);
-                    }
-                    else
-                    {
-                        switch (value)
-                        {
-                            case string propValueString:
-                                if (!string.IsNullOrEmpty(propValueString))
-                                    conditions.Add(property.Name);
-                                break;
+                            break;
 
-                            case bool propValueBool:
-                                if (propValueBool)
+                        case string propValueString:
+                            if (!string.IsNullOrEmpty(propValueString))
+                                if (searchProperty.Type != null && key.EndsWith(jsonTerm))
+                                {
+                                    if (!propValueString.Equals("") || !propValueString.Equals("[]"))
+                                        conditions.Add(property.Name);
+                                }
+                                else
+                                {
                                     conditions.Add(property.Name);
-                                break;
+                                }
+                            break;
 
-                            case decimal propValueNum:
-                                if (propValueNum > 0)
-                                    conditions.Add(property.Name);
-                                break;
+                        case bool propValueBool:
+                            if (propValueBool)
+                                conditions.Add(property.Name);
+                            break;
 
-                            case double propValueNum:
-                                if (propValueNum > 0)
-                                    conditions.Add(property.Name);
-                                break;
+                        case decimal propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
 
-                            case int propValueNum:
-                                if (propValueNum > 0)
-                                    conditions.Add(property.Name);
-                                break;
-                        }
+                        case double propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
+
+                        case int propValueNum:
+                            if (propValueNum > 0)
+                                conditions.Add(property.Name);
+                            break;
                     }
                 }
 

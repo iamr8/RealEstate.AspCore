@@ -26,9 +26,7 @@
 }
 
 <form method="post" class="col-12">
-    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
-        @Model.Status.GetDisplayName()
-    </div>
+
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewUser.Id" />
@@ -101,7 +99,7 @@
             </div>
             @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
             {
-                <hr />
+                <hr subject="@SharedLocalizer[SharedResource.Previlleges]" />
                 if (propertyCategories?.Any() == true)
                 {
                     <div class="row justify-content-center align-items-center">
@@ -176,7 +174,10 @@
             }
         </section>
         <footer>
-            <input type="submit" value="@SharedLocalizer["Submit"]" class="btn-success btn-block" />
+            <submit full-width="true" />
+            <status>
+                @Model.Status
+            </status>
         </footer>
     </div>
 </form>

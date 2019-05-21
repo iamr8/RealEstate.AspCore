@@ -32,9 +32,11 @@ namespace RealEstate.Web.Pages.Manage.District
         public PaginationViewModel<DistrictViewModel> List { get; set; }
 
         [ViewData]
-        public string PageTitle => _localizer["Districts"];
+        public string PageTitle => _localizer[SharedResource.Districts];
 
-        public async Task OnGetAsync(string pageNo, string districtName, bool deleted, string dateFrom, string dateTo, string creatorId)
+        public string Status { get; set; }
+
+        public async Task OnGetAsync(string pageNo, string districtName, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new DistrictSearchViewModel
             {
@@ -46,6 +48,9 @@ namespace RealEstate.Web.Pages.Manage.District
                 CreationDateTo = dateTo
             };
 
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
             List = await _locationService.DistrictListAsync(SearchInput).ConfigureAwait(false);
         }
 

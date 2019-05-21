@@ -1,11 +1,7 @@
 ﻿@page
-@using RealEstate.Services.ServiceLayer.Base
 @model PictureModel
 
 <form method="post" class="col-12 margin-bottomed" enctype="multipart/form-data">
-    <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? "hidden" : "")" asp-validation-summary="All">
-        @Model.Status
-    </div>
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <input asp-for="NewPropertyPicture.PropertyId" />
@@ -21,7 +17,10 @@
             </div>
         </section>
         <footer>
-            <input type="submit" value="@SharedLocalizer[SharedResource.Submit]" class="btn-success btn-block" />
+            <submit full-width="true" />
+            <status>
+                @Model.Status
+            </status>
         </footer>
     </div>
 </form>

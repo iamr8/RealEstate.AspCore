@@ -115,7 +115,7 @@ body {
       font-size: 12pt;
       margin-top: auto;
       margin-bottom: auto;
-      font-weight: 500;
+      font-weight: 400;
       color: black; }
     .widget > header > .other {
       font-size: 12pt;
@@ -152,6 +152,14 @@ body {
     height: 50px;
     padding: 10px;
     background-color: transparent;
+    -moz-flex-flow: column;
+    -ms-flex-flow: column;
+    -o-flex-flow: column;
+    -webkit-flex-flow: column;
+    flex-flow: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    height: auto !important;
     margin-top: auto;
     background-color: #e0e0e0; }
     .widget > footer > .messages {
@@ -621,13 +629,30 @@ input[type=submit], button {
   font-size: 9pt; }
 
 .btn.btn-primary {
-  background-color: #5110c9; }
+  background-color: #5110c9;
+  border-color: rgba(81, 16, 201, 0.9);
+  /*&:not(:disabled) {
+                &:not(.disabled) {
+                    &:active {
+                        &:focus {
+                            box-shadow: 0 0 0 0.2rem mix(transparent, $sidebarheader-color, 10);
+                        }
+                    }
+                }
+            }*/ }
   .btn.btn-primary.disabled {
     background-color: #6228ce !important;
     border-color: #6228ce !important; }
   .btn.btn-primary:disabled {
     background-color: #6228ce !important;
     border-color: #6228ce !important; }
+  .btn.btn-primary:focus, .btn.btn-primary.focus {
+    box-shadow: 0 0 0 0.2rem rgba(81, 16, 201, 0.9); }
+  .btn.btn-primary:not(:disabled):not(.disabled):active, .btn.btn-primary:not(:disabled):not(.disabled).active {
+    background-color: rgba(81, 16, 201, 0.9);
+    border-color: rgba(81, 16, 201, 0.9); }
+    .btn.btn-primary:not(:disabled):not(.disabled):active:focus, .btn.btn-primary:not(:disabled):not(.disabled).active:focus {
+      box-shadow: 0 0 0 0.2rem rgba(81, 16, 201, 0.3); }
 
 .pagination {
   margin-top: 20px;
@@ -1171,3 +1196,36 @@ ul.info-breadcrumb {
     background-size: cover;
     background-color: lightgray;
     height: 200px; }
+  .card > .btn {
+    border-radius: 0 !important;
+    -webkit-border-radius: 0 !important;
+    -moz-border-radius: 0 !important;
+    -ms-border-radius: 0 !important;
+    -o-border-radius: 0 !important;
+    border: none; }
+
+.title-bar {
+  margin-top: .5rem;
+  margin-bottom: .5rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -moz-flex-flow: row;
+  -ms-flex-flow: row;
+  -o-flex-flow: row;
+  -webkit-flex-flow: row;
+  flex-flow: row;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  -ms-align-items: center;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  align-items: center; }
+  .title-bar > span {
+    color: rgba(0, 0, 0, 0.4);
+    flex: 1 0 auto;
+    margin-left: 15px; }
+  .title-bar > hr {
+    width: 100%; }
