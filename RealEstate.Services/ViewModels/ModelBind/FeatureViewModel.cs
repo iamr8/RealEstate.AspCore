@@ -2,7 +2,6 @@
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -13,19 +12,24 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Feature Entity { get; }
 
-        public FeatureViewModel(Feature entity)
+        public FeatureViewModel(Feature entity, Action<FeatureViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Name => Entity?.Name;
 
         public FeatureTypeEnum Type => Entity?.Type ?? FeatureTypeEnum.Property;
 
-        public Lazy<List<PropertyFeatureViewModel>> PropertyFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Map<PropertyFeature, PropertyFeatureViewModel>());
+        public List<PropertyFeatureViewModel> PropertyFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

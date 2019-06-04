@@ -2,7 +2,6 @@
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 
 namespace RealEstate.Services.ViewModels.ModelBind
@@ -12,18 +11,19 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public DealRequest Entity { get; }
 
-        public DealRequestViewModel(DealRequest entity)
+        public DealRequestViewModel(DealRequest entity, Action<DealRequestViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public DealStatusEnum Status => Entity?.Status ?? DealStatusEnum.Rejected;
 
-        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
-        public Lazy<DealViewModel> Deal => LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
-        public Lazy<SmsViewModel> Sms => LazyLoadExtension.LazyLoad(() => Entity?.Sms.Map<Sms, SmsViewModel>());
+        public ItemViewModel Item { get; set; }
+        public DealViewModel Deal { get; set; }
+        public SmsViewModel Sms { get; set; }
     }
 }

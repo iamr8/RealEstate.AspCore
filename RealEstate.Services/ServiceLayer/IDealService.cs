@@ -91,15 +91,15 @@ namespace RealEstate.Services.ServiceLayer
                     {
                         Id = viewModel.Id,
                         Description = viewModel.Description,
-                        Beneficiaries = viewModel.Beneficiaries.Value?.Select(x => new BeneficiaryJsonViewModel
+                        Beneficiaries = viewModel.Beneficiaries?.Select(x => new BeneficiaryJsonViewModel
                         {
-                            UserId = x.User.Value?.Id,
-                            UserFullName = $"{x.User.Value?.Employee.Value?.FirstName} • {x.User.Value?.Employee.Value?.LastName}",
+                            UserId = x.User?.Id,
+                            UserFullName = $"{x.User?.Employee?.FirstName} • {x.User?.Employee?.LastName}",
                             TipPercent = x.TipPercent,
                             CommissionPercent = x.CommissionPercent
                         }).ToList(),
                         ItemId = entity.Id,
-                        Checks = viewModel.Reminders.Value?.Select(x => new CheckJsonViewModel
+                        Checks = viewModel.Reminders?.Select(x => new CheckJsonViewModel
                         {
                             Date = x.Date.GregorianToPersian(true),
                             Number = x.CheckNumber,
@@ -192,7 +192,7 @@ namespace RealEstate.Services.ServiceLayer
                 },
                 (inDb, inModel) => inDb.UserId == inModel.UserId,
                 null, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private async Task<MethodStatus<Deal>> UpdateAsync(DealInputViewModel model, bool save)

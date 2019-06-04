@@ -5,6 +5,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -13,12 +14,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Sms Entity { get; }
 
-        public SmsViewModel(Sms entity)
+        public SmsViewModel(Sms entity, Action<SmsViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Sender => Entity?.Sender;
@@ -28,14 +30,17 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public SmsProvider Provider => Entity?.Provider ?? SmsProvider.KavehNegar;
         public string StatusJson => Entity?.StatusJson;
 
-        public DealRequestViewModel CurrentDealRequest() => DealRequests?.LazyLoadLast();
+        public DealRequestViewModel CurrentDealRequest() => DealRequests?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
-        public PaymentViewModel CurrentPayment() => Payments?.LazyLoadLast();
+        public PaymentViewModel CurrentPayment => Payments?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
-        private Lazy<List<DealRequestViewModel>> DealRequests =>
-            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Map<DealRequest, DealRequestViewModel>());
+        private List<DealRequestViewModel> DealRequests { get; set; }
 
-        private Lazy<List<PaymentViewModel>> Payments =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Map<Payment, PaymentViewModel>());
+        private List<PaymentViewModel> Payments { get; set; }
+
+        public override string ToString()
+        {
+            return Entity?.ToString();
+        }
     }
 }

@@ -16,5 +16,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Customer Customer { get; set; }
         public virtual Item Item { get; set; }
         public virtual ICollection<ApplicantFeature> ApplicantFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Customer.ToString();
+        }
     }
 }

@@ -28,5 +28,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
         public virtual ICollection<Reminder> Reminders { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Username} : {DecryptedPassword}";
+        }
     }
 }

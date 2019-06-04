@@ -1,4 +1,5 @@
-﻿using RealEstate.Base.Enums;
+﻿using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
 using System.Collections.Generic;
 
@@ -18,5 +19,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Sms Sms { get; set; }
         public virtual ICollection<Picture> Pictures { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Type.GetDisplayName()} : {Value}";
+        }
     }
 }

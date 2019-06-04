@@ -41,9 +41,9 @@ namespace RealEstate.Web.Pages.Manage.Customer
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                var model = await _customerService.ApplicantInputAsync(id).ConfigureAwait(false);
+                var model = await _customerService.CustomerInputAsync(id).ConfigureAwait(false);
                 if (model == null)
-                    return RedirectToPage(typeof(Applicant.IndexModel).Page());
+                    return RedirectToPage(typeof(IndexModel).Page());
 
                 NewCustomer = model;
                 PageTitle = _localizer[SharedResource.EditCustomer];

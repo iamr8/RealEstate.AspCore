@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -12,12 +11,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Reminder Entity { get; }
 
-        public ReminderViewModel(Reminder entity)
+        public ReminderViewModel(Reminder entity, Action<ReminderViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public bool IsCheck => Entity?.IsCheck ?? false;
@@ -27,13 +27,15 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string CheckNumber => Entity?.CheckNumber;
         public double Price => (double)(Entity?.Price ?? 0);
 
-        public Lazy<DealViewModel> Deal =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
+        public DealViewModel Deal { get; set; }
 
-        public Lazy<UserViewModel> User =>
-            LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
+        public UserViewModel User { get; set; }
 
-        public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
+        public List<PictureViewModel> Pictures { get; set; }
+
+        public override string ToString()
+        {
+            return Entity?.ToString();
+        }
     }
 }

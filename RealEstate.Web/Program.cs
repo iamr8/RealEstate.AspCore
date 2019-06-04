@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 
@@ -12,6 +11,8 @@ namespace RealEstate.Web
         {
             CreateWebHostBuilder(args).Build().Run();
         }
+
+        public static bool DisableProfilingResults { get; internal set; }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)

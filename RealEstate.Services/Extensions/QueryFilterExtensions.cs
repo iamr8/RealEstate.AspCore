@@ -35,12 +35,12 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static TModel Map<TEntity, TModel>(this TEntity model) where TEntity : BaseEntity where TModel : BaseLogViewModel
+        public static TModel Map<TEntity, TModel>(this TEntity model, Action<TModel> act = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model == null)
                 return default;
 
-            var ty = Activator.CreateInstance(typeof(TModel), model) as TModel;
+            var ty = Activator.CreateInstance(typeof(TModel), model, act) as TModel;
             return ty;
         }
 
@@ -120,7 +120,7 @@ namespace RealEstate.Services.Extensions
             var result = model
                 .Select(entity => entity.Map<TEntity, TModel>())
                 .Where(x => x?.Id != null)
-                .R8ToList();
+                .ToHasNotNullList();
             return result;
         }
 
@@ -132,7 +132,7 @@ namespace RealEstate.Services.Extensions
             var result = model
                 .Select(entity => entity.Map<TEntity, TModel>())
                 .Where(x => x != null)
-                .R8ToList();
+                .ToHasNotNullList();
             return result;
         }
 

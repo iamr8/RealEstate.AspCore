@@ -2,7 +2,6 @@
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -13,12 +12,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Payment Entity { get; }
 
-        public PaymentViewModel(Payment entity)
+        public PaymentViewModel(Payment entity, Action<PaymentViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public double Value => Entity?.Value ?? 0;
@@ -29,19 +29,19 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public bool IsCheckedOut => !string.IsNullOrEmpty(CheckoutId);
         public string CheckoutId => Entity?.CheckoutId;
 
-        public Lazy<EmployeeViewModel> Employee =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
+        public EmployeeViewModel Employee { get; set; }
 
-        public Lazy<PaymentViewModel> Checkout =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Checkout.Map<Payment, PaymentViewModel>());
+        public PaymentViewModel Checkout { get; set; }
 
-        public Lazy<SmsViewModel> Sms =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Sms.Map<Sms, SmsViewModel>());
+        public SmsViewModel Sms { get; set; }
 
-        public Lazy<List<PaymentViewModel>> Payments =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payments.Map<Payment, PaymentViewModel>());
+        public List<PaymentViewModel> Payments { get; set; }
 
-        public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
+        public List<PictureViewModel> Pictures { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

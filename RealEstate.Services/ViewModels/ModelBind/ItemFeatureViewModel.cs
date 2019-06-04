@@ -11,20 +11,24 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public ItemFeature Entity { get; }
 
-        public ItemFeatureViewModel(ItemFeature entity)
+        public ItemFeatureViewModel(ItemFeature entity, Action<ItemFeatureViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Value => Entity?.Value?.FixCurrency();
 
-        public Lazy<ItemViewModel> Item =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
+        public ItemViewModel Item { get; set; }
 
-        public Lazy<FeatureViewModel> Feature =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Map<Feature, FeatureViewModel>());
+        public FeatureViewModel Feature { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

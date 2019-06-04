@@ -1,7 +1,66 @@
 ﻿@page
-@using RealEstate.Services.ServiceLayer.Base
+@using Newtonsoft.Json
 @model IndexModel
 @{
+
+    var level1 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            To = "200000000"
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
+    var level2 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            From = "200000000",
+            To = "300000000"
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
+    var level3 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            From = "300000000",
+            To = "500000000"
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
+    var level4 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            From = "500000000",
+            To = "700000000"
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
+    var level5 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            From = "700000000",
+            To = "1000000000"
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
+    var level6 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
+    {
+        new ItemFeatureJsonValueViewModel
+        {
+            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
+            Name = "قیمت نهایی",
+            From = "1000000000",
+        }
+    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
     var districtsSelect = districts?.Select(x => new SelectListItem
     {
@@ -40,13 +99,18 @@
     }).ToList()).AddNone();
 
 }
+<status>
+    @Model.Status
+</status>
 <div class="col-12">
-    <status>
-        @Model.Status
-    </status>
+
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
+            @if (User.IsInRole(Role.SuperAdmin.ToString()))
+            {
+                <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">حذف موارد مشابه</a>
+            }
+            <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
             <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
@@ -112,6 +176,14 @@
                                 <div class="items hidden"></div>
                             </div>
                         </div>
+                        <hr subject="مبلغ های پیش فرض" />
+
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level1">زیر 200 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level2" >بین 200 تا 300 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level3" >بین 300 تا 500 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level4" >بین 500 تا 700 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level5" >بین 700 تا یک میلیارد تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level6" >بالای 1 میلیارد تومان</a>
                     }
                     @if (facilities?.Any() == true)
                     {
@@ -137,86 +209,88 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    var category = item.Category;
+
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
                                 <ul class="info-breadcrumb">
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@item.Category.Value.Name">@item.Category.Value.Name</a>
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@category?.Name">@category?.Name</a>
                                     </li>
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property.Value.Category.Value.Name">
-                                            @item.Property.Value.Category.Value.Name
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property?.Category.Name">
+                                            @item.Property?.Category.Name
                                         </a>
                                     </li>
                                     <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property.Value.District.Value.Name">
-                                            @item.Property.Value.District.Value.Name
+                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property?.District.Name">
+                                            @item.Property?.District.Name
                                         </a>
                                     </li>
                                 </ul>
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property.Value.Id" target="_blank">
-                                        @item.Property.Value.Address
-                                        @if (item.Property.Value?.Pictures.Value?.Any() == true)
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property?.Id" target="_blank">
+                                        @item.Property?.Address
+                                        @if (item.Property?.Pictures?.Any() == true)
                                         {
                                             <i class="fa fa-check-circle verified"></i>
                                         }
                                     </a>
                                 </span>
-                                @if (item.Property.Value.PropertyFacilities.Value?.Any() == true)
+                                @if (item.Property?.PropertyFacilities?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["PropertyFacilities"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property.Value.PropertyFacilities.Value)
+                                            @foreach (var feature in item.Property?.PropertyFacilities)
                                             {
                                                 <text>
-                                                    <li>@feature.Facility.Value?.Name</li>
+                                                    <li>@feature.Facility?.Name</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.Property.Value.PropertyFeatures.Value?.Any() == true)
+                                @if (item.Property?.PropertyFeatures?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["PropertyFeatures"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property.Value.PropertyFeatures.Value)
+                                            @foreach (var feature in item.Property?.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.ItemFeatures.Value?.Any() == true)
+                                @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["ItemFeatures"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.ItemFeatures.Value)
+                                            @foreach (var feature in item.ItemFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.Property.Value?.Pictures.Value?.Any() == true)
+                                @if (item.Property?.Pictures?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Photos] :
                                         <ul class="info-breadcrumb gallery no-image">
-                                            @for (var i = 0; i < item.Property.Value.Pictures.Value.Count; i++)
+                                            @for (var i = 0; i < item.Property?.Pictures.Count; i++)
                                             {
-                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property.Value.Pictures.Value[i].File}");
+                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures[i].File}");
                                                 <li>
                                                     <img class="hidden" src="@imgPath">
                                                     @SharedLocalizer[SharedResource.Picture] @(i + 1)
@@ -238,10 +312,10 @@
                                 }*@
 
                             <div class="button">
-                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property.Value.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
+                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property.Value.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>
+                                    @*<a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>*@
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
                                     <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }

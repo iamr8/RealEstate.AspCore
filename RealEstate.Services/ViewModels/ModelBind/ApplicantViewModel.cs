@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -13,20 +12,26 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Applicant Entity { get; }
 
-        public ApplicantViewModel(Applicant entity)
+        public ApplicantViewModel(Applicant entity, Action<ApplicantViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Description => Entity?.Description;
         public ApplicantTypeEnum Type => Entity?.Type ?? ApplicantTypeEnum.Applicant;
 
-        public Lazy<CustomerViewModel> Customer => LazyLoadExtension.LazyLoad(() => Entity?.Customer.Map<Customer, CustomerViewModel>());
-        public Lazy<UserViewModel> User => LazyLoadExtension.LazyLoad(() => Entity?.User.Map<User, UserViewModel>());
-        public Lazy<ItemViewModel> Item => LazyLoadExtension.LazyLoad(() => Entity?.Item.Map<Item, ItemViewModel>());
-        public Lazy<List<ApplicantFeatureViewModel>> ApplicantFeatures => LazyLoadExtension.LazyLoad(() => Entity?.ApplicantFeatures.Map<ApplicantFeature, ApplicantFeatureViewModel>());
+        public CustomerViewModel Customer { get; set; }
+        public UserViewModel User { get; set; }
+        public ItemViewModel Item { get; set; }
+        public List<ApplicantFeatureViewModel> ApplicantFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

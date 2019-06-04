@@ -5,6 +5,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -12,6 +13,15 @@ namespace RealEstate.Services.ViewModels.ModelBind
     {
         [JsonIgnore]
         public Item Entity { get; }
+
+        public ItemViewModel(Item entity, Action<ItemViewModel> act = null)
+        {
+            if (entity == null)
+                return;
+
+            Entity = entity;
+            act?.Invoke(this);
+        }
 
         public ItemViewModel(Item entity)
         {
@@ -23,21 +33,20 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public string Description => Entity?.Description;
 
-        public DealStatusEnum LastState() => DealRequests.LazyLoadLast()?.Status ?? DealStatusEnum.Rejected;
+        public DealStatusEnum LastState => DealRequests?.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status ?? DealStatusEnum.Rejected;
 
-        public Lazy<CategoryViewModel> Category =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Category.Map<Category, CategoryViewModel>());
+        public CategoryViewModel Category { get; set; }
 
-        public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
+        public PropertyViewModel Property { get; set; }
 
-        public Lazy<List<ApplicantViewModel>> Applicants =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Map<Applicant, ApplicantViewModel>());
+        public List<ApplicantViewModel> Applicants { get; set; }
 
-        public Lazy<List<ItemFeatureViewModel>> ItemFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.ItemFeatures.Map<ItemFeature, ItemFeatureViewModel>());
+        public List<ItemFeatureViewModel> ItemFeatures { get; set; }
+        public List<DealRequestViewModel> DealRequests { get; set; }
 
-        public Lazy<List<DealRequestViewModel>> DealRequests =>
-            LazyLoadExtension.LazyLoad(() => Entity?.DealRequests.Map<DealRequest, DealRequestViewModel>());
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

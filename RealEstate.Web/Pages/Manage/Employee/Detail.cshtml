@@ -112,14 +112,14 @@
                                       <b class="title">@SharedLocalizer[SharedResource.Price]:</b> @payment.Value.ToString().CurrencyToWords() تومان
                                       <span class="badge badge-@color">@payment.Type.GetDisplayName()</span>
                                     </span>
-                                    @if (payment.Pictures.Value?.Any() == true)
+                                    @if (payment.Pictures?.Any() == true)
                                     {
                                       <span>
                                         @SharedLocalizer[SharedResource.Photos] :
                                         <ul class="info-breadcrumb gallery no-image">
-                                          @for (var i = 0; i < payment.Pictures.Value.Count; i++)
+                                          @for (var i = 0; i < payment.Pictures.Count; i++)
                                           {
-                                            var imgPath = $"~/{FileHandler.ImgDirectory}/{payment.Pictures.Value[i].File}";
+                                            var imgPath = $"~/{FileHandler.ImgDirectory}/{payment.Pictures[i].File}";
                                             var renderedPath = Url.Content(imgPath);
                                             <li>
                                               <img class="hidden" src="@renderedPath">

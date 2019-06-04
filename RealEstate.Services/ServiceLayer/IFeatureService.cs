@@ -196,9 +196,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -214,9 +212,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -232,9 +228,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;

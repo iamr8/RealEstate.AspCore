@@ -7,10 +7,16 @@ namespace RealEstate.Services.Database.Tables
     {
         [DefaultValue(6)]
         public int Dong { get; set; }
+
         public string Description { get; set; }
         public string PropertyOwnershipId { get; set; }
         public string CustomerId { get; set; }
         public virtual PropertyOwnership PropertyOwnership { get; set; }
         public virtual Customer Customer { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Customer} : {Dong} دانگ";
+        }
     }
 }

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -13,21 +12,27 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Category Entity { get; }
 
-        public CategoryViewModel(Category entity)
+        public CategoryViewModel(Category entity, Action<CategoryViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Name => Entity?.Name;
 
         public CategoryTypeEnum Type => Entity?.Type ?? CategoryTypeEnum.Property;
 
-        public Lazy<List<ItemViewModel>> Items => LazyLoadExtension.LazyLoad(() => Entity?.Items.Map<Item, ItemViewModel>());
-        public Lazy<List<PropertyViewModel>> Properties => LazyLoadExtension.LazyLoad(() => Entity?.Properties.Map<Property, PropertyViewModel>());
-        public Lazy<List<UserItemCategoryViewModel>> UserItemCategories => LazyLoadExtension.LazyLoad(() => Entity?.UserItemCategories.Map<UserItemCategory, UserItemCategoryViewModel>());
-        public Lazy<List<UserPropertyCategoryViewModel>> UserPropertyCategories => LazyLoadExtension.LazyLoad(() => Entity?.UserPropertyCategories.Map<UserPropertyCategory, UserPropertyCategoryViewModel>());
+        public List<ItemViewModel> Items { get; set; }
+        public List<PropertyViewModel> Properties { get; set; }
+        public List<UserItemCategoryViewModel> UserItemCategories { get; set; }
+        public List<UserPropertyCategoryViewModel> UserPropertyCategories { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

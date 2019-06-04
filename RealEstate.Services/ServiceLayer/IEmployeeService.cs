@@ -128,9 +128,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -146,9 +144,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -164,9 +160,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -208,7 +202,15 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Employee, EmployeeViewModel>()).ConfigureAwait(false);
+                item => item.Map<Employee, EmployeeViewModel>(ent =>
+                {
+                    ent.Include<Insurance, InsuranceViewModel>(item.Insurances);
+                    ent.Include<FixedSalary, FixedSalaryViewModel>(item.FixedSalaries);
+                    ent.Include<Payment, PaymentViewModel>(item.Payments);
+                    ent.Include<User, UserViewModel>(item.Users);
+                    ent.Include<EmployeeDivision, EmployeeDivisionViewModel>(item.EmployeeDivisions,
+                        ent2 => ent2.Include<Division, DivisionViewModel>(ent2.Entity.Division));
+                })).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -506,7 +508,7 @@ namespace RealEstate.Services.ServiceLayer
                     (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
                     null,
                     false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async Task<LeaveInputViewModel> LeaveInputAsync(string id)
@@ -522,7 +524,7 @@ namespace RealEstate.Services.ServiceLayer
             var result = new LeaveInputViewModel
             {
                 Id = viewModel.Id,
-                EmployeeId = viewModel.Employee.Value?.Id,
+                EmployeeId = viewModel.Employee?.Id,
                 Reason = viewModel.Reason,
                 FromDate = viewModel.From.Date.GregorianToPersian(true),
                 FromHour = viewModel.From.Hour,
@@ -558,12 +560,18 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Map<Employee, EmployeeViewModel>();
+            var viewModel = model?.Map<Employee, EmployeeViewModel>(ent =>
+            {
+                ent.Include<EmployeeDivision, EmployeeDivisionViewModel>(model.EmployeeDivisions,
+                    ent2 => ent2.Include<Division, DivisionViewModel>(ent2.Entity.Division));
+                ent.Include<Insurance, InsuranceViewModel>(model.Insurances);
+                ent.Include<FixedSalary, FixedSalaryViewModel>(model.FixedSalaries);
+            });
             if (viewModel == null)
                 return default;
 
-            var fixedSalary = viewModel.CurrentFixedSalary();
-            var insurance = viewModel.CurrentInsurance();
+            var fixedSalary = viewModel.CurrentFixedSalary;
+            var insurance = viewModel.CurrentInsurance;
             var result = new EmployeeInputViewModel
             {
                 FirstName = viewModel.FirstName,
@@ -573,10 +581,10 @@ namespace RealEstate.Services.ServiceLayer
                 Phone = viewModel.Phone,
                 Id = viewModel.Id,
                 FixedSalary = fixedSalary?.Value ?? 0,
-                Divisions = viewModel.EmployeeDivisions.Value?.Select(x => new DivisionJsonViewModel
+                Divisions = viewModel.EmployeeDivisions?.Select(x => new DivisionJsonViewModel
                 {
-                    DivisionId = x.Division.Value?.Id,
-                    Name = x.Division.Value?.Name
+                    DivisionId = x.Division?.Id,
+                    Name = x.Division?.Name
                 }).ToList(),
                 Insurance = insurance?.Price ?? 0
             };

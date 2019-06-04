@@ -1,72 +1,479 @@
 ﻿@page
 @model AddModel
 @{
-    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+
+    var owner = await CustomerService.CustomerInputAsync(Model.NewProperty.Ownerships.FirstOrDefault().CustomerId).ConfigureAwait(false);
+
     var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
-    var ownerships = await CustomerService.CustomerListAsync().ConfigureAwait(false);
-    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
-
-    var propertyCreator = new PropertyCreatorComponentModel
+    var propertyFacilitiesList = propertyFacilities?.Select(x => new SelectListItem
     {
-        OwnershipSelectorTitle = SharedLocalizer["Owners"],
-        FacilitySelectorTitle = SharedLocalizer["PropertyFacilities"],
-        FeaturesSelectorTitle = SharedLocalizer["PropertyFeatures"],
-        OwnershipList = ownerships,
-        FacilityList = propertyFacilities,
-        FeaturesList = propertyFeatures,
-        Categories = propertyCategories,
-        Districts = districts,
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
 
-        ModelName = nameof(Model.NewProperty),
-        PropertyId = $"{nameof(Model.NewProperty)}_{nameof(Model.NewProperty.Id)}",
-        ScriptKey = "propertyCreator",
-        Model = Model.NewProperty,
+    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
+    var propertyFeaturesList = propertyFeatures?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
 
-        PersonCreator = new PersonCreatorComponentModel
-        {
-            ModelName = $"{ nameof(Model.NewProperty)}_NewPerson",
-        },
-    };
-    propertyCreator.JsCodeOnSuccess = "const option = document.createElement(\"option\");\r\n"
-                                                          + "$(option).val(responseId).html(responseName);\r\n"
-                                                          + $"$(\"#{propertyCreator.OwnershipSelector.SelectId}\").prepend(option);\r\n"
-                                                          + $"$(\"#{propertyCreator.OwnershipsJson.Id}\").trigger(\"change\");\r\n";
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districtsList = districts?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
+
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var propertyCategoriesList = propertyCategories?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
 }
 
 <div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-            <div id="accordion">
-                <div class="card">
-                    <div class="card-header">
-                        <a class="card-link" data-toggle="collapse" href="#collapseOne">
-                            @SharedLocalizer["NewContact"]
-                        </a>
+            <hr subject="@SharedLocalizer[SharedResource.Owner]" />
+            <form id="newCustomer_Form" class="row justify-content-center align-items-center">
+                <div class="col-lg">
+                    <div class="input-wrapper">
+                        <label class="control-label" for="newCustomer_Name">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Name))</label>
+                        <input asp-for="@owner.Name" id="newCustomer_Name" name="newCustomer.Name" class="form-control" />
+                        <span class="text-danger" data-valmsg-for="newCustomer.Name" data-valmsg-replace="true"></span>
                     </div>
-                    <div id="collapseOne" class="collapse" data-parent="#accordion">
-                        <div class="card-body">
-                            <form method="post" id="@propertyCreator.PersonCreator.FormId">
-                                <vc:person-creator model="@propertyCreator.PersonCreator" />
-                            </form>
+                </div>
+                <div class="col-lg">
+                    <div class="input-wrapper">
+                        <label class="control-label" for="newCustomer_Mobile">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Mobile))</label>
+                        <input asp-for="@owner.Mobile" id="newCustomer_Mobile" name="newCustomer.Mobile" class="form-control" />
+                        <span class="text-danger" data-valmsg-for="newCustomer.Mobile" data-valmsg-replace="true"></span>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    <div class="input-wrapper">
+                        <input type="button" id="newCustomer_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
+                    </div>
+                </div>
+            </form>
+            <div class="row justify-content-center align-items-center margin-bottomed hidden" id="customer_similar">
+                <div class="col-12">
+                    @SharedLocalizer[SharedResource.SimilarItems]
+                    <div class="items"></div>
+                </div>
+            </div>
+            <div id="newCustomer_Detail">
+                <hr />
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-xs-12 col-lg">
+                        <div class="input-wrapper">
+                            <label class="control-label" for="newCustomer_Phone">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Phone))</label>
+                            <input asp-for="@owner.Phone" id="newCustomer_Phone" name="newCustomer.Phone" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="newCustomer.Phone" data-valmsg-replace="true"></span>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-lg">
+                        <div class="input-wrapper">
+                            <label class="control-label" for="newCustomer_Address">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Address))</label>
+                            <input asp-for="@owner.Address" id="newCustomer_Address" name="newCustomer.Address" class="form-control" />
+                            <span class="text-danger" data-valmsg-for="newCustomer.Address" data-valmsg-replace="true"></span>
                         </div>
                     </div>
                 </div>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col">
+                        <input type="button" id="newCustomer_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[SharedResource.SubmitOwner]" />
+                    </div>
+                </div>
             </div>
+        </section>
+        <section class="container-fluid">
+            <hr subject="@SharedLocalizer[SharedResource.Property]" />
+            <form id="newProperty_Form" class="row justify-content-center align-items-center">
+                <div class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
 
-            <form method="post" id="@propertyCreator.FormId">
-                <vc:property-creator model="@propertyCreator" />
+                        <input asp-for="NewProperty.OwnershipsJson" />
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.CategoryId"></label>
+                                <select asp-for="NewProperty.CategoryId" asp-items="propertyCategoriesList" class="custom-select"></select>
+                                <span class="text-danger" asp-validation-for="NewProperty.CategoryId"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.DistrictId"></label>
+                                <select asp-for="NewProperty.DistrictId" asp-items="districtsList" class="custom-select"></select>
+                                <span class="text-danger" asp-validation-for="NewProperty.DistrictId"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Street"></label>
+                                <input asp-for="NewProperty.Street" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.Street"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center align-items-center">
+
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Alley"></label>
+                                <input asp-for="NewProperty.Alley" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.Alley"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Number"></label>
+                                <input asp-for="NewProperty.Number" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.Number"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.BuildingName"></label>
+                                <input asp-for="NewProperty.BuildingName" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.BuildingName"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Floor"></label>
+                                <input asp-for="NewProperty.Floor" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.Floor"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Flat"></label>
+                                <input asp-for="NewProperty.Flat" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewProperty.Floor"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (propertyFeatures?.Any() == true)
+                    {
+                        <hr />
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-12" id="property-features-wrapper">
+                                <div class="itemShow adder input-wrapper">
+                                    <input asp-for="NewProperty.PropertyFeaturesJson" />
+                                    <label class="control-label" asp-for="NewProperty.PropertyFeaturesJson"></label>
+                                    <select asp-items="propertyFeaturesList" id="propertyFeatures-select" class="custom-select"></select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                    <input class="form-control" id="propertyFeatureValue" />
+                                    <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                    @if (propertyFacilities?.Any() == true)
+                    {
+                        <hr />
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-12" id="property-facilities-wrapper">
+                                <div class="itemShow adder input-wrapper">
+                                    <input asp-for="NewProperty.PropertyFacilitiesJson" />
+                                    <label class="control-label" asp-for="NewProperty.PropertyFacilitiesJson"></label>
+                                    <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
+                                    <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                    <hr />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewProperty.Description"></label>
+                                <textarea asp-for="NewProperty.Description" rows="3" class="form-control"></textarea>
+                                <span class="text-danger" asp-validation-for="NewProperty.Description"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row justify-content-center align-items-center" id="submitProperty">
+                        <div class="col">
+                            <input type="button" id="newProperty_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[SharedResource.SubmitProperty]" />
+                        </div>
+                    </div>
+                </div>
             </form>
         </section>
     </div>
 </div>
 
 @section Scripts
-    {
-    <script asp-paste-key="@propertyCreator.ScriptKey"></script>
-    <script asp-paste-key="propertyFeaturesScript"></script>
-    <script asp-paste-key="propertyFacilitiesScript"></script>
-    <script asp-paste-key="propertyOwnersScript"></script>
-    <script asp-paste-key="@propertyCreator.PersonCreator.ScriptKey"></script>
+{
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewProperty)_@nameof(Model.NewProperty.PropertyFeaturesJson)");
+            const selectInput = $("#propertyFeatures-select");
+            const wrapperClass = $("#property-features-wrapper");
+            const submitInput = $("#addNewPropertyFeature");
+            const valueInput = $("#propertyFeatureValue");
+            const itemSelector = "property-feature-item";
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name));
+                        const value = item
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass(itemSelector);
+
+                        const nameElement = document.createElement("span");
+                        var finalName = `${name}: `;
+
+                        if (value != null && value !== "")
+                            finalName = `${finalName}${value}`;
+
+                        $(nameElement).html(finalName);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(":not([value='---'])"),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(
+                            obj => obj.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                            id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                const availableItems = $('option:not(.hidden):not([value=""])', selectInput);
+                console.log("Available items", availableItems);
+                if ($(availableItems).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+                const value = $(valueInput).val();
+
+                if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
+                    return;
+
+                if (keyId === undefined || keyId === null || keyId === "")
+                    return;
+
+                if ((value === undefined || value === null || value === "" || value === "0"))
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name)): keyName,
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value)): value
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)));
+
+                $(valueInput).val("");
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    e.preventDefault();
+
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index =
+                        jsonValue.findIndex(prop => prop
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                            keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewProperty)_@nameof(Model.NewProperty.PropertyFacilitiesJson)");
+            const selectInput = $("#propertyFacility-select");
+            const wrapperClass = $("#property-facilities-wrapper");
+            const submitInput = $("#addNewPropertyFacility");
+            const itemSelector = "property-facility-item";
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+                        const id = item
+                            .@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).addClass(itemSelector);
+//                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
+
+                        const nameElement = document.createElement("span");
+                        $(nameElement).html(name);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(":not([value='---'])"),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(
+                            obj => obj.@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id)) ===
+                            id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                const availableItems = $('option:not(.hidden):not([value=""])', selectInput);
+                console.log("Available items", availableItems);
+                if ($(availableItems).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:not([value="---"]):eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+
+                if (keyName === "---")
+                    return;
+
+                if (keyId === undefined || keyId === null)
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name)): keyName
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name)));
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index =
+                        jsonValue.findIndex(prop => prop
+                            .@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name)) ===
+                            keyId);
+                    console.log("Index", index);
+
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+
+        });
+    </script>
 }

@@ -252,9 +252,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -270,9 +268,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -325,7 +321,7 @@ namespace RealEstate.Services.ServiceLayer
             var result = new ManagementPercentInputViewModel
             {
                 Id = viewModel.Id,
-                EmployeeId = viewModel.Employee.Value?.Id,
+                EmployeeId = viewModel.Employee?.Id,
                 Percent = viewModel.Percent
             };
 

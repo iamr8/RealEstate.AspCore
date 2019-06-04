@@ -8,5 +8,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Employee Employee { get; set; }
         public string DivisionId { get; set; }
         public virtual Division Division { get; set; }
+
+        public override string ToString()
+        {
+            return Division?.ToString();
+        }
     }
 }

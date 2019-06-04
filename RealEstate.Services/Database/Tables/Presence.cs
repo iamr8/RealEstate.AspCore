@@ -1,5 +1,7 @@
-﻿using RealEstate.Base.Enums;
+﻿using RealEstate.Base;
+using RealEstate.Base.Enums;
 using RealEstate.Services.Database.Base;
+using RealEstate.Services.Extensions;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -19,5 +21,10 @@ namespace RealEstate.Services.Database.Tables
 
         public string EmployeeId { get; set; }
         public virtual Employee Employee { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Status.GetDisplayName()} در تاریخ {Date.GregorianToPersian(true)} {Hour}:{Minute}";
+        }
     }
 }

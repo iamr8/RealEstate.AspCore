@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -12,12 +11,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Deal Entity { get; }
 
-        public DealViewModel(Deal entity)
+        public DealViewModel(Deal entity, Action<DealViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Description => Entity?.Description;
@@ -25,9 +25,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public double CommissionPrice => (double)(Entity?.CommissionPrice ?? 0);
         public string Barcode => Entity?.Barcode;
 
-        public Lazy<DealRequestViewModel> DealRequest => LazyLoadExtension.LazyLoad(() => Entity?.DealRequest.Map<DealRequest, DealRequestViewModel>());
-        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Map<Reminder, ReminderViewModel>());
-        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Map<Beneficiary, BeneficiaryViewModel>());
-        public Lazy<List<PictureViewModel>> Pictures => LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
+        public DealRequestViewModel DealRequest { get; set; }
+        public List<ReminderViewModel> Reminders { get; set; }
+        public List<BeneficiaryViewModel> Beneficiaries { get; set; }
+        public List<PictureViewModel> Pictures { get; set; }
     }
 }

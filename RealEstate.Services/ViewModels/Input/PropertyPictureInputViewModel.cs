@@ -9,7 +9,7 @@ namespace RealEstate.Services.ViewModels.Input
 {
     public class PropertyPictureInputViewModel
     {
-        [FileTypeValidation("jpg", "png")]
+        [FileTypeValidation("jpg", "png", "jpeg")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FileRequired")]
         [Display(ResourceType = typeof(SharedResource), Name = "Picture")]
         public IFormFile[] Pictures { get; set; }

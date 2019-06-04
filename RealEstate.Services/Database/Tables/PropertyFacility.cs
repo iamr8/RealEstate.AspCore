@@ -11,5 +11,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Facility Facility { get; set; }
 
         public string FacilityId { get; set; }
+
+        public override string ToString()
+        {
+            return Facility.ToString();
+        }
     }
 }

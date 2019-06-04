@@ -73,5 +73,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Picture> Pictures { get; set; }
         public virtual ICollection<PropertyFacility> PropertyFacilities { get; set; }
         public virtual ICollection<PropertyFeature> PropertyFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Address;
+        }
     }
 }

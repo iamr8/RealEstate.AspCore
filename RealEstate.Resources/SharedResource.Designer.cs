@@ -367,6 +367,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to در حال بررسی.
+        /// </summary>
+        public static string Checking {
+            get {
+                return ResourceManager.GetString("Checking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to شماره چک.
         /// </summary>
         public static string CheckNumber {
@@ -1929,6 +1938,15 @@ namespace RealEstate.Resources {
         public static string PropertyFeatures {
             get {
                 return ResourceManager.GetString("PropertyFeatures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ملک با مشخصات فعلی، قبلا ثبت شده است..
+        /// </summary>
+        public static string PropertyIsAlreadyExists {
+            get {
+                return ResourceManager.GetString("PropertyIsAlreadyExists", resourceCulture);
             }
         }
         

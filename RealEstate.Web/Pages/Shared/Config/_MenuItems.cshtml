@@ -10,10 +10,10 @@
 <nav-button icon="~/icons/deal.svg" subject="@SharedLocalizer[SharedResource.Items]">
     <nav-button page="@typeof(Manage.Item.ZoonkanModel).Page()" icon="~/icons/file-in-folder.svg" subject="@SharedLocalizer[SharedResource.Zoonkan]" />
     <nav-button page="@typeof(Manage.Item.IndexModel).Page()" icon="~/icons/copy.svg" subject="@SharedLocalizer[SharedResource.FullList]" />
-    @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+    @*@if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
     {
         <nav-button page="@typeof(Manage.Property.IndexModel).Page()" icon="~/icons/property.svg" subject="@SharedLocalizer[SharedResource.Properties]" />
-    }
+    }*@
 </nav-button>
 
     @*if (User.IsInRole(Role.SuperAdmin.ToString()))

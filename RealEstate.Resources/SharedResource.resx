@@ -1029,4 +1029,10 @@
   <data name="Previlleges" xml:space="preserve">
     <value>دسترسی ها</value>
   </data>
+  <data name="PropertyIsAlreadyExists" xml:space="preserve">
+    <value>ملک با مشخصات فعلی، قبلا ثبت شده است.</value>
+  </data>
+  <data name="Checking" xml:space="preserve">
+    <value>در حال بررسی</value>
+  </data>
 </root>

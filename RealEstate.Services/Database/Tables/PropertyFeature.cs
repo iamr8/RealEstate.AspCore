@@ -15,5 +15,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Feature Feature { get; set; }
 
         public string FeatureId { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Feature.ToString() ?? "N/A"} : {Value}";
+        }
     }
 }

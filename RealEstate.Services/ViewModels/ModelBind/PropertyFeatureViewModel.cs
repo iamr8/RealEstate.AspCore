@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 
 namespace RealEstate.Services.ViewModels.ModelBind
@@ -11,20 +10,24 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public PropertyFeature Entity { get; }
 
-        public PropertyFeatureViewModel(PropertyFeature entity)
+        public PropertyFeatureViewModel(PropertyFeature entity, Action<PropertyFeatureViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Value => Entity?.Value;
 
-        public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
+        public PropertyViewModel Property { get; set; }
 
-        public Lazy<FeatureViewModel> Feature =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Feature.Map<Feature, FeatureViewModel>());
+        public FeatureViewModel Feature { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

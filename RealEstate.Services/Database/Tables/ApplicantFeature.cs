@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using RealEstate.Services.Database.Base;
 using System.ComponentModel.DataAnnotations;
-using RealEstate.Services.Database.Base;
 
 namespace RealEstate.Services.Database.Tables
 {
     public class ApplicantFeature : BaseEntity
     {
-        public ApplicantFeature()
-        {
-        }
-
         [Required]
         public string Value { get; set; }
 
@@ -20,5 +15,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Feature Feature { get; set; }
 
         public string FeatureId { get; set; }
+
+        public override string ToString()
+        {
+            return Feature.ToString();
+        }
     }
 }

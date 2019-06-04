@@ -91,7 +91,7 @@ namespace RealEstate.Services.ServiceLayer
             var result = list.Select(x => new BeneficiaryJsonViewModel
             {
                 UserId = x.Id,
-                UserFullName = $"{x.Employee.Value?.LastName}، {x.Employee.Value?.FirstName}",
+                UserFullName = $"{x.Employee?.LastName}، {x.Employee?.FirstName}",
             }).ToList();
             return result;
         }
@@ -102,7 +102,14 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Map<User, UserViewModel>();
+            var viewModel = model?.Map<User, UserViewModel>(ent =>
+            {
+                ent.Include<UserItemCategory, UserItemCategoryViewModel>(model.UserItemCategories,
+                    ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.Include<UserPropertyCategory, UserPropertyCategoryViewModel>(model.UserPropertyCategories,
+                    ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.Include<Employee, EmployeeViewModel>(model.Employee);
+            });
             if (viewModel == null)
                 return default;
 
@@ -111,19 +118,19 @@ namespace RealEstate.Services.ServiceLayer
                 Role = viewModel.Role,
                 Password = viewModel.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption),
                 Username = viewModel.Username,
-                UserItemCategories = viewModel.UserItemCategories.Value?.Select(x => new UserItemCategoryJsonViewModel
+                UserItemCategories = viewModel.UserItemCategories?.Select(x => new UserItemCategoryJsonViewModel
                 {
-                    CategoryId = x.Category.Value?.Id,
-                    Name = x.Category.Value?.Name
+                    CategoryId = x.Category?.Id,
+                    Name = x.Category?.Name
                 }).ToList(),
-                UserPropertyCategories = viewModel.UserPropertyCategories.Value?.Select(x => new UserPropertyCategoryJsonViewModel
+                UserPropertyCategories = viewModel.UserPropertyCategories?.Select(x => new UserPropertyCategoryJsonViewModel
                 {
-                    CategoryId = x.Category.Value?.Id,
-                    Name = x.Category.Value?.Name
+                    CategoryId = x.Category?.Id,
+                    Name = x.Category?.Name
                 }).ToList(),
                 //                FixedSalary = viewModel.FixedSalaries?.OrderByDescending(x => x.Logs.Create).FirstOrDefault()?.Value ?? 0,
                 Id = viewModel.Id,
-                EmployeeId = viewModel.Employee.Value?.Id
+                EmployeeId = viewModel.Employee?.Id
             };
             return result;
         }
@@ -149,7 +156,14 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<User, UserViewModel>()).ConfigureAwait(false);
+                item => item.Map<User, UserViewModel>(ent =>
+                {
+                    ent.Include<Employee, EmployeeViewModel>(item.Employee);
+                    ent.Include<UserItemCategory, UserItemCategoryViewModel>(item.UserItemCategories,
+                        ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                    ent.Include<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
+                        ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                })).ConfigureAwait(false);
             return result;
         }
 
@@ -221,7 +235,7 @@ namespace RealEstate.Services.ServiceLayer
                 false).ConfigureAwait(false);
 
             //            await _paymentService.FixedSalarySyncAsync(model.FixedSalary, user.Id, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
@@ -287,9 +301,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;

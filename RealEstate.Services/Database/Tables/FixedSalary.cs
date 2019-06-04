@@ -1,4 +1,5 @@
 ﻿using RealEstate.Services.Database.Base;
+using RealEstate.Services.Extensions;
 using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.Database.Tables
@@ -10,5 +11,10 @@ namespace RealEstate.Services.Database.Tables
 
         public string EmployeeId { get; set; }
         public virtual Employee Employee { get; set; }
+
+        public override string ToString()
+        {
+            return Value.ToString().CurrencyToWords();
+        }
     }
 }

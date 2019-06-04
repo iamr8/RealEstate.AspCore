@@ -36,7 +36,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public string PageTitle => _localizer[SharedResource.Items];
 
         public async Task OnGetAsync(string pageNo, string status, string id, string street, string itemCategory, string ownerName, string customerId,
-            string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile, string dateFrom, string dateTo, string creatorId, string hasFeature)
+            string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile, string dateFrom, string dateTo, string creatorId, string hasFeature, bool? removeDuplicates)
         {
             SearchInput = new ItemSearchViewModel
             {
@@ -61,7 +61,7 @@ namespace RealEstate.Web.Pages.Manage.Item
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _itemService.ItemListAsync(SearchInput).ConfigureAwait(false);
+            List = await _itemService.ItemListAsync(SearchInput, removeDuplicates ?? false).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

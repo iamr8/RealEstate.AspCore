@@ -5,6 +5,7 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -12,7 +13,6 @@ using RealEstate.Services.ViewModels.Search;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -25,6 +25,10 @@ namespace RealEstate.Services.ServiceLayer
         Task<CustomerJsonViewModel> CustomerJsonAsync(string id);
 
         Task<MethodStatus<Applicant>> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
+
+        Task<OwnershipInputViewModel> OwnershipInputAsync(string customerId);
+
+        Task<MethodStatus<Ownership>> OwnershipAddOrUpdateAsync(OwnershipInputViewModel model, bool update, bool save);
 
         Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
@@ -55,6 +59,8 @@ namespace RealEstate.Services.ServiceLayer
         Task<StatusEnum> ApplicantRemoveAsync(string id);
 
         Task<MethodStatus<Ownership>> OwnershipPlugPropertyAsync(string ownerId, string propertyOwnershipId, bool save);
+
+        Task<CustomerInputViewModel> CustomerInputAsync(string customerId);
 
         Task<Customer> CustomerEntityAsync(string id, string mobile, bool includeApplicants = true, bool includeOwnerships = true, bool includeSmses = true);
 
@@ -88,6 +94,48 @@ namespace RealEstate.Services.ServiceLayer
             _customers = _unitOfWork.Set<Database.Tables.Customer>();
             _applicants = _unitOfWork.Set<Database.Tables.Applicant>();
             _ownerships = _unitOfWork.Set<Ownership>();
+        }
+
+        public async Task<CustomerInputViewModel> CustomerInputAsync(string customerId)
+        {
+            if (string.IsNullOrEmpty(customerId))
+                return default;
+
+            var customer = await _customers.FirstOrDefaultAsync(x => x.Id == customerId).ConfigureAwait(false);
+            if (customer == null)
+                return default;
+
+            var result = new CustomerInputViewModel
+            {
+                Id = customer.Id,
+                Name = customer.Name,
+                Address = customer.Address,
+                Mobile = customer.MobileNumber,
+                Phone = customer.PhoneNumber,
+            };
+            return result;
+        }
+
+        public async Task<OwnershipInputViewModel> OwnershipInputAsync(string customerId)
+        {
+            if (string.IsNullOrEmpty(customerId))
+                return default;
+
+            var ownership = await _ownerships.FirstOrDefaultAsync(x => x.CustomerId == customerId).ConfigureAwait(false);
+            if (ownership == null)
+                return default;
+
+            var result = new OwnershipInputViewModel
+            {
+                Id = ownership.CustomerId,
+                Name = ownership.Customer.Name,
+                Address = ownership.Customer.Address,
+                Mobile = ownership.Customer.MobileNumber,
+                Phone = ownership.Customer.PhoneNumber,
+                Description = ownership.Description,
+                Dong = ownership.Dong
+            };
+            return result;
         }
 
         public async Task<List<ItemCustomerJsonViewModel>> ListJsonAsync(string itemId)
@@ -289,10 +337,10 @@ namespace RealEstate.Services.ServiceLayer
 
             return new OwnershipJsonViewModel
             {
-                CustomerId = viewModel.Customer.Value?.Id,
-                Name = viewModel.Customer.Value?.Name,
+                CustomerId = viewModel.Customer?.Id,
+                Name = viewModel.Customer?.Name,
                 Dong = viewModel.Dong,
-                Mobile = viewModel.Customer.Value?.Mobile
+                Mobile = viewModel.Customer?.Mobile
             };
         }
 
@@ -306,9 +354,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -324,9 +370,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
             if (result != StatusEnum.Success)
                 return result;
@@ -356,7 +400,7 @@ namespace RealEstate.Services.ServiceLayer
             if (viewModel == null)
                 return default;
 
-            var customer = viewModel.Customer.Value;
+            var customer = viewModel.Customer;
             var result = new ApplicantInputViewModel
             {
                 Id = viewModel.Id,
@@ -366,10 +410,10 @@ namespace RealEstate.Services.ServiceLayer
                 Address = customer?.Address,
                 Mobile = customer?.Mobile,
                 Phone = customer?.Phone,
-                ApplicantFeatures = viewModel.ApplicantFeatures.Value?.Select(x => new FeatureJsonValueViewModel
+                ApplicantFeatures = viewModel.ApplicantFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Value?.Id,
-                    Name = x.Feature.Value?.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
             };
@@ -387,7 +431,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Applicant, ApplicantViewModel>().ShowBasedOn(x => x.Customer.Value)
+                item => item.Map<Applicant, ApplicantViewModel>().ShowBasedOn(x => x.Customer)
             ).ConfigureAwait(false);
 
             return result;
@@ -601,11 +645,48 @@ namespace RealEstate.Services.ServiceLayer
                 : ApplicantAddAsync(model, null, save);
         }
 
+        public Task<MethodStatus<Ownership>> OwnershipAddOrUpdateAsync(OwnershipInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? OwnershipUpdateAsync(model, save)
+                : OwnershipAddAsync(model, save);
+        }
+
         public Task<MethodStatus<Customer>> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save)
         {
             return update
                 ? CustomerUpdateAsync(model, save)
                 : CustomerAddAsync(model, false, save);
+        }
+
+        public async Task<MethodStatus<Ownership>> OwnershipUpdateAsync(OwnershipInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new MethodStatus<Ownership>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new MethodStatus<Ownership>(StatusEnum.IdIsNull, null);
+
+            var entity = await _ownerships.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            if (entity == null)
+                return new MethodStatus<Ownership>(StatusEnum.OwnershipIsNull, null);
+
+            var customer = await CustomerEntityAsync(entity.CustomerId, null).ConfigureAwait(false);
+            if (customer == null)
+                return new MethodStatus<Ownership>(StatusEnum.CustomerIsNull, null);
+
+            var (customerStatus, customer1) = await CustomerAddOrUpdateAsync(new CustomerInputViewModel
+            {
+                Address = model.Address,
+                Description = model.Description,
+                Mobile = model.Mobile,
+                Name = model.Name,
+                Phone = model.Phone
+            }, true, true).ConfigureAwait(false);
+            if (customerStatus != StatusEnum.Success)
+                return new MethodStatus<Ownership>(StatusEnum.CustomerIsNull, null);
+
+            return new MethodStatus<Ownership>(StatusEnum.Success, entity);
         }
 
         public async Task<MethodStatus<Customer>> CustomerUpdateAsync(CustomerInputViewModel model, bool save)

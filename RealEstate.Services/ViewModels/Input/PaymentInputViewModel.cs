@@ -29,7 +29,7 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public PaymentTypeEnum Type { get; set; }
 
-        [FileTypeValidation("jpg", "png")]
+        [FileTypeValidation("jpg", "png", "jpeg")]
         [Display(ResourceType = typeof(SharedResource), Name = "Picture")]
         public IFormFile[] Pictures { get; set; }
     }

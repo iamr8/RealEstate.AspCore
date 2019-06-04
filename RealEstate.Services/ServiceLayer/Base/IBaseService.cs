@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using GeoAPI.Geometries;
+﻿using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
@@ -16,6 +10,13 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer.Base
 {
@@ -27,6 +28,12 @@ namespace RealEstate.Services.ServiceLayer.Base
             List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator,
             Action<TSource, TModel> onUpdate,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
+
+        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
+            where TEntity : BaseEntity;
+
+        IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(IQueryable<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser)
+            where TSource : BaseEntity where TSearch : BaseSearchModel;
 
         IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser)
             where TSource : BaseEntity where TSearch : BaseSearchModel;
@@ -45,9 +52,6 @@ namespace RealEstate.Services.ServiceLayer.Base
         Task<MethodStatus<TSource>> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
-        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save)
-            where TEntity : BaseEntity;
-
         Task<MethodStatus<TSource>> AddAsync<TSource>(TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity;
 
@@ -62,16 +66,13 @@ namespace RealEstate.Services.ServiceLayer.Base
         //        (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
         //            List<LogUserViewModel> users) where TSource : class where TModel : class;
 
-        Task<StatusEnum> SaveChangesAsync(bool save);
+        Task<StatusEnum> SaveChangesAsync();
 
         //        List<TOutput> Map<TSource, TOutput>(List<TSource> models, Func<TSource, TOutput> map)
         //            where TSource : class where TOutput : class;
 
         //        List<TModel> SelectAndTrack<TSource, TModel>(List<TSource> model,
         //            Func<TSource, TModel> expression) where TSource : class where TModel : class;
-
-        Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save, bool permanent = false)
-            where TEntity : BaseEntity;
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
             List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
@@ -119,32 +120,25 @@ namespace RealEstate.Services.ServiceLayer.Base
                 ? query.Skip(pageSize * (page - 1))
                 : query;
 
-            var entities = await pagingQuery.Take(pageSize).ToListAsync()
+            var entities = await pagingQuery
+                .Take(pageSize)
+                .ToListAsync()
                 .ConfigureAwait(false);
-            var count = await query.CountAsync().ConfigureAwait(false);
-
-            if (entities == null)
+            if (entities?.Any() != true)
                 return output;
 
-            var viewList = new List<TOutput>();
-            foreach (var entity in entities)
-            {
-                var m = viewModel.Invoke(entity);
-                if (m == null)
-                    continue;
+            var rowCount = await query.CountAsync().ConfigureAwait(false);
 
-                viewList.Add(m);
-            }
+            var viewList = entities
+                .Select(viewModel.Invoke)
+                .ToHasNotNullList();
 
-            var outputType = output.GetType();
+            if (viewList == null)
+                return output;
 
-            var pagesProperty = outputType.GetProperty(nameof(output.Pages));
-            var pageProperty = outputType.GetProperty(nameof(output.CurrentPage));
-            var itemsProperty = outputType.GetProperty(nameof(output.Items));
-
-            pagesProperty.SetValue(output, NumberProcessorExtensions.RoundToUp((double)count / pageSize));
-            pageProperty.SetValue(output, page);
-            itemsProperty.SetValue(output, viewList.R8ToList());
+            output.CurrentPage = page;
+            output.Pages = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
+            output.Items = viewList;
 
             return output;
         }
@@ -187,6 +181,19 @@ namespace RealEstate.Services.ServiceLayer.Base
         }
 
         public IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel
+        {
+            currentUser = CurrentUser();
+            if (currentUser == null)
+                return null;
+
+            var query = source.AsQueryable();
+            if (searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin))
+                query = query.IgnoreQueryFilters();
+
+            return query;
+        }
+
+        public IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(IQueryable<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel
         {
             currentUser = CurrentUser();
             if (currentUser == null)
@@ -248,22 +255,28 @@ namespace RealEstate.Services.ServiceLayer.Base
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 
-        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, bool undeleteAllowed, bool save, bool permanent = false)
+        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
             where TEntity : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
                 return StatusEnum.UserIsNull;
 
-            if (permanent)
+            if (!IsAllowed(allowedRoles))
+                return StatusEnum.Forbidden;
+
+            if (entity == null)
+                return StatusEnum.ModelIsNull;
+
+            if (type == DeleteEnum.Delete)
             {
-                _unitOfWork.Delete(entity);
+                _unitOfWork.Delete(entity, currentUser);
             }
             else
             {
                 if (entity.LastAudit?.Type == LogTypeEnum.Delete)
                 {
-                    if (undeleteAllowed)
+                    if (type == DeleteEnum.HideUnhide)
                         _unitOfWork.UnDelete(entity, currentUser);
                     else
                         return StatusEnum.AlreadyDeleted;
@@ -274,7 +287,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync(save).ConfigureAwait(false);
+            return await SaveChangesAsync().ConfigureAwait(false);
         }
 
         public TModel Map<TSource, TModel>(TSource query,
@@ -311,11 +324,11 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, false, false, true).ConfigureAwait(false);
+                        await RemoveAsync(redundant, null, DeleteEnum.Delete, false).ConfigureAwait(false);
             }
 
             if (newList?.Any() != true)
-                return await SaveChangesAsync(save).ConfigureAwait(false);
+                return await SaveChangesAsync().ConfigureAwait(false);
 
             foreach (var model in newList)
             {
@@ -336,7 +349,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync(save).ConfigureAwait(false);
+            return await SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
@@ -352,11 +365,11 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, false, false).ConfigureAwait(false);
+                        await RemoveAsync(redundant, null, DeleteEnum.Hide, false).ConfigureAwait(false);
             }
 
             if (newList?.Any() != true)
-                return await SaveChangesAsync(save).ConfigureAwait(false);
+                return await SaveChangesAsync().ConfigureAwait(false);
 
             foreach (var model in newList)
             {
@@ -375,7 +388,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync(save).ConfigureAwait(false);
+            return await SaveChangesAsync().ConfigureAwait(false);
         }
 
         public CurrentUserViewModel CurrentUser(List<Claim> claims)
@@ -396,18 +409,6 @@ namespace RealEstate.Services.ServiceLayer.Base
                 EmployeeDivisions = claims.Find(x => x.Type == "EmployeeDivisions")?.Value.JsonConversion<List<DivisionJsonViewModel>>(),
             };
             return result;
-        }
-
-        public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, bool undeleteAllowed, bool save)
-            where TEntity : BaseEntity
-        {
-            if (!IsAllowed(allowedRoles))
-                return StatusEnum.Forbidden;
-
-            if (entity == null)
-                return StatusEnum.ModelIsNull;
-
-            return await RemoveAsync(entity, undeleteAllowed, save).ConfigureAwait(false);
         }
 
         public IQueryable<TSource> QueryByRole<TSource>(IQueryable<TSource> source, params Role[] allowedRolesToShowDeletedItems) where TSource : class
@@ -455,13 +456,11 @@ namespace RealEstate.Services.ServiceLayer.Base
                                                                      || x.PropertyType == typeof(DateTime)
                                                                      || x.PropertyType == typeof(Enum))
                                                                      && x.Name != nameof(entity.Id)
-                                                                     && x.Name != nameof(entity.Audit))
-                .ToList();
+                                                                     && x.Name != nameof(entity.Audit)).ToList();
+            if (properties?.Any() != true)
+                return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
             var changesList = new Dictionary<string, string>();
-            if (properties?.Any() != true)
-                return new MethodStatus<TSource>(StatusEnum.NoNeedToSave, entity);
-
             foreach (var property in properties)
             {
                 var name = property.Name;
@@ -475,21 +474,16 @@ namespace RealEstate.Services.ServiceLayer.Base
             }
 
             if (changesList?.Any() != true)
-                return new MethodStatus<TSource>(StatusEnum.NoNeedToSave, entity);
+                return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
             _unitOfWork.Update(entity, currentUser, changesList);
             return await SaveChangesAsync(entity, save).ConfigureAwait(false);
         }
 
-        public async Task<StatusEnum> SaveChangesAsync(bool save)
+        public async Task<StatusEnum> SaveChangesAsync()
         {
-            if (!save)
-                return StatusEnum.Success;
-
-            var saveStatus = await _unitOfWork.SaveChangesAsync().ConfigureAwait(false) > 0;
-            return saveStatus
-                ? StatusEnum.Success
-                : StatusEnum.UnableToSave;
+            await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+            return StatusEnum.Success;
         }
 
         public async Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class
@@ -498,9 +492,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 return new MethodStatus<TModel>(model == null ? StatusEnum.Failed : StatusEnum.Success, model);
 
             var saveStatus = await _unitOfWork.SaveChangesAsync().ConfigureAwait(false) > 0;
-            return saveStatus
-                ? new MethodStatus<TModel>(StatusEnum.Success, model)
-                : new MethodStatus<TModel>(StatusEnum.UnableToSave, null);
+            return new MethodStatus<TModel>(StatusEnum.Success, model);
         }
     }
 }

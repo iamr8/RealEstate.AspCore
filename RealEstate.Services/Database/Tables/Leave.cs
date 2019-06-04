@@ -15,5 +15,10 @@ namespace RealEstate.Services.Database.Tables
         public string Reason { get; set; }
         public string EmployeeId { get; set; }
         public virtual Employee Employee { get; set; }
+
+        public override string ToString()
+        {
+            return $"از {From:t} تا {To:t}";
+        }
     }
 }

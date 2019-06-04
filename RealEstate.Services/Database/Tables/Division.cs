@@ -10,5 +10,10 @@ namespace RealEstate.Services.Database.Tables
         public string Name { get; set; }
 
         public virtual ICollection<EmployeeDivision> EmployeeDivisions { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

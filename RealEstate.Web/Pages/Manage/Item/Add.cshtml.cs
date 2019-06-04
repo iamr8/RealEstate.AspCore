@@ -28,29 +28,33 @@ namespace RealEstate.Web.Pages.Manage.Item
         }
 
         [BindProperty]
-        public ItemInputViewModel NewItem { get; set; }
+        public ItemComplexInputViewModel NewItem { get; set; }
 
         [ViewData]
         public string PageTitle { get; set; }
 
         public string Status { get; set; }
 
+        [TempData]
+        public string PassJson { get; set; }
+
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
-            ItemInputViewModel model = null;
+            ItemComplexInputViewModel model = null;
             if (!string.IsNullOrEmpty(id))
             {
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                model = await _itemService.ItemInputAsync(id).ConfigureAwait(false);
+                model = await _itemService.ItemComplexInputAsync(id).ConfigureAwait(false);
             }
 
+            NewItem = !string.IsNullOrEmpty(id)
+                ? model.UsePassModelForEdit(PassJson)
+                : model.UsePassModelForAdd(PassJson);
+            PassJson = default;
+            Status = !string.IsNullOrEmpty(status) ? status : null;
             PageTitle = _localizer[(model == null ? "New" : "Edit") + GetType().Namespaces().Last()];
-            NewItem = model;
-            Status = !string.IsNullOrEmpty(status)
-                ? status
-                : null;
 
             if (!string.IsNullOrEmpty(id) && model == null)
                 return RedirectToPage(typeof(IndexModel).Page());
@@ -61,9 +65,10 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnPostAsync()
         {
             var (status, message) = await ModelState.IsValidAsync(
-                () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true)
+                () => _itemService.ItemComplexAddOrUpdateAsync(NewItem, !NewItem.IsNew, true)
             ).ConfigureAwait(false);
 
+            PassJson = NewItem.SerializePassModel();
             return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()
                 : typeof(IndexModel).Page(), new

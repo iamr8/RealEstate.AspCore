@@ -2,7 +2,6 @@
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -13,12 +12,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public User Entity { get; }
 
-        public UserViewModel(User entity)
+        public UserViewModel(User entity, Action<UserViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Username => Entity?.Username;
@@ -26,15 +26,18 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string EncryptedPassword => Entity?.Password;
         public string Password => Entity?.DecryptedPassword;
 
-        public Lazy<List<UserItemCategoryViewModel>> UserItemCategories =>
-            LazyLoadExtension.LazyLoad(() => Entity?.UserItemCategories.Map<UserItemCategory, UserItemCategoryViewModel>());
+        public List<UserItemCategoryViewModel> UserItemCategories { get; set; }
 
-        public Lazy<List<UserPropertyCategoryViewModel>> UserPropertyCategories =>
-            LazyLoadExtension.LazyLoad(() => Entity?.UserPropertyCategories.Map<UserPropertyCategory, UserPropertyCategoryViewModel>());
+        public List<UserPropertyCategoryViewModel> UserPropertyCategories { get; set; }
 
-        public Lazy<List<ApplicantViewModel>> Applicants => LazyLoadExtension.LazyLoad(() => Entity?.Applicants.Map<Applicant, ApplicantViewModel>());
-        public Lazy<List<BeneficiaryViewModel>> Beneficiaries => LazyLoadExtension.LazyLoad(() => Entity?.Beneficiaries.Map<Beneficiary, BeneficiaryViewModel>());
-        public Lazy<List<ReminderViewModel>> Reminders => LazyLoadExtension.LazyLoad(() => Entity?.Reminders.Map<Reminder, ReminderViewModel>());
-        public Lazy<EmployeeViewModel> Employee => LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
+        public List<ApplicantViewModel> Applicants { get; set; }
+        public List<BeneficiaryViewModel> Beneficiaries { get; set; }
+        public List<ReminderViewModel> Reminders { get; set; }
+        public EmployeeViewModel Employee { get; set; }
+
+        public override string ToString()
+        {
+            return Entity?.ToString();
+        }
     }
 }

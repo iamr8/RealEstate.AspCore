@@ -90,7 +90,7 @@ namespace RealEstate.Services.ServiceLayer
                     finalSmses.Add(newSms);
             }
 
-            await _baseService.SaveChangesAsync(true).ConfigureAwait(false);
+            await _baseService.SaveChangesAsync().ConfigureAwait(false);
             return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.Success, finalSmses);
         }
 
@@ -129,7 +129,7 @@ namespace RealEstate.Services.ServiceLayer
                     finalSmses.Add(newSms);
             }
 
-            await _baseService.SaveChangesAsync(true).ConfigureAwait(false);
+            await _baseService.SaveChangesAsync().ConfigureAwait(false);
             return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.Success, finalSmses);
         }
     }

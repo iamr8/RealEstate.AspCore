@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 
@@ -12,15 +11,21 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Division Entity { get; }
 
-        public DivisionViewModel(Division entity)
+        public DivisionViewModel(Division entity, Action<DivisionViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Name => Entity?.Name;
-        public Lazy<List<EmployeeDivisionViewModel>> EmployeeDivisions => LazyLoadExtension.LazyLoad(() => Entity?.EmployeeDivisions.Map<EmployeeDivision, EmployeeDivisionViewModel>());
+        public List<EmployeeDivisionViewModel> EmployeeDivisions { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

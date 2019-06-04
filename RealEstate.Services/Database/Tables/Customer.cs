@@ -25,5 +25,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Applicant> Applicants { get; set; }
 
         public virtual ICollection<Ownership> Ownerships { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name} : {MobileNumber}";
+        }
     }
 }

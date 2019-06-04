@@ -7,14 +7,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Category : BaseEntity
     {
-        public Category()
-        {
-            Items = new HashSet<Item>();
-            UserItemCategories = new HashSet<UserItemCategory>();
-            Properties = new HashSet<Property>();
-            UserPropertyCategories = new HashSet<UserPropertyCategory>();
-        }
-
         [Required]
         public string Name { get; set; }
 
@@ -24,5 +16,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Property> Properties { get; set; }
         public virtual ICollection<UserItemCategory> UserItemCategories { get; set; }
         public virtual ICollection<UserPropertyCategory> UserPropertyCategories { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

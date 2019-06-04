@@ -44,7 +44,7 @@ namespace RealEstate.Runner
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            LogToFile();
+            //LogToFile();
         }
 
         private enum Mode
@@ -607,7 +607,7 @@ namespace RealEstate.Runner
             }
             else
             {
-                LogDotnet(e.Data);
+//                LogDotnet(e.Data);
                 Log($"Application got error.");
             }
         }
@@ -666,7 +666,7 @@ namespace RealEstate.Runner
             }
             else
             {
-                LogDotnet(e.Data);
+//                LogDotnet(e.Data);
                 if (e.Data?.Contains("Unable to start Kestrel.") == true)
                 {
                     Log("Unable to start Background process.");

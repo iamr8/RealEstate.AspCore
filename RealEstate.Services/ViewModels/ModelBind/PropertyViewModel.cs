@@ -4,6 +4,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -12,12 +13,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Property Entity { get; }
 
-        public PropertyViewModel(Property entity)
+        public PropertyViewModel(Property entity, Action<PropertyViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string Address => Entity?.Address;
@@ -33,27 +35,25 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         public string Description => Entity?.Description;
 
-        public PropertyOwnershipViewModel CurrentPropertyOwnership() => PropertyOwnerships?.LazyLoadLast();
+        public PropertyOwnershipViewModel CurrentPropertyOwnership => PropertyOwnerships?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
-        public Lazy<CategoryViewModel> Category =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Category.Map<Category, CategoryViewModel>());
+        public CategoryViewModel Category { get; set; }
 
-        public Lazy<DistrictViewModel> District =>
-            LazyLoadExtension.LazyLoad(() => Entity?.District.Map<District, DistrictViewModel>());
+        public DistrictViewModel District { get; set; }
 
-        public Lazy<List<ItemViewModel>> Items =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Items.Map<Item, ItemViewModel>());
+        public List<ItemViewModel> Items { get; set; }
 
-        public Lazy<List<PropertyOwnershipViewModel>> PropertyOwnerships =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyOwnerships.Map<PropertyOwnership, PropertyOwnershipViewModel>());
+        public List<PropertyOwnershipViewModel> PropertyOwnerships { get; set; }
 
-        public Lazy<List<PictureViewModel>> Pictures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
+        public List<PictureViewModel> Pictures { get; set; }
 
-        public Lazy<List<PropertyFacilityViewModel>> PropertyFacilities =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFacilities.Map<PropertyFacility, PropertyFacilityViewModel>());
+        public List<PropertyFacilityViewModel> PropertyFacilities { get; set; }
 
-        public Lazy<List<PropertyFeatureViewModel>> PropertyFeatures =>
-            LazyLoadExtension.LazyLoad(() => Entity?.PropertyFeatures.Map<PropertyFeature, PropertyFeatureViewModel>());
+        public List<PropertyFeatureViewModel> PropertyFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Entity?.ToString();
+        }
     }
 }

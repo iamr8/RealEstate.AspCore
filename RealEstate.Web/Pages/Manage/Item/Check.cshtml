@@ -1,0 +1,171 @@
+﻿@page
+@model RealEstate.Web.Pages.Manage.Item.CheckModel
+@{
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var propertyCategoriesList = propertyCategories?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
+
+    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districtsList = districts?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
+
+}
+
+<div class="col-12">
+    <div class="widget">
+        <widget-header title="@SharedLocalizer[Model.PageTitle]" />
+        <section class="container-fluid">
+            <form id="newProperty_Form" class="row justify-content-center align-items-center">
+                <div class="col-xs-12 col-lg">
+                    <div class="input-wrapper">
+                        <label class="control-label" asp-for="PropertyCheck.Category"></label>
+                        <select asp-for="PropertyCheck.Category" asp-items="propertyCategoriesList" class="custom-select"></select>
+                        <span class="text-danger" asp-validation-for="PropertyCheck.Category"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-lg">
+                    <div class="input-wrapper">
+                        <label class="control-label" asp-for="PropertyCheck.District"></label>
+                        <select asp-for="PropertyCheck.District" asp-items="districtsList" class="custom-select"></select>
+                        <span class="text-danger" asp-validation-for="PropertyCheck.District"></span>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-lg">
+                    <div class="input-wrapper">
+                        <label class="control-label" asp-for="PropertyCheck.Street"></label>
+                        <input asp-for="PropertyCheck.Street" class="form-control" />
+                        <span class="text-danger" asp-validation-for="PropertyCheck.Street"></span>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="input-wrapper">
+                        <submit full-width="true" type="Secondary" ajax="true" id="checkProperty">
+                            <div class="spinner-grow spinner-grow-sm text-white hidden" role="status" id="checkProperty_loading"></div>
+                            <span id="checkProperty_title">
+                                @Html.Raw(SharedLocalizer[SharedResource.Check])
+                            </span>
+                        </submit>
+                    </div>
+                </div>
+            </form>
+            <hr subject="@SharedLocalizer[SharedResource.SimilarItems]" />
+            <div class="row justify-content-center align-items-center margin-bottomed" id="property_similar">
+                <div class="col-12">
+                    <div class="items"></div>
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.NewItem]" />
+            <div class="row justify-content-center align-content-center">
+                <div class="col-12 margin-bottomed text-danger text-center">
+                    در صورتی که این مورد هنوز در سامانه ثبت نشده، روی دکمه زیر کلیک/تپ کنید.
+                </div>
+                <div class="col-12">
+                    <a asp-page="@typeof(AddModel).Page()" class="btn btn-success btn-block disabled" id="newProp">@SharedLocalizer[SharedResource.NewItem]</a>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+@section Scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            const checkButton = $("#checkProperty");
+
+            const similars = $("#property_similar");
+            const items = $(".items", similars);
+
+            const streetInput = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.Street)");
+            const districtIdSelect = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.District)");
+            const categoryIdSelect = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.Category)");
+
+            const loading = $("#checkProperty_loading");
+            const title = $("#checkProperty_title");
+            const form = $("#newProperty_Form");
+
+            const newProp = $("#newProp");
+
+            $(checkButton).click(function(e) {
+
+                if ($(form)[0].checkValidity()) {
+
+                    $(categoryIdSelect).valid();
+                    $(districtIdSelect).valid();
+                    $(streetInput).valid();
+
+                    const selectedDistrictId = $(districtIdSelect).val();
+                    const selectedCategoryId = $(categoryIdSelect).val();
+
+                    const street = $(streetInput).val();
+                    const district = $(`option[value='${selectedDistrictId}']`, districtIdSelect).html();
+                    const category = $(`option[value='${selectedCategoryId}']`, categoryIdSelect).html();
+
+                    $(checkButton).addClass("disabled","");
+                    $(loading).removeClass("hidden");
+                    $(title).html("@Html.Raw(SharedLocalizer[SharedResource.Checking])");
+
+                    const model = {
+                        district: district,
+                        category: category,
+                        street: street
+                    };
+                    $.get("@Url.Action("ItemAsync", "Search")",
+                        model,
+                        function(response) {
+                            console.log(response);
+                            if (response !== null && response.length > 0) {
+                                $(items).empty();
+                                console.log(response);
+
+                                $.each(response,
+                                    (key, property) => {
+
+                                        const propertyId =
+                                            property
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.Id));
+                                        const propertyCategory =
+                                            property
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.Category));
+                                        const propertyDistrict =
+                                            property
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.District));
+                                        const propertyAddress =
+                                            property
+                                                .@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.Address));
+
+                                        const anchor = document.createElement("a");
+                                        $(anchor).attr("href", "#");
+
+                                        const finalString = `@Html.Raw(SharedLocalizer[SharedResource.District]): ${propertyDistrict
+                                            } ، @Html.Raw(SharedLocalizer[SharedResource.Category]): ${propertyCategory
+                                            } ، @Html.Raw(SharedLocalizer[SharedResource.Address]): ${propertyAddress}`;
+                                        const nameElement = document.createElement("span");
+                                        $(nameElement).html(finalString);
+
+                                        $(anchor).append(nameElement);
+                                        $(items).append(anchor);
+                                    });
+
+                                //$(similars).removeClass("hidden");
+                            } else {
+                                //$(similars).addClass("hidden");
+                            }
+                            $(checkButton).removeClass("disabled");
+                            $(loading).addClass("hidden");
+                            $(title).html("@Html.Raw(SharedLocalizer[SharedResource.Check])");
+                            $(newProp).removeClass("disabled");
+
+                        });
+                }
+
+            });
+        })
+    </script>
+}

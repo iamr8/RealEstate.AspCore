@@ -4,6 +4,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -12,12 +13,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Employee Entity { get; }
 
-        public EmployeeViewModel(Employee entity)
+        public EmployeeViewModel(Employee entity, Action<EmployeeViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string FirstName => Entity?.FirstName;
@@ -28,25 +30,30 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public string Address => Entity?.Address;
         public string Phone => Entity?.Phone;
 
-        public Lazy<List<UserViewModel>> Users => LazyLoadExtension.LazyLoad(() => Entity?.Users.Map<User, UserViewModel>());
+        public List<UserViewModel> Users { get; set; }
 
-        public Lazy<List<PictureViewModel>> Pictures => LazyLoadExtension.LazyLoad(() => Entity?.Pictures.Map<Picture, PictureViewModel>());
-        public Lazy<List<FixedSalaryViewModel>> FixedSalaries => LazyLoadExtension.LazyLoad(() => Entity?.FixedSalaries.Map<FixedSalary, FixedSalaryViewModel>());
+        public List<PictureViewModel> Pictures { get; set; }
+        public List<FixedSalaryViewModel> FixedSalaries { get; set; }
 
-        public Lazy<List<PaymentViewModel>> Payments => LazyLoadExtension.LazyLoad(() => Entity?.Payments.Map<Payment, PaymentViewModel>());
+        public List<PaymentViewModel> Payments { get; set; }
 
-        public Lazy<List<ManagementPercentViewModel>> ManagementPercents => LazyLoadExtension.LazyLoad(() => Entity?.ManagementPercents.Map<ManagementPercent, ManagementPercentViewModel>());
+        public List<ManagementPercentViewModel> ManagementPercents { get; set; }
 
-        public Lazy<List<InsuranceViewModel>> Insurances => LazyLoadExtension.LazyLoad(() => Entity?.Insurances.Map<Insurance, InsuranceViewModel>());
+        public List<InsuranceViewModel> Insurances { get; set; }
 
-        public Lazy<List<LeaveViewModel>> Leaves => LazyLoadExtension.LazyLoad(() => Entity?.Leaves.Map<Leave, LeaveViewModel>());
-        public Lazy<List<PresenceViewModel>> Presences => LazyLoadExtension.LazyLoad(() => Entity?.Presences.Map<Presence, PresenceViewModel>());
-        public Lazy<List<EmployeeDivisionViewModel>> EmployeeDivisions => LazyLoadExtension.LazyLoad(() => Entity?.EmployeeDivisions.Map<EmployeeDivision, EmployeeDivisionViewModel>());
+        public List<LeaveViewModel> Leaves { get; set; }
+        public List<PresenceViewModel> Presences { get; set; }
+        public List<EmployeeDivisionViewModel> EmployeeDivisions { get; set; }
 
-        public FixedSalaryViewModel CurrentFixedSalary() => FixedSalaries.LazyLoadLast();
+        public FixedSalaryViewModel CurrentFixedSalary => FixedSalaries?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
-        public InsuranceViewModel CurrentInsurance() => Insurances.LazyLoadLast();
+        public InsuranceViewModel CurrentInsurance => Insurances?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
-        public UserViewModel CurrentUser() => Users.LazyLoadLast();
+        public UserViewModel CurrentUser => Users?.OrderDescendingByCreationDateTime().FirstOrDefault();
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

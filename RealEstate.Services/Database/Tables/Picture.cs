@@ -19,5 +19,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual Employee Employee { get; set; }
         public string ReminderId { get; set; }
         public virtual Reminder Reminder { get; set; }
+
+        public override string ToString()
+        {
+            return File;
+        }
     }
 }

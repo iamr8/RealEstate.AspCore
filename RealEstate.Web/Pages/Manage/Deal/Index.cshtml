@@ -19,40 +19,40 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest.Value?.Item.Value?.Property.Value?.Id" target="_blank">
-                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.DealRequest.Value?.Item.Value?.Property.Value?.District.Value?.Id" target="_blank">@item.DealRequest.Value?.Item.Value?.Property.Value?.District.Value?.Name</a> &mdash;
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest?.Item?.Property?.Id" target="_blank">
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.DealRequest?.Item?.Property?.District?.Id" target="_blank">@item.DealRequest?.Item?.Property?.District?.Name</a> &mdash;
                                     </a>
-                                    <span class="badge badge-danger">@item.DealRequest.Value?.Item.Value?.Category.Value.Name</span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest.Value?.Item.Value?.Property.Value?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
+                                    <span class="badge badge-danger">@item.DealRequest?.Item?.Category?.Name</span>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest?.Item?.Property?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
                                 </span>
-                                @if (item.DealRequest.Value?.Item.Value?.Property.Value?.CurrentPropertyOwnership()?.Ownerships.Value?.Any() == true)
+                                @if (item.DealRequest?.Item?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["DealFirstPerson"]:
-                                        @foreach (var ownership in item.DealRequest.Value?.Item.Value?.Property.Value?.CurrentPropertyOwnership().Ownerships.Value)
+                                        @foreach (var ownership in item.DealRequest?.Item?.Property?.CurrentPropertyOwnership.Ownerships)
                                         {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Value.Name &mdash; @ownership.Customer.Value.Mobile</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
                                         }
                                     </span>
                                 }
-                                @if (item.DealRequest.Value?.Item.Value?.Applicants.Value?.Any() == true)
+                                @if (item.DealRequest?.Item?.Applicants?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["DealSecondPerson"]:
-                                        @foreach (var applicant in item.DealRequest.Value?.Item.Value?.Applicants.Value)
+                                        @foreach (var applicant in item.DealRequest?.Item?.Applicants)
                                         {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-warning">@applicant.Customer.Value.Name &mdash; @applicant.Customer.Value.Mobile</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-warning">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
                                         }
                                     </span>
                                 }
 
-                                @if (item.DealRequest.Value?.Item.Value?.ItemFeatures.Value?.Any() == true)
+                                @if (item.DealRequest?.Item?.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var spec in item.DealRequest.Value.Item.Value.ItemFeatures.Value)
+                                        @foreach (var spec in item.DealRequest.Item.ItemFeatures)
                                         {
                                             <text>
-                                                <span class="badge badge-secondary">@spec.Feature.Value?.Name &mdash; @spec.Value</span>
+                                                <span class="badge badge-secondary">@spec.Feature?.Name &mdash; @spec.Value</span>
                                             </text>
                                         }
                                     </span>
@@ -67,13 +67,13 @@
                                     @SharedLocalizer["CommissionPrice"]:
                                     <span class="badge badge-warning">@item.CommissionPrice.ToString("#,###") تومان</span>
                                 </span>
-                                @if (item.Beneficiaries.Value?.Any() == true)
+                                @if (item.Beneficiaries?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["Beneficiaries"]:
-                                        @foreach (var beneficiary in item.Beneficiaries.Value)
+                                        @foreach (var beneficiary in item.Beneficiaries)
                                         {
-                                            <span class="badge badge-warning">@beneficiary.User.Value?.Employee.Value?.FirstName @beneficiary.User.Value?.Employee.Value?.LastName &mdash; @beneficiary.CommissionPercent @SharedLocalizer["CommissionPercent"] &mdash; @beneficiary.TipPercent @SharedLocalizer["TipPercent"]</span>
+                                            <span class="badge badge-warning">@beneficiary.User?.Employee?.FirstName @beneficiary.User?.Employee?.LastName &mdash; @beneficiary.CommissionPercent @SharedLocalizer["CommissionPercent"] &mdash; @beneficiary.TipPercent @SharedLocalizer["TipPercent"]</span>
                                         }
                                     </span>
                                 }
@@ -91,7 +91,7 @@
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="Deal" id="@item.Id"/>
+                        <vc:log logs="@item.Logs" cat="Deal" id="@item.Id" />
                     </div>
                 }
             </item-viewer>

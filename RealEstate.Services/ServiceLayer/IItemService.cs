@@ -20,11 +20,21 @@ namespace RealEstate.Services.ServiceLayer
 {
     public interface IItemService
     {
-        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel);
+        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false);
 
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
         Task<StatusEnum> ItemRemoveAsync(string id);
+
+        Task<bool> ItemCheckAsync(PropertyCheckViewModel model);
+
+        Task<ItemComplexInputViewModel> ItemComplexInputAsync(string id);
+
+        Task<MethodStatus<Item>> ItemComplexAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save);
+
+        Task<MethodStatus<Item>> ItemComplexAddAsync(ItemComplexInputViewModel model, bool save);
+
+        Task<MethodStatus<Item>> ItemComplexUpdateAsync(ItemComplexInputViewModel model, bool save);
 
         Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory);
 
@@ -50,7 +60,10 @@ namespace RealEstate.Services.ServiceLayer
     public class ItemService : IItemService
     {
         private readonly IUnitOfWork _unitOfWork;
+
+        //        private readonly IMapper _mapper;
         private readonly IBaseService _baseService;
+
         private readonly ICustomerService _customerService;
         private readonly IFeatureService _featureService;
         private readonly IPropertyService _propertyService;
@@ -70,6 +83,7 @@ namespace RealEstate.Services.ServiceLayer
             IFeatureService featureService,
             IPropertyService propertyService,
             ICustomerService customerService
+            //            IMapper mapper
             )
         {
             _baseService = baseService;
@@ -77,6 +91,7 @@ namespace RealEstate.Services.ServiceLayer
             _featureService = featureService;
             _customerService = customerService;
             _propertyService = propertyService;
+            //            _mapper = mapper;
             _itemRequests = _unitOfWork.Set<Deal>();
             _applicants = _unitOfWork.Set<Applicant>();
             _items = _unitOfWork.Set<Item>();
@@ -172,7 +187,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             if (model.Customers?.Any() != true)
-                return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+                return await _baseService.SaveChangesAsync().ConfigureAwait(false);
 
             foreach (var customer in model.Customers)
             {
@@ -212,7 +227,7 @@ namespace RealEstate.Services.ServiceLayer
                 }
             }
 
-            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 
         public async Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory)
@@ -285,16 +300,16 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Property = new PropertyOutJsonViewModel
                     {
-                        Address = converted.Property.Value?.Address,
-                        Category = converted.Property.Value?.Category.Value?.Name,
-                        District = converted.Property.Value?.District.Value?.Name,
+                        Address = converted.Property?.Address,
+                        Category = converted.Property?.Category?.Name,
+                        District = converted.Property?.District?.Name,
                         Description = converted.Description,
-                        Facilities = converted.Property.Value?.PropertyFacilities.Value?.Select(x => x.Facility.Value?.Name).ToList(),
-                        Ownerships = converted.Property.Value?.PropertyOwnerships.Value?.SelectMany(x => x.Ownerships.Value?.Select(c => c.Customer.Value?.Name)).ToList(),
-                        Features = converted.Property.Value?.PropertyFeatures.Value?.Select(x => new ValueTuple<string, string>(x.Feature.Value?.Name, x.Value)).ToList(),
+                        Facilities = converted.Property?.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                        Ownerships = converted.Property?.PropertyOwnerships?.SelectMany(x => x.Ownerships?.Select(c => c.Customer?.Name)).ToList(),
+                        Features = converted.Property?.PropertyFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList(),
                     },
-                    Category = converted.Category.Value?.Name,
-                    ItemFeatures = converted.ItemFeatures.Value?.Select(x => new ValueTuple<string, string>(x.Feature.Value.Name, x.Value)).ToList()
+                    Category = converted.Category?.Name,
+                    ItemFeatures = converted.ItemFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList()
                 };
                 result.Add(item);
             }
@@ -343,33 +358,107 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
+        public async Task<bool> ItemCheckAsync(PropertyCheckViewModel model)
         {
-            var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
+            if (model == null)
+                return false;
+
+            if (string.IsNullOrEmpty(model.District) || string.IsNullOrEmpty(model.Category) || string.IsNullOrEmpty(model.Street))
+                return false;
+
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return default;
+
+            var query = from item in _items.WhereNotDeleted()
+                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+                        let lastRequest = requests.FirstOrDefault()
+                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+                        let itemCategory = item.Category
+                        let property = item.Property
+                        let propertyCategory = property.Category
+                        where itemCategory.UserItemCategories.Any(userItemCategory =>
+                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
+                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
+                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
+                        where (EF.Functions.Like(item.Property.Street, model.Street.Like())
+                               || EF.Functions.Like(item.Property.Alley, model.Street.Like()))
+                              && item.Property.District.Name == model.District
+                              && item.Property.Category.Name == model.Category
+                        select item;
+
+            var models = await query.Select(x => x.Property).FirstOrDefaultAsync().ConfigureAwait(false);
+            if (models != null)
+                return true;
+
+            return false;
+        }
+
+        private async Task CleanDuplicatesAsync()
+        {
+            var groups = await _items.IgnoreQueryFilters()
+                .Include(x => x.Property.PropertyFeatures)
+                .Include(x => x.Property.PropertyFacilities)
+                .Include(x => x.Property.PropertyOwnerships)
+                .Include(x => x.ItemFeatures)
+                .GroupBy(x => new
+                {
+                    x.CategoryId,
+                    x.Property
+                }).Where(x => x.Count() > 1).ToListAsync().ConfigureAwait(false);
+            if (groups?.Any() != true)
+                return;
+
+            foreach (var groupedItem in groups)
+            {
+                foreach (var item in groupedItem.Skip(1))
+                    await _baseService.RemoveAsync(item, null, DeleteEnum.Delete, false).ConfigureAwait(false);
+            }
+
+            await _baseService.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false)
+        {
+            if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
+                await CleanDuplicatesAsync().ConfigureAwait(false);
+
+            var query = _items.AsQueryable().AsNoTracking();
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.Category);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.District);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.Pictures);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyFacilities)
+                .ThenInclude(x => x.Facility);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyFeatures)
+                .ThenInclude(x => x.Feature);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Customer);
+            query = query.Include(x => x.Category);
+            query = query.Include(x => x.DealRequests);
+            query = query.Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature);
+            query = query.Include(x => x.Applicants)
+                .ThenInclude(x => x.Customer);
+
+            query = _baseService.CheckDeletedItemsPrevillege(query, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
 
-            query = from item in query
-                    let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
-                    let lastRequest = requests.FirstOrDefault()
-                    where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
-                    select item;
-
-            query = query
-                .Where(item => item.Category.UserItemCategories.Any(userItemCategory =>
-                    userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == item.Category.Id))
-                .Where(item => item.Property.Category.UserPropertyCategories.Any(userPropertyCategory =>
-                        userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == item.Property.Category.Id));
+            //query = from item in query
+            //        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
+            //        let lastRequest = requests.FirstOrDefault()
+            //        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
+            //        select item;
 
             if (searchModel != null)
             {
-                //query = query.Where(x =>
-                //    x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(SearchExtensions.SearchStringOperand.Like, v => v.Customer.Name, searchModel.Owner)));
-
-                //query = query.Where(x =>
-                //    x.Property.PropertyOwnerships.Any(c =>
-                //        c.Ownerships.Any(SearchExtensions.SearchStringOperand.Like, v => v.Customer.MobileNumber, searchModel.OwnerMobile)));
-
                 if (!string.IsNullOrEmpty(searchModel.HasFeature))
                     query = query.Where(x =>
                         x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
@@ -385,7 +474,6 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.Street))
                     query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
 
-                //query = query.SearchBy(searchModel.ItemId, x => x.Id);
                 if (!string.IsNullOrEmpty(searchModel.ItemId))
                     query = query.Where(x => x.Id == searchModel.ItemId);
 
@@ -406,16 +494,6 @@ namespace RealEstate.Services.ServiceLayer
                     query = query.Where(x => x.Property.District.Name == searchModel.District);
                 }
 
-                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Id, searchModel.ItemId);
-                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Category.Name, searchModel.ItemCategory);
-                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Property.Category.Name, searchModel.PropertyCategory);
-                //query = query.Where(SearchExtensions.SearchStringOperand.Equal, x => x.Property.District.Name, searchModel.District);
-                //query = query.Where(SearchExtensions.SearchStringOperand.Like, x => x.Property.Street, searchModel.Street);
-
-                //query = query.Where(SearchExtensions.SearchComparisonOperand.Or,
-                //    x => x.Applicants.Any(SearchExtensions.SearchStringOperand.Equal, c => c.CustomerId, searchModel.CustomerId),
-                //    x => x.Property.PropertyOwnerships.Any(c =>
-                //        c.Ownerships.Any(SearchExtensions.SearchStringOperand.Equal, v => v.CustomerId, searchModel.CustomerId)));
                 if (searchModel.Facilities?.Any() == true)
                 {
                     query = searchModel.Facilities
@@ -481,8 +559,33 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
+            var userItemCategories = currentUser.UserItemCategories.Select(x => x.CategoryId);
+            var userPropertyCategories = currentUser.UserPropertyCategories.Select(x => x.CategoryId);
+
+            query = query.Where(x => userItemCategories.Any(c => c == x.CategoryId));
+            query = query.Where(x => userPropertyCategories.Any(c => c == x.Property.CategoryId));
+
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Item, ItemViewModel>()).ConfigureAwait(false);
+                item => item.Map<Item, ItemViewModel>(act =>
+                {
+                    act.Include<Property, PropertyViewModel>(item.Property, ent =>
+                    {
+                        ent.Include<Category, CategoryViewModel>(ent.Entity?.Category);
+                        ent.Include<District, DistrictViewModel>(ent.Entity?.District);
+                        ent.Include<Picture, PictureViewModel>(ent.Entity?.Pictures);
+                        ent.Include<PropertyFacility, PropertyFacilityViewModel>(ent.Entity?.PropertyFacilities,
+                            ent2 => ent2.Include<Facility, FacilityViewModel>(ent2.Entity?.Facility));
+                        ent.Include<PropertyFeature, PropertyFeatureViewModel>(ent.Entity?.PropertyFeatures,
+                            ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity?.Feature));
+                        ent.Include<PropertyOwnership, PropertyOwnershipViewModel>(ent.Entity?.PropertyOwnerships,
+                            ent2 => ent2.Include<Ownership, OwnershipViewModel>(ent2.Entity?.Ownerships,
+                                ent3 => ent3.Include<Customer, CustomerViewModel>(ent3.Entity?.Customer)));
+                    });
+                    act.Include<Category, CategoryViewModel>(item.Category);
+                    act.Include<Applicant, ApplicantViewModel>(item.Applicants, ent => ent.Include<Customer, CustomerViewModel>(ent.Entity?.Customer));
+                    act.Include<DealRequest, DealRequestViewModel>(item.DealRequests);
+                    act.Include<ItemFeature, ItemFeatureViewModel>(item.ItemFeatures, ent => ent.Include<Feature, FeatureViewModel>(ent.Entity?.Feature));
+                })).ConfigureAwait(false);
             return result;
         }
 
@@ -519,6 +622,40 @@ namespace RealEstate.Services.ServiceLayer
             return await _baseService.SaveChangesAsync(item, save).ConfigureAwait(false);
         }
 
+        public async Task<ItemComplexInputViewModel> ItemComplexInputAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return default;
+
+            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity?.Map<Item, ItemViewModel>(ent =>
+            {
+                ent.Include<ItemFeature, ItemFeatureViewModel>(entity.ItemFeatures, ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                ent.Include<Category, CategoryViewModel>(entity.Category);
+            });
+
+            if (viewModel == null)
+                return default;
+
+            var propertyInput = await _propertyService.PropertyComplexInputAsync(entity.PropertyId).ConfigureAwait(false);
+            if (propertyInput == null)
+                return default;
+
+            var result = new ItemComplexInputViewModel
+            {
+                Id = viewModel.Id,
+                Description = viewModel.Description,
+                CategoryId = viewModel.Category?.Id,
+                ItemFeatures = viewModel.ItemFeatures?.Select(x => new FeatureJsonValueViewModel
+                {
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
+                    Value = x.Value
+                }).ToList(),
+                Property = propertyInput
+            };
+            return result;
+        }
+
         public async Task<ItemInputViewModel> ItemInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;
@@ -533,14 +670,14 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Id = viewModel.Id,
                 Description = viewModel.Description,
-                CategoryId = viewModel.Category.Value?.Id,
-                ItemFeatures = viewModel.ItemFeatures.Value?.Select(x => new FeatureJsonValueViewModel
+                CategoryId = viewModel.Category?.Id,
+                ItemFeatures = viewModel.ItemFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Value?.Id,
-                    Name = x.Feature.Value?.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
-                PropertyId = viewModel.Property.Value?.Id
+                PropertyId = viewModel.Property?.Id
             };
             return result;
         }
@@ -602,9 +739,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -615,6 +750,44 @@ namespace RealEstate.Services.ServiceLayer
             return update
                 ? ItemUpdateAsync(model, save)
                 : ItemAddAsync(model, save);
+        }
+
+        public Task<MethodStatus<Item>> ItemComplexAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save)
+        {
+            return update
+                ? ItemComplexUpdateAsync(model, save)
+                : ItemComplexAddAsync(model, save);
+        }
+
+        public async Task<MethodStatus<Item>> ItemComplexUpdateAsync(ItemComplexInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new MethodStatus<Item>(StatusEnum.IdIsNull, null);
+
+            if (model.Property == null)
+                return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
+
+            var (propertyUpdateStatus, updatedProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true).ConfigureAwait(false);
+            if (propertyUpdateStatus != StatusEnum.Success && propertyUpdateStatus != StatusEnum.PropertyIsAlreadyExists)
+                return new MethodStatus<Item>(propertyUpdateStatus, null);
+
+            var entity = await ItemEntityAsync(model.Id).ConfigureAwait(false);
+            var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
+                _ =>
+                {
+                    entity.CategoryId = model.CategoryId;
+                    entity.Description = model.Description;
+                    entity.PropertyId = updatedProperty.Id;
+                }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+
+            if (updatedItem == null)
+                return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
+
+            await ItemComplexSyncAsync(updatedItem, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(updatedItem, save).ConfigureAwait(false);
         }
 
         private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemInputViewModel model, bool save)
@@ -655,6 +828,47 @@ namespace RealEstate.Services.ServiceLayer
 
             await ItemSyncAsync(newItem, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newItem, save).ConfigureAwait(false);
+        }
+
+        public async Task<MethodStatus<Item>> ItemComplexAddAsync(ItemComplexInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
+
+            if (model.Property == null)
+                return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
+
+            var (propertyAddStatus, newProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true).ConfigureAwait(false);
+            if (propertyAddStatus != StatusEnum.Success)
+                return new MethodStatus<Item>(propertyAddStatus, null);
+
+            var (itemAddStatus, newItem) = await _baseService.AddAsync(new Item
+            {
+                CategoryId = model.CategoryId,
+                Description = model.Description,
+                PropertyId = newProperty.Id,
+            }, null, false).ConfigureAwait(false);
+            if (itemAddStatus != StatusEnum.Success)
+                return new MethodStatus<Item>(itemAddStatus, null);
+
+            await ItemComplexSyncAsync(newItem, model, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newItem, save).ConfigureAwait(false);
+        }
+
+        private async Task<StatusEnum> ItemComplexSyncAsync(Item newItem, ItemComplexInputViewModel model, bool save)
+        {
+            var syncFeatures = await _baseService.SyncAsync(
+                newItem.ItemFeatures,
+                model.ItemFeatures,
+                (feature, currentUser) => new ItemFeature
+                {
+                    FeatureId = feature.Id,
+                    Value = feature.Value,
+                    ItemId = newItem.Id
+                }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
+                null,
+                save).ConfigureAwait(false);
+            return syncFeatures;
         }
 
         private async Task<StatusEnum> ItemSyncAsync(Item newItem, ItemInputViewModel model, bool save)

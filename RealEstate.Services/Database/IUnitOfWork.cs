@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.ViewModels;
 using System;
@@ -18,6 +20,9 @@ namespace RealEstate.Services.Database
         void Detach(bool isNew = false);
 
         void Detach<TEntity>(bool isNew = false) where TEntity : class;
+
+        DatabaseFacade Db { get; }
+        ChangeTracker Tracker { get; }
 
         TEntity Update<TEntity>(TEntity entity) where TEntity : class;
 

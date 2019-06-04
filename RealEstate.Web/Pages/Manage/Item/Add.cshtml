@@ -1,20 +1,25 @@
 ﻿@page
 @model AddModel
 @{
-    var property = new PropertyInputViewModel();
-    var owner = new CustomerInputViewModel();
-    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
-    var itemFeaturesSelect = itemFeatures?.Select(x => new SelectListItem
-    {
-        Text = x.Name,
-        Value = x.Id,
-    }).SelectFirstItem();
-
     var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
     var propertyFacilitiesList = propertyFacilities?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
+    }).SelectFirstItem();
+
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
+    var itemCategoriesList = itemCategories?.Select(x => new SelectListItem
+    {
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
+
+    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
+    var itemFeaturesSelect = itemFeatures?.Select(x => new SelectListItem
+    {
+        Text = x.Name,
+        Value = x.Id,
     }).SelectFirstItem();
 
     var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
@@ -37,744 +42,252 @@
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
-
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
-    var itemCategoriesList = itemCategories?.Select(x => new SelectListItem
-    {
-        Value = x.Id,
-        Text = x.Name,
-    }).SelectFirstItem();
-
 }
-
-<div class="col-12">
+<form method="post" class="col-12">
     <div class="widget">
-        <widget-header title="@SharedLocalizer[Model.PageTitle]" />
+        <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-            <div class="row justify-content-center align-items-center margin-bottomed">
-                <div class="col-12" id="accordion">
-                    @if (Model.NewItem == null || Model.NewItem.IsNew)
-                    {
-                        <div class="card">
-                            <div class="card-header">
-                                <a class="card-link" data-toggle="collapse" href="#property">
-                                    @SharedLocalizer[SharedResource.Property]
-                                </a>
+            <hr subject="@SharedLocalizer[SharedResource.Property]" />
+            <div class="row justify-content-center align-items-center r8-panel">
+                <div class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="NewItem.Property.Id" type="hidden" />
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.CategoryId"></label>
+                                <select asp-for="NewItem.Property.CategoryId" asp-items="propertyCategoriesList" class="custom-select"></select>
+                                <span class="text-danger" asp-validation-for="NewItem.Property.CategoryId"></span>
                             </div>
-                            <div id="property" class="collapse @(Model.NewItem == null ? " show" : "" )" data-parent="#accordion">
-                                <div class="card-body">
-                                    <form id="newProperty_Form" class="row justify-content-center align-items-center">
-                                        <input asp-for="@property.OwnershipsJson" id="newProperty_OwnershipsJson" name="newProperty.OwnershipsJson" />
-                                        <div class="col-xs-12 col-lg">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" for="newProperty_CategoryId">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.CategoryId))</label>
-                                                <select asp-for="@property.CategoryId" asp-items="propertyCategoriesList" id="newProperty_CategoryId" name="newProperty.CategoryId" class="custom-select"></select>
-                                                <span class="text-danger" data-valmsg-for="newProperty.CategoryId" data-valmsg-replace="true"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-lg">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" for="newProperty_DistrictId">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.DistrictId))</label>
-                                                <select asp-for="@property.DistrictId" asp-items="districtsList" id="newProperty_DistrictId" name="newProperty.DistrictId" class="custom-select"></select>
-                                                <span class="text-danger" data-valmsg-for="newProperty.DistrictId" data-valmsg-replace="true"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-lg">
-                                            <div class="input-wrapper">
-                                                <label class="control-label" for="newProperty_Street">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Street))</label>
-                                                <input asp-for="@property.Street" id="newProperty_Street" name="newProperty.Street" class="form-control" />
-                                                <span class="text-danger" data-valmsg-for="newProperty.Street" data-valmsg-replace="true"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-xs-12 col-lg-2">
-                                            <div class="input-wrapper">
-                                                <input type="button" id="newProperty_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
-                                            </div>
-                                        </div>
-                                    </form>
-                                    <div class="row justify-content-center align-items-center margin-bottomed hidden" id="property_similar">
-                                        <div class="col-12">
-                                            @SharedLocalizer[SharedResource.SimilarItems]
-                                            <div class="items"></div>
-                                        </div>
-                                    </div>
-                                    <div id="newProptery_Detail" class="hidden">
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_Alley">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Alley))</label>
-                                                    <input asp-for="@property.Alley" id="newProperty_Alley" name="newProperty.Alley" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newProperty.Alley" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_Number">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Number))</label>
-                                                    <input asp-for="@property.Number" id="newProperty_Number" name="newProperty.Number" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newProperty.Number" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_BuildingName">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.BuildingName))</label>
-                                                    <input asp-for="@property.BuildingName" id="newProperty_BuildingName" name="newProperty.BuildingName" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newProperty.BuildingName" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_Floor">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Floor))</label>
-                                                    <input asp-for="@property.Floor" id="newProperty_Floor" name="newProperty.Floor" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newProperty.Floor" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_Flat">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Flat))</label>
-                                                    <input asp-for="@property.Flat" id="newProperty_Flat" name="newProperty.Flat" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newProperty.Flat" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @if (propertyFeatures?.Any() == true)
-                                        {
-                                            <hr />
-                                            <div class="row justify-content-center align-items-center">
-                                                <div class="col-12" id="property-features-wrapper">
-                                                    <div class="itemShow adder input-wrapper">
-                                                        <input asp-for="@property.PropertyFeaturesJson" id="newProperty_PropertyFeaturessJson" />
-                                                        <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
-                                                        <select asp-items="propertyFeaturesList" id="propertyFeatures-select" class="custom-select"></select>
-                                                        <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                                                        <input class="form-control" id="propertyFeatureValue" />
-                                                        <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                                    </div>
-                                                    <div class="items hidden"></div>
-                                                </div>
-                                            </div>
-                                        }
-                                        @if (propertyFacilities?.Any() == true)
-                                        {
-                                            <hr />
-                                            <div class="row justify-content-center align-items-center">
-                                                <div class="col-12" id="property-facilities-wrapper">
-                                                    <div class="itemShow adder input-wrapper">
-                                                        <input asp-for="@property.PropertyFacilitiesJson" id="newProperty_PropertyFacilitiesJson" />
-                                                        <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
-                                                        <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
-                                                        <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                                    </div>
-                                                    <div class="items hidden"></div>
-                                                </div>
-                                            </div>
-                                        }
-                                        <hr />
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col-xs-12 col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newProperty_Description">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Description))</label>
-                                                    <textarea asp-for="@property.Description" id="newProperty_Description" name="newProperty.Description" rows="3" class="form-control"></textarea>
-                                                    <span class="text-danger" data-valmsg-for="newProperty.Description" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <hr subject="@SharedLocalizer[SharedResource.Owner]" />
-                                        <form id="newCustomer_Form" class="row justify-content-center align-items-center">
-                                            <div class="col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newCustomer_Name">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Name))</label>
-                                                    <input asp-for="@owner.Name" id="newCustomer_Name" name="newCustomer.Name" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newCustomer.Name" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg">
-                                                <div class="input-wrapper">
-                                                    <label class="control-label" for="newCustomer_Mobile">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Mobile))</label>
-                                                    <input asp-for="@owner.Mobile" id="newCustomer_Mobile" name="newCustomer.Mobile" class="form-control" />
-                                                    <span class="text-danger" data-valmsg-for="newCustomer.Mobile" data-valmsg-replace="true"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-2">
-                                                <div class="input-wrapper">
-                                                    <input type="button" id="newCustomer_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
-                                                </div>
-                                            </div>
-                                        </form>
-                                        <div class="row justify-content-center align-items-center margin-bottomed hidden" id="customer_similar">
-                                            <div class="col-12">
-                                                @SharedLocalizer[SharedResource.SimilarItems]
-                                                <div class="items"></div>
-                                            </div>
-                                        </div>
-                                        <div id="newCustomer_Detail" class="hidden">
-                                            <hr />
-                                            <div class="row justify-content-center align-items-center">
-                                                <div class="col-xs-12 col-lg">
-                                                    <div class="input-wrapper">
-                                                        <label class="control-label" for="newCustomer_Phone">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Phone))</label>
-                                                        <input asp-for="@owner.Phone" id="newCustomer_Phone" name="newCustomer.Phone" class="form-control" />
-                                                        <span class="text-danger" data-valmsg-for="newCustomer.Phone" data-valmsg-replace="true"></span>
-                                                    </div>
-                                                </div>
-                                                <div class="col-xs-12 col-lg">
-                                                    <div class="input-wrapper">
-                                                        <label class="control-label" for="newCustomer_Address">@(PropertyExtensions.GetDisplayName<CustomerInputViewModel>(x => x.Address))</label>
-                                                        <input asp-for="@owner.Address" id="newCustomer_Address" name="newCustomer.Address" class="form-control" />
-                                                        <span class="text-danger" data-valmsg-for="newCustomer.Address" data-valmsg-replace="true"></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row justify-content-center align-items-center">
-                                                <div class="col">
-                                                    <input type="button" id="newCustomer_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[SharedResource.SubmitOwner]" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <hr />
-                                        <div class="row justify-content-center align-items-center hidden" id="submitProperty">
-                                            <div class="col">
-                                                <input type="button" id="newProperty_Submit" class="btn btn-sm btn-success btn-block" value="@SharedLocalizer[" SubmitProperty"]" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div id="propertyMessage" class="status-message hidden"></div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.DistrictId"></label>
+                                <select asp-for="NewItem.Property.DistrictId" asp-items="districtsList" class="custom-select"></select>
+                                <span class="text-danger" asp-validation-for="NewItem.Property.DistrictId"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Street"></label>
+                                <input asp-for="NewItem.Property.Street" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Street"></span>
+                            </div>
+                        </div>
+                        @*<div class="col-xs-12 col-lg-2">
+                                <div class="input-wrapper">
+                                    <input type="button" id="NewItem_Property_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
                                 </div>
+                            </div>*@
+                    </div>
+                    <div class="row justify-content-center align-items-center margin-bottomed hidden" id="property_similar">
+                        <div class="col-12">
+                            @SharedLocalizer[SharedResource.SimilarItems]
+                            <div class="items"></div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Alley"></label>
+                                <input asp-for="NewItem.Property.Alley" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Alley"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Number"></label>
+                                <input asp-for="NewItem.Property.Number" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Number"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.BuildingName"></label>
+                                <input asp-for="NewItem.Property.BuildingName" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.BuildingName"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Floor"></label>
+                                <input asp-for="NewItem.Property.Floor" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Flat"></label>
+                                <input asp-for="NewItem.Property.Flat" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (propertyFeatures?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="property-features-wrapper">
+                                <div class="input-wrapper">
+                                    <input asp-for="NewItem.Property.PropertyFeaturesJson" />
+                                    <label class="control-label" asp-for="NewItem.Property.PropertyFeaturesJson"></label>
+                                    <select asp-items="propertyFeaturesList" id="propertyFeatures-select" class="custom-select"></select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                    <input class="form-control" id="propertyFeatureValue" />
+                                    <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
                             </div>
                         </div>
                     }
-                    <div class="card @(Model.NewItem == null || Model.NewItem.IsNew ? "hidden" : "")" id="itemCard">
-                        <div class="card-header">
-                            <a class="card-link" data-toggle="collapse" href="#item">
-                                @SharedLocalizer[SharedResource.Item]
-                            </a>
+                    @if (propertyFacilities?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="property-facilities-wrapper">
+                                <div class="input-wrapper">
+                                    <input asp-for="NewItem.Property.PropertyFacilitiesJson" />
+                                    <label class="control-label" asp-for="NewItem.Property.PropertyFacilitiesJson"></label>
+                                    <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
+                                    <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
                         </div>
-                        <div id="item" class="collapse @(Model.NewItem != null && !Model.NewItem.IsNew ? " show" : "" )" data-parent="#accordion">
-                            <div class="card-body">
-                                <form method="post" class="row justify-content-center align-items-center">
-                                    <input asp-for="NewItem.PropertyId" />
-                                    <input asp-for="NewItem.Id" />
-                                    <div class="col-12">
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col-12">
-                                                <div class="input-wrapper">
-                                                    <label asp-for="NewItem.CategoryId" class="control-label"></label>
-                                                    <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="custom-select"></select>
-                                                    <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @if (itemFeatures?.Any() == true)
-                                        {
-                                            <hr />
-                                            <div class="row justify-content-center align-items-center">
-                                                <div class="col-12" id="features-wrapper">
-                                                    <div class="itemShow adder input-wrapper">
-                                                        <input asp-for="NewItem.ItemFeaturesJson" />
-                                                        <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
-                                                        <select asp-items="itemFeaturesSelect" id="features-select" class="custom-select"></select>
-                                                        <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                                                        <input class="form-control" id="featureValue" />
-                                                        <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                                    </div>
-                                                    <div class="items hidden"></div>
-                                                </div>
-                                            </div>
-                                        }
-                                        <hr />
-                                        <div class="row justify-content-center align-items-center">
-                                            <div class="col-12 margin-bottomed">
-                                                <label asp-for="NewItem.Description" class="control-label"></label>
-                                                <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
-                                                <span asp-validation-for="NewItem.Description" class="text-danger"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <footer>
-                                        <submit full-width="true" />
-                                        <status>
-                                            @Model.Status
-                                        </status>
-                                    </footer>
-                                </form>
+                    }
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-xs-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Description"></label>
+                                <textarea asp-for="NewItem.Property.Description" rows="3" class="form-control"></textarea>
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Description"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.Owner]" class="mt-4" />
+            <div class="row justify-content-center align-content-center r8-panel">
+                <input asp-for="NewItem.Property.Ownership.Dong" value="6" type="hidden" />
+                <input asp-for="NewItem.Property.Ownership.Id" type="hidden" />
+
+                <div class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-lg">
+                            <div class="input-wrapper">
+
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Name"></label>
+                                <input asp-for="NewItem.Property.Ownership.Name" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Name"></span>
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Mobile"></label>
+                                <input asp-for="NewItem.Property.Ownership.Mobile" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Mobile"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Phone"></label>
+                                <input asp-for="NewItem.Property.Ownership.Phone" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Phone"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Address"></label>
+                                <input asp-for="NewItem.Property.Ownership.Address" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Address"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.Item]" class="mt-4" />
+            <div class="row justify-content-center align-items-center r8-panel">
+                <input asp-for="NewItem.Id" />
+                <div class="col-12">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <div class="input-wrapper">
+                                <label asp-for="NewItem.CategoryId" class="control-label"></label>
+                                <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="custom-select"></select>
+                                <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (itemFeatures?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="features-wrapper">
+                                <div class="input-wrapper">
+                                    <input asp-for="NewItem.ItemFeaturesJson" />
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
+                                    <select asp-items="itemFeaturesSelect" id="features-select" class="custom-select"></select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                    <input class="form-control" id="featureValue" />
+                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <div class="input-wrapper">
+                                <label asp-for="NewItem.Description" class="control-label"></label>
+                                <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="NewItem.Description" class="text-danger"></span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+        <footer>
+            <submit full-width="true" />
+            <status>
+                @Html.Raw(Model.Status)
+            </status>
+        </footer>
     </div>
-</div>
+</form>
+
 @section Scripts
-            {
-
-    <script>
-        var customerChanged = true;
-
-        $(document).ready(function() {
-            const propertyCollapse = $(".collapse[id='property']");
-            const ownerCollapse = $(".collapse[id='owner']");
-
-            const status = $("#customerMessage");
-
-            const ownersInput = $("#newProperty_OwnershipsJson");
-            const mobileInput = $("#newCustomer_Mobile");
-            const nameInput = $("#newCustomer_Name");
-            const phoneInput = $("#newCustomer_Phone");
-            const addressInput = $("#newCustomer_Address");
-
-            const selector = "customer-item";
-            const checkButton = $("#newCustomer_Check");
-            const submitButton = $("#newCustomer_Submit");
-
-            const form = $("#newProperty_Form");
-            const detail = $("#newCustomer_Detail");
-            const similars = $("#customer_similar");
-            const items = $(".items", similars);
-
-            const submitPropertyRow = $("#submitProperty");
-
-            function setOwnerStatus(text) {
-                $(status).html(text);
-                $(status).removeClass("hidden");
-                setTimeout(function() {
-                        $(status).addClass("hidden");
-
-                    },
-                    2000);
-            }
-
-            //setInterval(function() {
-            //        if (customerChanged) {
-            //            $(phoneInput).val("");
-            //            $(addressInput).val("");
-            //            $(detail).addClass("hidden");
-            //            $(similars).addClass("hidden");
-            //            console.log("customerChanged:", customerChanged);
-            //        }
-
-            //    },
-            //    100);
-
-            $(nameInput).on("change paste keyup input propertychange",
-                function() {
-                    if (!customerChanged) {
-                        customerChanged = true;
-                    }
-                });
-            $(mobileInput).on("change paste keyup input propertychange",
-                function() {
-                    if (!customerChanged) {
-                        customerChanged = true;
-                    }
-                });
-
-            $(submitButton).click(function(e) {
-                if (!customerChanged) {
-
-                    const children = $("[data-val='true']", form);
-                    $.each(children,
-                        (key, value) => {
-                            $(value).valid();
-                        });
-
-                    if ($(form)[0].checkValidity()) {
-
-                        const address = $(addressInput).val();
-                        const phone = $(phoneInput).val();
-                        const name = $(nameInput).val();
-                        const mobile = $(mobileInput).val();
-
-                        const model = {
-                            @(PropertyExtensions.GetProperty<CustomerJsonViewModel>(x => x.Address).Name): address,
-                            @(PropertyExtensions.GetProperty<CustomerJsonViewModel>(x => x.Name).Name): name,
-                            @(PropertyExtensions.GetProperty<CustomerJsonViewModel>(x => x.Phone).Name): phone,
-                            @(PropertyExtensions.GetProperty<CustomerJsonViewModel>(x => x.Mobile).Name): mobile
-                        };
-
-                        console.log(model);
-                        $.post("@Url.Action("CustomerAsync", "Add")",
-                            model,
-                            function(response) {
-                                console.log(response);
-                                if (response != undefined) {
-
-                                    const responseMessage = response
-                                        .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.Message));
-                                    const responseStatusCode =
-                                        response
-                                            .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.StatusCode));
-                                    const responseId =
-                                        response
-                                            .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.Id));
-
-                                    setOwnerStatus(responseMessage);
-                                    if (responseStatusCode === @((int)StatusEnum.Success) ||
-                                        responseStatusCode === @((int)StatusEnum.PartialSuccess)) {
-
-                                        setOwner(responseId);
-
-                                    }
-                                }
-                            });
-
-                    }
-                }
-
-            });
-
-            $(document).on("click",
-                `.${selector}`,
-                function(e) {
-                    const keyId = $(this).attr("data-id");
-                    console.log("KeyId", keyId);
-
-                    setOwner(keyId);
-                });
-
-            function setOwner(customerId) {
-                if (customerId == undefined || customerId === null || customerId === "")
-                    return;
-
-                $(ownersInput).val("[]");
-                $.get("@Url.Action("CustomerAsync", "Detail")",
-                    { id: customerId },
-                    function(response) {
-                        if (response != undefined &&
-                            response != null &&
-                            response.id !== null &&
-                            response.id.length > 0) {
-
-                            const id = response.@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Id));
-                            const name = response
-                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Name));
-                            const mobile = response
-                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Mobile));
-                            const address = response
-                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Address));
-                            const phone = response
-                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Id));
-
-                            const model = [
-                                {
-                                    @(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Name)): name,
-                                    @(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.CustomerId)):
-                                        id,
-                                    @(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Mobile)):
-                                        mobile,
-                                    @(PropertyExtensions.GetJsonProperty<OwnershipJsonViewModel>(x => x.Dong)): 6,
-                                }
-                            ];
-
-                            const json = JSON.stringify(model);
-                            $(ownersInput).val(json);
-
-                        $(detail).fadeOut();
-                            $(similars).fadeOut();
-
-                            setTimeout(function() {
-                                    $(phoneInput).val("");
-                                    $(addressInput).val("");
-                                    $(detail).addClass("hidden");
-                                    $(similars).addClass("hidden");
-                                    $(submitPropertyRow).removeClass("hidden");
-                                },
-                                500);
-
-                        }
-                    });
-            }
-
-            $(checkButton).click(function(e) {
-
-                customerChanged = false;
-                if ($(form)[0].checkValidity()) {
-
-                    $(nameInput).valid();
-                    $(mobileInput).valid();
-
-                    const name = $(nameInput).val();
-                    const mobile = $(mobileInput).val();
-
-                    const model = {
-                        mobile: mobile,
-                        name: name
-                    };
-                    $.get("@Url.Action("CustomerAsync", "Search")",
-                        model,
-                        function(response) {
-                            console.log(response);
-                            if (response !== null && response.length > 0) {
-                                $(items).empty();
-
-                                $.each(response,
-                                    (key, customer) => {
-
-                                        const customerId =
-                                            customer
-                                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Id));
-                                        const customerMobile =
-                                            customer
-                                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Mobile));
-                                        const customerName =
-                                            customer
-                                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Name));
-                                        const customerPhone =
-                                            customer
-                                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Phone));
-                                        const customerAddress =
-                                            customer
-                                                .@(PropertyExtensions.GetJsonProperty<CustomerJsonViewModel>(x => x.Address));
-
-                                        const anchor = document.createElement("a");
-                                        $(anchor).attr("href", "#");
-                                        $(anchor).attr("data-id", customerId);
-                                        $(anchor).addClass(selector);
-
-                                        const finalString = `${customerName} ${customerMobile}`;
-                                        const nameElement = document.createElement("span");
-                                        $(nameElement).html(finalString);
-
-                                        $(anchor).append(nameElement);
-                                        $(items).append(anchor);
-                                    });
-
-                                $(detail).removeClass("hidden");
-                                $(similars).removeClass("hidden");
-                            } else {
-                                $(detail).removeClass("hidden");
-                                $(similars).addClass("hidden");
-                            }
-                            customerChanged = false;
-
-                        });
-                }
-
-            });
-        });
-    </script>
+{
     <script>
 
         var propertyChanged = true;
 
         $(document).ready(function() {
 
-            const propertyCollapse = $(".collapse[id='property']");
-            const ownerCollapse = $(".collapse[id='owner']");
-            const itemCollapse = $(".collapse[id='item']");
-
-            const status = $("#propertyMessage");
-
-            const propertyIdInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.PropertyId)");
-            const ownersInput = $("#newProperty_OwnershipsJson");
-            const categoryIdSelect = $("#newProperty_CategoryId");
-            const districtIdSelect = $("#newProperty_DistrictId");
-            const streetInput = $("#newProperty_Street");
-
-            const alleyInput = $("#newProperty_Alley");
-            const numberInput = $("#newProperty_Number");
-            const buildingNameInput = $("#newProperty_BuildingName");
-            const floorInput = $("#newProperty_Floor");
-            const flatInput = $("#newProperty_Flat");
-            const featuresJsonInput = $("#newProperty_PropertyFeaturessJson");
-            const facilitiesJsonInput = $("#newProperty_PropertyFacilitiesJson");
-            const descriptionInput = $("#newProperty_Description");
-
-            const selector = "property-item";
-            const checkButton = $("#newProperty_Check");
-            const submitButton = $("#newProperty_Submit");
-
-            const form = $("#newProperty_Form");
-            const detail = $("#newProptery_Detail");
             const similars = $("#property_similar");
             const items = $(".items", similars);
 
-            const itemCard = $("#itemCard");
+            const status = $("#propertyMessage");
+            const checkProperty = $("#NewItem_Property_Check");
+            const propertyCategoryId =
+                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.CategoryId)");
+            const propertyDistrictId =
+                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.DistrictId)");
+            const propertyStreet =
+                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.Street)");
 
-            function setPropertyStatus(text) {
-                $(status).html(text);
-                $(status).removeClass("hidden");
-                setTimeout(function() {
-                        $(status).addClass("hidden");
-
-                    },
-                    2000);
-            }
-
-            //setInterval(function() {
-            //    if (propertyChanged) {
-            //            $(alleyInput).val("");
-            //            $(numberInput).val("");
-            //            $(buildingNameInput).val("");
-            //            $(floorInput).val("");
-            //            $(flatInput).val("");
-            //            $(featuresJsonInput).val("[]");
-            //            $(facilitiesJsonInput).val("[]");
-            //            $(descriptionInput).val("");
-
-            //            $(detail).addClass("hidden");
-            //            $(similars).addClass("hidden");
-            //            console.log("propertyChanged:", propertyChanged);
-            //        }
-
-            //    },
-            //    100);
-
-            $(streetInput).on("change paste keyup input propertychange",
-                function() {
-                    if (!propertyChanged) {
-                        propertyChanged = true;
-                    }
-                });
-            $(districtIdSelect).on("change propertychange",
-                function() {
-                    if (!propertyChanged) {
-                        propertyChanged = true;
-                    }
-                });
-            $(categoryIdSelect).on("change propertychange",
-                function() {
-                    if (!propertyChanged) {
-                        propertyChanged = true;
-                    }
-                });
-
-            $(submitButton).click(function(e) {
-                if (!propertyChanged) {
-
-                    const children = $("[data-val='true']", form);
-                    $.each(children,
-                        (key, value) => {
-                            $(value).valid();
-                        });
-
-                    if ($(form)[0].checkValidity()) {
-
-                        const ownerJson = $(ownersInput).val();
-                        if (ownerJson === "[]" || ownerJson === null || ownerJson === "") {
-                            setPropertyStatus("مالک انتخاب نشده است");
-                            return;
-                        }
-
-                        const street = $(streetInput).val();
-                        const districtId = $(`option[value='${$(districtIdSelect).val()}']`, districtIdSelect).val();
-                        const categoryId = $(`option[value='${$(categoryIdSelect).val()}']`, categoryIdSelect).val();
-                        const alley = $(alleyInput).val();
-                        const number = $(numberInput).val();
-                        const buildingNumber = $(buildingNameInput).val();
-                        const floor = $(floorInput).val();
-                        const flat = $(flatInput).val();
-                        const featuresJson = $(featuresJsonInput).val();
-                        const facilitiesJson = $(facilitiesJsonInput).val();
-                        const description = $(descriptionInput).val();
-
-                        const model = {
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Street).Name): street,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.DistrictId).Name): districtId,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.CategoryId).Name): categoryId,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Alley).Name): alley,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Number).Name): number,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.BuildingName).Name): buildingNumber,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Floor).Name): floor,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Flat).Name): flat,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.PropertyFeaturesJson).Name): featuresJson,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.PropertyFacilitiesJson).Name): facilitiesJson,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.Description).Name): description,
-                            @(PropertyExtensions.GetProperty<PropertyInputViewModel>(x => x.OwnershipsJson).Name): ownerJson,
-
-                        };
-
-                        $.post("@Url.Action("PropertyAsync", "Add")",
-                            model,
-                            function(response) {
-                                console.log(response);
-                                if (response != undefined) {
-
-                                    const responseMessage = response
-                                        .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.Message));
-                                    const responseStatusCode =
-                                        response
-                                            .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.StatusCode));
-                                    const responseId =
-                                        response
-                                            .@(PropertyExtensions.GetJsonProperty<JsonStatusViewModel>(x => x.Id));
-
-                                    setPropertyStatus(responseMessage);
-                                    if (responseStatusCode === @((int)StatusEnum.Success) ||
-                                        responseStatusCode === @((int)StatusEnum.PartialSuccess)) {
-
-                                        setProperty(responseId);
-                                    }
-                                }
-                            });
-
-                    }
-                }
-
-            });
-
-            $(document).on("click",
-                `.${selector}`,
-                function(e) {
-                    const keyId = $(this).attr("data-id");
-                    console.log("KeyId", keyId);
-
-                    setProperty(keyId);
-                });
-
-            function setProperty(propertyId) {
-                if (propertyId == undefined || propertyId === null || propertyId === "")
-                    return;
-
-                $.get("@Url.Action("PropertyAsync", "Detail")",
-                    { id: propertyId },
-                    function(response) {
-                        if (response != undefined &&
-                            response != null &&
-                            response.id !== null &&
-                            response.id.length > 0) {
-
-                            const id = response.@(PropertyExtensions.GetJsonProperty<PropertyJsonViewModel>(x => x.Id));
-                            $(propertyIdInput).val(id);
-                            $(itemCard).removeClass("hidden");
-                            setTimeout(function() {
-                                $(itemCollapse).collapse("show");
-                                    $(ownersInput).val("");
-                                    $(categoryIdSelect).val("");
-                                    $(districtIdSelect).val("");
-                                    $(streetInput).val("");
-                                    $(numberInput).val("");
-                                    $(alleyInput).val("");
-                                    $(buildingNameInput).val("");
-                                    $(descriptionInput).val("");
-                                    $(floorInput).val("0");
-                                    $(flatInput).val("0");
-                                    $(featuresJsonInput).val("[]");
-                                    $(facilitiesJsonInput).val("[]");
-                                    $(detail).addClass("hidden");
-                                    $(similars).addClass("hidden");
-                                },
-                                2000);
-
-                        }
-                    });
-            }
-
-            $(checkButton).click(function(e) {
-
-                propertyChanged = false;
+            $(checkProperty).click(function(e) {
                 if ($(form)[0].checkValidity()) {
 
-                    $(categoryIdSelect).valid();
-                    $(districtIdSelect).valid();
-                    $(streetInput).valid();
+                    $(propertyCategoryId).valid();
+                    $(propertyDistrictId).valid();
+                    $(propertyStreet).valid();
 
-                    const selectedDistrictId = $(districtIdSelect).val();
-                    const selectedCategoryId = $(categoryIdSelect).val();
+                    const selectedDistrictId = $(propertyDistrictId).val();
+                    const selectedCategoryId = $(propertyCategoryId).val();
 
-                    const street = $(streetInput).val();
-                    const district = $(`option[value='${selectedDistrictId}']`, districtIdSelect).html();
-                    const category = $(`option[value='${selectedCategoryId}']`, categoryIdSelect).html();
+                    const street = $(propertyStreet).val();
+                    const district = $(`option[value='${selectedDistrictId}']`, propertyDistrictId).html();
+                    const category = $(`option[value='${selectedCategoryId}']`, propertyCategoryId).html();
 
                     const model = {
                         district: district,
@@ -829,14 +342,14 @@
 
                         });
                 }
-
             });
+
         });
     </script>
     <script>
         $(document).ready(function() {
 
-            const jsonInput = $("#newProperty_PropertyFeaturessJson");
+            const jsonInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFeaturesJson)");
             const selectInput = $("#propertyFeatures-select");
             const wrapperClass = $("#property-features-wrapper");
             const submitInput = $("#addNewPropertyFeature");
@@ -975,7 +488,7 @@
     <script>
         $(document).ready(function() {
 
-            const jsonInput = $("#newProperty_PropertyFacilitiesJson");
+            const jsonInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFacilitiesJson)");
             const selectInput = $("#propertyFacility-select");
             const wrapperClass = $("#property-facilities-wrapper");
             const submitInput = $("#addNewPropertyFacility");

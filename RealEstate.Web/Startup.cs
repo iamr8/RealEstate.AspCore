@@ -1,4 +1,3 @@
-using CacheManager.Core;
 using ElmahCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -30,7 +29,6 @@ using System.Net.Mime;
 using System.Reflection;
 using WebMarkupMin.AspNetCore2;
 using WebMarkupMin.Core;
-using ConfigurationBuilder = CacheManager.Core.ConfigurationBuilder;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace RealEstate.Web
@@ -102,8 +100,7 @@ namespace RealEstate.Web
                         options.Cookie.SameSite = SameSiteMode.Lax;
                     });
 
-            services
-                .AddMvcCore();
+            services.AddMvcCore();
 
             services.AddElmah(options =>
             {
@@ -201,16 +198,6 @@ namespace RealEstate.Web
             services.Configure<BrotliCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
             services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Optimal);
 
-            services
-                .AddSingleton(typeof(ICacheManager<>), typeof(BaseCacheManager<>));
-            services
-                .AddSingleton(typeof(ICacheManagerConfiguration),
-                    new ConfigurationBuilder()
-                    .WithJsonSerializer()
-                    .WithMicrosoftMemoryCacheHandle()
-                    .WithExpiration(ExpirationMode.Absolute, TimeSpan.FromMinutes(10))
-                    .Build());
-
             services.AddScoped<AuthenticationTracker>();
             services.AddScoped<IUnitOfWork, ApplicationDbContext>();
             services
@@ -221,6 +208,14 @@ namespace RealEstate.Web
                 .AddTransient<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddRequiredServices();
+
+            services.AddMiniProfiler(options =>
+            {
+                options.RouteBasePath = "/profiler";
+                options.SqlFormatter = new StackExchange.Profiling.SqlFormatters.SqlServerFormatter();
+                options.ResultsAuthorize = request => !Program.DisableProfilingResults;
+                options.TrackConnectionOpenClose = false;
+            }).AddEntityFramework();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -279,6 +274,9 @@ namespace RealEstate.Web
                 app.UseResponseCompression();
                 app.UseWebMarkupMin();
             }
+
+            app.UseMiniProfiler();
+
             app.UseStaticFiles(new StaticFileOptions
             {
                 OnPrepareResponse = context =>

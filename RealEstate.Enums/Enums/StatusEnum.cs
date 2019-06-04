@@ -95,6 +95,9 @@ namespace RealEstate.Base.Enums
         PaymentsAreEmpty,
         CheckoutIsNull,
         RemainIsNull,
-        PaymentIsNull
+        PaymentIsNull,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "PropertyIsAlreadyExists")]
+        PropertyIsAlreadyExists
     }
 }

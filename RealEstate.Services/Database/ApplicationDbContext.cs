@@ -1,12 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Configuration;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.Database
@@ -16,6 +21,52 @@ namespace RealEstate.Services.Database
         public ApplicationDbContext(DbContextOptions options)
             : base(options)
         {
+        }
+
+        public ApplicationDbContext()
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                var connectionString =
+                "Data Source=(localdb)\\MSSQLLocalDB;AttachDbFilename={{CFG}};Initial Catalog=RealEstateDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=true;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;MultipleActiveResultSets=true";
+                if (connectionString.Contains("{{CFG}}"))
+                {
+                    // D:\\RSDB\\RSDB.mdf
+                    var config = Assembly.GetEntryAssembly().ReadConfiguration();
+                    if (config == null)
+                        return;
+
+                    connectionString = connectionString.Replace("{{CFG}}", config.DbPath);
+                }
+                Console.WriteLine(connectionString);
+                optionsBuilder.UseLazyLoadingProxies();
+                optionsBuilder.UseSqlServer(connectionString,
+                    options =>
+                    {
+                        options.MigrationsAssembly($"{nameof(RealEstate)}.Web");
+                        options.UseNetTopologySuite();
+                        options.EnableRetryOnFailure();
+                        options.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
+                    });
+                optionsBuilder.ConfigureWarnings(config =>
+                {
+                    config.Log(CoreEventId.IncludeIgnoredWarning);
+                    config.Log(CoreEventId.NavigationIncluded);
+                    config.Log(CoreEventId.NavigationLazyLoading);
+                    config.Log(CoreEventId.DetachedLazyLoadingWarning);
+                    config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
+                    config.Log(RelationalEventId.QueryClientEvaluationWarning);
+                });
+                optionsBuilder.EnableSensitiveDataLogging();
+            }
+            else
+            {
+                base.OnConfiguring(optionsBuilder);
+            }
         }
 
         public virtual DbSet<Applicant> Applicant { get; set; }
@@ -96,6 +147,9 @@ namespace RealEstate.Services.Database
             }
         }
 
+        public DatabaseFacade Db => this.Database;
+        public ChangeTracker Tracker => this.ChangeTracker;
+
         public void Detach(bool isNew = false)
         {
             var entries = ChangeTracker.Entries().ToList();
@@ -132,11 +186,6 @@ namespace RealEstate.Services.Database
             return result;
         }
 
-        //public TEntity Update<TEntity>(TEntity entity, string userId) where TEntity : class
-        //{
-        //    AddTrack(entity, userId, LogTypeEnum.Modify);
-        //    return entity;
-        //}
         public TEntity Update<TEntity>(TEntity entity, CurrentUserViewModel user, Dictionary<string, string> changes = null) where TEntity : BaseEntity
         {
             AddTrack(entity, user, LogTypeEnum.Modify, changes);

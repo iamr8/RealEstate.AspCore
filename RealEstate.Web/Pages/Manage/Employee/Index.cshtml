@@ -95,21 +95,21 @@
                                     @SharedLocalizer[SharedResource.Advantages]:
                                     <ul class="info-breadcrumb">
                                         <li>
-                                            <b>@SharedLocalizer[SharedResource.Insurance]:</b> @((item.CurrentInsurance()?.Price ?? 0).ToString().CurrencyToWords()) تومان
+                                            <b>@SharedLocalizer[SharedResource.Insurance]:</b> @((item.CurrentInsurance?.Price ?? 0).ToString().CurrencyToWords()) تومان
                                         </li>
                                         <li>
-                                            <b>@SharedLocalizer[SharedResource.FixedSalary]:</b> @((item.CurrentFixedSalary()?.Value ?? 0).ToString().CurrencyToWords()) تومان
+                                            <b>@SharedLocalizer[SharedResource.FixedSalary]:</b> @((item.CurrentFixedSalary?.Value ?? 0).ToString().CurrencyToWords()) تومان
                                         </li>
                                     </ul>
                                 </span>
-                                @if (item.EmployeeDivisions.Value?.Any() == true)
+                                @if (item.EmployeeDivisions?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Divisions]:
                                         <ul class="info-breadcrumb">
-                                            @foreach (var employeeDivision in item.EmployeeDivisions.Value)
+                                            @foreach (var employeeDivision in item.EmployeeDivisions)
                                             {
-                                                var value = employeeDivision.Division.Value;
+                                                var value = employeeDivision.Division;
                                                 <li>
                                                     <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@value?.Id" target="_blank">@value?.Name</a>
                                                 </li>
@@ -118,12 +118,12 @@
                                     </span>
 
                                 }
-                                @if (item.Users.Value?.Any() == true)
+                                @if (item.Users?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Users]:
                                         <ul class="info-breadcrumb">
-                                            @foreach (var user in item.Users.Value)
+                                            @foreach (var user in item.Users)
                                             {
                                                 <li>
                                                     <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-userId="@user.Id" target="_blank">@user.Username</a>
@@ -136,10 +136,10 @@
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
-                                    <a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>
+                                    @*<a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>*@
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
 
-                                    if (User.Identity.Name != item.CurrentUser()?.Username)
+                                    if (User.Identity.Name != item.CurrentUser?.Username)
                                     {
                                         <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                     }

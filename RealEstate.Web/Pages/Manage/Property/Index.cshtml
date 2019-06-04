@@ -93,16 +93,16 @@
                             <div class="info">
                                 <ul class="info-breadcrumb">
                                     <li>
-                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District.Value?.Id" target="_blank">@item.District.Value?.Name</a>
+                                        <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.District?.Id" target="_blank">@item.District?.Name</a>
                                     </li>
                                     <li>
-                                        <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category.ToString()">@item.Category.Value?.Name</a>
+                                        <a asp-page="@typeof(Category.IndexModel).Page()" asp-route-propertyCat="@item.Category?.Name.ToString()">@item.Category?.Name</a>
                                     </li>
                                 </ul>
                                 <span>
                                     <b class="title">
                                         @item.Address
-                                        @if (item.Pictures.Value?.Any() == true)
+                                        @if (item.Pictures?.Any() == true)
                                         {
                                             <i class="fa fa-check-circle verified"></i>
                                         }
@@ -111,22 +111,22 @@
                                 <span>
                                     @SharedLocalizer[SharedResource.Owners]:
                                     <ul class="info-breadcrumb">
-                                        @if (item.CurrentPropertyOwnership()?.Ownerships.Value?.Any() != true)
+                                        @if (item.CurrentPropertyOwnership?.Ownerships?.Any() != true)
                                         {
                                             <li>مالک ثبت نشده است</li>
                                         }
                                         else
                                         {
-                                            if (item.CurrentPropertyOwnership().Ownerships.Value.Sum(x => x.Dong) != 6)
+                                            if (item.CurrentPropertyOwnership.Ownerships.Sum(x => x.Dong) != 6)
                                             {
                                                 <li>خطا در ثبت تعداد دانگ ها</li>
                                             }
                                             else
                                             {
-                                                @foreach (var owner in item.CurrentPropertyOwnership().Ownerships.Value)
+                                                @foreach (var owner in item.CurrentPropertyOwnership.Ownerships)
                                                  {
                                                      <li>
-                                                         <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank">@owner.Customer.Value.Name - @owner.Customer.Value?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
+                                                         <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-id="@owner.Id" target="_blank">@owner.Customer.Name - @owner.Customer?.Mobile - @owner.Dong @SharedLocalizer["Dong"]</a>
                                                      </li>
                                                  }
                                             }
@@ -134,44 +134,44 @@
                                     </ul>
                                 </span>
 
-                                @if (item.PropertyFacilities.Value?.Any() == true)
+                                @if (item.PropertyFacilities?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.PropertyFacilities] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.PropertyFacilities.Value)
+                                            @foreach (var feature in item.PropertyFacilities)
                                             {
                                                 <text>
-                                                    <li>@feature.Facility.Value?.Name</li>
+                                                    <li>@feature.Facility?.Name</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.PropertyFeatures.Value?.Any() == true)
+                                @if (item.PropertyFeatures?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.PropertyFeatures] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.PropertyFeatures.Value)
+                                            @foreach (var feature in item.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature.Value?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.Pictures.Value?.Any() == true)
+                                @if (item.Pictures?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer[SharedResource.Photos] :
                                         <ul class="info-breadcrumb gallery no-image">
-                                            @for (var i = 0; i < item.Pictures.Value.Count; i++)
+                                            @for (var i = 0; i < item.Pictures.Count; i++)
                                             {
-                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Pictures.Value[i].File}");
+                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Pictures[i].File}");
                                                 <li>
                                                     <img class="hidden" src="@imgPath">
                                                     @SharedLocalizer[SharedResource.Picture] @(i + 1)

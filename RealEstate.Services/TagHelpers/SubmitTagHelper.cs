@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.TagHelpers
 {
@@ -10,6 +12,8 @@ namespace RealEstate.Services.TagHelpers
     public class SubmitTagHelper : TagHelper
     {
         private readonly IStringLocalizer<SharedResource> _localizer;
+        public bool Ajax { get; set; }
+        public BsButtonTypeEnum Type { get; set; } = BsButtonTypeEnum.Success;
 
         public SubmitTagHelper(IStringLocalizer<SharedResource> localizer)
         {
@@ -18,17 +22,28 @@ namespace RealEstate.Services.TagHelpers
 
         public bool FullWidth { get; set; }
 
-        public override void Process(TagHelperContext context, TagHelperOutput output)
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            output.TagName = "input";
-            output.TagMode = TagMode.SelfClosing;
-            output.AddClass("btn-success", HtmlEncoder.Default);
+            var content = (await output.GetChildContentAsync().ConfigureAwait(false)).GetContent(HtmlEncoder.Default);
+
+            output.TagName = Ajax ? "button" : "input";
+            output.TagMode = Ajax ? TagMode.StartTagAndEndTag : TagMode.SelfClosing;
+            output.AddClass("btn", HtmlEncoder.Default);
+            output.AddClass($"btn-{Type.ToString().ToLower()}", HtmlEncoder.Default);
 
             if (FullWidth)
                 output.AddClass("btn-block", HtmlEncoder.Default);
 
-            output.Attributes.Add("value", _localizer[SharedResource.Submit]);
-            output.Attributes.Add("type", "submit");
+            if (Ajax)
+                output.AddClass("btn-flex", HtmlEncoder.Default);
+
+            var value = string.IsNullOrEmpty(content) ? _localizer[SharedResource.Submit] : content;
+            if (Ajax)
+                output.Content.AppendHtml(value);
+            else
+                output.Attributes.Add("value", value);
+
+            output.Attributes.Add("type", Ajax ? "button" : "submit");
         }
     }
 }

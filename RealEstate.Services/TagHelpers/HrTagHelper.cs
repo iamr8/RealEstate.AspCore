@@ -8,8 +8,9 @@ namespace RealEstate.Services.TagHelpers
     [HtmlTargetElement("hr", Attributes = "subject", TagStructure = TagStructure.NormalOrSelfClosing)]
     public class HrTagHelper : TagHelper
     {
-        [HtmlAttributeName("subject")]
         public string Subject { get; set; }
+
+        public string Class { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -23,6 +24,11 @@ namespace RealEstate.Services.TagHelpers
                 output.TagName = "div";
                 output.TagMode = TagMode.StartTagAndEndTag;
                 output.Content.AppendHtml(subject).AppendHtml(hr);
+
+                if (!string.IsNullOrEmpty(Class))
+                    foreach (var cls in Class.Split(' '))
+                        output.AddClass(cls, HtmlEncoder.Default);
+
                 output.AddClass("title-bar", HtmlEncoder.Default);
             }
             else

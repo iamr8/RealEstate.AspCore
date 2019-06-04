@@ -7,13 +7,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Feature : BaseEntity
     {
-        public Feature()
-        {
-            PropertyFeatures = new HashSet<PropertyFeature>();
-            ItemFeatures = new HashSet<ItemFeature>();
-            ApplicantFeatures = new HashSet<ApplicantFeature>();
-        }
-
         [Required]
         public string Name { get; set; }
 
@@ -22,5 +15,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<PropertyFeature> PropertyFeatures { get; set; }
         public virtual ICollection<ItemFeature> ItemFeatures { get; set; }
         public virtual ICollection<ApplicantFeature> ApplicantFeatures { get; set; }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }

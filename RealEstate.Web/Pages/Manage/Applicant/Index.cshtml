@@ -19,30 +19,30 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a class="title" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-customerId="@item.Customer.Value?.Id" target="_blank">
-                                        @item.Customer.Value?.Name
+                                    <a class="title" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-customerId="@item.Customer?.Id" target="_blank">
+                                        @item.Customer?.Name
                                     </a>
                                     <span class="badge badge-secondary">@item.Type.GetDisplayName()</span>
-                                    <a href="tel:@item.Customer.Value?.Mobile" class="badge badge-primary">@item.Customer.Value?.Mobile</a>
-                                    @if (!string.IsNullOrEmpty(item.Customer.Value?.Phone))
+                                    <a href="tel:@item.Customer?.Mobile" class="badge badge-primary">@item.Customer?.Mobile</a>
+                                    @if (!string.IsNullOrEmpty(item.Customer?.Phone))
                                     {
-                                        <span class="badge badge-secondary">@item.Customer.Value.Phone</span>
+                                        <span class="badge badge-secondary">@item.Customer.Phone</span>
                                     }
-                                    @if (!string.IsNullOrEmpty(item.Customer.Value?.Address))
+                                    @if (!string.IsNullOrEmpty(item.Customer?.Address))
                                     {
-                                        <span class="badge badge-warning">@item.Customer.Value.Address</span>
+                                        <span class="badge badge-warning">@item.Customer.Address</span>
                                     }
                                     @if (item.Item != null)
                                     {
-                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-id="@item.Item.Value.Id" class="badge badge-danger">مشخصات مورد</a>
+                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-id="@item.Item.Id" class="badge badge-danger">مشخصات مورد</a>
                                     }
                                 </span>
-                                @if (item.ApplicantFeatures.Value?.Any() == true)
+                                @if (item.ApplicantFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var feature in item.ApplicantFeatures.Value)
+                                        @foreach (var feature in item.ApplicantFeatures)
                                         {
-                                            <span class="badge badge-success">@feature.Feature.Value?.Name &mdash; @feature.Value.FixCurrency()</span>
+                                            <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value.FixCurrency()</span>
                                         }
                                     </span>
                                 }

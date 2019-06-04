@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
 using System;
 
 namespace RealEstate.Services.ViewModels.ModelBind
@@ -11,30 +10,31 @@ namespace RealEstate.Services.ViewModels.ModelBind
         [JsonIgnore]
         public Picture Entity { get; }
 
-        public PictureViewModel(Picture entity)
+        public PictureViewModel(Picture entity, Action<PictureViewModel> act = null)
         {
             if (entity == null)
                 return;
 
             Entity = entity;
+            act?.Invoke(this);
         }
 
         public string File => Entity?.File;
         public string Text => Entity?.Text;
 
-        public Lazy<DealViewModel> Deal =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Deal.Map<Deal, DealViewModel>());
+        public DealViewModel Deal { get; set; }
 
-        public Lazy<PaymentViewModel> Payment =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Payment.Map<Payment, PaymentViewModel>());
+        public PaymentViewModel Payment { get; set; }
 
-        public Lazy<PropertyViewModel> Property =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Property.Map<Property, PropertyViewModel>());
+        public PropertyViewModel Property { get; set; }
 
-        public Lazy<ReminderViewModel> Reminder =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Reminder.Map<Reminder, ReminderViewModel>());
+        public ReminderViewModel Reminder { get; set; }
 
-        public Lazy<EmployeeViewModel> Employee =>
-            LazyLoadExtension.LazyLoad(() => Entity?.Employee.Map<Employee, EmployeeViewModel>());
+        public EmployeeViewModel Employee { get; set; }
+
+        public override string ToString()
+        {
+            return Entity.ToString();
+        }
     }
 }

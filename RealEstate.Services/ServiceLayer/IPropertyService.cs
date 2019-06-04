@@ -4,14 +4,15 @@ using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -19,9 +20,15 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<MethodStatus<Property>> PropertyAddAsync(PropertyInputViewModel model, bool save);
 
+        Task<MethodStatus<Property>> PropertyComplexAddOrUpdateAsync(PropertyComplexInputViewModel model, bool save);
+
         Task<StatusEnum> PropertyRemoveAsync(string id);
 
         Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm);
+
+        Task<MethodStatus<Property>> PropertyComplexAddAsync(PropertyComplexInputViewModel model, bool save);
+
+        Task<PropertyComplexInputViewModel> PropertyComplexInputAsync(string id);
 
         PropertyJsonViewModel MapJson(Property property);
 
@@ -77,9 +84,7 @@ namespace RealEstate.Services.ServiceLayer
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
-                    },
-                    true,
-                    true)
+                    })
                 .ConfigureAwait(false);
 
             return result;
@@ -235,36 +240,164 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Id = viewModel.Id,
                 Description = viewModel.Description,
-                Ownerships = viewModel.CurrentPropertyOwnership()?.Ownerships.Value?.Select(x => new OwnershipJsonViewModel
+                Ownerships = viewModel.CurrentPropertyOwnership?.Ownerships?.Select(x => new OwnershipJsonViewModel
                 {
-                    CustomerId = x.Customer.Value?.Id,
-                    Name = x.Customer.Value?.Name,
-                    Mobile = x.Customer.Value?.Mobile,
+                    CustomerId = x.Customer?.Id,
+                    Name = x.Customer?.Name,
+                    Mobile = x.Customer?.Mobile,
                     Dong = x.Dong
                 }).ToList(),
-                PropertyFacilities = viewModel.PropertyFacilities.Value?.Select(x => new FacilityJsonViewModel
+                PropertyFacilities = viewModel.PropertyFacilities?.Select(x => new FacilityJsonViewModel
                 {
-                    Id = x.Facility.Value?.Id,
-                    Name = x.Facility.Value?.Name
+                    Id = x.Facility?.Id,
+                    Name = x.Facility?.Name
                 }).ToList(),
-                CategoryId = viewModel.Category.Value?.Id,
+                CategoryId = viewModel.Category?.Id,
                 //                Latitude = viewModel.Geolocation?.Latitude ?? 0,
                 //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
-                PropertyFeatures = viewModel.PropertyFeatures.Value?.Select(x => new FeatureJsonValueViewModel
+                PropertyFeatures = viewModel.PropertyFeatures?.Select(x => new FeatureJsonValueViewModel
                 {
-                    Id = x.Feature.Value?.Id,
-                    Name = x.Feature.Value?.Name,
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
                 Number = viewModel.Number,
                 Street = viewModel.Street,
                 Flat = viewModel.Flat,
-                DistrictId = viewModel.District.Value?.Id,
+                DistrictId = viewModel.District?.Id,
                 Alley = viewModel.Alley,
                 BuildingName = viewModel.BuildingName,
                 Floor = viewModel.Floor
             };
             return result;
+        }
+
+        public async Task<PropertyComplexInputViewModel> PropertyComplexInputAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return default;
+
+            var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var viewModel = entity?.Map<Property, PropertyViewModel>(ent =>
+            {
+                ent.Include<PropertyFeature, PropertyFeatureViewModel>(entity.PropertyFeatures, ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                ent.Include<PropertyFacility, PropertyFacilityViewModel>(entity.PropertyFacilities,
+                    ent2 => ent2.Include<Facility, FacilityViewModel>(ent2.Entity.Facility));
+                ent.Include<Category, CategoryViewModel>(entity.Category);
+                ent.Include<District, DistrictViewModel>(entity.District);
+            });
+            if (viewModel == null)
+                return default;
+
+            var ownershipInput = await _customerService.OwnershipInputAsync(entity.CurrentOwnership.Ownerships.First().CustomerId).ConfigureAwait(false);
+            if (ownershipInput == null)
+                return default;
+
+            var result = new PropertyComplexInputViewModel
+            {
+                Id = viewModel.Id,
+                Description = viewModel.Description,
+                PropertyFacilities = viewModel.PropertyFacilities?.Select(x => new FacilityJsonViewModel
+                {
+                    Id = x.Facility?.Id,
+                    Name = x.Facility?.Name
+                }).ToList(),
+                CategoryId = viewModel.Category?.Id,
+                //                Latitude = viewModel.Geolocation?.Latitude ?? 0,
+                //                Longitude = viewModel.Geolocation?.Longitude ?? 0,
+                PropertyFeatures = viewModel.PropertyFeatures?.Select(x => new FeatureJsonValueViewModel
+                {
+                    Id = x.Feature?.Id,
+                    Name = x.Feature?.Name,
+                    Value = x.Value
+                }).ToList(),
+                Number = viewModel.Number,
+                Street = viewModel.Street,
+                Flat = viewModel.Flat,
+                DistrictId = viewModel.District?.Id,
+                Alley = viewModel.Alley,
+                BuildingName = viewModel.BuildingName,
+                Floor = viewModel.Floor,
+                Ownership = ownershipInput
+            };
+            return result;
+        }
+
+        private async Task<(bool, Property)> HasDuplicateAsync(PropertyComplexInputViewModel model)
+        {
+            var duplicate = await _properties.FirstOrDefaultAsync(x =>
+                x.Street == model.Street
+                && x.CategoryId == model.CategoryId
+                && x.DistrictId == model.DistrictId
+                && x.Flat == model.Flat
+                && x.Alley == model.Alley
+                && x.Floor == model.Floor
+                && x.Number == model.Number
+                && x.BuildingName == model.BuildingName).ConfigureAwait(false);
+
+            return new ValueTuple<bool, Property>(duplicate != null, duplicate);
+        }
+
+        private async Task<bool> HasDuplicateAsync(PropertyInputViewModel model)
+        {
+            var duplicate = await _properties.FirstOrDefaultAsync(x =>
+                x.Street == model.Street
+                && x.CategoryId == model.CategoryId
+                && x.DistrictId == model.DistrictId
+                && x.Flat == model.Flat
+                && x.Alley == model.Alley
+                && x.Floor == model.Floor
+                && x.Number == model.Number
+                && x.BuildingName == model.BuildingName).ConfigureAwait(false);
+
+            return duplicate != null;
+        }
+
+        public async Task<MethodStatus<Property>> PropertyComplexAddAsync(PropertyComplexInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
+
+            //if (model.Ownerships?.Any() != true)
+            //    return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
+
+            var (hasDuplicate, similarProperty) = await HasDuplicateAsync(model).ConfigureAwait(false);
+            if (hasDuplicate)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsAlreadyExists, similarProperty);
+
+            var (customerAddStatus, newOwner) = await _customerService.OwnershipAddOrUpdateAsync(new OwnershipInputViewModel
+            {
+                Name = model.Ownership.Name,
+                Address = model.Ownership.Address,
+                Dong = 6,
+                Mobile = model.Ownership.Mobile,
+                Phone = model.Ownership.Phone
+            }, !model.Ownership.IsNew, true).ConfigureAwait(false);
+            if (customerAddStatus != StatusEnum.Success)
+                return new MethodStatus<Property>(customerAddStatus, null);
+
+            var (propertyAddStatus, newProperty) = await _baseService.AddAsync(new Property
+            {
+                Description = model.Description,
+                DistrictId = model.DistrictId,
+                CategoryId = model.CategoryId,
+                Alley = model.Alley,
+                BuildingName = model.BuildingName,
+                Flat = model.Flat,
+                Floor = model.Floor,
+                Number = model.Number,
+                Street = model.Street,
+                //                Geolocation = model.Latitude > 0 && model.Longitude > 0 ? new Point(model.Longitude, model.Latitude) : default,
+            }, null, false).ConfigureAwait(false);
+
+            if (propertyAddStatus != StatusEnum.Success)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsNull, null);
+
+            var (propertyOwnershipAddStatus, newPropertyOwnership) = await PropertyOwnershipAddAsync(newProperty.Id, false).ConfigureAwait(false);
+            if (propertyOwnershipAddStatus != StatusEnum.Success)
+                return new MethodStatus<Property>(StatusEnum.PropertyOwnershipIsNull, null);
+
+            await PropertyComplexSyncAsync(newProperty, model, newPropertyOwnership, newOwner.Customer, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
         }
 
         public async Task<MethodStatus<Property>> PropertyAddAsync(PropertyInputViewModel model, bool save)
@@ -274,6 +407,10 @@ namespace RealEstate.Services.ServiceLayer
 
             if (model.Ownerships?.Any() != true)
                 return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
+
+            var duplicate = await HasDuplicateAsync(model).ConfigureAwait(false);
+            if (duplicate)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsAlreadyExists, null);
 
             var (propertyAddStatus, newProperty) = await _baseService.AddAsync(new Property
             {
@@ -298,6 +435,64 @@ namespace RealEstate.Services.ServiceLayer
 
             await PropertySyncAsync(newProperty, newPropertyOwnership, model, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
+        }
+
+        private async Task<StatusEnum> PropertyComplexSyncAsync(Property property, PropertyComplexInputViewModel model, PropertyOwnership newPropertyOwnership, Customer newCustomer, bool save)
+        {
+            var syncOwnership = new List<OwnershipJsonViewModel>
+            {
+                new OwnershipJsonViewModel
+                {
+                    Dong = 6,
+                    Mobile = newCustomer.MobileNumber,
+                    Name = newCustomer.Name,
+                    CustomerId = newCustomer.Id
+                }
+            };
+
+            await _baseService.SyncAsync(
+                newPropertyOwnership.Ownerships.ToList(),
+                syncOwnership,
+                ownership => new Ownership
+                {
+                    CustomerId = ownership.CustomerId,
+                    Dong = ownership.Dong,
+                    PropertyOwnershipId = newPropertyOwnership.Id,
+                },
+                (inDb, inModel) => inDb.CustomerId == inModel.CustomerId,
+                (inDb, inModel) => inDb.PropertyOwnershipId == newPropertyOwnership.Id && inDb.Dong == inModel.Dong,
+                (inDb, inModel) =>
+                {
+                    inDb.PropertyOwnershipId = newPropertyOwnership.Id;
+                    inDb.Dong = inModel.Dong;
+                },
+                null,
+                false).ConfigureAwait(false);
+
+            await _baseService.SyncAsync(
+                property.PropertyFeatures.ToList(),
+                model.PropertyFeatures,
+                (feature, currentUser) => new PropertyFeature
+                {
+                    PropertyId = property.Id,
+                    FeatureId = feature.Id,
+                    Value = feature.Value,
+                },
+                (inDb, inModel) => inDb.FeatureId == inModel.Id,
+                null, false).ConfigureAwait(false);
+
+            await _baseService.SyncAsync(
+                property.PropertyFacilities.ToList(),
+                model.PropertyFacilities,
+                (facility, currentUser) => new PropertyFacility
+                {
+                    PropertyId = property.Id,
+                    FacilityId = facility.Id
+                },
+                (inDb, inModel) => inDb.FacilityId == inModel.Id,
+                null,
+                false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 
         private async Task<StatusEnum> PropertySyncAsync(Property property, PropertyOwnership propertyOwnership, PropertyInputViewModel model, bool save)
@@ -344,7 +539,14 @@ namespace RealEstate.Services.ServiceLayer
                 (inDb, inModel) => inDb.FacilityId == inModel.Id,
                 null,
                 false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+        }
+
+        public Task<MethodStatus<Property>> PropertyComplexAddOrUpdateAsync(PropertyComplexInputViewModel model, bool save)
+        {
+            return model?.IsNew != true
+                ? PropertyComplexUpdateAsync(model, save)
+                : PropertyComplexAddAsync(model, save);
         }
 
         public Task<MethodStatus<Property>> PropertyAddOrUpdateAsync(PropertyInputViewModel model, bool save)
@@ -352,6 +554,76 @@ namespace RealEstate.Services.ServiceLayer
             return model?.IsNew != true
                 ? PropertyUpdateAsync(model, save)
                 : PropertyAddAsync(model, save);
+        }
+
+        private async Task<MethodStatus<Property>> PropertyComplexUpdateAsync(PropertyComplexInputViewModel model, bool save)
+        {
+            if (model == null)
+                return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
+
+            if (model.IsNew)
+                return new MethodStatus<Property>(StatusEnum.IdIsNull, null);
+
+            var entity = await _properties.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var owner = entity.CurrentOwnership.Ownerships.FirstOrDefault();
+            if (owner == null)
+                return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
+
+            if (model.Ownership.Mobile == owner.Customer.MobileNumber)
+            {
+                if (model.Ownership.Name != owner.Customer.Name)
+                {
+                    var customer = await _customerService.CustomerEntityAsync(owner.CustomerId, null).ConfigureAwait(false);
+                    if (customer == null)
+                        return new MethodStatus<Property>(StatusEnum.CustomerIsNull, null);
+
+                    var (updateCustStatus, updatedcustomer) = await _baseService.UpdateAsync(customer,
+                            _ => customer.Name = model.Ownership.Name,
+                            null,
+                            true, StatusEnum.CustomerIsNull)
+                        .ConfigureAwait(false);
+                    if (updateCustStatus != StatusEnum.Success && updateCustStatus != StatusEnum.NoNeedToSave)
+                        return new MethodStatus<Property>(updateCustStatus, null);
+                }
+            }
+            else
+            {
+                var (newOwnerStatus, newOwner) = await _customerService.OwnershipAddAsync(new OwnershipInputViewModel
+                {
+                    Name = model.Ownership.Name,
+                    Address = model.Ownership.Address,
+                    Dong = 6,
+                    Mobile = model.Ownership.Mobile,
+                    Phone = model.Ownership.Phone
+                }, true).ConfigureAwait(false);
+                if (newOwnerStatus != StatusEnum.Success)
+                    return new MethodStatus<Property>(newOwnerStatus, null);
+
+                owner = newOwner;
+            }
+
+            var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,
+                _ =>
+                {
+                    entity.Alley = model.Alley;
+                    entity.BuildingName = model.BuildingName;
+                    entity.CategoryId = model.CategoryId;
+                    entity.Description = model.Description;
+                    entity.DistrictId = model.DistrictId;
+                    entity.Flat = model.Flat;
+                    entity.Floor = model.Floor;
+                    entity.Number = model.Number;
+                    entity.Street = model.Street;
+                }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+
+            if (updatedProperty == null)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsNull, null);
+
+            if (updatedProperty.CurrentOwnership == null)
+                return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
+
+            await PropertyComplexSyncAsync(updatedProperty, model, updatedProperty.CurrentOwnership, owner.Customer, false).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(updatedProperty, save).ConfigureAwait(false);
         }
 
         private async Task<MethodStatus<Property>> PropertyUpdateAsync(PropertyInputViewModel model, bool save)
@@ -364,6 +636,10 @@ namespace RealEstate.Services.ServiceLayer
 
             if (model.Ownerships?.Any() != true)
                 return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
+
+            var duplicate = await HasDuplicateAsync(model).ConfigureAwait(false);
+            if (duplicate)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsAlreadyExists, null);
 
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
             var (updateStatus, updatedProperty) = await _baseService.UpdateAsync(entity,

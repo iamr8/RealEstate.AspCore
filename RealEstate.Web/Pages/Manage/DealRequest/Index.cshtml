@@ -5,7 +5,7 @@
         @Model.Status
     </status>
     <div class="widget">
-        <widget-header title="@Model.PageTitle"/>
+        <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
@@ -16,37 +16,37 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property.Value?.Id" target="_blank">
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property?.Id" target="_blank">
                                         @SharedLocalizer["PropertyDetail"]
                                     </a>
                                 </span>
-                                @if (item.Property.Value?.CurrentPropertyOwnership()?.Ownerships.Value?.Any() == true)
+                                @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {
 
                                     <span>
                                         @SharedLocalizer["Owners"]:
-                                        @foreach (var ownership in item.Property.Value.CurrentPropertyOwnership().Ownerships.Value)
+                                        @foreach (var ownership in item.Property.CurrentPropertyOwnership.Ownerships)
                                         {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Value.Name &mdash; @ownership.Customer.Value.Mobile</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@ownership.Id" target="_blank" class="badge badge-warning">@ownership.Customer.Name &mdash; @ownership.Customer.Mobile</a>
                                         }
                                     </span>
                                 }
-                                @if (item.Applicants.Value?.Any() == true)
+                                @if (item.Applicants?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["Applicants"]:
-                                        @foreach (var applicant in item.Applicants.Value)
+                                        @foreach (var applicant in item.Applicants)
                                         {
-                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Customer.Value.Name &mdash; @applicant.Customer.Value.Mobile</a>
+                                            <a asp-page="@typeof(Customer.IndexModel).Page()" asp-route-ownerId="@applicant.Id" target="_blank" class="badge badge-danger">@applicant.Customer.Name &mdash; @applicant.Customer.Mobile</a>
                                         }
                                     </span>
                                 }
-                                @if (item.ItemFeatures.Value?.Any() == true)
+                                @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @foreach (var feature in item.ItemFeatures.Value)
+                                        @foreach (var feature in item.ItemFeatures)
                                         {
-                                            <span class="badge badge-secondary">@feature.Feature.Value?.Name &mdash; @feature.Value</span>
+                                            <span class="badge badge-secondary">@feature.Feature?.Name &mdash; @feature.Value</span>
                                         }
                                     </span>
                                 }
@@ -65,7 +65,7 @@
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="DealRequest" id="@item.Id"/>
+                        <vc:log logs="@item.Logs" cat="DealRequest" id="@item.Id" />
                     </div>
                 }
             </item-viewer>

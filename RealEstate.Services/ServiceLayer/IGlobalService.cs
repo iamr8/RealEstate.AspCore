@@ -47,8 +47,8 @@ namespace RealEstate.Services.ServiceLayer
             var result = new StatisticsDetailViewModel
             {
                 ItemId = item.Id,
-                ItemCategory = item.Category.Value?.Name,
-                PropertyCategory = item.Property.Value?.Category.Value?.Name,
+                ItemCategory = item.Category?.Name,
+                PropertyCategory = item.Property?.Category?.Name,
                 UserFullName = item.Logs.Create.UserFullName,
                 UserId = item.Logs.Create.UserId
             };

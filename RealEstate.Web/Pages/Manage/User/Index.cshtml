@@ -59,12 +59,12 @@
                                         {
                                             <li>
                                                 <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id">
-                                                    @item.Employee.Value?.FirstName، @item.Employee.Value?.LastName
+                                                    @item.Employee?.FirstName، @item.Employee?.LastName
                                                 </a>
                                             </li>
                                             <li>
-                                                <a href="tel:@item.Employee.Value?.Mobile">
-                                                    @item.Employee.Value?.Mobile
+                                                <a href="tel:@item.Employee?.Mobile">
+                                                    @item.Employee?.Mobile
                                                 </a>
                                             </li>
                                         }
@@ -77,30 +77,30 @@
                                     </ul>
                                 </span>
 
-                                @if (item.UserItemCategories.Value?.Any() == true)
+                                @if (item.UserItemCategories?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["UserItemCategories"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.UserItemCategories.Value)
+                                            @foreach (var feature in item.UserItemCategories)
                                             {
                                                 <text>
-                                                    <li>@feature.Category.Value?.Name</li>
+                                                    <li>@feature.Category?.Name</li>
                                                 </text>
                                             }
                                         </ul>
                                     </span>
 
                                 }
-                                @if (item.UserPropertyCategories.Value?.Any() == true)
+                                @if (item.UserPropertyCategories?.Any() == true)
                                 {
                                     <span>
                                         @SharedLocalizer["UserPropertyCategories"] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.UserPropertyCategories.Value)
+                                            @foreach (var feature in item.UserPropertyCategories)
                                             {
                                                 <text>
-                                                    <li>@feature.Category.Value?.Name</li>
+                                                    <li>@feature.Category?.Name</li>
                                                 </text>
                                             }
                                         </ul>
