@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -15,6 +11,10 @@ using RealEstate.Services.KavenNegarProvider.Response.ResultModels;
 using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -56,9 +56,8 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser?.Role == Role.SuperAdmin)
                 models = models.IgnoreQueryFilters();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Map<Sms, SmsViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(models, searchModel,
+                item => item.Map<SmsViewModel>()).ConfigureAwait(false);
 
             return result;
         }

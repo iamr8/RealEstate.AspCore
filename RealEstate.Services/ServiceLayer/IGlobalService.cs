@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -118,7 +119,13 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return default;
 
-            var query = _items.IgnoreQueryFilters();
+            var query = _items
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Include(x => x.Property)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.Category)
+                .AsQueryable();
 
             if (currentUser.Role != Role.SuperAdmin && currentUser.Role != Role.Admin)
                 query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
@@ -126,14 +133,14 @@ namespace RealEstate.Services.ServiceLayer
             if (searchModel != null)
                 query = _baseService.AdminSeachConditions(query, searchModel);
 
-            var models = await query.ToListAsync().ConfigureAwait(false);
+            var models = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
                 return default;
 
-            var viewModels = models?.Select(x => x.Map<Item, ItemViewModel>(ent =>
+            var viewModels = models?.Select(x => x.Map<ItemViewModel>(ent =>
             {
-                ent.Include<Property, PropertyViewModel>(x.Property, ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.Include<Category, CategoryViewModel>(x.Category);
+                ent.IncludeAs<Property, PropertyViewModel>(x.Property, ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.IncludeAs<Category, CategoryViewModel>(x.Category);
             })).ToList();
             if (viewModels?.Any() != true)
                 return default;

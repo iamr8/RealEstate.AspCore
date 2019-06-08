@@ -46,7 +46,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity.Map<Reminder, ReminderViewModel>();
+            var viewModel = entity.Map<ReminderViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -138,9 +138,8 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser?.Role == Role.SuperAdmin)
                 models = models.IgnoreQueryFilters();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Map<Reminder, ReminderViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(models, searchModel,
+                item => item.Map<ReminderViewModel>()).ConfigureAwait(false);
 
             return result;
         }

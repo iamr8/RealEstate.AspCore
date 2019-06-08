@@ -82,7 +82,7 @@ namespace RealEstate.Services.ServiceLayer
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Map<User, UserViewModel>(act => act.Include<Employee, EmployeeViewModel>(act.Entity.Employee));
+                var item = user.Map<UserViewModel>(act => act.IncludeAs<Employee, EmployeeViewModel>(act.Entity.Employee));
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -102,13 +102,13 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Map<User, UserViewModel>(ent =>
+            var viewModel = model?.Map<UserViewModel>(ent =>
             {
-                ent.Include<UserItemCategory, UserItemCategoryViewModel>(model.UserItemCategories,
-                    ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.Include<UserPropertyCategory, UserPropertyCategoryViewModel>(model.UserPropertyCategories,
-                    ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.Include<Employee, EmployeeViewModel>(model.Employee);
+                ent.IncludeAs<UserItemCategory, UserItemCategoryViewModel>(model.UserItemCategories,
+                    ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.IncludeAs<UserPropertyCategory, UserPropertyCategoryViewModel>(model.UserPropertyCategories,
+                    ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.IncludeAs<Employee, EmployeeViewModel>(model.Employee);
             });
             if (viewModel == null)
                 return default;
@@ -141,6 +141,13 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<UserViewModel>();
 
+            query = query.AsNoTracking()
+                .Include(x => x.Employee)
+                .Include(x => x.UserItemCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.UserPropertyCategories)
+                .ThenInclude(x => x.Category);
+
             if (searchModel != null)
             {
                 if (searchModel.Role != null)
@@ -155,14 +162,14 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<User, UserViewModel>(ent =>
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<UserViewModel>(ent =>
                 {
-                    ent.Include<Employee, EmployeeViewModel>(item.Employee);
-                    ent.Include<UserItemCategory, UserItemCategoryViewModel>(item.UserItemCategories,
-                        ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
-                    ent.Include<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
-                        ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                    ent.IncludeAs<Employee, EmployeeViewModel>(item.Employee);
+                    ent.IncludeAs<UserItemCategory, UserItemCategoryViewModel>(item.UserItemCategories,
+                        ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
+                    ent.IncludeAs<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
+                        ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
                 }), currentUser).ConfigureAwait(false);
             return result;
         }

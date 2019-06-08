@@ -11,32 +11,51 @@ namespace RealEstate.Services.BaseLog
 {
     public class BaseLogViewModel
     {
-        public void Include<TSource, TModel>(TSource entity, Action<TModel> act = null) where TModel : BaseLogViewModel where TSource : BaseEntity
+        /// <summary>
+        /// Returns specific navigation property from entity to model
+        /// </summary>
+        /// <typeparam name="TSource">EntityFramework Core entity based on " BaseEntity "</typeparam>
+        /// <typeparam name="TModel">Output ViewModel based on " BaseLogViewModel "</typeparam>
+        /// <param name="entity">Entity ( subclass of BaseEntity )</param>
+        /// <param name="action">Action to do on viewmodel</param>
+        public TModel IncludeAs<TSource, TModel>(TSource entity, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity
         {
             if (entity == null)
-                return;
+                return default;
 
             var thisProperty = GetType().GetPublicProperties()
                 .FirstOrDefault(x => x.PropertyType == typeof(TModel));
             if (thisProperty == null)
-                return;
+                return default;
 
-            var value = Activator.CreateInstance(typeof(TModel), entity, act) as TModel;
+            if (thisProperty.GetValue(this) is TModel currentValue)
+                return default;
+
+            var value = Activator.CreateInstance(typeof(TModel), entity, action) as TModel;
             thisProperty.SetValue(this, value);
+            return value;
         }
 
-        public void Include<TSource, TModel>(ICollection<TSource> entity, Action<TModel> act = null) where TModel : BaseLogViewModel where TSource : BaseEntity
+        /// <summary>
+        /// Returns specific navigation property from entity to model
+        /// </summary>
+        /// <typeparam name="TSource">EntityFramework Core entity based on " BaseEntity "</typeparam>
+        /// <typeparam name="TModel">Output ViewModel based on " BaseLogViewModel "</typeparam>
+        /// <param name="entity">Entity ( subclass of BaseEntity )</param>
+        /// <param name="action">Action to do on viewmodel</param>
+        public List<TModel> IncludeAs<TSource, TModel>(ICollection<TSource> entity, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity
         {
             if (entity?.Any() != true)
-                return;
+                return default;
 
             var thisProperty = GetType().GetPublicProperties()
                 .FirstOrDefault(x => x.PropertyType == typeof(List<TModel>));
             if (thisProperty == null)
-                return;
+                return default;
 
-            var result = entity.Select(source => Activator.CreateInstance(typeof(TModel), source, act) as TModel).ToList();
-            thisProperty.SetValue(this, result);
+            var values = entity.Select(source => Activator.CreateInstance(typeof(TModel), source, action) as TModel).ToList();
+            thisProperty.SetValue(this, values);
+            return values;
         }
 
         public string Id

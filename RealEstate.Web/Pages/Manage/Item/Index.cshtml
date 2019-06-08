@@ -82,7 +82,7 @@
         Value = x.Name
     }).AddNone();
 
-    var itemCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, true).ConfigureAwait(false);
+    var itemCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
     var itemCategories = (itemCategorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,
@@ -90,7 +90,7 @@
         Selected = Model.SearchInput?.ItemCategory == x.Name
     }).ToList()).AddNone();
 
-    var propertyCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, true).ConfigureAwait(false);
+    var propertyCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
     var propertyCategories = (propertyCategorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,

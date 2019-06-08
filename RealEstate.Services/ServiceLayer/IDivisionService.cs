@@ -90,9 +90,8 @@ namespace RealEstate.Services.ServiceLayer
 
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Division, DivisionViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<DivisionViewModel>()).ConfigureAwait(false);
 
             return result;
         }
@@ -138,7 +137,7 @@ namespace RealEstate.Services.ServiceLayer
             var query = _divisions.Where(x => x.Id == id);
 
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Map<Division, DivisionViewModel>();
+            var viewModel = entity.Map<DivisionViewModel>();
             if (viewModel == null)
                 return default;
 

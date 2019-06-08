@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using Microsoft.EntityFrameworkCore;
+using MoreLinq;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -15,7 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Linq.Expressions;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -42,7 +43,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street);
 
-        Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model);
+        Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel searchModel);
 
         Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
 
@@ -119,7 +120,9 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<ZoonkanViewModel>> ZoonkansAsync()
         {
-            var query = _items.AsNoTracking().Include(x => x.Property)
+            var query = _items
+                .AsNoTracking()
+                .Include(x => x.Property)
                 .ThenInclude(x => x.Pictures)
                 .Include(x => x.Property)
                 .ThenInclude(x => x.Category)
@@ -134,7 +137,7 @@ namespace RealEstate.Services.ServiceLayer
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
                     Count = x.Count(),
-                    Pictures = x.SelectMany(c => c.Property.Pictures).Select(c => c.File)
+                    Pictures = x.SelectMany(item => item.Property.Pictures)
                 });
 
             var categories = await query.ToListAsync().ConfigureAwait(false);
@@ -146,7 +149,7 @@ namespace RealEstate.Services.ServiceLayer
                 ItemCategory = x.ItemCategory,
                 PropertyCategory = x.PropertyCategory,
                 Count = x.Count,
-                Picture = x.Pictures.SelectRandom()
+                Picture = x.Pictures.Select(c => c.File).SelectRandom()
             }).ToList();
             return result;
         }
@@ -313,7 +316,7 @@ namespace RealEstate.Services.ServiceLayer
             var result = new List<ItemOutJsonViewModel>();
             foreach (var model in items)
             {
-                var converted = model.Map<Item, ItemViewModel>();
+                var converted = model.Map<ItemViewModel>();
                 if (converted == null)
                     continue;
 
@@ -350,11 +353,11 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
                 return default;
 
-//            var query1 = _items.AsNoTracking()
-//                .Include(x => x.Property)
-//                .ThenInclude(x => x.District)
-//                .Include(x => x.Property)
-//                .ThenInclude(x => x.Category);
+            //            var query1 = _items.AsNoTracking()
+            //                .Include(x => x.Property)
+            //                .ThenInclude(x => x.District)
+            //                .Include(x => x.Property)
+            //                .ThenInclude(x => x.Category);
 
             var query = from item in _items
                         where (EF.Functions.Like(item.Property.Street, street.Like())
@@ -442,33 +445,36 @@ namespace RealEstate.Services.ServiceLayer
             if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
                 await CleanDuplicatesAsync().ConfigureAwait(false);
 
-            var query = _items.AsNoTracking();
+            var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
+            if (query == null)
+                return new PaginationViewModel<ItemViewModel>();
+
+            query = query
+                .AsNoTracking()
+                .Include(x => x.Property)
+            .ThenInclude(x => x.Category);
             query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Category);
+            .ThenInclude(x => x.District);
             query = query.Include(x => x.Property)
-                .ThenInclude(x => x.District);
+            .ThenInclude(x => x.Pictures);
             query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Pictures);
+            .ThenInclude(x => x.PropertyFacilities)
+            .ThenInclude(x => x.Facility);
             query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility);
+            .ThenInclude(x => x.PropertyFeatures)
+            .ThenInclude(x => x.Feature);
             query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
+            .ThenInclude(x => x.PropertyOwnerships)
+            .ThenInclude(x => x.Ownerships)
+            .ThenInclude(x => x.Customer);
             query = query.Include(x => x.Category);
             query = query.Include(x => x.DealRequests);
             query = query.Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature);
+            .ThenInclude(x => x.Feature);
             query = query.Include(x => x.Applicants)
                 .ThenInclude(x => x.Customer);
 
-            query = _baseService.CheckDeletedItemsPrevillege(query, searchModel, out var currentUser);
-            if (query == null)
-                return new PaginationViewModel<ItemViewModel>();
+            var cacheKey = new StringBuilder();
 
             //query = from item in query
             //        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
@@ -479,38 +485,61 @@ namespace RealEstate.Services.ServiceLayer
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.HasFeature))
+                {
                     query = query.Where(x =>
                         x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
+                    cacheKey.AppendKey(searchModel, x => x.HasFeature);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
+                {
                     query = query.Where(x =>
                         x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
+                    cacheKey.AppendKey(searchModel, x => x.Owner);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
+                {
                     query = query.Where(x =>
                         x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
+                    cacheKey.AppendKey(searchModel, x => x.OwnerMobile);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
+                {
                     query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
+                    cacheKey.AppendKey(searchModel, x => x.Street);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.ItemId))
+                {
                     query = query.Where(x => x.Id == searchModel.ItemId);
+                    cacheKey.AppendKey(searchModel, x => x.ItemId);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.ItemCategory))
+                {
                     query = query.Where(x => x.Category.Name == searchModel.ItemCategory);
+                    cacheKey.AppendKey(searchModel, x => x.ItemCategory);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.PropertyCategory))
+                {
                     query = query.Where(x => x.Property.Category.Name == searchModel.PropertyCategory);
+                    cacheKey.AppendKey(searchModel, x => x.PropertyCategory);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.CustomerId))
                 {
                     query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
                                              || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
+                    cacheKey.AppendKey(searchModel, x => x.CustomerId);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.District))
                 {
                     query = query.Where(x => x.Property.District.Name == searchModel.District);
+                    cacheKey.AppendKey(searchModel, x => x.District);
                 }
 
                 if (searchModel.Facilities?.Any(x => !string.IsNullOrEmpty(x.Name)) == true)
@@ -519,10 +548,10 @@ namespace RealEstate.Services.ServiceLayer
                     var predicateFacilities = PredicateBuilder.New<Facility>(true);
                     foreach (var facilityName in validFacilities)
                         predicateFacilities = predicateFacilities.Or(facility => facility.Name == facilityName);
-                    var facilities = await _facilities.AsExpandable().Where(predicateFacilities).Select(x => x.Id).ToListAsync().ConfigureAwait(false);
+                    var facilities = await _facilities.Where(predicateFacilities).Select(x => x.Id).ToListAsync().ConfigureAwait(false);
 
-                    var tempQuery = query.AsExpandable()
-                        .GroupJoin(_propertyFacilities.AsExpandable(), item => item.PropertyId, propertyFacility => propertyFacility.PropertyId,
+                    var tempQuery = query
+                        .GroupJoin(_propertyFacilities, item => item.PropertyId, propertyFacility => propertyFacility.PropertyId,
                             (item, propertyFacilities) =>
                                 new
                                 {
@@ -534,6 +563,7 @@ namespace RealEstate.Services.ServiceLayer
                         tempQuery = tempQuery.Where(x => x.PropertyFacilities.Any(c => c.FacilityId == facility));
 
                     query = tempQuery.Select(x => x.Item);
+                    cacheKey.AppendKey(searchModel, x => x.FacilitiesJson);
                 }
 
                 if (searchModel.Features?.Any(x => !string.IsNullOrEmpty(x.Id)) == true)
@@ -623,6 +653,7 @@ namespace RealEstate.Services.ServiceLayer
                             }
                         }
                     }
+                    cacheKey.AppendKey(searchModel, x => x.FeaturesJson);
                 }
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
@@ -632,31 +663,31 @@ namespace RealEstate.Services.ServiceLayer
             query = query.Where(x => userItemCategories.Any(c => c == x.CategoryId));
             query = query.Where(x => userPropertyCategories.Any(c => c == x.Property.CategoryId));
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Item, ItemViewModel>(act =>
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<ItemViewModel>(act =>
                 {
-                    act.Include<Property, PropertyViewModel>(item.Property, ent =>
+                    act.IncludeAs<Property, PropertyViewModel>(item.Property, ent =>
                     {
-                        ent.Include<Category, CategoryViewModel>(ent.Entity?.Category);
-                        ent.Include<District, DistrictViewModel>(ent.Entity?.District);
-                        ent.Include<Picture, PictureViewModel>(ent.Entity?.Pictures);
-                        ent.Include<PropertyFacility, PropertyFacilityViewModel>(ent.Entity?.PropertyFacilities,
-                            ent2 => ent2.Include<Facility, FacilityViewModel>(ent2.Entity?.Facility));
-                        ent.Include<PropertyFeature, PropertyFeatureViewModel>(ent.Entity?.PropertyFeatures,
-                            ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity?.Feature));
-                        ent.Include<PropertyOwnership, PropertyOwnershipViewModel>(ent.Entity?.PropertyOwnerships,
-                            ent2 => ent2.Include<Ownership, OwnershipViewModel>(ent2.Entity?.Ownerships,
-                                ent3 => ent3.Include<Customer, CustomerViewModel>(ent3.Entity?.Customer)));
+                        ent.IncludeAs<Category, CategoryViewModel>(ent.Entity?.Category);
+                        ent.IncludeAs<District, DistrictViewModel>(ent.Entity?.District);
+                        ent.IncludeAs<Picture, PictureViewModel>(ent.Entity?.Pictures);
+                        ent.IncludeAs<PropertyFacility, PropertyFacilityViewModel>(ent.Entity?.PropertyFacilities,
+                            ent2 => ent2.IncludeAs<Facility, FacilityViewModel>(ent2.Entity?.Facility));
+                        ent.IncludeAs<PropertyFeature, PropertyFeatureViewModel>(ent.Entity?.PropertyFeatures,
+                            ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity?.Feature));
+                        ent.IncludeAs<PropertyOwnership, PropertyOwnershipViewModel>(ent.Entity?.PropertyOwnerships,
+                            ent2 => ent2.IncludeAs<Ownership, OwnershipViewModel>(ent2.Entity?.Ownerships,
+                                ent3 => ent3.IncludeAs<Customer, CustomerViewModel>(ent3.Entity?.Customer)));
                     });
-                    act.Include<Category, CategoryViewModel>(item.Category);
-                    act.Include<Applicant, ApplicantViewModel>(item.Applicants, ent => ent.Include<Customer, CustomerViewModel>(ent.Entity?.Customer));
-                    act.Include<DealRequest, DealRequestViewModel>(item.DealRequests);
-                    act.Include<ItemFeature, ItemFeatureViewModel>(item.ItemFeatures, ent => ent.Include<Feature, FeatureViewModel>(ent.Entity?.Feature));
-                })).ConfigureAwait(false);
+                    act.IncludeAs<Category, CategoryViewModel>(item.Category);
+                    act.IncludeAs<Applicant, ApplicantViewModel>(item.Applicants, ent => ent.IncludeAs<Customer, CustomerViewModel>(ent.Entity?.Customer));
+                    act.IncludeAs<DealRequest, DealRequestViewModel>(item.DealRequests);
+                    act.IncludeAs<ItemFeature, ItemFeatureViewModel>(item.ItemFeatures, ent => ent.IncludeAs<Feature, FeatureViewModel>(ent.Entity?.Feature));
+                }), currentUser).ConfigureAwait(false);
             return result;
         }
 
-        public async Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel model)
+        public async Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel searchModel)
         {
             var query = from item in _items
                         let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
@@ -664,8 +695,8 @@ namespace RealEstate.Services.ServiceLayer
                         where requests.Any() && lastRequest.Status == DealStatusEnum.Requested
                         select item;
 
-            var result = await _baseService.PaginateAsync(query, model?.PageNo ?? 1,
-                item => item.Map<Item, ItemViewModel>()).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<ItemViewModel>()).ConfigureAwait(false);
             return result;
         }
 
@@ -694,10 +725,10 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Map<Item, ItemViewModel>(ent =>
+            var viewModel = entity?.Map<ItemViewModel>(ent =>
             {
-                ent.Include<ItemFeature, ItemFeatureViewModel>(entity.ItemFeatures, ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity.Feature));
-                ent.Include<Category, CategoryViewModel>(entity.Category);
+                ent.IncludeAs<ItemFeature, ItemFeatureViewModel>(entity.ItemFeatures, ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                ent.IncludeAs<Category, CategoryViewModel>(entity.Category);
             });
 
             if (viewModel == null)
@@ -728,7 +759,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Map<Item, ItemViewModel>();
+            var viewModel = entity?.Map<ItemViewModel>();
 
             if (viewModel == null)
                 return default;
@@ -783,7 +814,7 @@ namespace RealEstate.Services.ServiceLayer
             if (entity == null)
                 return default;
 
-            var viewModel = entity?.Map<Item, ItemViewModel>();
+            var viewModel = entity?.Map<ItemViewModel>();
             return viewModel;
         }
 

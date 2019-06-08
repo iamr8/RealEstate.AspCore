@@ -48,7 +48,7 @@ namespace RealEstate.Services.ServiceLayer
             if (query?.Any() != true)
                 return default;
 
-            var result = query.Select(x => x.Map<Picture, PictureViewModel>()).ToList();
+            var result = query.Select(x => x.Map<PictureViewModel>()).ToList();
             return result;
         }
 

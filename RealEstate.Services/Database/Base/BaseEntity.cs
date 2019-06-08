@@ -1,5 +1,7 @@
 ﻿using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Services.BaseLog;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -24,5 +26,11 @@ namespace RealEstate.Services.Database.Base
 
         [NotMapped]
         public bool IsDeleted => !string.IsNullOrEmpty(Audit) && Audits?.OrderByDescending(x => x.DateTime).FirstOrDefault()?.Type == LogTypeEnum.Delete;
+
+        public TModel Map<TModel>(Action<TModel> action = null) where TModel : BaseLogViewModel
+        {
+            var result = Activator.CreateInstance(typeof(TModel), this, action) as TModel;
+            return result;
+        }
     }
 }

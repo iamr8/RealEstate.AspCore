@@ -1,3 +1,5 @@
+using CacheManager.Core;
+using EFSecondLevelCache.Core;
 using ElmahCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -44,6 +46,19 @@ namespace RealEstate.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddEFSecondLevelCache();
+
+            // Add an in-memory cache service provider
+            services.AddSingleton(typeof(ICacheManager<>), typeof(BaseCacheManager<>));
+            services.AddSingleton(typeof(ICacheManagerConfiguration),
+                new CacheManager.Core.ConfigurationBuilder()
+                    .WithJsonSerializer(JsonExtensions.JsonNetSetting, JsonExtensions.JsonNetSetting)
+                    .WithMicrosoftMemoryCacheHandle(instanceName: "MemoryCache1")
+                    .WithExpiration(ExpirationMode.Absolute, TimeSpan.FromMinutes(10))
+                    .DisablePerformanceCounters()
+                    .DisableStatistics()
+                    .Build());
+
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
             if (connectionString.Contains("{{CFG}}"))
             {
@@ -75,7 +90,7 @@ namespace RealEstate.Web
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
                     config.Log(RelationalEventId.QueryClientEvaluationWarning);
                 });
-                options.EnableSensitiveDataLogging();
+                //options.EnableSensitiveDataLogging();
             });
 
             services.AddCors();
@@ -200,12 +215,9 @@ namespace RealEstate.Web
 
             services.AddScoped<AuthenticationTracker>();
             services.AddScoped<IUnitOfWork, ApplicationDbContext>();
-            services
-                .AddDistributedMemoryCache();
-            services
-                .AddTransient<IHttpContextAccessor, HttpContextAccessor>();
-            services
-                .AddTransient<IActionContextAccessor, ActionContextAccessor>();
+            services.AddDistributedMemoryCache();
+            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddTransient<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddRequiredServices();
 

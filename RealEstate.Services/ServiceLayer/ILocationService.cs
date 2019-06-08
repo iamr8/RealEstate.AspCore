@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -11,6 +8,10 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -64,6 +65,8 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<DistrictViewModel>();
 
+            var cacheKey = new StringBuilder();
+
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Name))
@@ -72,9 +75,9 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<District, DistrictViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<DistrictViewModel>(),
+                currentUser).ConfigureAwait(false);
 
             return result;
         }
@@ -153,7 +156,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.Properties);
 
             var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = model.Map<District, DistrictViewModel>();
+            var viewModel = model.Map<DistrictViewModel>();
             if (viewModel == null)
                 return default;
 

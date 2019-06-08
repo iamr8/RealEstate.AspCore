@@ -88,7 +88,7 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Checkout)
                 .FirstOrDefaultAsync(x => x.Id == id)
                 .ConfigureAwait(false);
-            var viewModel = employee?.Map<Employee, EmployeeViewModel>();
+            var viewModel = employee?.Map<EmployeeViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -100,7 +100,7 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Current = currentMoney < 0 ? currentMoney * -1 : currentMoney,
                     Status = currentMoney == 0 ? ObligStatusEnum.None : currentMoney < 0 ? ObligStatusEnum.Obligor : ObligStatusEnum.Obligee,
-                    List = pays?.Select(item => item.Map<Payment, PaymentViewModel>()).ToList()
+                    List = pays?.Select(item => item.Map<PaymentViewModel>()).ToList()
                 }
             };
 
@@ -172,6 +172,14 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<EmployeeViewModel>();
 
+            query = query.AsNoTracking()
+                .Include(x => x.Insurances)
+                .Include(x => x.FixedSalaries)
+                .Include(x => x.Payments)
+                .Include(x => x.Users)
+                .Include(x => x.EmployeeDivisions)
+                .ThenInclude(x => x.Division);
+
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Id))
@@ -198,18 +206,18 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.Phone, searchModel.Phone.Like()));
 
-                query = _baseService.AdminSeachConditions(query, searchModel, currentUser);
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Employee, EmployeeViewModel>(ent =>
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<EmployeeViewModel>(ent =>
                 {
-                    ent.Include<Insurance, InsuranceViewModel>(item.Insurances);
-                    ent.Include<FixedSalary, FixedSalaryViewModel>(item.FixedSalaries);
-                    ent.Include<Payment, PaymentViewModel>(item.Payments);
-                    ent.Include<User, UserViewModel>(item.Users);
-                    ent.Include<EmployeeDivision, EmployeeDivisionViewModel>(item.EmployeeDivisions,
-                        ent2 => ent2.Include<Division, DivisionViewModel>(ent2.Entity.Division));
+                    ent.IncludeAs<Insurance, InsuranceViewModel>(item.Insurances);
+                    ent.IncludeAs<FixedSalary, FixedSalaryViewModel>(item.FixedSalaries);
+                    ent.IncludeAs<Payment, PaymentViewModel>(item.Payments);
+                    ent.IncludeAs<User, UserViewModel>(item.Users);
+                    ent.IncludeAs<EmployeeDivision, EmployeeDivisionViewModel>(item.EmployeeDivisions,
+                        ent2 => ent2.IncludeAs<Division, DivisionViewModel>(ent2.Entity.Division));
                 }), currentUser).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
@@ -222,8 +230,8 @@ namespace RealEstate.Services.ServiceLayer
         {
             var models = _presences.AsQueryable();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Map<Presence, PresenceViewModel>()).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(models, searchModel,
+                item => item.Map<PresenceViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -235,8 +243,8 @@ namespace RealEstate.Services.ServiceLayer
         {
             var models = _leaves.AsQueryable();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Map<Leave, LeaveViewModel>()).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(models, searchModel,
+                item => item.Map<LeaveViewModel>()).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -517,7 +525,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await _leaves.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = model?.Map<Leave, LeaveViewModel>();
+            var viewModel = model?.Map<LeaveViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -540,7 +548,7 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await _presences.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = model?.Map<Presence, PresenceViewModel>();
+            var viewModel = model?.Map<PresenceViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -560,12 +568,12 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var model = await EntityAsync(id, null).ConfigureAwait(false);
-            var viewModel = model?.Map<Employee, EmployeeViewModel>(ent =>
+            var viewModel = model?.Map<EmployeeViewModel>(ent =>
             {
-                ent.Include<EmployeeDivision, EmployeeDivisionViewModel>(model.EmployeeDivisions,
-                    ent2 => ent2.Include<Division, DivisionViewModel>(ent2.Entity.Division));
-                ent.Include<Insurance, InsuranceViewModel>(model.Insurances);
-                ent.Include<FixedSalary, FixedSalaryViewModel>(model.FixedSalaries);
+                ent.IncludeAs<EmployeeDivision, EmployeeDivisionViewModel>(model.EmployeeDivisions,
+                    ent2 => ent2.IncludeAs<Division, DivisionViewModel>(ent2.Entity.Division));
+                ent.IncludeAs<Insurance, InsuranceViewModel>(model.Insurances);
+                ent.IncludeAs<FixedSalary, FixedSalaryViewModel>(model.FixedSalaries);
             });
             if (viewModel == null)
                 return default;

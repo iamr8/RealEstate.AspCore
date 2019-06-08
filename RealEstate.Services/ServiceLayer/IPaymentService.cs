@@ -4,6 +4,7 @@ using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
@@ -12,7 +13,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -314,7 +314,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity.Map<ManagementPercent, ManagementPercentViewModel>();
+            var viewModel = entity.Map<ManagementPercentViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -335,9 +335,8 @@ namespace RealEstate.Services.ServiceLayer
             if (searchModel?.Percent != null && searchModel.Percent > 0)
                 query = query.Where(x => x.Percent == searchModel.Percent);
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<ManagementPercent, ManagementPercentViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<ManagementPercentViewModel>()).ConfigureAwait(false);
 
             return result;
         }
@@ -346,9 +345,8 @@ namespace RealEstate.Services.ServiceLayer
         {
             var models = _payments.AsQueryable();
 
-            var result = await _baseService.PaginateAsync(models, searchModel?.PageNo ?? 1,
-                item => item.Map<Payment, PaymentViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(models, searchModel,
+                item => item.Map<PaymentViewModel>()).ConfigureAwait(false);
             return result;
         }
 

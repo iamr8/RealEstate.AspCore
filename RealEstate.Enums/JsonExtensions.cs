@@ -317,6 +317,7 @@ namespace RealEstate.Base
             Error = (serializer, err) => err.ErrorContext.Handled = true,
             DefaultValueHandling = DefaultValueHandling.Populate,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
             ObjectCreationHandling = ObjectCreationHandling.Replace,
             ContractResolver = new NullToEmptyContractResolver(),
             Formatting = Formatting.Indented,

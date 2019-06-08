@@ -18,7 +18,7 @@ namespace RealEstate.Base
             {
                 const string jsonTerm = "Json";
                 var type = GetType();
-                var properties = type.GetPublicProperties().Where(x => x.GetSearchParameter() != null && !x.Name.Equals(nameof(PageNo)) && !x.Name.EndsWith("Id", StringComparison.CurrentCultureIgnoreCase)).ToList();
+                var properties = type.GetPublicProperties().Where(x => x.GetSearchParameterAttribute() != null && !x.Name.Equals(nameof(PageNo)) && !x.Name.EndsWith("Id", StringComparison.CurrentCultureIgnoreCase)).ToList();
                 if (properties?.Any() != true)
                     return true;
 
@@ -27,7 +27,7 @@ namespace RealEstate.Base
                 {
                     var key = property.Name;
                     var value = property.GetValue(this);
-                    var searchProperty = property.GetSearchParameter();
+                    var searchProperty = property.GetSearchParameterAttribute();
 
                     if (value == null)
                         continue;
@@ -75,6 +75,42 @@ namespace RealEstate.Base
 
                 return conditions.Count > 0;
             }
+        }
+
+        public Dictionary<string, object> GetSearchParameters()
+        {
+            var routeValues = new Dictionary<string, object>();
+
+            var properties = GetType().GetPublicProperties().Where(x => x.GetValue(this) != null).ToList();
+            if (properties?.Any() != true)
+                return default;
+
+            foreach (var property in properties)
+            {
+                var value = property.GetValue(this).ToString();
+                var searchParameterAttribute = property.GetSearchParameterAttribute();
+                if (searchParameterAttribute == null)
+                    continue;
+
+                var searchParameter = searchParameterAttribute.ParameterName;
+                if (string.IsNullOrEmpty(searchParameter))
+                    continue;
+
+                if (searchParameterAttribute.Type != null)
+                {
+                    if (property.PropertyType != typeof(string))
+                        continue;
+
+                    var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
+                    routeValues.Add(searchParameter, encodeJson);
+                }
+                else
+                {
+                    routeValues.Add(searchParameter, value);
+                }
+            }
+
+            return routeValues;
         }
     }
 }

@@ -83,7 +83,7 @@ namespace RealEstate.Services.ServiceLayer
                 case null:
                 case DealStatusEnum.Finished:
                 default:
-                    var viewModel = alreadyFinished?.Deal?.Map<Deal, DealViewModel>();
+                    var viewModel = alreadyFinished?.Deal?.Map<DealViewModel>();
                     if (viewModel == null)
                         return default;
 
@@ -119,8 +119,8 @@ namespace RealEstate.Services.ServiceLayer
         {
             var query = _deals.AsQueryable();
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Deal, DealViewModel>()).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<DealViewModel>()).ConfigureAwait(false);
             return result;
         }
 

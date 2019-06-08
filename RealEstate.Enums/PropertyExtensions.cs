@@ -32,41 +32,7 @@ namespace RealEstate.Base
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
-        private class JsonKeyValue
-        {
-            public void Deconstruct(out string key, out object value)
-            {
-                key = Key;
-                value = Value;
-            }
-
-            public string Key { get; set; }
-            public object Value { get; set; }
-        }
-
-        public static Expression<Func<T, bool>> BuildPredicate<T>(this IQueryable<T> source, string propertyName, string value)
-        {
-            var type = source.ElementType;
-            var property = type.GetProperty(propertyName);
-            var parameter = Expression.Parameter(type, "x");
-            var propExpression = Expression.Property(parameter, property);
-            var valueExpression = Expression.Constant(value);
-            var equal = Expression.Equal(propExpression, valueExpression);
-            var expression = Expression.Lambda<Func<T, bool>>(equal, parameter);
-            return expression;
-        }
-
-        public static Expression<Func<T, TResult>> BuildPredicate<T, TResult>(this IQueryable<T> source, string propertyName)
-        {
-            var type = source.ElementType;
-            var property = type.GetProperty(propertyName);
-            var parameter = Expression.Parameter(type, "x");
-            var propExpression = Expression.Property(parameter, property);
-            var expression = Expression.Lambda<Func<T, TResult>>(propExpression, parameter);
-            return expression;
-        }
-
-        public static SearchParameterAttribute GetSearchParameter(this PropertyInfo property)
+        public static SearchParameterAttribute GetSearchParameterAttribute(this PropertyInfo property)
         {
             if (property == null)
                 return default;
@@ -75,46 +41,19 @@ namespace RealEstate.Base
             return searchParameterAttribute;
         }
 
-        public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : BaseSearchModel
+        public static string GetMemberName<T>(this Expression<T> expression)
         {
-            var routeValues = new Dictionary<string, object>();
-            if (model == null)
-                return default;
-
-            var properties = model.GetPublicProperties().Where(x => x.GetValue(model) != null).ToList();
-            if (properties?.Any() != true)
-                return default;
-
-            foreach (var property in properties)
+            switch (expression.Body)
             {
-                var value = property.GetValue(model).ToString();
-                var searchParameterAttribute = property.GetSearchParameter();
-                if (searchParameterAttribute == null)
-                    continue;
+                case MemberExpression m:
+                    return m.Member.Name;
 
-                var searchParameter = searchParameterAttribute.ParameterName;
-                if (string.IsNullOrEmpty(searchParameter))
-                    continue;
+                case UnaryExpression u when u.Operand is MemberExpression m:
+                    return m.Member.Name;
 
-                if (searchParameterAttribute.Type != null)
-                {
-                    // JSON
-
-                    if (property.PropertyType != typeof(string))
-                        continue;
-
-                    var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
-                    routeValues.Add(searchParameter, encodeJson);
-                }
-                else
-                {
-                    // PLAIN
-
-                    routeValues.Add(searchParameter, value);
-                }
+                default:
+                    throw new NotImplementedException(expression.GetType().ToString());
             }
-
-            return routeValues;
         }
 
         public static TAttribute GetPropertyAttribute<TAttribute>(

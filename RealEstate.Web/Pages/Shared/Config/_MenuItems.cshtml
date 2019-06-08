@@ -4,7 +4,7 @@
 
 @if (User.Identity.IsAuthenticated)
 {
-    <nav-button controller="Download" action="Synchronizer" icon="~/icons/synchronization.svg" subject="@SharedLocalizer[SharedResource.DownloadSynchronizer]" />
+    @*<nav-button controller="Download" action="Synchronizer" icon="~/icons/synchronization.svg" subject="@SharedLocalizer[SharedResource.DownloadSynchronizer]" />*@
 
     @*<nav-button page="@typeof(Manage.Reminder.IndexModel).Page()" icon="~/icons/financial.svg" subject="@SharedLocalizer["Reminders"]" />*@
 <nav-button icon="~/icons/deal.svg" subject="@SharedLocalizer[SharedResource.Items]">

@@ -1,6 +1,10 @@
-﻿using GeoAPI.Geometries;
+﻿using EFSecondLevelCache.Core;
+using EFSecondLevelCache.Core.Contracts;
+using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using MoreLinq;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
@@ -16,6 +20,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer.Base
@@ -60,20 +65,10 @@ namespace RealEstate.Services.ServiceLayer.Base
         Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
-        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
-            CurrentUserViewModel currentUser = null)
-            where TQuery : BaseEntity where TOutput : BaseLogViewModel;
-
-        //        (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
-        //            List<LogUserViewModel> users) where TSource : class where TModel : class;
+        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
+            CurrentUserViewModel currentUser = null) where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
-
-        //        List<TOutput> Map<TSource, TOutput>(List<TSource> models, Func<TSource, TOutput> map)
-        //            where TSource : class where TOutput : class;
-
-        //        List<TModel> SelectAndTrack<TSource, TModel>(List<TSource> model,
-        //            Func<TSource, TModel> expression) where TSource : class where TModel : class;
 
         Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
             List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
@@ -104,8 +99,8 @@ namespace RealEstate.Services.ServiceLayer.Base
             _users = _unitOfWork.Set<User>();
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null)
-            where TQuery : BaseEntity where TOutput : BaseLogViewModel
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null)
+            where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
             var output = new PaginationViewModel<TOutput>();
 
@@ -113,8 +108,16 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (currentUser == null)
                 return output;
 
+            var page = searchModel?.PageNo ?? 1;
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
+
+            var cacheKeyBuilder = new StringBuilder();
+            searchModel?.GetType().GetPublicProperties().ToList()?.ForEach(searchProperty =>
+            {
+                cacheKeyBuilder.AppendKey(searchProperty.Name, searchProperty.GetValue(searchModel));
+            });
+            var cacheKey = cacheKeyBuilder.ToString();
 
             query = query.OrderDescendingByCreationDateTime();
             var pagingQuery = page > 1
@@ -122,13 +125,19 @@ namespace RealEstate.Services.ServiceLayer.Base
                 : query;
             pagingQuery = pagingQuery.Take(pageSize);
 
+            var efPolicy = string.IsNullOrEmpty(cacheKey)
+                ? new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1))
+                : new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1), cacheKey);
+            var efDebug = new EFCacheDebugInfo();
+
             var entities = await pagingQuery
+                .Cacheable(efPolicy, efDebug)
                 .ToListAsync()
                 .ConfigureAwait(false);
             if (entities?.Any() != true)
                 return output;
 
-            var rowCount = await query.CountAsync().ConfigureAwait(false);
+            var rowCount = await query.Cacheable().CountAsync().ConfigureAwait(false);
 
             var viewList = entities
                 .Select(viewModel.Invoke)
@@ -169,13 +178,17 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
             {
-                if (!string.IsNullOrEmpty(searchModel.CreatorId))
-                    query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == searchModel.CreatorId);
+                if (string.IsNullOrEmpty(searchModel.CreatorId))
+                    return query;
+
+                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == searchModel.CreatorId);
             }
             else
             {
-                if (!string.IsNullOrEmpty(searchModel.CreatorId))
-                    query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
+                if (string.IsNullOrEmpty(searchModel.CreatorId))
+                    return query;
+
+                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
             }
 
             return query;

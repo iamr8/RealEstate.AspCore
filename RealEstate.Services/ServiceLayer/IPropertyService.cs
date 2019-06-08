@@ -176,9 +176,8 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                    item => item.Map<Property, PropertyViewModel>())
-                .ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<PropertyViewModel>()).ConfigureAwait(false);
 
             return result;
         }
@@ -232,7 +231,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Map<Property, PropertyViewModel>();
+            var viewModel = entity?.Map<PropertyViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -277,13 +276,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _properties.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Map<Property, PropertyViewModel>(ent =>
+            var viewModel = entity?.Map<PropertyViewModel>(ent =>
             {
-                ent.Include<PropertyFeature, PropertyFeatureViewModel>(entity.PropertyFeatures, ent2 => ent2.Include<Feature, FeatureViewModel>(ent2.Entity.Feature));
-                ent.Include<PropertyFacility, PropertyFacilityViewModel>(entity.PropertyFacilities,
-                    ent2 => ent2.Include<Facility, FacilityViewModel>(ent2.Entity.Facility));
-                ent.Include<Category, CategoryViewModel>(entity.Category);
-                ent.Include<District, DistrictViewModel>(entity.District);
+                ent.IncludeAs<PropertyFeature, PropertyFeatureViewModel>(entity.PropertyFeatures, ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                ent.IncludeAs<PropertyFacility, PropertyFacilityViewModel>(entity.PropertyFacilities,
+                    ent2 => ent2.IncludeAs<Facility, FacilityViewModel>(ent2.Entity.Facility));
+                ent.IncludeAs<Category, CategoryViewModel>(entity.Category);
+                ent.IncludeAs<District, DistrictViewModel>(entity.District);
             });
             if (viewModel == null)
                 return default;

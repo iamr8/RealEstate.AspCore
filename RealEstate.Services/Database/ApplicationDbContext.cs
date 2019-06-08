@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using EFSecondLevelCache.Core.Contracts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -176,13 +178,27 @@ namespace RealEstate.Services.Database
 
         public override int SaveChanges()
         {
+            var changedEntityNames = this.GetChangedEntityNames();
+
+            this.ChangeTracker.AutoDetectChangesEnabled = false; // for performance reasons, to avoid calling DetectChanges() again.
             var result = base.SaveChanges();
+            this.ChangeTracker.AutoDetectChangesEnabled = true;
+
+            this.GetService<IEFCacheServiceProvider>().InvalidateCacheDependencies(changedEntityNames);
+
             return result;
         }
 
         public async Task<int> SaveChangesAsync()
         {
+            var changedEntityNames = this.GetChangedEntityNames();
+
+            this.ChangeTracker.AutoDetectChangesEnabled = false; // for performance reasons, to avoid calling DetectChanges() again.
             var result = await base.SaveChangesAsync().ConfigureAwait(false);
+            this.ChangeTracker.AutoDetectChangesEnabled = true;
+
+            this.GetService<IEFCacheServiceProvider>().InvalidateCacheDependencies(changedEntityNames);
+
             return result;
         }
 

@@ -104,7 +104,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.PropertyFeatures);
 
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Map<Feature, FeatureViewModel>();
+            var viewModel = entity.Map<FeatureViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -126,7 +126,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.PropertyFacilities);
 
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Map<Facility, FacilityViewModel>();
+            var viewModel = entity.Map<FacilityViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -145,7 +145,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var query = _categories.Where(x => x.Id == id);
             var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
-            var viewModel = entity.Map<Category, CategoryViewModel>();
+            var viewModel = entity.Map<CategoryViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -372,6 +372,8 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<FeatureViewModel>();
 
+            query = query.AsNoTracking();
+
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Name))
@@ -383,9 +385,8 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Feature, FeatureViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<FeatureViewModel>()).ConfigureAwait(false);
 
             return result;
         }
@@ -396,6 +397,8 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<FacilityViewModel>();
 
+            query = query.AsNoTracking();
+
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Name))
@@ -403,9 +406,8 @@ namespace RealEstate.Services.ServiceLayer
 
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Facility, FacilityViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<FacilityViewModel>()).ConfigureAwait(false);
 
             return result;
         }
@@ -454,6 +456,8 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<CategoryViewModel>();
 
+            query = query.AsNoTracking();
+
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Name))
@@ -467,9 +471,8 @@ namespace RealEstate.Services.ServiceLayer
 
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Category, CategoryViewModel>()
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<CategoryViewModel>()).ConfigureAwait(false);
 
             return result;
         }

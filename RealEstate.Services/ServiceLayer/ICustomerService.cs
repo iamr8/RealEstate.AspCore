@@ -12,6 +12,7 @@ using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -310,7 +311,7 @@ namespace RealEstate.Services.ServiceLayer
             var entity = await _customers.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = entity.Map<Customer, CustomerViewModel>();
+            var viewModel = entity.Map<CustomerViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -331,7 +332,7 @@ namespace RealEstate.Services.ServiceLayer
             var entity = await OwnershipEntityAsync(id).ConfigureAwait(false);
             if (entity == null) return null;
 
-            var viewModel = entity.Map<Ownership, OwnershipViewModel>();
+            var viewModel = entity.Map<OwnershipViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -396,7 +397,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var entity = await _applicants.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
-            var viewModel = entity?.Map<Applicant, ApplicantViewModel>();
+            var viewModel = entity?.Map<ApplicantViewModel>();
             if (viewModel == null)
                 return default;
 
@@ -430,9 +431,8 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.UserId == currentUser.Id)
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Applicant, ApplicantViewModel>().ShowBasedOn(x => x.Customer)
-            ).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer)).ConfigureAwait(false);
 
             return result;
         }
@@ -443,11 +443,17 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<CustomerViewModel>();
 
+            query = query.AsNoTracking();
+            var cacheKey = new StringBuilder();
+
             //query = query.WhereItIsPublic();
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Id))
+                {
                     query = query.Where(x => x.Id == searchModel.Id);
+                    cacheKey.AppendKey(searchModel, x => x.Id);
+                }
 
                 if (!string.IsNullOrEmpty(searchModel.Address))
                     query = query.Where(x => EF.Functions.Like(x.Address, searchModel.Address.Like()));
@@ -461,12 +467,11 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.PhoneNumber, searchModel.Phone.Like()));
 
-                query = _baseService.AdminSeachConditions(query, searchModel, currentUser);
+                query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
-                item => item.Map<Customer, CustomerViewModel>()
-                , currentUser).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel,
+                item => item.Map<CustomerViewModel>(), currentUser).ConfigureAwait(false);
 
             return result;
         }

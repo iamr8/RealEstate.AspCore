@@ -35,21 +35,6 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static TModel Map<TEntity, TModel>(this TEntity model, Action<TModel> act = null) where TEntity : BaseEntity where TModel : BaseLogViewModel
-        {
-            if (model == null)
-                return default;
-
-            var ty = Activator.CreateInstance(typeof(TModel), model, act) as TModel;
-            return ty;
-        }
-
-        public static T Last<T>(this List<T> list) where T : BaseLogViewModel
-        {
-            var result = list?.OrderDescendingByCreationDateTime().FirstOrDefault();
-            return result;
-        }
-
         public static T First<T>(this List<T> list) where T : BaseLogViewModel
         {
             var result = list?.OrderByCreationDateTime().FirstOrDefault();
@@ -82,9 +67,7 @@ namespace RealEstate.Services.Extensions
 
         public static IOrderedEnumerable<TSource> OrderByCreationDateTime<TSource>(this ICollection<TSource> sources, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
         {
-            var source = sources
-                .OrderBy(x => x.Audits.FirstOrDefault(predicate).DateTime);
-
+            var source = sources.OrderBy(x => x.Audits.FirstOrDefault(predicate).DateTime);
             return source;
         }
 
@@ -112,25 +95,13 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        public static List<TModel> Map<TEntity, TModel>(this ICollection<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
-        {
-            if (model?.Any() != true)
-                return default;
-
-            var result = model
-                .Select(entity => entity.Map<TEntity, TModel>())
-                .Where(x => x?.Id != null)
-                .ToHasNotNullList();
-            return result;
-        }
-
         public static List<TModel> Map<TEntity, TModel>(this List<TEntity> model) where TEntity : BaseEntity where TModel : BaseLogViewModel
         {
             if (model?.Any() != true)
                 return default;
 
             var result = model
-                .Select(entity => entity.Map<TEntity, TModel>())
+                .Select(entity => entity.Map<TModel>())
                 .Where(x => x != null)
                 .ToHasNotNullList();
             return result;

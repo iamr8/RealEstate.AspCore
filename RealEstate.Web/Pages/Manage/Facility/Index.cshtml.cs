@@ -56,7 +56,7 @@ namespace RealEstate.Web.Pages.Manage.Facility
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(Facility.IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }
 }

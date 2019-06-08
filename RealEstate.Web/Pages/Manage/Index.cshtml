@@ -63,7 +63,7 @@
                                 <div class="info">
                                     <span>
                                         <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today">
-                                            از تاریخ @items.From.GregorianToPersian(true) تا @items.To.GregorianToPersian(true) &mdash; @(items?.Details.Count ?? 0) @SharedLocalizer["Item"]
+                                            از تاریخ @items.From.GregorianToPersian(true) تا @items.To.GregorianToPersian(true) &mdash; @(items?.Details?.Count ?? 0) @SharedLocalizer["Item"]
                                         </a>
                                     </span>
                                     <hr />
@@ -72,7 +72,7 @@
                                         <ul class="info-breadcrumb">
                                             @foreach (var cat in itemCategories)
                                             {
-                                                var count = items?.Details.Count(x => x.ItemCategory == cat.Name);
+                                                var count = items?.Details?.Count(x => x.ItemCategory == cat.Name);
                                                 <li>
                                                     <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
                                                         @cat.Name • @count
@@ -86,7 +86,7 @@
                                         <ul class="info-breadcrumb">
                                             @foreach (var cat in propertyCategory)
                                             {
-                                                var count = items?.Details.Count(x => x.PropertyCategory == cat.Name);
+                                                var count = items?.Details?.Count(x => x.PropertyCategory == cat.Name);
                                                 <li>
                                                     <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
                                                         @cat.Name • @count
@@ -101,7 +101,7 @@
                         @if (items.Details?.Any() == true)
                         {
                             <div class="items">
-                                @foreach (var groupedItem in items.Details.GroupBy(x => x.UserId))
+                                @foreach (var groupedItem in items.Details?.GroupBy(x => x.UserId))
                                 {
                                     var item = groupedItem.FirstOrDefault();
                                     var sumUser = groupedItem.Count();
@@ -169,7 +169,7 @@
                         @if (todayRange.Details?.Any() == true)
                         {
                             <div class="items">
-                                @foreach (var groupedItem in todayRange.Details.GroupBy(x => x.UserId))
+                                @foreach (var groupedItem in todayRange.Details?.GroupBy(x => x.UserId))
                                 {
                                     var item = groupedItem.FirstOrDefault();
                                     var sumUser = groupedItem.Count();
@@ -189,7 +189,7 @@
                                 <div class="info">
                                     <span>
                                         <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today">
-                                            از هفته گذشته تا امروز &mdash; @(lastWeekRange?.Details.Count ?? 0) @SharedLocalizer["Item"]
+                                            از هفته گذشته تا امروز &mdash; @(lastWeekRange?.Details?.Count ?? 0) @SharedLocalizer["Item"]
                                         </a>
                                     </span>
                                     <hr />
@@ -212,7 +212,7 @@
                                         <ul class="info-breadcrumb">
                                             @foreach (var cat in propertyCategory)
                                             {
-                                                var count = lastWeekRange?.Details.Count(x => x.PropertyCategory == cat.Name) ?? 0;
+                                                var count = lastWeekRange?.Details?.Count(x => x.PropertyCategory == cat.Name) ?? 0;
                                                 <li>
                                                     <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
                                                         @cat.Name • @count
@@ -227,7 +227,7 @@
                         @if (lastWeekRange?.Details?.Any() == true)
                         {
                             <div class="items">
-                                @foreach (var groupedItem in lastWeekRange.Details.GroupBy(x => x.UserId))
+                                @foreach (var groupedItem in lastWeekRange.Details?.GroupBy(x => x.UserId))
                                 {
                                     var item = groupedItem.FirstOrDefault();
                                     var sumUser = groupedItem.Count();
@@ -285,7 +285,7 @@
                         @if (lastMonthRange?.Details?.Any() == true)
                         {
                             <div class="items">
-                                @foreach (var groupedItem in lastMonthRange.Details.GroupBy(x => x.UserId))
+                                @foreach (var groupedItem in lastMonthRange.Details?.GroupBy(x => x.UserId))
                                 {
                                     var item = groupedItem.FirstOrDefault();
                                     var sumUser = groupedItem.Count();
