@@ -43,7 +43,7 @@ namespace RealEstate.Services.ServiceLayer.Base
         TModel Map<TSource, TModel>(TSource query,
             TModel entity) where TSource : class where TModel : class;
 
-        IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel)
+        IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel, CurrentUserViewModel currentUser = null)
             where TSource : BaseEntity where TSearch : BaseSearchModel;
 
         Task<MethodStatus<TSource>> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
@@ -60,7 +60,8 @@ namespace RealEstate.Services.ServiceLayer.Base
         Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
-        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel)
+        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel,
+            CurrentUserViewModel currentUser = null)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel;
 
         //        (TModel, List<LogUserViewModel>) SelectAndTrack<TSource, TModel>(TSource model, Func<TSource, TModel> expression,
@@ -103,12 +104,12 @@ namespace RealEstate.Services.ServiceLayer.Base
             _users = _unitOfWork.Set<User>();
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel)
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel
         {
             var output = new PaginationViewModel<TOutput>();
 
-            var currentUser = CurrentUser();
+            currentUser = currentUser ?? CurrentUser();
             if (currentUser == null)
                 return output;
 
@@ -119,9 +120,9 @@ namespace RealEstate.Services.ServiceLayer.Base
             var pagingQuery = page > 1
                 ? query.Skip(pageSize * (page - 1))
                 : query;
+            pagingQuery = pagingQuery.Take(pageSize);
 
             var entities = await pagingQuery
-                .Take(pageSize)
                 .ToListAsync()
                 .ConfigureAwait(false);
             if (entities?.Any() != true)
@@ -145,9 +146,9 @@ namespace RealEstate.Services.ServiceLayer.Base
 
         private HttpContext HttpContext => _accessor.HttpContext;
 
-        public IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel) where TSource : BaseEntity where TSearch : BaseSearchModel
+        public IQueryable<TSource> AdminSeachConditions<TSource, TSearch>(IQueryable<TSource> query, TSearch searchModel, CurrentUserViewModel currentUser = null) where TSource : BaseEntity where TSearch : BaseSearchModel
         {
-            var currentUser = CurrentUser();
+            currentUser = currentUser ?? CurrentUser();
             if (currentUser == null)
                 return query;
 

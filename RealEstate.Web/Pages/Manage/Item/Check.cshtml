@@ -143,13 +143,30 @@
                                         const anchor = document.createElement("a");
                                         $(anchor).attr("href", "#");
 
+                                        const districtEl = document.createElement("span");
+                                        $(districtEl).addClass("text-black-50").html("@Html.Raw(SharedLocalizer[SharedResource.District]) : ");
+
+                                        const categoryEl = document.createElement("span");
+                                        $(categoryEl).addClass("text-black-50").html("@Html.Raw(SharedLocalizer[SharedResource.Category]) : ");
+
+                                        const addressEl = document.createElement("span");
+                                        $(addressEl).addClass("text-black-50").html("@Html.Raw(SharedLocalizer[SharedResource.Address]) : ");
+
                                         const finalString = `@Html.Raw(SharedLocalizer[SharedResource.District]): ${propertyDistrict
                                             } ، @Html.Raw(SharedLocalizer[SharedResource.Category]): ${propertyCategory
                                             } ، @Html.Raw(SharedLocalizer[SharedResource.Address]): ${propertyAddress}`;
                                         const nameElement = document.createElement("span");
                                         $(nameElement).html(finalString);
 
-                                        $(anchor).append(nameElement);
+                                        $(anchor)
+                                            .append(districtEl)
+                                            .append(propertyDistrict)
+                                            .append(" &mdash; ")
+                                            .append(categoryEl)
+                                            .append(propertyCategory)
+                                            .append(" &mdash; ")
+                                            .append(addressEl)
+                                            .append(propertyAddress);
                                         $(items).append(anchor);
                                     });
 

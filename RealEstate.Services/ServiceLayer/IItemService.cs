@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LinqKit;
+using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -14,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -76,6 +78,12 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<Feature> _features;
         private readonly DbSet<User> _users;
         private readonly DbSet<Category> _categories;
+        private readonly DbSet<Picture> _pictures;
+        private readonly DbSet<Property> _properties;
+        private readonly DbSet<ItemFeature> _itemFeatures;
+        private readonly DbSet<PropertyFeature> _propertyFeatures;
+        private readonly DbSet<PropertyFacility> _propertyFacilities;
+        private readonly DbSet<Facility> _facilities;
 
         public ItemService(
             IBaseService baseService,
@@ -94,29 +102,42 @@ namespace RealEstate.Services.ServiceLayer
             //            _mapper = mapper;
             _itemRequests = _unitOfWork.Set<Deal>();
             _applicants = _unitOfWork.Set<Applicant>();
+            _properties = _unitOfWork.Set<Property>();
             _items = _unitOfWork.Set<Item>();
             _ownerships = _unitOfWork.Set<Ownership>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
+            _facilities = _unitOfWork.Set<Facility>();
+            _itemFeatures = _unitOfWork.Set<ItemFeature>();
+            _propertyFeatures = _unitOfWork.Set<PropertyFeature>();
             _users = _unitOfWork.Set<User>();
+            _propertyFacilities = _unitOfWork.Set<PropertyFacility>();
             _categories = _unitOfWork.Set<Category>();
+            _pictures = _unitOfWork.Set<Picture>();
         }
 
         public async Task<List<ZoonkanViewModel>> ZoonkansAsync()
         {
-            var categories = await _items.GroupBy(x => new
-            {
-                ItemCategory = x.Category.Name,
-                PropertyCategory = x.Property.Category.Name
-            })
+            var query = _items.AsNoTracking().Include(x => x.Property)
+                .ThenInclude(x => x.Pictures)
+                .Include(x => x.Property)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.Category)
+                .GroupBy(x => new
+                {
+                    ItemCategory = x.Category.Name,
+                    PropertyCategory = x.Property.Category.Name,
+                })
                 .Select(x => new
                 {
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
                     Count = x.Count(),
-                    Pictures = x.SelectMany(c => c.Property.Pictures)
-                }).ToListAsync().ConfigureAwait(false);
+                    Pictures = x.SelectMany(c => c.Property.Pictures).Select(c => c.File)
+                });
+
+            var categories = await query.ToListAsync().ConfigureAwait(false);
             if (categories?.Any() != true)
                 return default;
 
@@ -125,7 +146,7 @@ namespace RealEstate.Services.ServiceLayer
                 ItemCategory = x.ItemCategory,
                 PropertyCategory = x.PropertyCategory,
                 Count = x.Count,
-                Picture = x.Pictures.SelectRandom()?.File
+                Picture = x.Pictures.SelectRandom()
             }).ToList();
             return result;
         }
@@ -329,21 +350,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
                 return default;
 
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null)
-                return default;
+//            var query1 = _items.AsNoTracking()
+//                .Include(x => x.Property)
+//                .ThenInclude(x => x.District)
+//                .Include(x => x.Property)
+//                .ThenInclude(x => x.Category);
 
-            var query = from item in _items.WhereNotDeleted()
-                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
-                        let lastRequest = requests.FirstOrDefault()
-                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
-                        let itemCategory = item.Category
-                        let property = item.Property
-                        let propertyCategory = property.Category
-                        where itemCategory.UserItemCategories.Any(userItemCategory =>
-                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
-                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
-                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
+            var query = from item in _items
                         where (EF.Functions.Like(item.Property.Street, street.Like())
                                || EF.Functions.Like(item.Property.Alley, street.Like()))
                               && item.Property.District.Name == district
@@ -354,7 +367,13 @@ namespace RealEstate.Services.ServiceLayer
             if (models?.Any() != true)
                 return default;
 
-            var result = models.Select(_propertyService.MapJson).ToList();
+            var result = models.Select(property => new PropertyJsonViewModel
+            {
+                Id = property.Id,
+                District = property.District?.Name,
+                Address = property.Address,
+                Category = property.Category?.Name
+            }).ToList();
             return result;
         }
 
@@ -423,7 +442,7 @@ namespace RealEstate.Services.ServiceLayer
             if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
                 await CleanDuplicatesAsync().ConfigureAwait(false);
 
-            var query = _items.AsQueryable().AsNoTracking();
+            var query = _items.AsNoTracking();
             query = query.Include(x => x.Property)
                 .ThenInclude(x => x.Category);
             query = query.Include(x => x.Property)
@@ -494,15 +513,30 @@ namespace RealEstate.Services.ServiceLayer
                     query = query.Where(x => x.Property.District.Name == searchModel.District);
                 }
 
-                if (searchModel.Facilities?.Any() == true)
+                if (searchModel.Facilities?.Any(x => !string.IsNullOrEmpty(x.Name)) == true)
                 {
-                    query = searchModel.Facilities
-                        .Where(x => !string.IsNullOrEmpty(x.Name))
-                        .Select(facility => facility.Name)
-                        .Aggregate(query, (current, name) => current.Where(x => x.Property.PropertyFacilities.Any(c => c.Facility.Name == name)));
+                    var validFacilities = searchModel.Facilities.Where(x => !string.IsNullOrEmpty(x.Name)).Select(x => x.Name).ToList();
+                    var predicateFacilities = PredicateBuilder.New<Facility>(true);
+                    foreach (var facilityName in validFacilities)
+                        predicateFacilities = predicateFacilities.Or(facility => facility.Name == facilityName);
+                    var facilities = await _facilities.AsExpandable().Where(predicateFacilities).Select(x => x.Id).ToListAsync().ConfigureAwait(false);
+
+                    var tempQuery = query.AsExpandable()
+                        .GroupJoin(_propertyFacilities.AsExpandable(), item => item.PropertyId, propertyFacility => propertyFacility.PropertyId,
+                            (item, propertyFacilities) =>
+                                new
+                                {
+                                    Item = item,
+                                    PropertyFacilities = propertyFacilities
+                                });
+
+                    foreach (var facility in facilities)
+                        tempQuery = tempQuery.Where(x => x.PropertyFacilities.Any(c => c.FacilityId == facility));
+
+                    query = tempQuery.Select(x => x.Item);
                 }
 
-                if (searchModel.Features?.Any() == true)
+                if (searchModel.Features?.Any(x => !string.IsNullOrEmpty(x.Id)) == true)
                 {
                     foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
                     {
@@ -516,16 +550,36 @@ namespace RealEstate.Services.ServiceLayer
                             if (int.TryParse(from, out var numFrom))
                             {
                                 if (type == FeatureTypeEnum.Item)
-                                    query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() >= numFrom));
+                                {
+                                    query = from que in query
+                                            join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
+                                            where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() >= numFrom)
+                                            select que;
+                                }
                                 else if (type == FeatureTypeEnum.Property)
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() >= numFrom));
+                                {
+                                    query = from que in query
+                                            join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
+                                            where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() >= numFrom)
+                                            select que;
+                                }
                             }
                             else
                             {
                                 if (type == FeatureTypeEnum.Item)
-                                    query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value == @from));
+                                {
+                                    query = from que in query
+                                            join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
+                                            where itemFeatures.Any(x => x.Feature.Id == id && x.Value == @from)
+                                            select que;
+                                }
                                 else if (type == FeatureTypeEnum.Property)
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value == @from));
+                                {
+                                    query = from que in query
+                                            join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
+                                            where propertyFeatures.Any(x => x.Feature.Id == id && x.Value == @from)
+                                            select que;
+                                }
                             }
                         }
                         else if (string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
@@ -534,9 +588,19 @@ namespace RealEstate.Services.ServiceLayer
                                 continue;
 
                             if (type == FeatureTypeEnum.Item)
-                                query = query.Where(x => x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo));
+                            {
+                                query = from que in query
+                                        join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
+                                        where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo)
+                                        select que;
+                            }
                             else if (type == FeatureTypeEnum.Property)
-                                query = query.Where(x => x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo));
+                            {
+                                query = from que in query
+                                        join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
+                                        where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo)
+                                        select que;
+                            }
                         }
                         else if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
                         {
@@ -545,13 +609,17 @@ namespace RealEstate.Services.ServiceLayer
 
                             if (type == FeatureTypeEnum.Item)
                             {
-                                query = query.Where(x =>
-                                    x.ItemFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo && c.Value.IsNumeric() >= numFrom));
+                                query = from que in query
+                                        join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
+                                        where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo && x.Value.IsNumeric() >= numFrom)
+                                        select que;
                             }
                             else if (type == FeatureTypeEnum.Property)
                             {
-                                query = query.Where(x =>
-                                    x.Property.PropertyFeatures.Any(c => c.Feature.Id == id && c.Value.IsNumeric() <= numTo && c.Value.IsNumeric() >= numFrom));
+                                query = from que in query
+                                        join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
+                                        where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo && x.Value.IsNumeric() >= numFrom)
+                                        select que;
                             }
                         }
                     }
@@ -559,9 +627,8 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var userItemCategories = currentUser.UserItemCategories.Select(x => x.CategoryId);
-            var userPropertyCategories = currentUser.UserPropertyCategories.Select(x => x.CategoryId);
-
+            var userItemCategories = currentUser.UserItemCategories.Select(x => x.CategoryId).ToList();
+            var userPropertyCategories = currentUser.UserPropertyCategories.Select(x => x.CategoryId).ToList();
             query = query.Where(x => userItemCategories.Any(c => c == x.CategoryId));
             query = query.Where(x => userPropertyCategories.Any(c => c == x.Property.CategoryId));
 

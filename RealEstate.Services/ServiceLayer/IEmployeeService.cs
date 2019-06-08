@@ -198,7 +198,7 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.Phone, searchModel.Phone.Like()));
 
-                query = _baseService.AdminSeachConditions(query, searchModel);
+                query = _baseService.AdminSeachConditions(query, searchModel, currentUser);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
@@ -210,7 +210,7 @@ namespace RealEstate.Services.ServiceLayer
                     ent.Include<User, UserViewModel>(item.Users);
                     ent.Include<EmployeeDivision, EmployeeDivisionViewModel>(item.EmployeeDivisions,
                         ent2 => ent2.Include<Division, DivisionViewModel>(ent2.Entity.Division));
-                })).ConfigureAwait(false);
+                }), currentUser).ConfigureAwait(false);
 
             if (result?.Items?.Any() != true)
                 return result;

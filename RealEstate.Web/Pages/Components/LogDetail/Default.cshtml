@@ -2,10 +2,11 @@
 
 @if (Model != null)
 {
+    var dt = new PersianDateTime(Model.DateTime);
     <text>
         <b>@SharedLocalizer[Model.Type.GetDisplayName()]:</b>
-        @Model.DateTime.GregorianToPersian(false, true)
-        @SharedLocalizer["By"]
+        @dt.ToRelativeString()
+        @SharedLocalizer[SharedResource.By]
         <a asp-page="@typeof(RealEstate.Web.Pages.Manage.User.IndexModel).Page()" asp-route-userId="@Model.UserId" target="_blank">@Model.UserFullName</a>
     </text>
 }

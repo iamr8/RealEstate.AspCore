@@ -275,7 +275,8 @@ namespace RealEstate.Web
                 app.UseWebMarkupMin();
             }
 
-            app.UseMiniProfiler();
+            if (env.IsDevelopment())
+                app.UseMiniProfiler();
 
             app.UseStaticFiles(new StaticFileOptions
             {

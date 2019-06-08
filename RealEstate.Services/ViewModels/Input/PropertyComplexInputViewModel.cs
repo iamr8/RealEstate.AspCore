@@ -33,10 +33,12 @@ namespace RealEstate.Services.ViewModels.Input
         public string Number { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Floor")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [DefaultValue(0)]
         public int Floor { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "FlatNumber")]
+        [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [DefaultValue(0)]
         public int Flat { get; set; }
 

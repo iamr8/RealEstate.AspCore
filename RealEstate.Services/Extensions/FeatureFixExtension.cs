@@ -20,7 +20,9 @@ namespace RealEstate.Services.Extensions
                             ? currentYear - year
                             : int.Parse($"13{year}")
                         : year;
-                    return $"{currentYear - processedYear} سال ساخت ( {processedYear} )";
+
+                    var term = currentYear - processedYear == 0 ? "نوساز" : $"{currentYear - processedYear} سال ساخت";
+                    return $"{term} ( {processedYear} )";
 
                 case "متراژ":
                     return $"{featureValue} متری";

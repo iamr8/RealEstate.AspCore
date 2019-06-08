@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using RealEstate.Base.Enums;
+using System;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels
 {
     public class StatisticsViewModel
     {
-        public List<StatisticsDetailViewModel> Today { get; set; }
-        public List<StatisticsDetailViewModel> ThisWeek { get; set; }
-        public List<StatisticsDetailViewModel> ThisMonth { get; set; }
+        public DateTime From { get; set; }
+        public DateTime To { get; set; }
+        public List<StatisticsDetailViewModel> Details { get; set; }
+        public StatisticsRangeEnum Range { get; set; }
     }
 
     public class StatisticsDetailViewModel

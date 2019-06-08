@@ -82,7 +82,7 @@ namespace RealEstate.Services.ServiceLayer
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Map<User, UserViewModel>();
+                var item = user.Map<User, UserViewModel>(act => act.Include<Employee, EmployeeViewModel>(act.Entity.Employee));
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -163,7 +163,7 @@ namespace RealEstate.Services.ServiceLayer
                         ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
                     ent.Include<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
                         ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
-                })).ConfigureAwait(false);
+                }), currentUser).ConfigureAwait(false);
             return result;
         }
 

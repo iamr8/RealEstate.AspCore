@@ -5,14 +5,15 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -20,7 +21,7 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<List<LogDetailViewModel>> Logs(string entityName, string entityId);
 
-        Task<StatisticsViewModel> StatisticsAsync();
+        Task<List<StatisticsViewModel>> StatisticsAsync(StatisticsSearchViewModel searchModel);
     }
 
     public class GlobalService : IGlobalService
@@ -42,16 +43,19 @@ namespace RealEstate.Services.ServiceLayer
             _items = _unitOfWork.Set<Item>();
         }
 
-        private StatisticsDetailViewModel Map(ItemViewModel item)
+        private List<StatisticsDetailViewModel> Map(List<ItemViewModel> item)
         {
-            var result = new StatisticsDetailViewModel
+            if (item?.Any() != true)
+                return default;
+
+            var result = item.Select(x => new StatisticsDetailViewModel
             {
-                ItemId = item.Id,
-                ItemCategory = item.Category?.Name,
-                PropertyCategory = item.Property?.Category?.Name,
-                UserFullName = item.Logs.Create.UserFullName,
-                UserId = item.Logs.Create.UserId
-            };
+                ItemId = x.Id,
+                ItemCategory = x.Category?.Name,
+                PropertyCategory = x.Property?.Category?.Name,
+                UserFullName = x.Logs.Create.UserFullName,
+                UserId = x.Logs.Create.UserId
+            }).ToList();
             return result;
         }
 
@@ -108,7 +112,7 @@ namespace RealEstate.Services.ServiceLayer
             return audits;
         }
 
-        public async Task<StatisticsViewModel> StatisticsAsync()
+        public async Task<List<StatisticsViewModel>> StatisticsAsync(StatisticsSearchViewModel searchModel)
         {
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
@@ -119,24 +123,96 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser.Role != Role.SuperAdmin && currentUser.Role != Role.Admin)
                 query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
 
+            if (searchModel != null)
+                query = _baseService.AdminSeachConditions(query, searchModel);
+
             var models = await query.ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
                 return default;
 
-            var viewModels = models?.Select(x => x.Map<Item, ItemViewModel>()).ToList();
+            var viewModels = models?.Select(x => x.Map<Item, ItemViewModel>(ent =>
+            {
+                ent.Include<Property, PropertyViewModel>(x.Property, ent2 => ent2.Include<Category, CategoryViewModel>(ent2.Entity.Category));
+                ent.Include<Category, CategoryViewModel>(x.Category);
+            })).ToList();
             if (viewModels?.Any() != true)
                 return default;
 
-            var today = viewModels.Where(x => x.Logs?.Create?.DateTime.Date == DateTime.Today.Date).ToList();
-            var thisWeek = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= DateTime.Today.AddDays(-7).Date).ToList();
-            var thisMonth = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= DateTime.Today.AddMonths(-1).Date).ToList();
-
-            var result = new StatisticsViewModel
+            var result = new List<StatisticsViewModel>();
+            if (!string.IsNullOrEmpty(searchModel?.CreationDateFrom))
             {
-                Today = today?.Select(Map).ToList(),
-                ThisMonth = thisMonth?.Select(Map).ToList(),
-                ThisWeek = thisWeek?.Select(Map).ToList()
-            };
+                var items = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= searchModel.CreationDateFrom.PersianToGregorian());
+                if (!string.IsNullOrEmpty(searchModel?.CreationDateTo))
+                    items = items.Where(x => x.Logs?.Create?.DateTime.Date <= searchModel.CreationDateTo.PersianToGregorian());
+                if (!string.IsNullOrEmpty(searchModel?.CreatorId))
+                    items = items.Where(x => x.Logs?.Create?.UserId == searchModel.CreatorId);
+
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(items.ToList()),
+                    From = searchModel.CreationDateFrom.PersianToGregorian(),
+                    To = DateTime.Today,
+                    Range = StatisticsRangeEnum.Custom
+                });
+            }
+            else if (!string.IsNullOrEmpty(searchModel?.CreationDateTo))
+            {
+                var items = viewModels.Where(x => x.Logs?.Create?.DateTime.Date <= searchModel.CreationDateTo.PersianToGregorian());
+                if (!string.IsNullOrEmpty(searchModel?.CreationDateFrom))
+                    items = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= searchModel.CreationDateFrom.PersianToGregorian());
+                if (!string.IsNullOrEmpty(searchModel?.CreatorId))
+                    items = items.Where(x => x.Logs?.Create?.UserId == searchModel.CreatorId);
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(items.ToList()),
+                    To = searchModel.CreationDateTo.PersianToGregorian(),
+                    Range = StatisticsRangeEnum.Custom
+                });
+            }
+            else if (!string.IsNullOrEmpty(searchModel?.CreatorId))
+            {
+                var items = viewModels.Where(x => x.Logs?.Create?.UserId == searchModel.CreatorId);
+                if (!string.IsNullOrEmpty(searchModel?.CreationDateFrom))
+                    items = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= searchModel.CreationDateFrom.PersianToGregorian());
+                if (!string.IsNullOrEmpty(searchModel?.CreationDateFrom))
+                    items = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= searchModel.CreationDateFrom.PersianToGregorian());
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(items.ToList()),
+                    To = searchModel.CreationDateTo.PersianToGregorian(),
+                    Range = StatisticsRangeEnum.Custom
+                });
+            }
+            else
+            {
+                var today = viewModels.Where(x => x.Logs?.Create?.DateTime.Date == DateTime.Today.Date).ToList();
+                var thisWeek = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= DateTime.Today.AddDays(-7).Date).ToList();
+                var thisMonth = viewModels.Where(x => x.Logs?.Create?.DateTime.Date >= DateTime.Today.AddMonths(-1).Date).ToList();
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(today),
+                    From = DateTime.Today.Date.AddDays(-1),
+                    To = DateTime.Today.Date,
+                    Range = StatisticsRangeEnum.Today
+                });
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(thisWeek),
+                    From = DateTime.Today.Date.AddDays(-7),
+                    To = DateTime.Today.Date,
+                    Range = StatisticsRangeEnum.ThisWeek
+                });
+                result.Add(new StatisticsViewModel
+                {
+                    Details = Map(thisMonth),
+                    From = DateTime.Today.Date.AddDays(-30),
+                    To = DateTime.Today.Date,
+                    Range = StatisticsRangeEnum.ThisMonth
+                });
+            }
+
+            if (result?.Any() != true)
+                return default;
 
             return result;
         }

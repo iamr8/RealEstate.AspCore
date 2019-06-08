@@ -7,8 +7,8 @@
     <AssemblyName>RealEstate.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
@@ -52,7 +52,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.2" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="MiniProfiler.AspNetCore" Version="4.0.165" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.165" />

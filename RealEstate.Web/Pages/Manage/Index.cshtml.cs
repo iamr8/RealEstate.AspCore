@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Search;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage
@@ -24,14 +27,33 @@ namespace RealEstate.Web.Pages.Manage
             _localizer = localizer;
         }
 
-        public string PageTitle => _localizer[SharedResource.Properties];
+        [BindProperty]
+        public StatisticsSearchViewModel SearchInput { get; set; }
 
-        public StatisticsViewModel Statistics { get; set; }
+        public string PageTitle => _localizer[SharedResource.Statistics];
 
-        public async Task<IActionResult> OnGetAsync()
+        public List<StatisticsViewModel> Statistics { get; set; }
+        public string Status { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(string status, string dateFrom, string dateTo, string creatorId)
         {
-            Statistics = await _globalService.StatisticsAsync().ConfigureAwait(false);
+            SearchInput = new StatisticsSearchViewModel
+            {
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo
+            };
+
+            Status = !string.IsNullOrEmpty(status)
+                ? status
+                : null;
+            Statistics = await _globalService.StatisticsAsync(SearchInput).ConfigureAwait(false);
             return Page();
+        }
+
+        public IActionResult OnPost()
+        {
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }
 }

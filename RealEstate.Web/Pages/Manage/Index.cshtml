@@ -5,194 +5,299 @@
     var lastWeek = DateTime.Now.AddDays(-7).Date.GregorianToPersian(true);
     var lastMonth = DateTime.Now.AddMonths(-1).Date.GregorianToPersian(true);
 
-    var sumToday = Model.Statistics?.Today?.Count ?? 0;
-    var sumLastWeek = Model.Statistics?.ThisWeek?.Count ?? 0;
-    var sumLastMonth = Model.Statistics?.ThisMonth?.Count ?? 0;
-
     var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
     var propertyCategory = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
 
+    var usersList = await UserService.ListJsonAsync(true, false).ConfigureAwait(false);
+    var users = (usersList?.Select(x => new SelectListItem
+    {
+        Value = x.UserId,
+        Text = x.UserFullName,
+        Selected = Model.SearchInput.CreatorId == x.UserId
+    }).ToList()).AddNone();
 }
 <div class="col-12">
 
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
-        
         <section class="container-fluid">
+            @*@if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+            {
+                <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+                    <form method="post">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-12 col-md">
+                                <div class="input-wrapper">
+                                    <label class="control-label" asp-for="@Model.SearchInput.CreationDateFrom"></label>
+                                    <input asp-for="@Model.SearchInput.CreationDateFrom" class="form-control" placeholder="@DateTime.Today.Date.GregorianToPersian(true)" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md">
+                                <div class="input-wrapper">
+                                    <label class="control-label" asp-for="@Model.SearchInput.CreationDateTo"></label>
+                                    <input asp-for="@Model.SearchInput.CreationDateTo" class="form-control" placeholder="@DateTime.Today.Date.GregorianToPersian(true)" />
+                                </div>
+                            </div>
+                            <div class="col-12 col-md">
+                                <div class="input-wrapper">
+                                    <label class="control-label" asp-for="@Model.SearchInput.CreatorId"></label>
+                                    <select asp-items="users" asp-for="@Model.SearchInput.CreatorId" class="custom-select"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row justify-content-center align-content-center">
+                            <div class="col-12">
+                                <input type="submit" value="@SharedLocalizer[SharedResource.Search]" class="btn btn-primary btn-block" />
+                            </div>
+                        </div>
+                    </form>
+                </search-pane>
+            }*@
+            @if (Model.Statistics?.Any(x => x.Range == StatisticsRangeEnum.Custom) == true)
+            {
+                var items = Model.Statistics.FirstOrDefault(x => x.Range == StatisticsRangeEnum.Custom);
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="itemShow adder input-wrapper">
+                            <div class="col-12 detail">
+                                <div class="info">
+                                    <span>
+                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today">
+                                            از تاریخ @items.From.GregorianToPersian(true) تا @items.To.GregorianToPersian(true) &mdash; @(items?.Details.Count ?? 0) @SharedLocalizer["Item"]
+                                        </a>
+                                    </span>
+                                    <hr />
+                                    @if (itemCategories?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in itemCategories)
+                                            {
+                                                var count = items?.Details.Count(x => x.ItemCategory == cat.Name);
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (propertyCategory?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in propertyCategory)
+                                            {
+                                                var count = items?.Details.Count(x => x.PropertyCategory == cat.Name);
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        @if (items.Details?.Any() == true)
+                        {
+                            <div class="items">
+                                @foreach (var groupedItem in items.Details.GroupBy(x => x.UserId))
+                                {
+                                    var item = groupedItem.FirstOrDefault();
+                                    var sumUser = groupedItem.Count();
+                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
+                                        <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                var todayRange = Model.Statistics?.Where(x => x.Range == StatisticsRangeEnum.Today).FirstOrDefault();
+                var lastWeekRange = Model.Statistics?.Where(x => x.Range == StatisticsRangeEnum.ThisWeek).FirstOrDefault();
+                var lastMonthRange = Model.Statistics?.Where(x => x.Range == StatisticsRangeEnum.ThisMonth).FirstOrDefault();
 
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <div class="itemShow adder input-wrapper">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today">
-                                        امروز &mdash; @sumToday @SharedLocalizer["Item"]
-                                    </a>
-                                </span>
-                                <hr />
-                                @if (itemCategories?.Any() == true)
-                                {
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="itemShow adder input-wrapper">
+                            <div class="col-12 detail">
+                                <div class="info">
                                     <ul class="info-breadcrumb">
-                                        @foreach (var cat in itemCategories)
-                                        {
-                                            var count = Model.Statistics?.Today?.Count(x => x.ItemCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
+                                        <li>
+                                            امروز
+                                        </li>
+                                        <li>
+                                            <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today">
+                                                @(todayRange?.Details?.Count ?? 0) @SharedLocalizer["Item"]
+                                            </a>
+                                        </li>
                                     </ul>
-                                }
-                                @if (propertyCategory?.Any() == true)
-                                {
-                                    <ul class="info-breadcrumb">
-                                        @foreach (var cat in propertyCategory)
-                                        {
-                                            var count = Model.Statistics?.Today?.Count(x => x.PropertyCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
+                                    @if (itemCategories?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in itemCategories)
+                                            {
+                                                var count = todayRange?.Details?.Count(x => x.ItemCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (propertyCategory?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in propertyCategory)
+                                            {
+                                                var count = todayRange?.Details?.Count(x => x.PropertyCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    @if (Model.Statistics?.Today?.Any() == true)
-                    {
-                        <div class="items">
-                            @foreach (var groupedItem in Model.Statistics.Today.GroupBy(x => x.UserId))
-                            {
-                                var item = groupedItem.FirstOrDefault();
-                                var sumUser = groupedItem.Count();
-                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
-                                    <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
-                                </a>
-                            }
-                        </div>
-                    }
-                </div>
-            </div>
-            <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <div class="itemShow adder input-wrapper">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today">
-                                        از هفته گذشته تا امروز &mdash; @sumLastWeek @SharedLocalizer["Item"]
+                        @if (todayRange.Details?.Any() == true)
+                        {
+                            <div class="items">
+                                @foreach (var groupedItem in todayRange.Details.GroupBy(x => x.UserId))
+                                {
+                                    var item = groupedItem.FirstOrDefault();
+                                    var sumUser = groupedItem.Count();
+                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@today" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
+                                        <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
                                     </a>
-                                </span>
-                                <hr />
-                                @if (itemCategories?.Any() == true)
-                                {
-                                    <ul class="info-breadcrumb">
-                                        @foreach (var cat in itemCategories)
-                                        {
-                                            var count = Model.Statistics?.ThisWeek?.Count(x => x.ItemCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                                @if (propertyCategory?.Any() == true)
-                                {
-                                    <ul class="info-breadcrumb">
-                                        @foreach (var cat in propertyCategory)
-                                        {
-                                            var count = Model.Statistics?.ThisWeek?.Count(x => x.PropertyCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
                                 }
                             </div>
-                        </div>
+                        }
                     </div>
-                    @if (Model.Statistics?.ThisWeek?.Any() == true)
-                    {
-                        <div class="items">
-                            @foreach (var groupedItem in Model.Statistics.ThisWeek.GroupBy(x => x.UserId))
-                            {
-                                var item = groupedItem.FirstOrDefault();
-                                var sumUser = groupedItem.Count();
-                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
-                                    <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
-                                </a>
-                            }
-                        </div>
-                    }
                 </div>
-            </div>
-            <hr />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <div class="itemShow adder input-wrapper">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today">
-                                        از ماه گذشته تا امروز &mdash; @sumLastMonth @SharedLocalizer["Item"]
-                                    </a>
-                                </span>
-                                <hr />
-                                @if (itemCategories?.Any() == true)
-                                {
-                                    <ul class="info-breadcrumb">
-                                        @foreach (var cat in itemCategories)
-                                        {
-                                            var count = Model.Statistics?.ThisMonth?.Count(x => x.ItemCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
-                                @if (propertyCategory?.Any() == true)
-                                {
-                                    <ul class="info-breadcrumb">
-                                        @foreach (var cat in propertyCategory)
-                                        {
-                                            var count = Model.Statistics?.ThisMonth?.Count(x => x.PropertyCategory == cat.Name);
-                                            <li>
-                                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
-                                                    @cat.Name • @count
-                                                </a>
-                                            </li>
-                                        }
-                                    </ul>
-                                }
+                <hr />
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="itemShow adder input-wrapper">
+                            <div class="col-12 detail">
+                                <div class="info">
+                                    <span>
+                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today">
+                                            از هفته گذشته تا امروز &mdash; @(lastWeekRange?.Details.Count ?? 0) @SharedLocalizer["Item"]
+                                        </a>
+                                    </span>
+                                    <hr />
+                                    @if (itemCategories?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in itemCategories)
+                                            {
+                                                var count = lastWeekRange.Details?.Count(x => x.ItemCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (propertyCategory?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in propertyCategory)
+                                            {
+                                                var count = lastWeekRange?.Details.Count(x => x.PropertyCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
                             </div>
                         </div>
+                        @if (lastWeekRange?.Details?.Any() == true)
+                        {
+                            <div class="items">
+                                @foreach (var groupedItem in lastWeekRange.Details.GroupBy(x => x.UserId))
+                                {
+                                    var item = groupedItem.FirstOrDefault();
+                                    var sumUser = groupedItem.Count();
+                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastWeek" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
+                                        <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
+                                    </a>
+                                }
+                            </div>
+                        }
                     </div>
-                    @if (Model.Statistics?.ThisMonth?.Any() == true)
-                    {
-                        <div class="items">
-                            @foreach (var groupedItem in Model.Statistics.ThisMonth.GroupBy(x => x.UserId))
-                            {
-                                var item = groupedItem.FirstOrDefault();
-                                var sumUser = groupedItem.Count();
-                                <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
-                                    <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
-                                </a>
-                            }
-                        </div>
-                    }
                 </div>
-            </div>
+                <hr />
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12">
+                        <div class="itemShow adder input-wrapper">
+                            <div class="col-12 detail">
+                                <div class="info">
+                                    <span>
+                                        <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today">
+                                            از ماه گذشته تا امروز &mdash; @(lastMonthRange?.Details?.Count ?? 0) @SharedLocalizer["Item"]
+                                        </a>
+                                    </span>
+                                    <hr />
+                                    @if (itemCategories?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in itemCategories)
+                                            {
+                                                var count = lastMonthRange.Details?.Count(x => x.ItemCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-itemCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    @if (propertyCategory?.Any() == true)
+                                    {
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var cat in propertyCategory)
+                                            {
+                                                var count = lastMonthRange?.Details?.Count(x => x.PropertyCategory == cat.Name) ?? 0;
+                                                <li>
+                                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-propertyCategory="@cat.Name">
+                                                        @cat.Name • @count
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        @if (lastMonthRange?.Details?.Any() == true)
+                        {
+                            <div class="items">
+                                @foreach (var groupedItem in lastMonthRange.Details.GroupBy(x => x.UserId))
+                                {
+                                    var item = groupedItem.FirstOrDefault();
+                                    var sumUser = groupedItem.Count();
+                                    <a asp-page="@typeof(Item.IndexModel).Page()" asp-route-pageNo="1" asp-route-deleted="True" asp-route-dateFrom="@lastMonth" asp-route-dateTo="@today" asp-route-creatorId="@item.UserId">
+                                        <span>@item.UserFullName &mdash; @sumUser @SharedLocalizer["Item"]</span>
+                                    </a>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </section>
     </div>
 </div>

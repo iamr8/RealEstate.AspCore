@@ -78,6 +78,9 @@ namespace RealEstate.Base
         public static Dictionary<string, object> GetSearchParameters<TSearch>(this TSearch model) where TSearch : BaseSearchModel
         {
             var routeValues = new Dictionary<string, object>();
+            if (model == null)
+                return default;
+
             var properties = model.GetPublicProperties().Where(x => x.GetValue(model) != null).ToList();
             if (properties?.Any() != true)
                 return default;

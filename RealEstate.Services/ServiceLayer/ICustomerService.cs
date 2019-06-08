@@ -443,7 +443,7 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<CustomerViewModel>();
 
-            query = query.WhereItIsPublic();
+            //query = query.WhereItIsPublic();
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Id))
@@ -461,12 +461,12 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.Phone))
                     query = query.Where(x => EF.Functions.Like(x.PhoneNumber, searchModel.Phone.Like()));
 
-                query = _baseService.AdminSeachConditions(query, searchModel);
+                query = _baseService.AdminSeachConditions(query, searchModel, currentUser);
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel?.PageNo ?? 1,
                 item => item.Map<Customer, CustomerViewModel>()
-            ).ConfigureAwait(false);
+                , currentUser).ConfigureAwait(false);
 
             return result;
         }

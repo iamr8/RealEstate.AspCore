@@ -4,7 +4,7 @@
 @{
 
     var level1 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -13,7 +13,7 @@
         }
     }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var level2 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -23,7 +23,7 @@
         }
     }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var level3 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -33,7 +33,7 @@
         }
     }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var level4 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -43,7 +43,7 @@
         }
     }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var level5 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -53,7 +53,7 @@
         }
     }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var level6 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-    {
+{
         new ItemFeatureJsonValueViewModel
         {
             Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
@@ -179,11 +179,11 @@
                         <hr subject="مبلغ های پیش فرض" />
 
                         <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level1">زیر 200 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level2" >بین 200 تا 300 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level3" >بین 300 تا 500 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level4" >بین 500 تا 700 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level5" >بین 700 تا یک میلیارد تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level6" >بالای 1 میلیارد تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level2">بین 200 تا 300 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level3">بین 300 تا 500 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level4">بین 500 تا 700 میلیون تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level5">بین 700 تا یک میلیارد تومان</a>
+                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level6">بالای 1 میلیارد تومان</a>
                     }
                     @if (facilities?.Any() == true)
                     {
@@ -230,13 +230,11 @@
                                     </li>
                                 </ul>
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.Property?.Id" target="_blank">
-                                        @item.Property?.Address
-                                        @if (item.Property?.Pictures?.Any() == true)
-                                        {
-                                            <i class="fa fa-check-circle verified"></i>
-                                        }
-                                    </a>
+                                    @item.Property?.Address
+                                    @if (item.Property?.Pictures?.Any() == true)
+                                    {
+                                        <i class="fa fa-check-circle verified"></i>
+                                    }
                                 </span>
                                 @if (item.Property?.PropertyFacilities?.Any() == true)
                                 {
