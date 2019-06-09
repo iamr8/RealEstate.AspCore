@@ -403,6 +403,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to حذف موارد مشابه.
+        /// </summary>
+        public static string CleanDuplicateItems {
+            get {
+                return ResourceManager.GetString("CleanDuplicateItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to خالی کردن جستجو.
         /// </summary>
         public static string ClearSearch {
@@ -1947,6 +1956,15 @@ namespace RealEstate.Resources {
         public static string PropertyIsAlreadyExists {
             get {
                 return ResourceManager.GetString("PropertyIsAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to این ملک پیش از این، به نام یک مالک دیگر ثبت شده است..
+        /// </summary>
+        public static string PropertyIsAlreadyExistsWithDifferentOwner {
+            get {
+                return ResourceManager.GetString("PropertyIsAlreadyExistsWithDifferentOwner", resourceCulture);
             }
         }
         

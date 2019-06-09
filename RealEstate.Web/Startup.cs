@@ -84,11 +84,13 @@ namespace RealEstate.Web
                 options.ConfigureWarnings(config =>
                 {
                     config.Log(CoreEventId.IncludeIgnoredWarning);
+//                    config.Throw(CoreEventId.IncludeIgnoredWarning);
                     config.Log(CoreEventId.NavigationIncluded);
                     config.Log(CoreEventId.NavigationLazyLoading);
                     config.Log(CoreEventId.DetachedLazyLoadingWarning);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
                     config.Log(RelationalEventId.QueryClientEvaluationWarning);
+//                    config.Throw(RelationalEventId.QueryClientEvaluationWarning); // Queries that not translated by SQL
                 });
                 //options.EnableSensitiveDataLogging();
             });

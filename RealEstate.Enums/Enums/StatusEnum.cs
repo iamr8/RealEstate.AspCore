@@ -98,6 +98,9 @@ namespace RealEstate.Base.Enums
         PaymentIsNull,
 
         [Display(ResourceType = typeof(SharedResource), Name = "PropertyIsAlreadyExists")]
-        PropertyIsAlreadyExists
+        PropertyIsAlreadyExists,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "PropertyIsAlreadyExistsWithDifferentOwner")]
+        PropertyIsAlreadyExistsWithDifferentOwner
     }
 }

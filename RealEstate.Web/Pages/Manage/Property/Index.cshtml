@@ -157,7 +157,7 @@
                                             @foreach (var feature in item.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
                                             }
                                         </ul>

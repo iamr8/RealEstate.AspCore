@@ -57,7 +57,7 @@ namespace RealEstate.Services.ServiceLayer
                 models = models.IgnoreQueryFilters();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<SmsViewModel>()).ConfigureAwait(false);
+                item => item.Map<SmsViewModel>(), Task.FromResult(false));
 
             return result;
         }

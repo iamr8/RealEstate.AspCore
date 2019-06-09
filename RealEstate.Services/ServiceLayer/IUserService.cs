@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
@@ -72,10 +73,12 @@ namespace RealEstate.Services.ServiceLayer
             if (includeDeleted)
                 query = query.IgnoreQueryFilters();
 
+            query = query.Include(x => x.Employee);
+
             if (exceptAdmin)
                 query = query.Where(x => !x.Username.Equals("admin", StringComparison.CurrentCultureIgnoreCase));
 
-            var models = await query.ToListAsync().ConfigureAwait(false);
+            var models = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             if (models?.Any() != true)
                 return default;
 
@@ -88,12 +91,16 @@ namespace RealEstate.Services.ServiceLayer
             if (list?.Any() != true)
                 return default;
 
-            var result = list.Select(x => new BeneficiaryJsonViewModel
-            {
-                UserId = x.Id,
-                UserFullName = $"{x.Employee?.LastName}، {x.Employee?.FirstName}",
-            }).ToList();
-            return result;
+            var result = from user in list
+                         let employee = user.Employee
+                         let isDeleted = employee.IsDeleted ? " - کاربر غیرفعال" : ""
+                         select new BeneficiaryJsonViewModel
+                         {
+                             UserId = user.Id,
+                             UserFullName = $"{employee.LastName}، {employee.FirstName}{isDeleted}"
+                         };
+
+            return result.ToList();
         }
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
@@ -170,7 +177,7 @@ namespace RealEstate.Services.ServiceLayer
                         ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
                     ent.IncludeAs<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
                         ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
-                }), currentUser).ConfigureAwait(false);
+                }), Task.FromResult(false), currentUser);
             return result;
         }
 

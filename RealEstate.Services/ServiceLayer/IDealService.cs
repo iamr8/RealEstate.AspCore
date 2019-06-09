@@ -4,13 +4,13 @@ using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -120,7 +120,7 @@ namespace RealEstate.Services.ServiceLayer
             var query = _deals.AsQueryable();
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DealViewModel>()).ConfigureAwait(false);
+                item => item.Map<DealViewModel>(), Task.FromResult(false));
             return result;
         }
 

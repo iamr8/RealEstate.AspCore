@@ -36,7 +36,8 @@ namespace RealEstate.Web.Pages.Manage.Customer
 
         public string Status { get; set; }
 
-        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
+        public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile,
+            bool deleted, string dateFrom, string dateTo, string creatorId, string status, bool? removeDuplicates)
         {
             SearchInput = new CustomerSearchViewModel
             {
@@ -49,13 +50,13 @@ namespace RealEstate.Web.Pages.Manage.Customer
                 IncludeDeletedItems = deleted,
                 CreatorId = creatorId,
                 CreationDateFrom = dateFrom,
-                CreationDateTo = dateTo
+                CreationDateTo = dateTo,
             };
 
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _customerService.CustomerListAsync(SearchInput).ConfigureAwait(false);
+            List = await _customerService.CustomerListAsync(SearchInput, removeDuplicates ?? false);
         }
 
         public IActionResult OnPost()

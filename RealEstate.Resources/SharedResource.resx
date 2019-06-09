@@ -1035,4 +1035,10 @@
   <data name="Checking" xml:space="preserve">
     <value>در حال بررسی</value>
   </data>
+  <data name="PropertyIsAlreadyExistsWithDifferentOwner" xml:space="preserve">
+    <value>این ملک پیش از این، به نام یک مالک دیگر ثبت شده است.</value>
+  </data>
+  <data name="CleanDuplicateItems" xml:space="preserve">
+    <value>حذف موارد مشابه</value>
+  </data>
 </root>

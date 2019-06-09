@@ -27,9 +27,9 @@ namespace RealEstate.Services.Extensions
 
         public static string CurrencyToWords(this string priceStr)
         {
-            var isPrice = ulong.TryParse(priceStr.Replace(",", ""), out var price);
+            var isPrice = ulong.TryParse(priceStr.Replace(",", "").Replace("/", ""), out var price);
             if (!isPrice)
-                return default;
+                return priceStr;
 
             string processResult;
             if (price > 0)

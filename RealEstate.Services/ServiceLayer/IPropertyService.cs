@@ -177,7 +177,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<PropertyViewModel>()).ConfigureAwait(false);
+                item => item.Map<PropertyViewModel>(), Task.FromResult(false));
 
             return result;
         }
@@ -321,9 +321,9 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        private async Task<(bool, Property)> HasDuplicateAsync(PropertyComplexInputViewModel model)
+        private async Task<MethodStatus<Property>> HasDuplicateAsync(PropertyComplexInputViewModel model)
         {
-            var duplicate = await _properties.FirstOrDefaultAsync(x =>
+            var property = await _properties.FirstOrDefaultAsync(x =>
                 x.Street == model.Street
                 && x.CategoryId == model.CategoryId
                 && x.DistrictId == model.DistrictId
@@ -332,8 +332,17 @@ namespace RealEstate.Services.ServiceLayer
                 && x.Floor == model.Floor
                 && x.Number == model.Number
                 && x.BuildingName == model.BuildingName).ConfigureAwait(false);
+            if (property == null)
+                return new MethodStatus<Property>(StatusEnum.PropertyIsNull, null);
 
-            return new ValueTuple<bool, Property>(duplicate != null, duplicate);
+            var sameOwnershipAsModel = property.CurrentOwnership?.Ownerships?.Any(x => x.Customer.MobileNumber == model.Ownership.Mobile);
+            if (sameOwnershipAsModel == null)
+                throw new NullReferenceException(nameof(sameOwnershipAsModel) + " must be filled.");
+
+            if (sameOwnershipAsModel == true)
+                return new MethodStatus<Property>(StatusEnum.Success, property);
+
+            return new MethodStatus<Property>(StatusEnum.PropertyIsAlreadyExistsWithDifferentOwner, property);
         }
 
         private async Task<bool> HasDuplicateAsync(PropertyInputViewModel model)
@@ -356,12 +365,9 @@ namespace RealEstate.Services.ServiceLayer
             if (model == null)
                 return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
 
-            //if (model.Ownerships?.Any() != true)
-            //    return new MethodStatus<Property>(StatusEnum.OwnershipIsNull, null);
-
             var (hasDuplicate, similarProperty) = await HasDuplicateAsync(model).ConfigureAwait(false);
-            if (hasDuplicate)
-                return new MethodStatus<Property>(StatusEnum.PropertyIsAlreadyExists, similarProperty);
+            if (hasDuplicate == StatusEnum.Success)
+                return new MethodStatus<Property>(hasDuplicate, similarProperty);
 
             var (customerAddStatus, newOwner) = await _customerService.OwnershipAddOrUpdateAsync(new OwnershipInputViewModel
             {
@@ -396,6 +402,7 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Property>(StatusEnum.PropertyOwnershipIsNull, null);
 
             await PropertyComplexSyncAsync(newProperty, model, newPropertyOwnership, newOwner.Customer, false).ConfigureAwait(false);
+
             return await _baseService.SaveChangesAsync(newProperty, save).ConfigureAwait(false);
         }
 

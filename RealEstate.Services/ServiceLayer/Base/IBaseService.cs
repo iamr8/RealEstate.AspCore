@@ -66,7 +66,8 @@ namespace RealEstate.Services.ServiceLayer.Base
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
-            CurrentUserViewModel currentUser = null) where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
+            Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
+            where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
 
@@ -99,7 +100,27 @@ namespace RealEstate.Services.ServiceLayer.Base
             _users = _unitOfWork.Set<User>();
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null)
+        private string PopulateCacheKeys<TSearch>(TSearch searchModel) where TSearch : BaseSearchModel
+        {
+            var cacheKeyBuilder = new StringBuilder();
+            searchModel?.GetType().GetPublicProperties().ToList()?.ForEach(searchProperty =>
+            {
+                var key = searchProperty.Name;
+                var value = searchProperty.GetValue(searchModel);
+
+                if (string.IsNullOrEmpty(key) && value != null)
+                    return;
+
+                var hasValue = !string.IsNullOrEmpty(cacheKeyBuilder.ToString());
+                var prefix = hasValue ? "&&" : "";
+
+                cacheKeyBuilder.Append($"{prefix}{key}=={value}");
+            });
+            var cacheKey = cacheKeyBuilder.ToString();
+            return cacheKey;
+        }
+
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
             var output = new PaginationViewModel<TOutput>();
@@ -112,12 +133,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
 
-            var cacheKeyBuilder = new StringBuilder();
-            searchModel?.GetType().GetPublicProperties().ToList()?.ForEach(searchProperty =>
-            {
-                cacheKeyBuilder.AppendKey(searchProperty.Name, searchProperty.GetValue(searchModel));
-            });
-            var cacheKey = cacheKeyBuilder.ToString();
+            var cacheKey = PopulateCacheKeys(searchModel);
 
             query = query.OrderDescendingByCreationDateTime();
             var pagingQuery = page > 1
@@ -149,6 +165,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             output.CurrentPage = page;
             output.Pages = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
             output.Items = viewList;
+            output.HasDuplicates = await hasDuplicate;
 
             return output;
         }
@@ -284,7 +301,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             if (type == DeleteEnum.Delete)
             {
-                _unitOfWork.Delete(entity, currentUser);
+                _unitOfWork.Delete(entity);
             }
             else
             {

@@ -5,7 +5,12 @@
         @Model.Status
     </status>
     <div class="widget">
-        <widget-header title="@Model.PageTitle" />
+        <widget-header title="@Model.PageTitle">
+            @if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
+            {
+                <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
+            }
+        </widget-header>
         <section class="container-fluid">
             <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
                 <form method="post" class="search">
@@ -70,7 +75,7 @@
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    @*<a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>*@
+                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
                                     <a asp-controller="Remove" asp-action="CustomerAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>

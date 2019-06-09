@@ -12,7 +12,39 @@
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewCustomer.Id" />
         <section class="container-fluid">
-            @*<vc:person-creator model="@personCreator" />*@
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-lg">
+                        <div class="input-wrapper">
+
+                            <label class="control-label" asp-for="NewCustomer.Name"></label>
+                            <input asp-for="NewCustomer.Name" class="form-control" />
+                            <span class="text-danger" asp-validation-for="NewCustomer.Name"></span>
+                        </div>
+                    </div>
+                    <div class="col-lg">
+                        <div class="input-wrapper">
+                            <label class="control-label" asp-for="NewCustomer.Mobile"></label>
+                            <input asp-for="NewCustomer.Mobile" class="form-control" />
+                            <span class="text-danger" asp-validation-for="NewCustomer.Mobile"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center align-items-center">
+                    <div class="col-12 col-lg">
+                        <div class="input-wrapper">
+                            <label class="control-label" asp-for="NewCustomer.Phone"></label>
+                            <input asp-for="NewCustomer.Phone" class="form-control" />
+                            <span class="text-danger" asp-validation-for="NewCustomer.Phone"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg">
+                        <div class="input-wrapper">
+                            <label class="control-label" asp-for="NewCustomer.Address"></label>
+                            <input asp-for="NewCustomer.Address" class="form-control" />
+                            <span class="text-danger" asp-validation-for="NewCustomer.Address"></span>
+                        </div>
+                    </div>
+                </div>
         </section>
         <footer>
             <submit full-width="true" />

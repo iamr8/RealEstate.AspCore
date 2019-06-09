@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -386,7 +387,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FeatureViewModel>()).ConfigureAwait(false);
+                item => item.Map<FeatureViewModel>(), Task.FromResult(false));
 
             return result;
         }
@@ -407,7 +408,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FacilityViewModel>()).ConfigureAwait(false);
+                item => item.Map<FacilityViewModel>(), Task.FromResult(false));
 
             return result;
         }
@@ -431,22 +432,22 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<FacilityViewModel>> FacilityListAsync()
         {
-            var query = _facilities as IQueryable<Facility>;
+            var query = _facilities.AsQueryable();
             query = query.WhereNotDeleted();
 
-            var facilities = await query.ToListAsync().ConfigureAwait(false);
+            var facilities = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             return facilities.Map<Facility, FacilityViewModel>();
         }
 
         public async Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] types)
         {
-            var query = _features as IQueryable<Feature>;
+            var query = _features.AsQueryable();
             query = query.WhereNotDeleted();
 
             if (types?.Any() == true)
                 query = query.Where(x => types.Contains(x.Type));
 
-            var features = await query.ToListAsync().ConfigureAwait(false);
+            var features = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             return features.Map<Feature, FeatureViewModel>();
         }
 
@@ -472,7 +473,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CategoryViewModel>()).ConfigureAwait(false);
+                item => item.Map<CategoryViewModel>(), Task.FromResult(false));
 
             return result;
         }
@@ -512,7 +513,7 @@ namespace RealEstate.Services.ServiceLayer
                 }
             }
 
-            var categories = await query.ToListAsync().ConfigureAwait(false);
+            var categories = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             return categories.Map<Category, CategoryViewModel>();
         }
     }

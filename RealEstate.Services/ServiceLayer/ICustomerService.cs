@@ -12,7 +12,6 @@ using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -41,7 +40,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<Ownership>> OwnershipAddAsync(Ownership model, bool save);
 
-        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel);
+        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool cleanDuplicates = false);
 
         Task<MethodStatus<Ownership>> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
@@ -431,37 +430,94 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.UserId == currentUser.Id)
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
-            var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer)).ConfigureAwait(false);
+            var result = await _baseService.PaginateAsync(query, searchModel, item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer),
+                Task.FromResult(false));
 
             return result;
         }
 
-        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
+        private async Task<bool> CheckDuplicatesAsync()
         {
+            var groups = await _customers.IgnoreQueryFilters()
+                .GroupBy(x => new
+                {
+                    x.MobileNumber
+                }).AnyAsync(x => x.Count() > 1);
+            return groups;
+        }
+
+        private async Task CleanDuplicatesAsync()
+        {
+            var groups = await _customers.IgnoreQueryFilters()
+                .GroupBy(x => new
+                {
+                    x.MobileNumber
+                }).Where(x => x.Count() > 1).ToListAsync();
+            if (groups?.Any() != true)
+                return;
+
+            foreach (var groupedCustomer in groups)
+            {
+                var cnt = groupedCustomer.Count();
+                var customerBest = groupedCustomer.Any(x => x.Name != "مالک")
+                    ? groupedCustomer.FirstOrDefault(x => x.Name != "مالک")
+                    : groupedCustomer.FirstOrDefault();
+                if (customerBest == null)
+                    continue;
+
+                var customers = groupedCustomer.Except(new[]
+                {
+                    customerBest
+                }).ToList();
+                var customerId = customerBest.Id;
+                foreach (var customer in customers)
+                {
+                    var ownerships = customer.Ownerships;
+                    if (ownerships?.Any() == true)
+                    {
+                        foreach (var ownership in ownerships)
+                        {
+                            var ownershipInDb = await _ownerships.FirstOrDefaultAsync(x => x.Id == ownership.Id);
+                            await _baseService.UpdateAsync(ownershipInDb,
+                                currentUser =>
+                                {
+                                    ownershipInDb.CustomerId = customerId;
+                                }, null, false, StatusEnum.OwnershipIsNull);
+                        }
+                    }
+
+                    var customerInDb = await _customers.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == customer.Id);
+                    if (customerInDb == null)
+                        continue;
+
+                    await _baseService.RemoveAsync(customerInDb, null, DeleteEnum.Delete, false);
+                }
+            }
+
+            await _baseService.SaveChangesAsync();
+        }
+
+        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool cleanDuplicates = false)
+        {
+            if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
+                await CleanDuplicatesAsync();
+
             var query = _baseService.CheckDeletedItemsPrevillege(_customers, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<CustomerViewModel>();
 
-            query = query.AsNoTracking();
-            var cacheKey = new StringBuilder();
-
-            //query = query.WhereItIsPublic();
             if (searchModel != null)
             {
                 if (!string.IsNullOrEmpty(searchModel.Id))
-                {
                     query = query.Where(x => x.Id == searchModel.Id);
-                    cacheKey.AppendKey(searchModel, x => x.Id);
-                }
 
                 if (!string.IsNullOrEmpty(searchModel.Address))
                     query = query.Where(x => EF.Functions.Like(x.Address, searchModel.Address.Like()));
 
-                if (!string.IsNullOrEmpty(searchModel.Address))
+                if (!string.IsNullOrEmpty(searchModel.Mobile))
                     query = query.Where(x => EF.Functions.Like(x.MobileNumber, searchModel.Mobile.Like()));
 
-                if (!string.IsNullOrEmpty(searchModel.Address))
+                if (!string.IsNullOrEmpty(searchModel.Name))
                     query = query.Where(x => EF.Functions.Like(x.Name, searchModel.Name.Like()));
 
                 if (!string.IsNullOrEmpty(searchModel.Phone))
@@ -471,7 +527,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CustomerViewModel>(), currentUser).ConfigureAwait(false);
+                item => item.Map<CustomerViewModel>(), CheckDuplicatesAsync(), currentUser);
 
             return result;
         }

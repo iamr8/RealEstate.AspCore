@@ -85,6 +85,7 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<PropertyFeature> _propertyFeatures;
         private readonly DbSet<PropertyFacility> _propertyFacilities;
         private readonly DbSet<Facility> _facilities;
+        private readonly DbSet<PropertyOwnership> _propertyOwnerships;
 
         public ItemService(
             IBaseService baseService,
@@ -102,6 +103,7 @@ namespace RealEstate.Services.ServiceLayer
             _propertyService = propertyService;
             //            _mapper = mapper;
             _itemRequests = _unitOfWork.Set<Deal>();
+            _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
             _applicants = _unitOfWork.Set<Applicant>();
             _properties = _unitOfWork.Set<Property>();
             _items = _unitOfWork.Set<Item>();
@@ -140,7 +142,7 @@ namespace RealEstate.Services.ServiceLayer
                     Pictures = x.SelectMany(item => item.Property.Pictures)
                 });
 
-            var categories = await query.ToListAsync().ConfigureAwait(false);
+            var categories = await query.ToListAsync();
             if (categories?.Any() != true)
                 return default;
 
@@ -159,11 +161,11 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(itemId))
                 return StatusEnum.IdIsNull;
 
-            var item = await _items.FirstOrDefaultAsync(x => x.Id == itemId).ConfigureAwait(false);
+            var item = await _items.FirstOrDefaultAsync(x => x.Id == itemId);
             if (item == null)
                 return StatusEnum.ItemIsNull;
 
-            var (requestStatus, newState) = await RequestAddStateAsync(item.Id, DealStatusEnum.Rejected).ConfigureAwait(false);
+            var (requestStatus, newState) = await RequestAddStateAsync(item.Id, DealStatusEnum.Rejected);
             return requestStatus;
         }
 
@@ -176,7 +178,7 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return new MethodStatus<DealRequest>(StatusEnum.UserIsNull, null);
 
-            var lastRequest = await _dealRequests.OrderDescendingByCreationDateTime().Where(x => x.ItemId == itemId).FirstOrDefaultAsync().ConfigureAwait(false);
+            var lastRequest = await _dealRequests.OrderDescendingByCreationDateTime().Where(x => x.ItemId == itemId).FirstOrDefaultAsync();
             if (lastRequest?.Status == newState)
                 return new MethodStatus<DealRequest>(StatusEnum.AlreadyExists, null);
 
@@ -184,13 +186,13 @@ namespace RealEstate.Services.ServiceLayer
             {
                 ItemId = itemId,
                 Status = newState
-            }, null, true).ConfigureAwait(false);
+            }, null, true);
             return addState;
         }
 
         public async Task<StatusEnum> SyncApplicantsAsync(Item item, DealRequestInputViewModel model, bool save)
         {
-            var allowedCustomers = await _customerService.ListJsonAsync(item.Id).ConfigureAwait(false);
+            var allowedCustomers = await _customerService.ListJsonAsync(item.Id);
             if (allowedCustomers?.Any() != true)
                 return StatusEnum.CustomerIsNull;
 
@@ -206,29 +208,29 @@ namespace RealEstate.Services.ServiceLayer
                     await _baseService.UpdateAsync(redundant,
                         _ => redundant.ItemId = null,
                         null,
-                        false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                        false, StatusEnum.ApplicantIsNull);
                 }
             }
 
             if (model.Customers?.Any() != true)
-                return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+                return await _baseService.SaveChangesAsync();
 
             foreach (var customer in model.Customers)
             {
                 var source = item.Applicants.FirstOrDefault(ent => ent.CustomerId == customer.CustomerId);
                 if (source == null)
                 {
-                    var appli = await _applicants.FirstOrDefaultAsync(x => x.CustomerId == customer.CustomerId && x.UserId == currentUser.Id).ConfigureAwait(false);
+                    var appli = await _applicants.FirstOrDefaultAsync(x => x.CustomerId == customer.CustomerId && x.UserId == currentUser.Id);
                     if (appli != null)
                     {
                         await _baseService.UpdateAsync(appli,
                             _ => appli.ItemId = item.Id,
                             null,
-                            false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                            false, StatusEnum.ApplicantIsNull);
                     }
                     else
                     {
-                        var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customer.CustomerId).ConfigureAwait(false);
+                        var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customer.CustomerId);
                         if (cnt == null)
                             continue;
 
@@ -240,18 +242,18 @@ namespace RealEstate.Services.ServiceLayer
                             ItemId = item.Id
                         },
                             null,
-                            false).ConfigureAwait(false);
+                            false);
                     }
                 }
                 else
                 {
-                    var applicant = await _customerService.ApplicantEntityAsync(customer.ApplicantId).ConfigureAwait(false);
+                    var applicant = await _customerService.ApplicantEntityAsync(customer.ApplicantId);
                     await _baseService.UpdateAsync(applicant,
-                        _ => applicant.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull).ConfigureAwait(false);
+                        _ => applicant.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull);
                 }
             }
 
-            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync();
         }
 
         public async Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory)
@@ -270,7 +272,7 @@ namespace RealEstate.Services.ServiceLayer
                 .WhereNotDeleted()
                 .Where(x => x.Username.Equals(user, StringComparison.CurrentCultureIgnoreCase) && x.Password == encryptedPass)
                 .FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+                ;
             if (userDb == null)
             {
                 return new SyncJsonViewModel
@@ -301,7 +303,7 @@ namespace RealEstate.Services.ServiceLayer
             if (!string.IsNullOrEmpty(propCategory))
                 query = query.Where(x => x.Property.Category.Name == propCategory);
 
-            var items = await query.ToListAsync().ConfigureAwait(false);
+            var items = await query.ToListAsync();
             if (items?.Any() != true)
             {
                 return new SyncJsonViewModel
@@ -366,7 +368,7 @@ namespace RealEstate.Services.ServiceLayer
                               && item.Property.Category.Name == category
                         select item;
 
-            var models = await query.Select(x => x.Property).ToListAsync().ConfigureAwait(false);
+            var models = await query.Select(x => x.Property).ToListAsync();
             if (models?.Any() != true)
                 return default;
 
@@ -409,49 +411,119 @@ namespace RealEstate.Services.ServiceLayer
                               && item.Property.Category.Name == model.Category
                         select item;
 
-            var models = await query.Select(x => x.Property).FirstOrDefaultAsync().ConfigureAwait(false);
+            var models = await query.Select(x => x.Property).FirstOrDefaultAsync();
             if (models != null)
                 return true;
 
             return false;
         }
 
-        private async Task CleanDuplicatesAsync()
+        private async Task<bool> CheckDuplicatesAsync()
         {
             var groups = await _items.IgnoreQueryFilters()
-                .Include(x => x.Property.PropertyFeatures)
-                .Include(x => x.Property.PropertyFacilities)
-                .Include(x => x.Property.PropertyOwnerships)
-                .Include(x => x.ItemFeatures)
+                .Include(x => x.Property)
                 .GroupBy(x => new
                 {
                     x.CategoryId,
                     x.Property
-                }).Where(x => x.Count() > 1).ToListAsync().ConfigureAwait(false);
+                }).Where(x => x.Count() > 1).AnyAsync();
+            return groups;
+        }
+
+        private async Task CleanDuplicatesAsync()
+        {
+            var groups = await _items.IgnoreQueryFilters()
+                //                .AsNoTracking()
+                .GroupBy(x => new
+                {
+                    x.CategoryId,
+                    x.PropertyId
+                }).Where(x => x.Count() > 1).ToListAsync();
             if (groups?.Any() != true)
                 return;
 
             foreach (var groupedItem in groups)
             {
                 foreach (var item in groupedItem.Skip(1))
-                    await _baseService.RemoveAsync(item, null, DeleteEnum.Delete, false).ConfigureAwait(false);
+                {
+                    var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
+                    if (itemInDb == null)
+                        continue;
+
+                    var itemFeatures = itemInDb.ItemFeatures;
+                    if (itemFeatures?.Any() == true)
+                    {
+                        foreach (var itemFeature in itemFeatures)
+                        {
+                            var itemFeatureInDb = await _itemFeatures.FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
+                            await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
+                        }
+                    }
+
+                    var propertyInDb = itemInDb.Property;
+                    if (propertyInDb == null)
+                        continue;
+
+                    var propertyOwnerships = propertyInDb.PropertyOwnerships;
+                    if (propertyOwnerships?.Any() == true)
+                    {
+                        foreach (var propertyOwnership in propertyOwnerships)
+                        {
+                            var ownerships = propertyOwnership.Ownerships;
+                            if (ownerships?.Any() == true)
+                                foreach (var ownership in ownerships)
+                                {
+                                    var ownershipInDb = await _ownerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == ownership.Id);
+                                    await _baseService.RemoveAsync(ownershipInDb, null, DeleteEnum.Delete, false);
+                                }
+
+                            var propertyOwnershipInDb = await _propertyOwnerships.FirstOrDefaultAsync(x => x.Id == propertyOwnership.Id);
+                            await _baseService.RemoveAsync(propertyOwnershipInDb, null, DeleteEnum.Delete, false);
+                        }
+                    }
+
+                    var propertyFeatures = propertyInDb.PropertyFeatures;
+                    if (propertyFeatures?.Any() == true)
+                        foreach (var propertyFeature in propertyFeatures)
+                        {
+                            var propertyFeatureInDb = await _propertyFeatures.FirstOrDefaultAsync(x => x.Id == propertyFeature.Id);
+                            await _baseService.RemoveAsync(propertyFeatureInDb, null, DeleteEnum.Delete, false);
+                        }
+
+                    var propertyFacilities = propertyInDb.PropertyFacilities;
+                    if (propertyFacilities?.Any() == true)
+                        foreach (var propertyFacility in propertyFacilities)
+                        {
+                            var propertyFacilityInDb = await _propertyFacilities.FirstOrDefaultAsync(x => x.Id == propertyFacility.Id);
+                            await _baseService.RemoveAsync(propertyFacilityInDb, null, DeleteEnum.Delete, false);
+                        }
+
+                    var pictures = propertyInDb.Pictures;
+                    if (pictures?.Any() == true)
+                        foreach (var picture in pictures)
+                        {
+                            var pictureInDb = await _pictures.FirstOrDefaultAsync(x => x.Id == picture.Id);
+                            await _baseService.RemoveAsync(pictureInDb, null, DeleteEnum.Delete, false);
+                        }
+
+                    await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
+                    await _baseService.RemoveAsync(propertyInDb, null, DeleteEnum.Delete, false);
+                }
             }
 
-            await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            await _baseService.SaveChangesAsync();
         }
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false)
         {
             if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
-                await CleanDuplicatesAsync().ConfigureAwait(false);
+                await CleanDuplicatesAsync();
 
             var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
 
-            query = query
-                .AsNoTracking()
-                .Include(x => x.Property)
+            query = query.Include(x => x.Property)
             .ThenInclude(x => x.Category);
             query = query.Include(x => x.Property)
             .ThenInclude(x => x.District);
@@ -488,58 +560,58 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     query = query.Where(x =>
                         x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
-                    cacheKey.AppendKey(searchModel, x => x.HasFeature);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                 {
-                    query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
-                    cacheKey.AppendKey(searchModel, x => x.Owner);
+                    //                    query = query.Where(x =>
+                    //                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
+
+                    var customer = await _customers.Where(x => x.Name == searchModel.Owner).Select(x => x.Id).FirstOrDefaultAsync();
+                    query = from item in query
+                            join propertyOwnership in _propertyOwnerships on item.Property.Id equals propertyOwnership.PropertyId into propertyOwnerships
+                            let lastPropOwnership = propertyOwnerships.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime)
+                                .FirstOrDefault()
+                            join ownership in _ownerships on lastPropOwnership.Id equals ownership.PropertyOwnershipId into ownerships
+                            where ownerships.Any(x => x.CustomerId == customer)
+                            select item;
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
                 {
                     query = query.Where(x =>
                         x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
-                    cacheKey.AppendKey(searchModel, x => x.OwnerMobile);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
                 {
                     query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
-                    cacheKey.AppendKey(searchModel, x => x.Street);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.ItemId))
                 {
                     query = query.Where(x => x.Id == searchModel.ItemId);
-                    cacheKey.AppendKey(searchModel, x => x.ItemId);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.ItemCategory))
                 {
                     query = query.Where(x => x.Category.Name == searchModel.ItemCategory);
-                    cacheKey.AppendKey(searchModel, x => x.ItemCategory);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.PropertyCategory))
                 {
                     query = query.Where(x => x.Property.Category.Name == searchModel.PropertyCategory);
-                    cacheKey.AppendKey(searchModel, x => x.PropertyCategory);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.CustomerId))
                 {
                     query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
                                              || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
-                    cacheKey.AppendKey(searchModel, x => x.CustomerId);
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.District))
                 {
                     query = query.Where(x => x.Property.District.Name == searchModel.District);
-                    cacheKey.AppendKey(searchModel, x => x.District);
                 }
 
                 if (searchModel.Facilities?.Any(x => !string.IsNullOrEmpty(x.Name)) == true)
@@ -548,7 +620,7 @@ namespace RealEstate.Services.ServiceLayer
                     var predicateFacilities = PredicateBuilder.New<Facility>(true);
                     foreach (var facilityName in validFacilities)
                         predicateFacilities = predicateFacilities.Or(facility => facility.Name == facilityName);
-                    var facilities = await _facilities.Where(predicateFacilities).Select(x => x.Id).ToListAsync().ConfigureAwait(false);
+                    var facilities = await _facilities.Where(predicateFacilities).Select(x => x.Id).ToListAsync();
 
                     var tempQuery = query
                         .GroupJoin(_propertyFacilities, item => item.PropertyId, propertyFacility => propertyFacility.PropertyId,
@@ -563,7 +635,6 @@ namespace RealEstate.Services.ServiceLayer
                         tempQuery = tempQuery.Where(x => x.PropertyFacilities.Any(c => c.FacilityId == facility));
 
                     query = tempQuery.Select(x => x.Item);
-                    cacheKey.AppendKey(searchModel, x => x.FacilitiesJson);
                 }
 
                 if (searchModel.Features?.Any(x => !string.IsNullOrEmpty(x.Id)) == true)
@@ -571,7 +642,7 @@ namespace RealEstate.Services.ServiceLayer
                     foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
                     {
                         var id = feature.Id;
-                        var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync().ConfigureAwait(false);
+                        var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync();
                         var from = feature.From;
                         var to = feature.To;
 
@@ -653,7 +724,6 @@ namespace RealEstate.Services.ServiceLayer
                             }
                         }
                     }
-                    cacheKey.AppendKey(searchModel, x => x.FeaturesJson);
                 }
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
@@ -683,7 +753,7 @@ namespace RealEstate.Services.ServiceLayer
                     act.IncludeAs<Applicant, ApplicantViewModel>(item.Applicants, ent => ent.IncludeAs<Customer, CustomerViewModel>(ent.Entity?.Customer));
                     act.IncludeAs<DealRequest, DealRequestViewModel>(item.DealRequests);
                     act.IncludeAs<ItemFeature, ItemFeatureViewModel>(item.ItemFeatures, ent => ent.IncludeAs<Feature, FeatureViewModel>(ent.Entity?.Feature));
-                }), currentUser).ConfigureAwait(false);
+                }), CheckDuplicatesAsync(), currentUser);
             return result;
         }
 
@@ -696,7 +766,7 @@ namespace RealEstate.Services.ServiceLayer
                         select item;
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<ItemViewModel>()).ConfigureAwait(false);
+                item => item.Map<ItemViewModel>(), Task.FromResult(false));
             return result;
         }
 
@@ -708,23 +778,23 @@ namespace RealEstate.Services.ServiceLayer
             if (model?.Customers?.Any() != true)
                 return new MethodStatus<Item>(StatusEnum.ApplicantsEmpty, null);
 
-            var item = await _items.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var item = await _items.FirstOrDefaultAsync(x => x.Id == model.Id);
             if (item == null)
                 return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
-            var (requestAddStatus, newState) = await RequestAddStateAsync(item.Id, DealStatusEnum.Requested).ConfigureAwait(false);
+            var (requestAddStatus, newState) = await RequestAddStateAsync(item.Id, DealStatusEnum.Requested);
             if (requestAddStatus != StatusEnum.Success)
                 return new MethodStatus<Item>(StatusEnum.DealRequestIsNull, null);
 
-            await SyncApplicantsAsync(item, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(item, save).ConfigureAwait(false);
+            await SyncApplicantsAsync(item, model, false);
+            return await _baseService.SaveChangesAsync(item, save);
         }
 
         public async Task<ItemComplexInputViewModel> ItemComplexInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = entity?.Map<ItemViewModel>(ent =>
             {
                 ent.IncludeAs<ItemFeature, ItemFeatureViewModel>(entity.ItemFeatures, ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
@@ -734,7 +804,7 @@ namespace RealEstate.Services.ServiceLayer
             if (viewModel == null)
                 return default;
 
-            var propertyInput = await _propertyService.PropertyComplexInputAsync(entity.PropertyId).ConfigureAwait(false);
+            var propertyInput = await _propertyService.PropertyComplexInputAsync(entity.PropertyId);
             if (propertyInput == null)
                 return default;
 
@@ -758,7 +828,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = entity?.Map<ItemViewModel>();
 
             if (viewModel == null)
@@ -810,7 +880,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var que = query.Select(editedItem => editedItem.processedItem.item);
-            var entity = await que.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await que.FirstOrDefaultAsync(x => x.Id == id);
             if (entity == null)
                 return default;
 
@@ -823,7 +893,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
             return entity;
         }
 
@@ -832,13 +902,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -868,24 +938,24 @@ namespace RealEstate.Services.ServiceLayer
             if (model.Property == null)
                 return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
 
-            var (propertyUpdateStatus, updatedProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true).ConfigureAwait(false);
+            var (propertyUpdateStatus, updatedProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true);
             if (propertyUpdateStatus != StatusEnum.Success && propertyUpdateStatus != StatusEnum.PropertyIsAlreadyExists)
                 return new MethodStatus<Item>(propertyUpdateStatus, null);
 
-            var entity = await ItemEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await ItemEntityAsync(model.Id);
             var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
                     entity.CategoryId = model.CategoryId;
                     entity.Description = model.Description;
                     entity.PropertyId = updatedProperty.Id;
-                }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+                }, null, false, StatusEnum.PropertyIsNull);
 
             if (updatedItem == null)
                 return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
-            await ItemComplexSyncAsync(updatedItem, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(updatedItem, save).ConfigureAwait(false);
+            await ItemComplexSyncAsync(updatedItem, model, false);
+            return await _baseService.SaveChangesAsync(updatedItem, save);
         }
 
         private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemInputViewModel model, bool save)
@@ -896,20 +966,20 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Item>(StatusEnum.IdIsNull, null);
 
-            var entity = await ItemEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await ItemEntityAsync(model.Id);
             var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
                     entity.CategoryId = model.CategoryId;
                     entity.Description = model.Description;
                     entity.PropertyId = model.PropertyId;
-                }, null, false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+                }, null, false, StatusEnum.PropertyIsNull);
 
             if (updatedItem == null)
                 return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
-            await ItemSyncAsync(updatedItem, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(updatedItem, save).ConfigureAwait(false);
+            await ItemSyncAsync(updatedItem, model, false);
+            return await _baseService.SaveChangesAsync(updatedItem, save);
         }
 
         public async Task<MethodStatus<Item>> ItemAddAsync(ItemInputViewModel model, bool save)
@@ -922,10 +992,10 @@ namespace RealEstate.Services.ServiceLayer
                 CategoryId = model.CategoryId,
                 Description = model.Description,
                 PropertyId = model.PropertyId,
-            }, null, false).ConfigureAwait(false);
+            }, null, false);
 
-            await ItemSyncAsync(newItem, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(newItem, save).ConfigureAwait(false);
+            await ItemSyncAsync(newItem, model, false);
+            return await _baseService.SaveChangesAsync(newItem, save);
         }
 
         public async Task<MethodStatus<Item>> ItemComplexAddAsync(ItemComplexInputViewModel model, bool save)
@@ -936,7 +1006,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.Property == null)
                 return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
 
-            var (propertyAddStatus, newProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true).ConfigureAwait(false);
+            var (propertyAddStatus, newProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true);
             if (propertyAddStatus != StatusEnum.Success)
                 return new MethodStatus<Item>(propertyAddStatus, null);
 
@@ -945,12 +1015,12 @@ namespace RealEstate.Services.ServiceLayer
                 CategoryId = model.CategoryId,
                 Description = model.Description,
                 PropertyId = newProperty.Id,
-            }, null, false).ConfigureAwait(false);
+            }, null, false);
             if (itemAddStatus != StatusEnum.Success)
                 return new MethodStatus<Item>(itemAddStatus, null);
 
-            await ItemComplexSyncAsync(newItem, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(newItem, save).ConfigureAwait(false);
+            await ItemComplexSyncAsync(newItem, model, false);
+            return await _baseService.SaveChangesAsync(newItem, save);
         }
 
         private async Task<StatusEnum> ItemComplexSyncAsync(Item newItem, ItemComplexInputViewModel model, bool save)
@@ -965,7 +1035,7 @@ namespace RealEstate.Services.ServiceLayer
                     ItemId = newItem.Id
                 }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
                 null,
-                save).ConfigureAwait(false);
+                save);
             return syncFeatures;
         }
 
@@ -981,7 +1051,7 @@ namespace RealEstate.Services.ServiceLayer
                     ItemId = newItem.Id
                 }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
                 null,
-                save).ConfigureAwait(false);
+                save);
             return syncFeatures;
         }
     }

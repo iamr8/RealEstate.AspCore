@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -52,10 +53,10 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<DistrictViewModel>> DistrictListAsync()
         {
-            var query = _districts as IQueryable<District>;
+            var query = _districts.AsQueryable();
             query = query.WhereNotDeleted();
 
-            var districts = await query.ToListAsync().ConfigureAwait(false);
+            var districts = await query.Cacheable().ToListAsync().ConfigureAwait(false);
             return districts.Map<District, DistrictViewModel>();
         }
 
@@ -76,8 +77,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DistrictViewModel>(),
-                currentUser).ConfigureAwait(false);
+                item => item.Map<DistrictViewModel>(), Task.FromResult(false), currentUser);
 
             return result;
         }

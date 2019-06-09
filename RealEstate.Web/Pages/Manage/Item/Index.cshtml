@@ -106,9 +106,9 @@
 
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            @if (User.IsInRole(Role.SuperAdmin.ToString()))
+            @if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
             {
-                <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">حذف موارد مشابه</a>
+                <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
             }
             <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
@@ -236,6 +236,29 @@
                                         <i class="fa fa-check-circle verified"></i>
                                     }
                                 </span>
+                                @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer[SharedResource.Owner] :
+                                        <ul class="info-breadcrumb">
+                                            @foreach (var ownership in item.Property?.CurrentPropertyOwnership?.Ownerships)
+                                            {
+                                                <text>
+                                                    <li>
+                                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-ownerName="@ownership.Customer?.Name">
+                                                            @ownership.Customer?.Name
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="tel:@ownership.Customer?.Mobile">
+                                                            @ownership.Customer?.Mobile
+                                                        </a>
+                                                    </li>
+                                                </text>
+                                            }
+                                        </ul>
+                                    </span>
+                                }
                                 @if (item.Property?.PropertyFacilities?.Any() == true)
                                 {
                                     <span>
@@ -259,7 +282,7 @@
                                             @foreach (var feature in item.Property?.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
                                             }
                                         </ul>
@@ -274,7 +297,7 @@
                                             @foreach (var feature in item.ItemFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value)</li>
+                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
                                             }
                                         </ul>
