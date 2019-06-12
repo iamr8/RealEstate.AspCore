@@ -86,38 +86,39 @@
                         </div>
                     </div>
                     <div class="row justify-content-center align-items-center">
-                        <div class="col-xs-12 col-lg">
+                        <input asp-for="NewItem.Property.Alley" type="hidden"/>
+                        @*<div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Alley"></label>
-                                <input asp-for="NewItem.Property.Alley" class="form-control" />
+                                <input asp-for="NewItem.Property.Alley" class="form-control"/>
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Alley"></span>
                             </div>
-                        </div>
+                        </div>*@
                         <div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Number"></label>
-                                <input asp-for="NewItem.Property.Number" class="form-control" />
+                                <input asp-for="NewItem.Property.Number" class="form-control"/>
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Number"></span>
                             </div>
                         </div>
                         <div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.BuildingName"></label>
-                                <input asp-for="NewItem.Property.BuildingName" class="form-control" />
+                                <input asp-for="NewItem.Property.BuildingName" class="form-control"/>
                                 <span class="text-danger" asp-validation-for="NewItem.Property.BuildingName"></span>
                             </div>
                         </div>
                         <div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Floor"></label>
-                                <input asp-for="NewItem.Property.Floor" class="form-control" />
+                                <input asp-for="NewItem.Property.Floor" class="form-control"/>
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
                             </div>
                         </div>
                         <div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Flat"></label>
-                                <input asp-for="NewItem.Property.Flat" class="form-control" />
+                                <input asp-for="NewItem.Property.Flat" class="form-control"/>
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
                             </div>
                         </div>
@@ -187,7 +188,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row justify-content-center align-items-center">
+                    <input asp-for="NewItem.Property.Ownership.Phone" type="hidden" />
+                    <input asp-for="NewItem.Property.Ownership.Address" type="hidden" />
+
+                    @*<div class="row justify-content-center align-items-center">
                         <div class="col-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Ownership.Phone"></label>
@@ -202,7 +206,7 @@
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Address"></span>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                 </div>
             </div>
             <hr subject="@SharedLocalizer[SharedResource.Item]" class="mt-4" />

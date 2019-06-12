@@ -3,6 +3,7 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using System;
+using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {

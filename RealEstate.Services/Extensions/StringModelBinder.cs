@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Threading.Tasks;
+using RealEstate.Base;
 
 namespace RealEstate.Services.Extensions
 {

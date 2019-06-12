@@ -84,7 +84,7 @@ namespace RealEstate.Web
                 options.ConfigureWarnings(config =>
                 {
                     config.Log(CoreEventId.IncludeIgnoredWarning);
-//                    config.Throw(CoreEventId.IncludeIgnoredWarning);
+                    //                    config.Throw(CoreEventId.IncludeIgnoredWarning);
                     config.Log(CoreEventId.NavigationIncluded);
                     config.Log(CoreEventId.NavigationLazyLoading);
                     config.Log(CoreEventId.DetachedLazyLoadingWarning);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using RealEstate.Services.Extensions;
+using RealEstate.Base.Enums;
+using System.Linq;
 
 namespace RealEstate.Services.Database.Base
 {
@@ -13,17 +14,11 @@ namespace RealEstate.Services.Database.Base
             builder.ToTable(name);
 
             builder.HasKey(x => x.Id);
-            //                .ForSqlServerIsClustered();
-
-            //            builder.ForSqlServerIsMemoryOptimized();
-
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd();
 
-            //            builder.Property(e => e.DateTime)
-            //                .HasDefaultValueSql("getdate()");
-
-            builder.WhereNotDeleted();
+            builder.HasQueryFilter(entity => string.IsNullOrEmpty(entity.Audit)
+                                                      || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RealEstate.Services.Extensions
+namespace RealEstate.Base
 {
     public static class NumberProcessorExtensions
     {

@@ -294,8 +294,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var currentUser = _baseService.CurrentUser(claims);
 
-            var models = _users.WhereNotDeleted();
-            var foundUser = await (from user in models
+            var foundUser = await (from user in _users
                                    where user.Id == currentUser.Id
                                    where user.Username == currentUser.Username
                                    where user.Password == currentUser.EncryptedPassword

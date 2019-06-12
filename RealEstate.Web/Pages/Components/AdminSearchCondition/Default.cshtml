@@ -10,39 +10,22 @@
 }
 <hr subject="@SharedLocalizer[SharedResource.Management]" />
 <div class="row justify-content-center align-items-center">
-    <div class="col-xs-12 col-md">
+    <div class="col-12 col-md">
         <div class="input-wrapper">
             <label class="control-label" asp-for="@Model.SearchInput.CreationDateFrom"></label>
             <input asp-for="@Model.SearchInput.CreationDateFrom" class="form-control" placeholder="@DateTime.Today.Date.GregorianToPersian(true)" />
         </div>
     </div>
-    <div class="col-xs-12 col-md">
+    <div class="col-12 col-md">
         <div class="input-wrapper">
             <label class="control-label" asp-for="@Model.SearchInput.CreationDateTo"></label>
             <input asp-for="@Model.SearchInput.CreationDateTo" class="form-control" placeholder="@DateTime.Today.Date.GregorianToPersian(true)" />
         </div>
     </div>
-</div>
-<div class="row justify-content-center align-items-center">
-    @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
-    {
-        <div class="col-xs-12 col-md">
-            <div class="input-wrapper">
-                <label class="control-label" asp-for="@Model.SearchInput.CreatorId"></label>
-                <select asp-items="users" asp-for="@Model.SearchInput.CreatorId" class="custom-select"></select>
-            </div>
+    <div class="col-12 col-md">
+        <div class="input-wrapper">
+            <label class="control-label" asp-for="@Model.SearchInput.CreatorId"></label>
+            <select asp-items="users" asp-for="@Model.SearchInput.CreatorId" class="custom-select"></select>
         </div>
-        <div class="col-xs-12 col-md">
-            <div class="input-wrapper text-left" dir="ltr">
-                <div class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IncludeDeletedItems">
-                    <label class="custom-control-label" asp-for="@Model.SearchInput.IncludeDeletedItems"></label>
-                </div>
-            </div>
-        </div>
-    }
-
-    <div class="col-12">
-        <input type="submit" value="@SharedLocalizer[SharedResource.Search]" class="btn btn-primary btn-block" />
     </div>
 </div>

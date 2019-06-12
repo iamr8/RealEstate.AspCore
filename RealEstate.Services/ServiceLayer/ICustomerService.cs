@@ -32,6 +32,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
+        Task CleanDuplicatesAsync();
+
         Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id);
 
         Task<MethodStatus<Customer>> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save);
@@ -446,7 +448,7 @@ namespace RealEstate.Services.ServiceLayer
             return groups;
         }
 
-        private async Task CleanDuplicatesAsync()
+        public async Task CleanDuplicatesAsync()
         {
             var groups = await _customers.IgnoreQueryFilters()
                 .GroupBy(x => new

@@ -331,6 +331,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to لغو.
+        /// </summary>
+        public static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to دسته بندیها.
         /// </summary>
         public static string Categories {
@@ -1132,6 +1141,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to از/برابر.
+        /// </summary>
+        public static string FromEqual {
+            get {
+                return ResourceManager.GetString("FromEqual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to از ساعت.
         /// </summary>
         public static string FromHour {
@@ -1155,6 +1173,15 @@ namespace RealEstate.Resources {
         public static string Gift {
             get {
                 return ResourceManager.GetString("Gift", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to بیشترین.
+        /// </summary>
+        public static string Greatest {
+            get {
+                return ResourceManager.GetString("Greatest", resourceCulture);
             }
         }
         
@@ -1357,6 +1384,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to کمترین.
+        /// </summary>
+        public static string Lowest {
+            get {
+                return ResourceManager.GetString("Lowest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مدیریت.
         /// </summary>
         public static string Management {
@@ -1506,6 +1542,15 @@ namespace RealEstate.Resources {
         public static string NewEmployee {
             get {
                 return ResourceManager.GetString("NewEmployee", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to جدیدترین.
+        /// </summary>
+        public static string Newest {
+            get {
+                return ResourceManager.GetString("Newest", resourceCulture);
             }
         }
         
@@ -1668,6 +1713,15 @@ namespace RealEstate.Resources {
         public static string ObliNone {
             get {
                 return ResourceManager.GetString("ObliNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to قدیمی ترین.
+        /// </summary>
+        public static string Oldest {
+            get {
+                return ResourceManager.GetString("Oldest", resourceCulture);
             }
         }
         
@@ -2140,6 +2194,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to فیلترهای جستجو.
+        /// </summary>
+        public static string SearchFilters {
+            get {
+                return ResourceManager.GetString("SearchFilters", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to جستجوی افراد.
         /// </summary>
         public static string SearchPerson {
@@ -2235,6 +2298,15 @@ namespace RealEstate.Resources {
         public static string Smses {
             get {
                 return ResourceManager.GetString("Smses", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to مرتب سازی بر اساس.
+        /// </summary>
+        public static string SortBy {
+            get {
+                return ResourceManager.GetString("SortBy", resourceCulture);
             }
         }
         

@@ -20,6 +20,37 @@ namespace RealEstate.Base
 
         public DayOfWeek DayOfWeek { get; }
 
+        public string DayOfWeekPersian
+        {
+            get
+            {
+                switch (DayOfWeek)
+                {
+                    case DayOfWeek.Friday:
+                        return "جمعه";
+
+                    case DayOfWeek.Monday:
+                        return "دوشنبه";
+
+                    case DayOfWeek.Sunday:
+                        return "یکشنبه";
+
+                    case DayOfWeek.Thursday:
+                        return "پنجشنبه";
+
+                    case DayOfWeek.Tuesday:
+                        return "سه شنبه";
+
+                    case DayOfWeek.Wednesday:
+                        return "چهارشنبه";
+
+                    case DayOfWeek.Saturday:
+                    default:
+                        return "شنبه";
+                }
+            }
+        }
+
         public PersianDateTime(DateTime dateTime)
         {
             var persianCalendar = new PersianCalendar();
@@ -30,9 +61,9 @@ namespace RealEstate.Base
             DayOfWeek = persianCalendar.GetDayOfWeek(dateTime);
             MonthDays = CountDayOfMonth(Month);
 
-            Hour = persianCalendar.GetHour(dateTime);
-            Minute = persianCalendar.GetMinute(dateTime);
-            Second = persianCalendar.GetSecond(dateTime);
+            Hour = dateTime.Hour;
+            Minute = dateTime.Minute;
+            Second = dateTime.Second;
         }
 
         private int CountDayOfMonth(int month)

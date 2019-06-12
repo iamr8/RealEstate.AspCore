@@ -488,7 +488,6 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<List<CategoryViewModel>> CategoryListAsync(CategoryTypeEnum? category, bool byUserPrevilege)
         {
             var query = _categories.AsQueryable();
-            query = query.WhereNotDeleted();
 
             if (category != null)
             {
@@ -513,7 +512,10 @@ namespace RealEstate.Services.ServiceLayer
                 }
             }
 
-            var categories = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var categories = await query
+                .Cacheable()
+                .ToListAsync()
+                .ConfigureAwait(false);
             return categories.Map<Category, CategoryViewModel>();
         }
     }

@@ -48,6 +48,8 @@ $(document).ready(function() {
       return false;
     }
   });
+
+  $('[data-toggle="tooltip"]').tooltip();
 });
 $(".navbar-toggler").click(function(e) {
   $(".backdrop").toggleClass("in");

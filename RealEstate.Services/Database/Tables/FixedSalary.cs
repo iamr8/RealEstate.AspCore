@@ -1,6 +1,7 @@
 ﻿using RealEstate.Services.Database.Base;
 using RealEstate.Services.Extensions;
 using System.ComponentModel.DataAnnotations;
+using RealEstate.Base;
 
 namespace RealEstate.Services.Database.Tables
 {

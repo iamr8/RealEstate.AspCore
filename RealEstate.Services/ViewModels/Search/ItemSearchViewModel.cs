@@ -47,6 +47,7 @@ namespace RealEstate.Services.ViewModels.Search
         public string CustomerId { get; set; }
 
         [HiddenInput]
+        [Display(ResourceType = typeof(SharedResource), Name = "Features")]
         [SearchParameter("features", typeof(ItemFeatureJsonValueViewModel))]
         public string FeaturesJson
         {
@@ -54,6 +55,7 @@ namespace RealEstate.Services.ViewModels.Search
             set => _featuresJson = value.JsonSetAccessor();
         }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Features")]
         public List<ItemFeatureJsonValueViewModel> Features
         {
             get => FeaturesJson.JsonGetAccessor<ItemFeatureJsonValueViewModel>().AddNoneToLast();
@@ -61,6 +63,7 @@ namespace RealEstate.Services.ViewModels.Search
         }
 
         [HiddenInput]
+        [Display(ResourceType = typeof(SharedResource), Name = "Facilities")]
         [SearchParameter("facilities", typeof(ItemFacilityJsonViewModel))]
         public string FacilitiesJson
         {
@@ -68,6 +71,7 @@ namespace RealEstate.Services.ViewModels.Search
             set => _facilitiesJson = value.JsonSetAccessor();
         }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Facilities")]
         public List<ItemFacilityJsonViewModel> Facilities
         {
             get => FacilitiesJson.JsonGetAccessor<ItemFacilityJsonViewModel>().AddNoneToLast();

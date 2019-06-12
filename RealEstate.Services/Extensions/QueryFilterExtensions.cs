@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Query;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
@@ -22,6 +22,14 @@ namespace RealEstate.Services.Extensions
             var source = entities.OrderBy(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
             return source;
         }
+
+        //public static int IsJson<TSource>(this string entity, Func<TSource, string> predicate)
+        //{
+        //    var source = entity.Where(s => Convert.ToInt32(IsJson(predicate.Invoke(s))) > 1);
+        //    return entity;
+        //}
+
+        public static string JsonValue(string expression, [NotParameterized] string path) => throw new NotSupportedException();
 
         public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities, Func<LogJsonEntity, bool> predicate) where TSource : BaseEntity
         {
@@ -115,13 +123,6 @@ namespace RealEstate.Services.Extensions
             var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
                                                   || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
             return result.ToList();
-        }
-
-        public static EntityTypeBuilder<TEntity> WhereNotDeleted<TEntity>(this EntityTypeBuilder<TEntity> entities) where TEntity : BaseEntity
-        {
-            var result = entities.HasQueryFilter(entity => string.IsNullOrEmpty(entity.Audit)
-                                                  || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
-            return result;
         }
 
         public static IQueryable<TEntity> WhereNotDeleted<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity

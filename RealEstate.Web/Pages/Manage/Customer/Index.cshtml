@@ -6,13 +6,13 @@
     </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            @if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
+            @*@if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
             {
                 <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
-            }
+            }*@
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
                 <form method="post" class="search">
                     <div class="row justify-content-center align-items-center">
                         <input asp-for="SearchInput.PageNo" />

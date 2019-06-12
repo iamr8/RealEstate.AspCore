@@ -1041,4 +1041,28 @@
   <data name="CleanDuplicateItems" xml:space="preserve">
     <value>حذف موارد مشابه</value>
   </data>
+  <data name="FromEqual" xml:space="preserve">
+    <value>از/برابر</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>لغو</value>
+  </data>
+  <data name="SearchFilters" xml:space="preserve">
+    <value>فیلترهای جستجو</value>
+  </data>
+  <data name="SortBy" xml:space="preserve">
+    <value>مرتب سازی بر اساس</value>
+  </data>
+  <data name="Greatest" xml:space="preserve">
+    <value>بیشترین</value>
+  </data>
+  <data name="Lowest" xml:space="preserve">
+    <value>کمترین</value>
+  </data>
+  <data name="Newest" xml:space="preserve">
+    <value>جدیدترین</value>
+  </data>
+  <data name="Oldest" xml:space="preserve">
+    <value>قدیمی ترین</value>
+  </data>
 </root>

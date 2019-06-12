@@ -133,17 +133,14 @@ namespace RealEstate.Services.ServiceLayer.Base
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
 
-            var cacheKey = PopulateCacheKeys(searchModel);
-
             query = query.OrderDescendingByCreationDateTime();
             var pagingQuery = page > 1
                 ? query.Skip(pageSize * (page - 1))
                 : query;
             pagingQuery = pagingQuery.Take(pageSize);
 
-            var efPolicy = string.IsNullOrEmpty(cacheKey)
-                ? new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1))
-                : new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1), cacheKey);
+            var efCacheKey = PopulateCacheKeys(searchModel);
+            var efPolicy = new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1), efCacheKey);
             var efDebug = new EFCacheDebugInfo();
 
             var entities = await pagingQuery

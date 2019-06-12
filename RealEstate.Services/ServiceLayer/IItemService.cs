@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -64,7 +63,6 @@ namespace RealEstate.Services.ServiceLayer
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        //        private readonly IMapper _mapper;
         private readonly IBaseService _baseService;
 
         private readonly ICustomerService _customerService;
@@ -93,7 +91,6 @@ namespace RealEstate.Services.ServiceLayer
             IFeatureService featureService,
             IPropertyService propertyService,
             ICustomerService customerService
-            //            IMapper mapper
             )
         {
             _baseService = baseService;
@@ -101,7 +98,6 @@ namespace RealEstate.Services.ServiceLayer
             _featureService = featureService;
             _customerService = customerService;
             _propertyService = propertyService;
-            //            _mapper = mapper;
             _itemRequests = _unitOfWork.Set<Deal>();
             _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
             _applicants = _unitOfWork.Set<Applicant>();
@@ -430,84 +426,45 @@ namespace RealEstate.Services.ServiceLayer
             return groups;
         }
 
+        private async Task CleanComplexDuplicatesAsync()
+        {
+            await _propertyService.CleanDuplicatesAsync();
+            await CleanDuplicatesAsync();
+            await _customerService.CleanDuplicatesAsync();
+        }
+
         private async Task CleanDuplicatesAsync()
         {
             var groups = await _items.IgnoreQueryFilters()
-                //                .AsNoTracking()
+                .OrderDescendingByCreationDateTime()
+                .Include(x => x.Property)
                 .GroupBy(x => new
                 {
                     x.CategoryId,
-                    x.PropertyId
+                    x.Property
                 }).Where(x => x.Count() > 1).ToListAsync();
-            if (groups?.Any() != true)
-                return;
-
-            foreach (var groupedItem in groups)
+            if (groups?.Any() == true)
             {
-                foreach (var item in groupedItem.Skip(1))
+                foreach (var groupedItem in groups)
                 {
-                    var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
-                    if (itemInDb == null)
-                        continue;
-
-                    var itemFeatures = itemInDb.ItemFeatures;
-                    if (itemFeatures?.Any() == true)
+                    foreach (var item in groupedItem.Skip(1))
                     {
-                        foreach (var itemFeature in itemFeatures)
+                        var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
+                        if (itemInDb == null)
+                            continue;
+
+                        var itemFeatures = await _itemFeatures.Where(x => x.ItemId == itemInDb.Id).ToListAsync();
+                        if (itemFeatures?.Any() == true)
                         {
-                            var itemFeatureInDb = await _itemFeatures.FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
-                            await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
+                            foreach (var itemFeature in itemFeatures)
+                            {
+                                var itemFeatureInDb = await _itemFeatures.FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
+                                await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
+                            }
                         }
+
+                        await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
                     }
-
-                    var propertyInDb = itemInDb.Property;
-                    if (propertyInDb == null)
-                        continue;
-
-                    var propertyOwnerships = propertyInDb.PropertyOwnerships;
-                    if (propertyOwnerships?.Any() == true)
-                    {
-                        foreach (var propertyOwnership in propertyOwnerships)
-                        {
-                            var ownerships = propertyOwnership.Ownerships;
-                            if (ownerships?.Any() == true)
-                                foreach (var ownership in ownerships)
-                                {
-                                    var ownershipInDb = await _ownerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == ownership.Id);
-                                    await _baseService.RemoveAsync(ownershipInDb, null, DeleteEnum.Delete, false);
-                                }
-
-                            var propertyOwnershipInDb = await _propertyOwnerships.FirstOrDefaultAsync(x => x.Id == propertyOwnership.Id);
-                            await _baseService.RemoveAsync(propertyOwnershipInDb, null, DeleteEnum.Delete, false);
-                        }
-                    }
-
-                    var propertyFeatures = propertyInDb.PropertyFeatures;
-                    if (propertyFeatures?.Any() == true)
-                        foreach (var propertyFeature in propertyFeatures)
-                        {
-                            var propertyFeatureInDb = await _propertyFeatures.FirstOrDefaultAsync(x => x.Id == propertyFeature.Id);
-                            await _baseService.RemoveAsync(propertyFeatureInDb, null, DeleteEnum.Delete, false);
-                        }
-
-                    var propertyFacilities = propertyInDb.PropertyFacilities;
-                    if (propertyFacilities?.Any() == true)
-                        foreach (var propertyFacility in propertyFacilities)
-                        {
-                            var propertyFacilityInDb = await _propertyFacilities.FirstOrDefaultAsync(x => x.Id == propertyFacility.Id);
-                            await _baseService.RemoveAsync(propertyFacilityInDb, null, DeleteEnum.Delete, false);
-                        }
-
-                    var pictures = propertyInDb.Pictures;
-                    if (pictures?.Any() == true)
-                        foreach (var picture in pictures)
-                        {
-                            var pictureInDb = await _pictures.FirstOrDefaultAsync(x => x.Id == picture.Id);
-                            await _baseService.RemoveAsync(pictureInDb, null, DeleteEnum.Delete, false);
-                        }
-
-                    await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
-                    await _baseService.RemoveAsync(propertyInDb, null, DeleteEnum.Delete, false);
                 }
             }
 
@@ -517,7 +474,7 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false)
         {
             if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
-                await CleanDuplicatesAsync();
+                await CleanComplexDuplicatesAsync();
 
             var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
             if (query == null)
@@ -546,8 +503,6 @@ namespace RealEstate.Services.ServiceLayer
             query = query.Include(x => x.Applicants)
                 .ThenInclude(x => x.Customer);
 
-            var cacheKey = new StringBuilder();
-
             //query = from item in query
             //        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
             //        let lastRequest = requests.FirstOrDefault()
@@ -564,9 +519,6 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                 {
-                    //                    query = query.Where(x =>
-                    //                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
-
                     var customer = await _customers.Where(x => x.Name == searchModel.Owner).Select(x => x.Id).FirstOrDefaultAsync();
                     query = from item in query
                             join propertyOwnership in _propertyOwnerships on item.Property.Id equals propertyOwnership.PropertyId into propertyOwnerships
@@ -579,8 +531,14 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
                 {
-                    query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
+                    var customer = await _customers.Where(x => x.MobileNumber == searchModel.OwnerMobile).Select(x => x.Id).FirstOrDefaultAsync();
+                    query = from item in query
+                            join propertyOwnership in _propertyOwnerships on item.Property.Id equals propertyOwnership.PropertyId into propertyOwnerships
+                            let lastPropOwnership = propertyOwnerships.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime)
+                                .FirstOrDefault()
+                            join ownership in _ownerships on lastPropOwnership.Id equals ownership.PropertyOwnershipId into ownerships
+                            where ownerships.Any(x => x.CustomerId == customer)
+                            select item;
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
@@ -671,14 +629,14 @@ namespace RealEstate.Services.ServiceLayer
                                 {
                                     query = from que in query
                                             join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
-                                            where itemFeatures.Any(x => x.Feature.Id == id && x.Value == @from)
+                                            where itemFeatures.Any(x => x.Feature.Id == id && EF.Functions.Like(x.Value, feature.From.Like()))
                                             select que;
                                 }
                                 else if (type == FeatureTypeEnum.Property)
                                 {
                                     query = from que in query
                                             join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
-                                            where propertyFeatures.Any(x => x.Feature.Id == id && x.Value == @from)
+                                            where propertyFeatures.Any(x => x.Feature.Id == id && EF.Functions.Like(x.Value, feature.From.Like()))
                                             select que;
                                 }
                             }

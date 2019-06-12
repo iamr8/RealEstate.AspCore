@@ -43,8 +43,8 @@ namespace RealEstate.Services.Database.Tables
                 var finalString = new StringBuilder();
                 finalString.Append("خیابان ").Append(Street);
 
-                if (!string.IsNullOrEmpty(Alley))
-                    finalString.Append("، ").Append("کوچه ").Append(Alley);
+                //if (!string.IsNullOrEmpty(Alley))
+                //    finalString.Append("، ").Append("کوچه ").Append(Alley);
 
                 if (!string.IsNullOrEmpty(Number))
                     finalString.Append("، ").Append("پلاک ").Append(Number);

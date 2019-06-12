@@ -56,6 +56,85 @@ namespace RealEstate.Base
             }
         }
 
+        public static IEnumerable<T> GetEnumerableOfType<T>(params object[] constructorArgs) where T : class, IComparable<T>
+        {
+            List<T> objects = new List<T>();
+            foreach (Type type in
+                Assembly.GetAssembly(typeof(T)).GetTypes()
+                    .Where(myType => myType.IsClass && !myType.IsAbstract && myType.IsSubclassOf(typeof(T))))
+            {
+                objects.Add((T)Activator.CreateInstance(type, constructorArgs));
+            }
+            objects.Sort();
+            return objects;
+        }
+
+        public static List<Type> GetBaseTypes(this Type type)
+        {
+            var nestedTypes = new List<Type>();
+            var currentType = type;
+            var found = false;
+            do
+            {
+                nestedTypes.Add(currentType);
+
+                if (currentType.IsAbstract)
+                    found = true;
+
+                currentType = currentType.BaseType;
+            } while (found == false);
+
+            return nestedTypes;
+        }
+
+        public static List<PropertyInfo> SortByOrder(this Type type)
+        {
+            if (type == null)
+                return default;
+
+            var types = type.GetBaseTypes();
+            types.Reverse();
+
+            if (types?.Any() != true)
+                return default;
+
+            var result = new List<PropertyInfo>();
+            foreach (var typee in types)
+            {
+                var properties = typee.GetTypeInfo().DeclaredProperties.ToList();
+                if (properties?.Any() != true)
+                    continue;
+
+                var sortDic = properties.ToDictionary(x => x, x => x.GetCustomAttribute<OrderAttribute>()?.X ?? 100);
+                var sortedProperties = sortDic.OrderBy(x => x.Value).Select(x => x.Key).ToList();
+                result.AddRange(sortedProperties);
+            }
+
+            return result;
+        }
+
+        public static Dictionary<string, string> Sort(this Dictionary<string, string> propertiesDictionary, Type modelType)
+        {
+            if (!propertiesDictionary.Any())
+                return propertiesDictionary;
+
+            if (modelType == null)
+                return propertiesDictionary;
+
+            var sorted = modelType.SortByOrder();
+            if (sorted?.Any() != true)
+                return propertiesDictionary;
+
+            var properties = modelType.GetPublicProperties();
+            if (properties?.Any() != true)
+                return propertiesDictionary;
+
+            var result = sorted
+                .Where(x => propertiesDictionary.Any(c => c.Key == x.GetDisplayName()))
+                .ToDictionary(x => x.GetDisplayName(), x => propertiesDictionary.FirstOrDefault(c => c.Key == x.GetDisplayName()).Value);
+            return result;
+        }
+
         public static TAttribute GetPropertyAttribute<TAttribute>(
             this PropertyInfo property) where TAttribute : Attribute
         {
@@ -195,6 +274,14 @@ namespace RealEstate.Base
         public static string GetDisplayName(this Enum value)
         {
             return value.GetEnumAttribute<DisplayAttribute>()?.GetName() ?? Enum.GetName(value.GetType(), value);
+        }
+
+        public static string GetDisplayName(this PropertyInfo property)
+        {
+            var display = property.GetCustomAttribute<DisplayAttribute>();
+            return display != null
+                ? display.GetName()
+                : property.Name;
         }
 
         public static string GetDisplayName<TModel>(this Expression<Func<TModel, object>> property)

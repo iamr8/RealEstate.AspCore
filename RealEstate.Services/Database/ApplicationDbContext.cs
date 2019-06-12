@@ -9,6 +9,7 @@ using RealEstate.Base.Enums;
 using RealEstate.Configuration;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -111,9 +112,11 @@ namespace RealEstate.Services.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+            modelBuilder.HasDbFunction(typeof(QueryFilterExtensions).GetMethod(nameof(QueryFilterExtensions.JsonValue)))
+                .HasName("JSON_VALUE")
+                .HasSchema("");
 
             modelBuilder.SeedDatabase();
-
             base.OnModelCreating(modelBuilder);
         }
 

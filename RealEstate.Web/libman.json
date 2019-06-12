@@ -25,9 +25,8 @@
       "destination": "wwwroot/lib/jquery.lazy"
     },
     {
-      "library": "twitter-bootstrap@4.3.1",
-      "files": [ "js/bootstrap.bundle.js", "js/bootstrap.bundle.js.map", "js/bootstrap.bundle.min.js", "js/bootstrap.bundle.min.js.map", "css/bootstrap.css", "css/bootstrap.css.map", "css/bootstrap.min.css", "css/bootstrap.min.css.map" ],
-      "destination": "wwwroot/lib/bootstrap"
+      "library": "jquery.isotope@3.0.6",
+      "destination": "wwwroot/lib/isotope"
     }
   ],
   "version": "1.0"

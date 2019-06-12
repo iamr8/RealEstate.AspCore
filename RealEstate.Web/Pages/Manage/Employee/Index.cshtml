@@ -9,7 +9,7 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewEmployee]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
+            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
                 <form method="post">
                     <div class="row justify-content-center align-items-center">
                         <input asp-for="SearchInput.PageNo" />

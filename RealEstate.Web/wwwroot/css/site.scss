@@ -1325,6 +1325,7 @@ hr {
 
 ul.info-breadcrumb {
     list-style: none;
+    text-align: right;
     padding-inline-start: 0;
     font-size: 8pt;
     color: gray;
@@ -1333,6 +1334,11 @@ ul.info-breadcrumb {
     border-bottom: 1px solid #eee;
     padding-bottom: 10px;
     @include transition(all, .3s, ease-in-out);
+
+    &.no-border-bottom {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
 
     > li {
         margin-left: 10px;
@@ -1541,5 +1547,103 @@ ul.info-breadcrumb {
         &:last-child {
             margin-left: 0;
         }
+    }
+}
+
+button {
+    > i {
+        &.fa {
+            margin-left: 10px;
+        }
+    }
+}
+
+.tooltip-inner {
+    font-family: Yekan;
+    font-size: 9pt;
+}
+
+#searchModal {
+    .modal-dialog {
+        max-width: 900px;
+    }
+}
+
+.custom-switch {
+    direction: ltr;
+    padding-left: 0;
+    padding-right: 2.25rem;
+
+    &[dir="rtl"] {
+        direction: rtl;
+
+        .custom-control-label {
+            &::before {
+                right: -2.25rem;
+                left: auto;
+            }
+
+            &::after {
+                right: calc(-1.50rem + 2px);
+                left: auto;
+            }
+        }
+    }
+}
+
+.modal-header {
+    .close {
+        margin-left: -1rem;
+        margin-right: auto;
+    }
+}
+
+.pagination {
+    padding-inline-start: 0;
+
+    > .page-item {
+        &:first-child {
+            > .page-link {
+                @include border-top-right-radius(0.25rem);
+                @include border-bottom-right-radius(0.25rem);
+                @include border-bottom-left-radius(0);
+                @include border-top-left-radius(0);
+                border-left: none;
+            }
+        }
+
+        &:last-child {
+            > .page-link {
+                @include border-top-left-radius(0.25rem);
+                @include border-bottom-left-radius(0.25rem);
+                @include border-bottom-right-radius(0);
+                @include border-top-right-radius(0);
+            }
+        }
+    }
+}
+
+.dropdown-item {
+    text-align: right;
+    font-size: 9pt;
+}
+
+.dropdown-menu {
+    &.show {
+        right: 0 !important;
+        left: auto !important;
+    }
+}
+
+.bg-light {
+    background-color: #f5f5f5 !important;
+}
+
+.nav-link {
+    &.btn-secondary {
+        border: none !important;
+        background-color: #b9bdc1;
+        color: black;
+        @include border-radius(0);
     }
 }

@@ -1,66 +1,9 @@
 ﻿@page
-@using Newtonsoft.Json
 @model IndexModel
 @{
+    const string defaultFinalPriceFeatureId = "54a0b920-c17f-4ff2-9c51-f9551159026a";
+    const string defaultFinalPriceFeatureName = "قیمت نهایی";
 
-    var level1 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            To = "200000000"
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
-    var level2 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            From = "200000000",
-            To = "300000000"
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
-    var level3 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            From = "300000000",
-            To = "500000000"
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
-    var level4 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            From = "500000000",
-            To = "700000000"
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
-    var level5 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            From = "700000000",
-            To = "1000000000"
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
-    var level6 = JsonConvert.SerializeObject(new List<ItemFeatureJsonValueViewModel>
-{
-        new ItemFeatureJsonValueViewModel
-        {
-            Id = "54a0b920-c17f-4ff2-9c51-f9551159026a",
-            Name = "قیمت نهایی",
-            From = "1000000000",
-        }
-    }).EncodeJson(typeof(ItemFeatureJsonValueViewModel));
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
     var districtsSelect = districts?.Select(x => new SelectListItem
     {
@@ -113,105 +56,103 @@
             <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsUnderCondition">
-                <form method="post" class="search">
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
-                                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
-                                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
+            <ul class="nav justify-content-start navbar-light bg-light mb-2">
+                <li class="nav-item">
+                    <button type="button" class="nav-link btn-secondary btn-sm @(Model.SearchInput.IsTriggered? "active" : "")" data-toggle="modal" data-target="#searchModal">
+                        <i class="fa fa-search"></i>@SharedLocalizer[SharedResource.SearchFilters]
+                    </button>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="creationDate" data-sort-ascending="true">@SharedLocalizer[SharedResource.Oldest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت نهایی</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت هر متر</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">متراژ</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">تعداد خواب</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">سال ساخت</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+            </ul>
+            @if (Model.SearchInput.IsTriggered)
+            {
+                <div class="row justify-content-center align-items-center mb-2">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body text-right">
+                                <h5>
+                                    جستجو بر اساس:
+                                </h5>
+                                <ul class="info-breadcrumb no-border-bottom">
+                                    @foreach (var (key, value) in Model.SearchInput.SearchOptions)
+                                    {
+                                        <li>
+                                            <b>@key@(value != null ? ":" : "")</b> @value
+                                        </li>
+                                    }
+                                </ul>
                             </div>
                         </div>
                     </div>
-                    <hr />
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                <input asp-for="SearchInput.Owner" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
-                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.District"></label>
-                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Street"></label>
-                                <input asp-for="SearchInput.Street" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-
-                    @if (features?.Any() == true)
-                    {
-                        <hr />
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-12" id="features-wrapper">
-                                <div class="itemShow adder input-wrapper">
-                                    <input asp-for="SearchInput.FeaturesJson" />
-                                    <label class="control-label">@SharedLocalizer["Features"]</label>
-                                    <select asp-items="featuresSelect" id="features-select" class="custom-select"></select>
-                                    <label class="control-label">@SharedLocalizer["From"]</label>
-                                    <input class="form-control" id="featureFrom" />
-                                    <label class="control-label">@SharedLocalizer["To"]</label>
-                                    <input class="form-control" id="featureTo" />
-                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
-                                </div>
-                                <div class="items hidden"></div>
-                            </div>
-                        </div>
-                        <hr subject="مبلغ های پیش فرض" />
-
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level1">زیر 200 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level2">بین 200 تا 300 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level3">بین 300 تا 500 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level4">بین 500 تا 700 میلیون تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level5">بین 700 تا یک میلیارد تومان</a>
-                        <a asp-page="@typeof(IndexModel).Page()" class="badge badge-secondary" asp-route-features="@level6">بالای 1 میلیارد تومان</a>
-                    }
-                    @if (facilities?.Any() == true)
-                    {
-                        <hr />
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-12" id="facilities-wrapper">
-                                <div class="itemShow adder input-wrapper">
-                                    <input asp-for="SearchInput.FacilitiesJson" />
-
-                                    <label class="control-label">@SharedLocalizer["Facilities"]</label>
-                                    <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
-                                    <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer["Add"]" />
-                                </div>
-                                <div class="items hidden"></div>
-                            </div>
-                        </div>
-                    }
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </form>
-            </search-pane>
+                </div>
+            }
+        </section>
+        <section class="container-fluid grid">
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
                     var category = item.Category;
+                    var desc = item.Description?.Replace("قابل مذاکره", "");
+                    var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                    var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                    var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                    var bedRooms = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "تعداد خواب")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                    var buildYear = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "سال ساخت")?.Value.Replace(",", "").Replace("/", "") ?? "0";
 
-                    <div class="row justify-content-center itemShow @disabledClass">
+                    <div class="row justify-content-center itemShow w-100 element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString("s",new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
                         <div class="col-12 detail">
                             <div class="info">
                                 <ul class="info-breadcrumb">
@@ -262,7 +203,7 @@
                                 @if (item.Property?.PropertyFacilities?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["PropertyFacilities"] :
+                                        @SharedLocalizer[SharedResource.PropertyFacilities] :
                                         <ul class="info-breadcrumb">
                                             @foreach (var feature in item.Property?.PropertyFacilities)
                                             {
@@ -277,7 +218,7 @@
                                 @if (item.Property?.PropertyFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["PropertyFeatures"] :
+                                        @SharedLocalizer[SharedResource.PropertyFeatures] :
                                         <ul class="info-breadcrumb">
                                             @foreach (var feature in item.Property?.PropertyFeatures)
                                             {
@@ -292,13 +233,17 @@
                                 @if (item.ItemFeatures?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["ItemFeatures"] :
+                                        @SharedLocalizer[SharedResource.ItemFeatures] :
                                         <ul class="info-breadcrumb">
                                             @foreach (var feature in item.ItemFeatures)
                                             {
                                                 <text>
                                                     <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
+                                            }
+                                            @if (item.Description?.Contains("مذاکره") == true)
+                                            {
+                                                <li>قابل مذاکره</li>
                                             }
                                         </ul>
                                     </span>
@@ -320,16 +265,16 @@
                                         </ul>
                                     </span>
                                 }
-                                @if (!string.IsNullOrEmpty(item.Description))
+                                @if (!string.IsNullOrEmpty(desc))
                                 {
                                     <span class="text-gray text-justify description">
-                                        @item.Description
+                                        @desc
                                     </span>
                                 }
                             </div>
                             @*@if (item.LastState != DealStatusEnum.Requested)
                                 {
-                                    <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
+                                <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer[" AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
                                 }*@
 
                             <div class="button">
@@ -338,7 +283,7 @@
                                 {
                                     @*<a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>*@
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
-                                    <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>
                         </div>
@@ -346,11 +291,131 @@
                     </div>
                 }
             </item-viewer>
+        </section>
+        <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>
+<form method="post" class="modal fade search" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@SharedLocalizer[SharedResource.SearchFilters]</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <hr subject="@SharedLocalizer[SharedResource.Category]" />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
+                                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
+                                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr subject="محل ملک" />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.District"></label>
+                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Street"></label>
+                                <input asp-for="SearchInput.Street" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                    <hr subject="@SharedLocalizer[SharedResource.Ownership]" />
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="SearchInput.PageNo" />
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                                <input asp-for="SearchInput.Owner" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
+                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
 
+                    @if (features?.Any() == true)
+                    {
+                        <hr />
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-12" id="features-wrapper">
+                                <div class="itemShow adder input-wrapper">
+                                    <input asp-for="SearchInput.FeaturesJson" />
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
+                                    <select asp-items="featuresSelect" id="features-select" class="custom-select"></select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.FromEqual]</label>
+                                    <input class="form-control" id="featureFrom" />
+                                    <label class="control-label">@SharedLocalizer[SharedResource.To]</label>
+                                    <input class="form-control" id="featureTo" />
+                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                        <hr subject="مبلغ های پیش فرض" />
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="" data-feature-to="200000000" class="badge badge-secondary feature-default">زیر 200 میلیون تومان</a>
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="200000000" data-feature-to="300000000" class="badge badge-secondary feature-default">بین 200 تا 300 میلیون تومان</a>
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="300000000" data-feature-to="500000000" class="badge badge-secondary feature-default">بین 300 تا 500 میلیون تومان</a>
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="500000000" data-feature-to="700000000" class="badge badge-secondary feature-default">بین 500 تا 700 میلیون تومان</a>
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="700000000" data-feature-to="1000000000" class="badge badge-secondary feature-default">بین 700 تا یک میلیارد تومان</a>
+                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="1000000000" data-feature-to="" class="badge badge-secondary feature-default">بالای 1 میلیارد تومان</a>
+                    }
+                    @if (facilities?.Any() == true)
+                    {
+                        <hr />
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-12" id="facilities-wrapper">
+                                <div class="itemShow adder input-wrapper">
+                                    <input asp-for="SearchInput.FacilitiesJson" />
+
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
+                                    <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
+                                    <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                    <vc:admin-search-condition model="@Model.SearchInput" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                {
+                    <div class="ml-auto">
+                        <div class="custom-control custom-switch" dir="rtl">
+                            <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IncludeDeletedItems">
+                            <label class="custom-control-label" asp-for="@Model.SearchInput.IncludeDeletedItems"></label>
+                        </div>
+                    </div>
+                }
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">@SharedLocalizer[SharedResource.Cancel]</button>
+                <button type="submit" class="btn btn-primary btn-sm">@SharedLocalizer[SharedResource.Search]</button>
+            </div>
+        </div>
+    </div>
+</form>
 @section Styles
 {
     <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
@@ -366,6 +431,11 @@
                 "hasModal": true
             }
             $('.gallery').bsPhotoGallery(opts);
+        });
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#searchModal').modal('handleUpdate');
         });
     </script>
     <script>
@@ -405,7 +475,6 @@
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", name);
                         $(anchor).addClass(itemSelector);
-//                        $(anchor).attr("data-confirm", "@Html.Raw(SharedLocalizer["AreYouSureToDoThisRequest"])");
 
                         const nameElement = document.createElement("span");
                         $(nameElement).html(name);
@@ -573,16 +642,20 @@
 
             });
 
-            $(submitInput).click(function(e) {
-                let selected = $(selectInput).find('option:selected:eq(0)')[0];
-                if (selected === undefined || selected === null) {
-                    selected = $(selectInput).find('option:eq(0)')[0];
-                }
-                const keyId = $(selected).attr("value");
-                const keyName = $(selected).text();
-                const from = $(fromInput).val();
-                const to = $(toInput).val();
+            $(document).on("click",
+                ".feature-default",
+                function(e) {
+                    e.preventDefault();
+                    const keyId = $(this).data("feature-id");
+                    const keyName = $(this).data("feature-name");
+                    const from = $(this).data("feature-from");
+                    const to = $(this).data("feature-to");
 
+                    addToFeaturesList(keyId, keyName, from, to);
+
+                });
+
+            function addToFeaturesList(keyId, keyName, from, to) {
                 if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
                     return;
 
@@ -607,6 +680,19 @@
 
                 $(fromInput).val("");
                 $(toInput).val("");
+            }
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+                const from = $(fromInput).val();
+                const to = $(toInput).val();
+
+                addToFeaturesList(keyId, keyName, from, to);
 
             });
 
@@ -633,6 +719,77 @@
                 });
 
             $(jsonInput).trigger("change");
+
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+
+            const $grid = $(".grid").isotope({
+                itemSelector: '.element-item',
+                layoutMode: 'fitRows',
+                getSortData: {
+                    creationDate: function(itemElem) {
+                        const plainDate = $(itemElem).attr('data-creationDate');
+                        const result = Date.parse(plainDate);
+                        return result;
+                    },
+                    finalPrice: function(itemElem) {
+                        const finalPrice = $(itemElem).attr('data-finalPrice');
+                        const result = parseFloat(finalPrice);
+                        return result;
+                    },
+                    pricePerMeter: function(itemElem) {
+                        const pricePerMeter = $(itemElem).attr('data-pricePerMeter');
+                        const result = parseFloat(pricePerMeter);
+                        return result;
+                    },
+                    meters: function(itemElem) {
+                        const meters = $(itemElem).attr('data-meters');
+                        const result = parseFloat(meters);
+                        return result;
+                    },
+                    bedRooms: function(itemElem) {
+                        const bedRooms = $(itemElem).attr('data-bedRooms');
+                        const result = parseFloat(bedRooms);
+                        return result;
+                    },
+                    buildYear: function(itemElem) {
+                        const buildYear = $(itemElem).attr('data-buildYear');
+                        const result = parseFloat(buildYear);
+                        return result;
+                    }
+                }
+            });
+            $('.sorter').click(function() {
+                const sortState = $(this).html();
+                const parent = $(this).parent().prev();
+                var parentName = $(parent).html();
+                parentName = parentName.split(' - ').length > 0 ? parentName.split(' - ')[0] : parentName;
+
+                if (sortState === "@Html.Raw(SharedLocalizer[SharedResource.Cancel])") {
+                    $grid.isotope({
+                        sortBy: ""
+                    });
+                    $(parent).html(parentName);
+
+                } else {
+                    const sortValue = $(this).attr('data-sort-by');
+                    const ascDesc = $(this).attr('data-sort-ascending');
+                    const direction = ascDesc === "true" ? true : false;
+                    $grid.isotope({
+                        sortBy: sortValue,
+                        sortAscending: direction
+                    });
+
+                    $(parent).html(`${parentName} - ${sortState}`);
+                }
+
+                const alreadyActivatedState = $(this).parent().children(".dropdown-item.active")[0];
+                $(alreadyActivatedState).toggleClass("active");
+                $(this).toggleClass("active");
+
+            });
 
         });
     </script>

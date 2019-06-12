@@ -133,7 +133,10 @@ namespace RealEstate.Services.ServiceLayer
             if (searchModel != null)
                 query = _baseService.AdminSeachConditions(query, searchModel);
 
-            var models = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var models = await query
+                .Cacheable()
+                .ToListAsync()
+                .ConfigureAwait(false);
             if (models?.Any() != true)
                 return default;
 
