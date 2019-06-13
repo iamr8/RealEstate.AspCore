@@ -1230,6 +1230,7 @@ div[class|="col"] {
 .items {
     background-color: $nav-background-color;
     padding: 7px;
+    text-align: right;
 
     @media (max-width: 768px) {
         padding: 10px;

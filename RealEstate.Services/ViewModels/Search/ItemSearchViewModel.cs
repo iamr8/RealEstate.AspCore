@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
@@ -49,6 +50,7 @@ namespace RealEstate.Services.ViewModels.Search
         [HiddenInput]
         [Display(ResourceType = typeof(SharedResource), Name = "Features")]
         [SearchParameter("features", typeof(ItemFeatureJsonValueViewModel))]
+        [JsonIgnore]
         public string FeaturesJson
         {
             get => _featuresJson.DecodeJson<ItemFeatureJsonValueViewModel>();
@@ -63,6 +65,7 @@ namespace RealEstate.Services.ViewModels.Search
         }
 
         [HiddenInput]
+        [JsonIgnore]
         [Display(ResourceType = typeof(SharedResource), Name = "Facilities")]
         [SearchParameter("facilities", typeof(ItemFacilityJsonViewModel))]
         public string FacilitiesJson
@@ -77,17 +80,5 @@ namespace RealEstate.Services.ViewModels.Search
             get => FacilitiesJson.JsonGetAccessor<ItemFacilityJsonViewModel>().AddNoneToLast();
             set => FacilitiesJson = value.JsonSetAccessor();
         }
-
-        //[Display(ResourceType = typeof(SharedResource), Name = "Feature")]
-        //[SearchParameter("itemFeature")]
-        //public string FeatureName { get; set; }
-
-        //[Display(ResourceType = typeof(SharedResource), Name = "From")]
-        //[SearchParameter("itemFeatureFrom")]
-        //public double? FromValue { get; set; }
-
-        //[Display(ResourceType = typeof(SharedResource), Name = "To")]
-        //[SearchParameter("itemFeatureTo")]
-        //public double? ToValue { get; set; }
     }
 }

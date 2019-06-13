@@ -15,6 +15,7 @@ namespace RealEstate.Base
         [HiddenInput]
         public int PageNo { get; set; }
 
+        [JsonIgnore]
         public Dictionary<string, string> SearchOptions
         {
             get
@@ -145,6 +146,7 @@ namespace RealEstate.Base
             }
         }
 
+        [JsonIgnore]
         public bool IsTriggered => SearchOptions.Count > 0;
 
         public Dictionary<string, object> GetSearchParameters()

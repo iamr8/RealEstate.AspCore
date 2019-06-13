@@ -1080,7 +1080,8 @@ div[class|="col"] > .input-wrapper {
 
 .items {
   background-color: #e0e0e0;
-  padding: 7px; }
+  padding: 7px;
+  text-align: right; }
   @media (max-width: 768px) {
     .items {
       padding: 10px; } }

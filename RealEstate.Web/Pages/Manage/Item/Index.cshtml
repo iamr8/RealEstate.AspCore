@@ -4,6 +4,9 @@
     const string defaultFinalPriceFeatureId = "54a0b920-c17f-4ff2-9c51-f9551159026a";
     const string defaultFinalPriceFeatureName = "قیمت نهایی";
 
+    const string defaultMetersFeatureId = "15bf9d15-07bc-4f3c-8339-8192c8fd0c18";
+    const string defaultMetersFeatureName = "متراژ";
+
     var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
     var districtsSelect = districts?.Select(x => new SelectListItem
     {
@@ -380,6 +383,12 @@
                         <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="500000000" data-feature-to="700000000" class="badge badge-secondary feature-default">بین 500 تا 700 میلیون تومان</a>
                         <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="700000000" data-feature-to="1000000000" class="badge badge-secondary feature-default">بین 700 تا یک میلیارد تومان</a>
                         <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="1000000000" data-feature-to="" class="badge badge-secondary feature-default">بالای 1 میلیارد تومان</a>
+                        <hr subject="متراژ های پیش فرض" />
+                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="" data-feature-to="70" class="badge badge-secondary feature-default">زیر 70 متر</a>
+                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="70" data-feature-to="90" class="badge badge-secondary feature-default">بین 70 تا 90 متر</a>
+                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="90" data-feature-to="120" class="badge badge-secondary feature-default">بین 90 تا 120 متر</a>
+                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="120" data-feature-to="150" class="badge badge-secondary feature-default">بین 120 تا 150 متر</a>
+                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="150" data-feature-to="" class="badge badge-secondary feature-default">بالای 150 متر</a>
                     }
                     @if (facilities?.Any() == true)
                     {

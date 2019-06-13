@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using MoreLinq;
+using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Base;
-using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
@@ -20,7 +20,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer.Base
@@ -85,39 +84,14 @@ namespace RealEstate.Services.ServiceLayer.Base
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _accessor;
-        private readonly IFileHandler _fileHandler;
-        private readonly DbSet<User> _users;
 
         public BaseService(
             IUnitOfWork unitOfWork,
-            IFileHandler fileHandler,
             IHttpContextAccessor accessor
             )
         {
             _unitOfWork = unitOfWork;
-            _fileHandler = fileHandler;
             _accessor = accessor;
-            _users = _unitOfWork.Set<User>();
-        }
-
-        private string PopulateCacheKeys<TSearch>(TSearch searchModel) where TSearch : BaseSearchModel
-        {
-            var cacheKeyBuilder = new StringBuilder();
-            searchModel?.GetType().GetPublicProperties().ToList()?.ForEach(searchProperty =>
-            {
-                var key = searchProperty.Name;
-                var value = searchProperty.GetValue(searchModel);
-
-                if (string.IsNullOrEmpty(key) && value != null)
-                    return;
-
-                var hasValue = !string.IsNullOrEmpty(cacheKeyBuilder.ToString());
-                var prefix = hasValue ? "&&" : "";
-
-                cacheKeyBuilder.Append($"{prefix}{key}=={value}");
-            });
-            var cacheKey = cacheKeyBuilder.ToString();
-            return cacheKey;
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
@@ -139,7 +113,10 @@ namespace RealEstate.Services.ServiceLayer.Base
                 : query;
             pagingQuery = pagingQuery.Take(pageSize);
 
-            var efCacheKey = PopulateCacheKeys(searchModel);
+            var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
             var efPolicy = new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1), efCacheKey);
             var efDebug = new EFCacheDebugInfo();
 
