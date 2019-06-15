@@ -11,6 +11,6 @@
         <b>@SharedLocalizer[Model.Type.GetDisplayName()]:</b>
         <button role="button" data-toggle="tooltip" class="btn-sm" data-placement="bottom" title="@tooltipTitle">@dt.ToRelativeString()</button>
         @SharedLocalizer[SharedResource.By]
-        <a asp-page="@typeof(RealEstate.Web.Pages.Manage.User.IndexModel).Page()" asp-route-userId="@Model.UserId" target="_blank">@Model.UserFullName</a>
+        <a asp-page="@typeof(RealEstate.Web.Pages.Manage.User.IndexModel).Page()" class="btn-sm" asp-route-userId="@Model.UserId" target="_blank">@Model.UserFullName</a>
     </text>
 }

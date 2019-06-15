@@ -112,10 +112,6 @@ namespace RealEstate.Services.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-            modelBuilder.HasDbFunction(typeof(QueryFilterExtensions).GetMethod(nameof(QueryFilterExtensions.JsonValue)))
-                .HasName("JSON_VALUE")
-                .HasSchema("");
-
             modelBuilder.SeedDatabase();
             base.OnModelCreating(modelBuilder);
         }

@@ -31,8 +31,8 @@ namespace RealEstate.Services.ViewModels.ModelBind
             Entity = entity;
         }
 
-        public string Description => Entity?.Description;
-
+        public string Description => Entity?.Description?.Replace("قابل مذاکره", "", StringComparison.CurrentCultureIgnoreCase);
+        public bool IsNegotiable => Entity?.Description?.Contains("قابل مذاکره", StringComparison.CurrentCultureIgnoreCase) == true;
         public DealStatusEnum LastState => DealRequests?.OrderDescendingByCreationDateTime().FirstOrDefault()?.Status ?? DealStatusEnum.Rejected;
 
         public CategoryViewModel Category { get; set; }

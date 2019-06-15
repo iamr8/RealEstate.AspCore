@@ -154,7 +154,7 @@
                             </div>
                         </div>
                     }
-                    <div class="row justify-content-center align-items-center">
+                    @*<div class="row justify-content-center align-items-center">
                         <div class="col-xs-12 col-lg">
                             <div class="input-wrapper">
                                 <label class="control-label" asp-for="NewItem.Property.Description"></label>
@@ -162,7 +162,7 @@
                                 <span class="text-danger" asp-validation-for="NewItem.Property.Description"></span>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
                 </div>
             </div>
             <hr subject="@SharedLocalizer[SharedResource.Owner]" class="mt-4" />
@@ -214,11 +214,17 @@
                 <input asp-for="NewItem.Id" />
                 <div class="col-12">
                     <div class="row justify-content-center align-items-center">
-                        <div class="col-12">
+                        <div class="col-12 col-lg">
                             <div class="input-wrapper">
                                 <label asp-for="NewItem.CategoryId" class="control-label"></label>
                                 <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="custom-select"></select>
                                 <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="custom-control custom-switch" dir="rtl">
+                                <input type="checkbox" class="custom-control-input" asp-for="@Model.NewItem.IsNegotiable" />
+                                <label class="custom-control-label" asp-for="@Model.NewItem.IsNegotiable"></label>
                             </div>
                         </div>
                     </div>

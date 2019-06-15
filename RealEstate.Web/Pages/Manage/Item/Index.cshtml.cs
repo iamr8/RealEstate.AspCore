@@ -4,7 +4,6 @@ using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
-using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
@@ -36,7 +35,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public string PageTitle => _localizer[SharedResource.Items];
 
         public async Task OnGetAsync(string pageNo, string status, string id, string street, string itemCategory, string ownerName, string customerId,
-            string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile, string dateFrom, string dateTo, string creatorId, string hasFeature, bool? removeDuplicates)
+            string features, string facilities, string propertyCategory, string district, bool deleted, string ownerMobile, string dateFrom, string dateTo, string creatorId, string hasFeature, bool? removeDuplicates, bool? negotiable, bool? hasPicture)
         {
             SearchInput = new ItemSearchViewModel
             {
@@ -55,7 +54,9 @@ namespace RealEstate.Web.Pages.Manage.Item
                 CreationDateFrom = dateFrom,
                 CreationDateTo = dateTo,
                 CreatorId = creatorId,
-                HasFeature = hasFeature
+                HasFeature = hasFeature,
+                IsNegotiable = negotiable != null && negotiable == true,
+                HasPicture = hasPicture != null && hasPicture == true
             };
 
             Status = !string.IsNullOrEmpty(status)

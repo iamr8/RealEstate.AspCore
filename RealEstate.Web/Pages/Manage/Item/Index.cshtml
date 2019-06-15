@@ -117,6 +117,14 @@
                         <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
                     </div>
                 </li>
+                @if (Model.SearchInput.IsTriggered)
+                {
+                    <li class="nav-item mr-auto">
+                        <a asp-page="@typeof(IndexModel).Page()" asp-route-pageNo="@Model.SearchInput.PageNo" class="nav-link btn-secondary btn-sm">
+                            @SharedLocalizer[SharedResource.ClearSearch]
+                        </a>
+                    </li>
+                }
             </ul>
             @if (Model.SearchInput.IsTriggered)
             {
@@ -131,7 +139,7 @@
                                     @foreach (var (key, value) in Model.SearchInput.SearchOptions)
                                     {
                                         <li>
-                                            <b>@key@(value != null ? ":" : "")</b> @value
+                                            <b class="text-dark">@key@(value != null ? ":" : "")</b> @value
                                         </li>
                                     }
                                 </ul>
@@ -148,7 +156,6 @@
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
                     var category = item.Category;
-                    var desc = item.Description?.Replace("قابل مذاکره", "");
                     var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
                     var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
                     var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
@@ -174,10 +181,14 @@
                                     </li>
                                 </ul>
                                 <span>
-                                    @item.Property?.Address
+                                    @Html.Raw(item.Property?.AddressHtmlStyled)
                                     @if (item.Property?.Pictures?.Any() == true)
                                     {
-                                        <i class="fa fa-check-circle verified"></i>
+                                        <i data-toggle="tooltip" data-placement="bottom" title="@SharedLocalizer[SharedResource.HasPicture]" class="fa fa-check-circle verified"></i>
+                                    }
+                                    @if (item.IsNegotiable)
+                                    {
+                                        <i data-toggle="tooltip" data-placement="bottom" title="@SharedLocalizer[SharedResource.Negotitable]" class="fa fa-asterisk verified-green"></i>
                                     }
                                 </span>
                                 @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
@@ -244,10 +255,6 @@
                                                     <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
                                             }
-                                            @if (item.Description?.Contains("مذاکره") == true)
-                                            {
-                                                <li>قابل مذاکره</li>
-                                            }
                                         </ul>
                                     </span>
 
@@ -268,10 +275,13 @@
                                         </ul>
                                     </span>
                                 }
-                                @if (!string.IsNullOrEmpty(desc))
+                                @if (!string.IsNullOrEmpty(item.Description))
                                 {
-                                    <span class="text-gray text-justify description">
-                                        @desc
+                                    <span class="text-justify description">
+                                        @SharedLocalizer[SharedResource.Description] :
+                                        <ul class="info-breadcrumb">
+                                            <li>@item.Description</li>
+                                        </ul>
                                     </span>
                                 }
                             </div>
@@ -397,7 +407,6 @@
                             <div class="col-12" id="facilities-wrapper">
                                 <div class="itemShow adder input-wrapper">
                                     <input asp-for="SearchInput.FacilitiesJson" />
-
                                     <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
                                     <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
                                     <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
@@ -406,6 +415,21 @@
                             </div>
                         </div>
                     }
+                    <hr />
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-lg">
+                            <div class="custom-control custom-switch" dir="rtl">
+                                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IsNegotiable">
+                                <label class="custom-control-label" asp-for="@Model.SearchInput.IsNegotiable"></label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="custom-control custom-switch" dir="rtl">
+                                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.HasPicture">
+                                <label class="custom-control-label" asp-for="@Model.SearchInput.HasPicture"></label>
+                            </div>
+                        </div>
+                    </div>
                     <vc:admin-search-condition model="@Model.SearchInput" />
                 </div>
             </div>
@@ -769,7 +793,14 @@
                         return result;
                     }
                 }
+
             });
+
+            //$grid.isotope({
+            //    sortBy: "creationDate",
+            //    sortAscending: "descending"
+            //});
+
             $('.sorter').click(function() {
                 const sortState = $(this).html();
                 const parent = $(this).parent().prev();

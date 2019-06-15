@@ -33,6 +33,14 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("hasFeature")]
         public string HasFeature { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Negotitable")]
+        [SearchParameter("negotiable")]
+        public bool IsNegotiable { get; set; }
+
+        [Display(ResourceType = typeof(SharedResource), Name = "HasPicture")]
+        [SearchParameter("haspicture")]
+        public bool HasPicture { get; set; }
+
         [Display(ResourceType = typeof(SharedResource), Name = "Owner")]
         [SearchParameter("ownerName")]
         public string Owner { get; set; }

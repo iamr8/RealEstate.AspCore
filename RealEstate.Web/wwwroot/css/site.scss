@@ -1382,6 +1382,10 @@ ul.info-breadcrumb {
 
 .verified {
     color: dodgerblue !important;
+
+    &-green {
+        color: green !important;
+    }
 }
 
 .no-image {
@@ -1646,5 +1650,22 @@ button {
         background-color: #b9bdc1;
         color: black;
         @include border-radius(0);
+    }
+}
+
+.element-item {
+    > .detail, > .tracker {
+        button.btn-sm {
+            margin: auto 6px;
+            @include transition(all, 0.3s, ease-in-out);
+        }
+    }
+
+    &:hover, &:focus {
+        > .detail, > .tracker {
+            button.btn-sm {
+                background-color: lightgrey;
+            }
+        }
     }
 }

@@ -18,6 +18,9 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string CategoryId { get; set; }
 
+        [Display(ResourceType = typeof(SharedResource), Name = "Negotitable")]
+        public bool IsNegotiable { get; set; }
+
         [HiddenInput]
         public string ItemFeaturesJson
         {

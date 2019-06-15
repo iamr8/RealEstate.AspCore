@@ -1065,4 +1065,10 @@
   <data name="Oldest" xml:space="preserve">
     <value>قدیمی ترین</value>
   </data>
+  <data name="Negotitable" xml:space="preserve">
+    <value>قابل مذاکره</value>
+  </data>
+  <data name="HasPicture" xml:space="preserve">
+    <value>عکسدار</value>
+  </data>
 </root>

@@ -35,6 +35,35 @@ namespace RealEstate.Services.Database.Tables
         public IPoint Geolocation { get; set; }
         public virtual Category Category { get; set; }
 
+        private string HtmlizeValue(object value)
+        {
+            return $"<button class=\"btn-sm\">{value}</button>";
+        }
+
+        [NotMapped]
+        public string AddressHtmlStyled
+        {
+            get
+            {
+                var finalString = new StringBuilder();
+                finalString.Append("خیابان ").Append(HtmlizeValue(Street));
+
+                if (!string.IsNullOrEmpty(Number))
+                    finalString.Append("پلاک ").Append(HtmlizeValue(Number));
+
+                if (!string.IsNullOrEmpty(BuildingName))
+                    finalString.Append("ساختمان ").Append(HtmlizeValue(BuildingName));
+
+                if (Floor > 0)
+                    finalString.Append("طبقه ").Append(HtmlizeValue(Floor));
+
+                if (Flat > 0)
+                    finalString.Append("واحد ").Append(HtmlizeValue(Flat));
+
+                return finalString.ToString();
+            }
+        }
+
         [NotMapped]
         public string Address
         {
@@ -43,14 +72,11 @@ namespace RealEstate.Services.Database.Tables
                 var finalString = new StringBuilder();
                 finalString.Append("خیابان ").Append(Street);
 
-                //if (!string.IsNullOrEmpty(Alley))
-                //    finalString.Append("، ").Append("کوچه ").Append(Alley);
-
                 if (!string.IsNullOrEmpty(Number))
                     finalString.Append("، ").Append("پلاک ").Append(Number);
 
                 if (!string.IsNullOrEmpty(BuildingName))
-                    finalString.Append("، ").Append("نام ساختمان ").Append(BuildingName);
+                    finalString.Append("، ").Append("ساختمان ").Append(BuildingName);
 
                 if (Floor > 0)
                     finalString.Append("، ").Append("طبقه ").Append(Floor);

@@ -1195,6 +1195,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to عکسدار.
+        /// </summary>
+        public static string HasPicture {
+            get {
+                return ResourceManager.GetString("HasPicture", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to صفحه اصلی.
         /// </summary>
         public static string HomePage {
@@ -1470,6 +1479,15 @@ namespace RealEstate.Resources {
         public static string MonthLength {
             get {
                 return ResourceManager.GetString("MonthLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to قابل مذاکره.
+        /// </summary>
+        public static string Negotitable {
+            get {
+                return ResourceManager.GetString("Negotitable", resourceCulture);
             }
         }
         

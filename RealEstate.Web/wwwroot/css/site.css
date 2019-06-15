@@ -1173,6 +1173,8 @@ ul.info-breadcrumb {
 
 .verified {
   color: dodgerblue !important; }
+  .verified-green {
+    color: green !important; }
 
 .no-image .bspImgWrapper {
   display: none; }
@@ -1419,3 +1421,11 @@ button > i.fa {
   -moz-border-radius: 0;
   -ms-border-radius: 0;
   -o-border-radius: 0; }
+
+.element-item > .detail button.btn-sm, .element-item > .tracker button.btn-sm {
+  margin: auto 6px;
+  -webkit-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out; }
+
+.element-item:hover > .detail button.btn-sm, .element-item:hover > .tracker button.btn-sm, .element-item:focus > .detail button.btn-sm, .element-item:focus > .tracker button.btn-sm {
+  background-color: lightgrey; }

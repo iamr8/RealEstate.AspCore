@@ -3,6 +3,7 @@ using EFSecondLevelCache.Core.Contracts;
 using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -16,6 +17,7 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
@@ -107,11 +109,30 @@ namespace RealEstate.Services.ServiceLayer.Base
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
 
-            query = query.OrderDescendingByCreationDateTime();
-            var pagingQuery = page > 1
-                ? query.Skip(pageSize * (page - 1))
-                : query;
-            pagingQuery = pagingQuery.Take(pageSize);
+            //            query = query.OrderDescendingByCreationDateTime();
+            //            var pagingQuery = page > 1
+            //            ? query.Skip(pageSize * (page - 1))
+            //            : query;
+            //            pagingQuery = pagingQuery.Take(pageSize);
+
+            var dbServices = _unitOfWork.Db.GetService<IDbContextServices>();
+            var entityType = dbServices.Model.FindEntityType(query.ElementType);
+            var tableName = entityType.Relational().TableName;
+            var columns = entityType.GetProperties().Select(x => x.Relational().ColumnName).ToList();
+
+            var pageFrom = (page * pageSize) - pageSize;
+            pageFrom = pageFrom == 0 ? 1 : pageFrom;
+            var pageTo = pageSize * page;
+
+            var columnsString = string.Join(", ", columns);
+            var rowFrom = new SqlParameter("rowFrom", pageFrom);
+            var rowTo = new SqlParameter("rowTo", pageTo);
+
+            var queee = string.Format("SELECT TOP({0}) {1} FROM (SELECT ROW_NUMBER() OVER ( ORDER BY J.Date DESC ) AS RowNumber, I.*  FROM "
+                                      + "{2} AS I "
+                                      + "JOIN(SELECT Id, JSON_VALUE(Audit, '$[0].t') AS Type, JSON_VALUE(Audit, '$[0].d') AS Date FROM {2} WHERE ISJSON(Audit) > 0) AS J ON J.Id = I.Id) AS RowResult "
+                                      + "WHERE RowNumber >= @rowFrom AND RowNumber <= @rowTo", pageSize, columnsString, tableName);
+            var pagingQuery = query.FromSql(queee, rowFrom, rowTo);
 
             var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
             {
@@ -122,16 +143,19 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var entities = await pagingQuery
                 .Cacheable(efPolicy, efDebug)
-                .ToListAsync()
-                .ConfigureAwait(false);
+                .ToListAsync();
             if (entities?.Any() != true)
                 return output;
 
-            var rowCount = await query.Cacheable().CountAsync().ConfigureAwait(false);
+            var rowCount = await query
+                .Cacheable(efPolicy, efDebug)
+                .CountAsync();
 
             var viewList = entities
                 .Select(viewModel.Invoke)
-                .ToHasNotNullList();
+                .ToHasNotNullList()
+                .OrderDescendingByCreationDateTime()
+                .ToList();
 
             if (viewList == null)
                 return output;
@@ -224,11 +248,11 @@ namespace RealEstate.Services.ServiceLayer.Base
         public async Task<MethodStatus<TSource>> AddAsync<TSource>(DbSet<TSource> entities, Expression<Func<TSource, bool>> duplicateCondition, TSource entity,
             Role[] allowedRoles, bool save) where TSource : BaseEntity
         {
-            var duplicate = await entities.FirstOrDefaultAsync(duplicateCondition).ConfigureAwait(false);
+            var duplicate = await entities.FirstOrDefaultAsync(duplicateCondition);
             if (duplicate != null)
                 return new MethodStatus<TSource>(StatusEnum.AlreadyExists, null);
 
-            return await AddAsync(entity, allowedRoles, save).ConfigureAwait(false);
+            return await AddAsync(entity, allowedRoles, save);
         }
 
         public async Task<MethodStatus<TSource>> AddAsync<TSource>(Func<CurrentUserViewModel, TSource> entity,
@@ -243,7 +267,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var finalEntity = entity.Invoke(currentUser);
             _unitOfWork.Add(finalEntity, currentUser);
-            return await SaveChangesAsync(finalEntity, save).ConfigureAwait(false);
+            return await SaveChangesAsync(finalEntity, save);
         }
 
         public async Task<MethodStatus<TSource>> AddAsync<TSource>(TSource entity,
@@ -257,7 +281,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 return new MethodStatus<TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
 
             _unitOfWork.Add(entity, currentUser);
-            return await SaveChangesAsync(entity, save).ConfigureAwait(false);
+            return await SaveChangesAsync(entity, save);
         }
 
         public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
@@ -292,7 +316,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync().ConfigureAwait(false);
+            return await SaveChangesAsync();
         }
 
         public TModel Map<TSource, TModel>(TSource query,
@@ -329,11 +353,11 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, null, DeleteEnum.Delete, false).ConfigureAwait(false);
+                        await RemoveAsync(redundant, null, DeleteEnum.Delete, false);
             }
 
             if (newList?.Any() != true)
-                return await SaveChangesAsync().ConfigureAwait(false);
+                return await SaveChangesAsync();
 
             foreach (var model in newList)
             {
@@ -341,7 +365,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 if (source == null)
                 {
                     var newItem = newEntity.Invoke(model);
-                    await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
+                    await AddAsync(newItem, allowedRoles, false);
                 }
                 else
                 {
@@ -354,7 +378,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync().ConfigureAwait(false);
+            return await SaveChangesAsync();
         }
 
         public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
@@ -370,11 +394,11 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, null, DeleteEnum.Hide, false).ConfigureAwait(false);
+                        await RemoveAsync(redundant, null, DeleteEnum.Hide, false);
             }
 
             if (newList?.Any() != true)
-                return await SaveChangesAsync().ConfigureAwait(false);
+                return await SaveChangesAsync();
 
             foreach (var model in newList)
             {
@@ -382,7 +406,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 if (source == null)
                 {
                     var newItem = newEntity.Invoke(model, currentUser);
-                    await AddAsync(newItem, allowedRoles, false).ConfigureAwait(false);
+                    await AddAsync(newItem, allowedRoles, false);
                 }
                 else
                 {
@@ -393,7 +417,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 }
             }
 
-            return await SaveChangesAsync().ConfigureAwait(false);
+            return await SaveChangesAsync();
         }
 
         public CurrentUserViewModel CurrentUser(List<Claim> claims)
@@ -482,12 +506,12 @@ namespace RealEstate.Services.ServiceLayer.Base
                 return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
             _unitOfWork.Update(entity, currentUser, changesList);
-            return await SaveChangesAsync(entity, save).ConfigureAwait(false);
+            return await SaveChangesAsync(entity, save);
         }
 
         public async Task<StatusEnum> SaveChangesAsync()
         {
-            await _unitOfWork.SaveChangesAsync().ConfigureAwait(false);
+            await _unitOfWork.SaveChangesAsync();
             return StatusEnum.Success;
         }
 

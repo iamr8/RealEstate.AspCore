@@ -23,6 +23,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
         }
 
         public string Address => Entity?.Address;
+        public string AddressHtmlStyled => Entity?.AddressHtmlStyled;
         public string Street => Entity?.Street;
 
         public string Alley => Entity?.Alley;

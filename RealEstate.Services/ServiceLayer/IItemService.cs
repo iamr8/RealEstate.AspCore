@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using MoreLinq;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -135,6 +136,7 @@ namespace RealEstate.Services.ServiceLayer
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
                     Count = x.Count(),
+                    Items = x.Select(item => item),
                     Pictures = x.SelectMany(item => item.Property.Pictures)
                 });
 
@@ -683,6 +685,17 @@ namespace RealEstate.Services.ServiceLayer
                         }
                     }
                 }
+                if (searchModel.IsNegotiable)
+                    query = query.Where(x => x.Description.Contains("قابل مذاکره"));
+
+                if (searchModel.HasPicture)
+                {
+                    query = from que in query
+                            join picture in _pictures on que.Property.Id equals picture.PropertyId into pictures
+                            where pictures.Any()
+                            select que;
+                }
+
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
@@ -777,7 +790,8 @@ namespace RealEstate.Services.ServiceLayer
                     Name = x.Feature?.Name,
                     Value = x.Value
                 }).ToList(),
-                Property = propertyInput
+                Property = propertyInput,
+                IsNegotiable = viewModel.IsNegotiable
             };
             return result;
         }
@@ -901,6 +915,25 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Item>(propertyUpdateStatus, null);
 
             var entity = await ItemEntityAsync(model.Id);
+            if (model.IsNegotiable)
+            {
+                if (string.IsNullOrEmpty(model.Description))
+                {
+                    model.Description = "قابل مذاکره";
+                }
+                else
+                {
+                    if (!model.Description.Contains("قابل مذاکره", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        model.Description += " قابل مذاکره";
+                    }
+                }
+            }
+            else
+            {
+                model.Description = model.Description?.Replace("قابل مذاکره", "", StringComparison.CurrentCultureIgnoreCase);
+            }
+
             var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -967,6 +1000,25 @@ namespace RealEstate.Services.ServiceLayer
             var (propertyAddStatus, newProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true);
             if (propertyAddStatus != StatusEnum.Success)
                 return new MethodStatus<Item>(propertyAddStatus, null);
+
+            if (model.IsNegotiable)
+            {
+                if (string.IsNullOrEmpty(model.Description))
+                {
+                    model.Description = "قابل مذاکره";
+                }
+                else
+                {
+                    if (!model.Description.Contains("قابل مذاکره", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        model.Description += " قابل مذاکره";
+                    }
+                }
+            }
+            else
+            {
+                model.Description = model.Description?.Replace("قابل مذاکره", "", StringComparison.CurrentCultureIgnoreCase);
+            }
 
             var (itemAddStatus, newItem) = await _baseService.AddAsync(new Item
             {
