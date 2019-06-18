@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using MoreLinq;
 using RealEstate.Base;
@@ -83,6 +84,8 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<PropertyFeature> _propertyFeatures;
         private readonly DbSet<PropertyFacility> _propertyFacilities;
         private readonly DbSet<Facility> _facilities;
+        private readonly DbSet<UserPropertyCategory> _userPropertyCategories;
+        private readonly DbSet<UserItemCategory> _userItemCategories;
         private readonly DbSet<PropertyOwnership> _propertyOwnerships;
 
         public ItemService(
@@ -103,6 +106,8 @@ namespace RealEstate.Services.ServiceLayer
             _applicants = _unitOfWork.Set<Applicant>();
             _properties = _unitOfWork.Set<Property>();
             _items = _unitOfWork.Set<Item>();
+            _userItemCategories = _unitOfWork.Set<UserItemCategory>();
+            _userPropertyCategories = _unitOfWork.Set<UserPropertyCategory>();
             _ownerships = _unitOfWork.Set<Ownership>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
@@ -125,6 +130,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.Property)
                 .ThenInclude(x => x.Category)
                 .Include(x => x.Category)
+                .Where(x => x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any()))
                 .GroupBy(x => new
                 {
                     ItemCategory = x.Category.Name,
@@ -134,12 +140,28 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
+                    Items = x.Select(item => new
+                    {
+                        ItemCategory = item.Category.Name,
+                        ItemAudit = item.Audit,
+                        ItemAudits = item.Audits,
+                        PropertyAudit = item.Property.Audit,
+                        PropertyAudits = item.Property.Audits,
+                        ItemId = item.Id,
+                        PropertyId = item.PropertyId,
+                        PropertyStreet = item.Property.Street,
+                        PropertyDistrict = item.Property.District.Name,
+                        PropertyCategory = item.Property.Category.Name,
+                        PropertyOwners = item.Property.PropertyOwnerships.SelectMany(c => c.Ownerships.Select(v => new { v.Customer.Name, v.Customer.MobileNumber })).ToList()
+                    }).ToList(),
                     Count = x.Count(),
-                    Items = x.Select(item => item),
-                    Pictures = x.SelectMany(item => item.Property.Pictures)
+                    Pictures = x.SelectMany(item => item.Property.Pictures).Select(c => new
+                    {
+                        c.File
+                    }).ToList()
                 });
 
-            var categories = await query.ToListAsync();
+            var categories = await query.Cacheable().ToListAsync();
             if (categories?.Any() != true)
                 return default;
 
@@ -148,7 +170,7 @@ namespace RealEstate.Services.ServiceLayer
                 ItemCategory = x.ItemCategory,
                 PropertyCategory = x.PropertyCategory,
                 Count = x.Count,
-                Picture = x.Pictures.Select(c => c.File).SelectRandom()
+                Picture = x.Pictures.ToList().Select(c => c.File).SelectRandom()
             }).ToList();
             return result;
         }
@@ -571,63 +593,6 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (searchModel.Features?.Any(x => !string.IsNullOrEmpty(x.Id)) == true)
                 {
-                    //var propertyFeatureExpressionWrapper = PredicateBuilder.New<PropertyFeature>();
-                    //var itemFeatureExpressionWrapper = PredicateBuilder.New<ItemFeature>();
-
-                    //foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
-                    //{
-                    //    var id = feature.Id;
-                    //    var from = feature.From;
-                    //    var to = feature.To;
-
-                    //    var isFromFilled = !string.IsNullOrEmpty(from);
-                    //    var isToFilled = !string.IsNullOrEmpty(to);
-
-                    //    if (!isFromFilled && !isToFilled)
-                    //        continue;
-
-                    //    var propertyFeatureExpression = PredicateBuilder.New<PropertyFeature>().And(ftr => ftr.FeatureId == id);
-                    //    var itemFeatureExpression = PredicateBuilder.New<ItemFeature>().And(ftr => ftr.FeatureId == id);
-
-                    //    //if (isFromFilled)
-                    //    //{
-                    //    //    if (int.TryParse(from, out var numFrom))
-                    //    //    {
-                    //    //        propertyFeatureExpression = propertyFeatureExpression.And(ftr => ftr.Value.IsNumeric() >= numFrom);
-                    //    //        itemFeatureExpression = itemFeatureExpression.And(ftr => ftr.Value.IsNumeric() >= numFrom);
-                    //    //    }
-                    //    //    else
-                    //    //    {
-                    //    //        propertyFeatureExpression = propertyFeatureExpression.And(ftr => EF.Functions.Like(ftr.Value, from.Like()));
-                    //    //        itemFeatureExpression = itemFeatureExpression.And(ftr => EF.Functions.Like(ftr.Value, from.Like()));
-                    //    //    }
-                    //    //}
-
-                    //    //if (isToFilled && int.TryParse(to, out var numTo))
-                    //    //{
-                    //    //    propertyFeatureExpression = propertyFeatureExpression.And(ftr => ftr.Value.IsNumeric() <= numTo);
-                    //    //    itemFeatureExpression = itemFeatureExpression.And(ftr => ftr.Value.IsNumeric() <= numTo);
-                    //    //}
-
-                    //    var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync();
-                    //    switch (type)
-                    //    {
-                    //        case FeatureTypeEnum.Property:
-                    //            propertyFeatureExpressionWrapper.And(propertyFeatureExpression);
-                    //            break;
-
-                    //        case FeatureTypeEnum.Item:
-                    //        case FeatureTypeEnum.Applicant:
-                    //        default:
-                    //            itemFeatureExpressionWrapper.And(itemFeatureExpression);
-                    //            break;
-                    //    }
-                    //}
-
-                    //if (propertyFeatureExpressionWrapper.IsStarted)
-                    //    query = query.Where(x =>
-                    //        x.Property.PropertyFeatures.Any(propertyFeature => propertyFeatureExpressionWrapper.Compile().Invoke(propertyFeature)));
-
                     foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)).ToList())
                     {
                         var id = feature.Id;
@@ -730,10 +695,8 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            var userItemCategories = currentUser.UserItemCategories.Select(x => x.CategoryId).ToList();
-            var userPropertyCategories = currentUser.UserPropertyCategories.Select(x => x.CategoryId).ToList();
-            query = query.Where(x => userItemCategories.Any(c => c == x.CategoryId));
-            query = query.Where(x => userPropertyCategories.Any(c => c == x.Property.CategoryId));
+            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == currentUser.Id));
+            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == currentUser.Id));
 
             var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<ItemViewModel>(act =>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.ViewModels;
 using System;
@@ -18,6 +19,8 @@ namespace RealEstate.Services.Database
         Task<int> SaveChangesAsync();
 
         void Detach(bool isNew = false);
+
+        IDbContextServices GetDbContextServices();
 
         void Detach<TEntity>(bool isNew = false) where TEntity : class;
 

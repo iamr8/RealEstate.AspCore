@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Configuration;
@@ -122,6 +123,11 @@ namespace RealEstate.Services.Database
         public new DbSet<TEntity> Set<TEntity>() where TEntity : class
         {
             return base.Set<TEntity>();
+        }
+
+        public IDbContextServices GetDbContextServices()
+        {
+            return this.GetService<IDbContextServices>();
         }
 
         public void Detach<TEntity>(bool isNew = false) where TEntity : class

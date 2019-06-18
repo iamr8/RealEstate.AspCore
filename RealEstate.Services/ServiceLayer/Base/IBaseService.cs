@@ -206,8 +206,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var isAdmin = searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin);
             var query = source.AsQueryable();
-            var dbServices = _database.GetService<IDbContextServices>();
-            var entityType = dbServices.Model.FindEntityType(query.ElementType);
+            var entityType = _unitOfWork.GetDbContextServices().Model.FindEntityType(query.ElementType);
             var tableName = entityType.Relational().TableName;
 
             var rawQuery =

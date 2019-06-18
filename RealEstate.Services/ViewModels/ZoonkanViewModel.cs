@@ -6,5 +6,10 @@
         public string PropertyCategory { get; set; }
         public int Count { get; set; }
         public string Picture { get; set; }
+
+        public override string ToString()
+        {
+            return $"{ItemCategory} : {PropertyCategory} : {Count} مورد";
+        }
     }
 }
