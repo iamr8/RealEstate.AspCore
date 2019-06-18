@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.Internal;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,9 +13,17 @@ namespace RealEstate.Services.Extensions
     {
         public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
-            var source = entities.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+            var source = from que in entities
+                         orderby JsonValue(que.Audit, "$[0].d") descending
+                         select que;
             return source;
         }
+
+        [DbFunction("JSON_VALUE", "")]
+        public static string JsonValue(string source, string path) => throw new NotSupportedException();
+
+        [DbFunction("ISNUMERIC", "")]
+        public static string IsNumeric(string str) => throw new NotSupportedException();
 
         public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {

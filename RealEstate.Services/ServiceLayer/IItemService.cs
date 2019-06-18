@@ -1,5 +1,4 @@
-﻿using LinqKit;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using MoreLinq;
 using RealEstate.Base;
@@ -521,26 +520,14 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                 {
-                    var customer = await _customers.Where(x => x.Name == searchModel.Owner).Select(x => x.Id).FirstOrDefaultAsync();
-                    query = from item in query
-                            join propertyOwnership in _propertyOwnerships on item.Property.Id equals propertyOwnership.PropertyId into propertyOwnerships
-                            let lastPropOwnership = propertyOwnerships.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime)
-                                .FirstOrDefault()
-                            join ownership in _ownerships on lastPropOwnership.Id equals ownership.PropertyOwnershipId into ownerships
-                            where ownerships.Any(x => x.CustomerId == customer)
-                            select item;
+                    query = query.Where(x =>
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
                 {
-                    var customer = await _customers.Where(x => x.MobileNumber == searchModel.OwnerMobile).Select(x => x.Id).FirstOrDefaultAsync();
-                    query = from item in query
-                            join propertyOwnership in _propertyOwnerships on item.Property.Id equals propertyOwnership.PropertyId into propertyOwnerships
-                            let lastPropOwnership = propertyOwnerships.OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime)
-                                .FirstOrDefault()
-                            join ownership in _ownerships on lastPropOwnership.Id equals ownership.PropertyOwnershipId into ownerships
-                            where ownerships.Any(x => x.CustomerId == customer)
-                            select item;
+                    query = query.Where(x =>
+                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
@@ -576,111 +563,160 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (searchModel.Facilities?.Any(x => !string.IsNullOrEmpty(x.Name)) == true)
                 {
-                    var validFacilities = searchModel.Facilities.Where(x => !string.IsNullOrEmpty(x.Name)).Select(x => x.Name).ToList();
-                    var predicateFacilities = PredicateBuilder.New<Facility>(true);
-                    foreach (var facilityName in validFacilities)
-                        predicateFacilities = predicateFacilities.Or(facility => facility.Name == facilityName);
-                    var facilities = await _facilities.Where(predicateFacilities).Select(x => x.Id).ToListAsync();
-
-                    var tempQuery = query
-                        .GroupJoin(_propertyFacilities, item => item.PropertyId, propertyFacility => propertyFacility.PropertyId,
-                            (item, propertyFacilities) =>
-                                new
-                                {
-                                    Item = item,
-                                    PropertyFacilities = propertyFacilities
-                                });
-
-                    foreach (var facility in facilities)
-                        tempQuery = tempQuery.Where(x => x.PropertyFacilities.Any(c => c.FacilityId == facility));
-
-                    query = tempQuery.Select(x => x.Item);
+                    query = searchModel.Facilities
+                        .Where(x => !string.IsNullOrEmpty(x.Name))
+                        .Select(facility => facility.Name)
+                        .Aggregate(query, (current, name) => current.Where(x => x.Property.PropertyFacilities.Any(c => c.Facility.Name == name)));
                 }
 
                 if (searchModel.Features?.Any(x => !string.IsNullOrEmpty(x.Id)) == true)
                 {
-                    foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
+                    //var propertyFeatureExpressionWrapper = PredicateBuilder.New<PropertyFeature>();
+                    //var itemFeatureExpressionWrapper = PredicateBuilder.New<ItemFeature>();
+
+                    //foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)))
+                    //{
+                    //    var id = feature.Id;
+                    //    var from = feature.From;
+                    //    var to = feature.To;
+
+                    //    var isFromFilled = !string.IsNullOrEmpty(from);
+                    //    var isToFilled = !string.IsNullOrEmpty(to);
+
+                    //    if (!isFromFilled && !isToFilled)
+                    //        continue;
+
+                    //    var propertyFeatureExpression = PredicateBuilder.New<PropertyFeature>().And(ftr => ftr.FeatureId == id);
+                    //    var itemFeatureExpression = PredicateBuilder.New<ItemFeature>().And(ftr => ftr.FeatureId == id);
+
+                    //    //if (isFromFilled)
+                    //    //{
+                    //    //    if (int.TryParse(from, out var numFrom))
+                    //    //    {
+                    //    //        propertyFeatureExpression = propertyFeatureExpression.And(ftr => ftr.Value.IsNumeric() >= numFrom);
+                    //    //        itemFeatureExpression = itemFeatureExpression.And(ftr => ftr.Value.IsNumeric() >= numFrom);
+                    //    //    }
+                    //    //    else
+                    //    //    {
+                    //    //        propertyFeatureExpression = propertyFeatureExpression.And(ftr => EF.Functions.Like(ftr.Value, from.Like()));
+                    //    //        itemFeatureExpression = itemFeatureExpression.And(ftr => EF.Functions.Like(ftr.Value, from.Like()));
+                    //    //    }
+                    //    //}
+
+                    //    //if (isToFilled && int.TryParse(to, out var numTo))
+                    //    //{
+                    //    //    propertyFeatureExpression = propertyFeatureExpression.And(ftr => ftr.Value.IsNumeric() <= numTo);
+                    //    //    itemFeatureExpression = itemFeatureExpression.And(ftr => ftr.Value.IsNumeric() <= numTo);
+                    //    //}
+
+                    //    var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync();
+                    //    switch (type)
+                    //    {
+                    //        case FeatureTypeEnum.Property:
+                    //            propertyFeatureExpressionWrapper.And(propertyFeatureExpression);
+                    //            break;
+
+                    //        case FeatureTypeEnum.Item:
+                    //        case FeatureTypeEnum.Applicant:
+                    //        default:
+                    //            itemFeatureExpressionWrapper.And(itemFeatureExpression);
+                    //            break;
+                    //    }
+                    //}
+
+                    //if (propertyFeatureExpressionWrapper.IsStarted)
+                    //    query = query.Where(x =>
+                    //        x.Property.PropertyFeatures.Any(propertyFeature => propertyFeatureExpressionWrapper.Compile().Invoke(propertyFeature)));
+
+                    foreach (var feature in searchModel.Features.Where(x => !string.IsNullOrEmpty(x.Id)).ToList())
                     {
                         var id = feature.Id;
-                        var type = await _features.Where(x => x.Id == id).Select(x => x.Type).FirstOrDefaultAsync();
                         var from = feature.From;
                         var to = feature.To;
 
-                        if (!string.IsNullOrEmpty(from) && string.IsNullOrEmpty(to))
+                        var featureInDb = await _features.Where(x => x.Id == feature.Id).Select(x => new
                         {
-                            if (int.TryParse(from, out var numFrom))
+                            x.Name,
+                            x.Type
+                        }).FirstOrDefaultAsync();
+                        if (featureInDb == null)
+                            continue;
+
+                        var isFromFilled = !string.IsNullOrEmpty(from);
+                        var isToFilled = !string.IsNullOrEmpty(to);
+
+                        if (!isFromFilled && !isToFilled)
+                            continue;
+
+                        if (isFromFilled && !isToFilled)
+                        {
+                            if (long.TryParse(from, out var numFrom))
                             {
-                                if (type == FeatureTypeEnum.Item)
+                                if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = from que in query
-                                            join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
-                                            where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() >= numFrom)
-                                            select que;
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
-                                else if (type == FeatureTypeEnum.Property)
+                                else
                                 {
-                                    query = from que in query
-                                            join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
-                                            where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() >= numFrom)
-                                            select que;
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                             }
                             else
                             {
-                                if (type == FeatureTypeEnum.Item)
+                                if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = from que in query
-                                            join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
-                                            where itemFeatures.Any(x => x.Feature.Id == id && EF.Functions.Like(x.Value, feature.From.Like()))
-                                            select que;
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                   && EF.Functions.Like(ftr.Value, from.Like())));
                                 }
-                                else if (type == FeatureTypeEnum.Property)
+                                else
                                 {
-                                    query = from que in query
-                                            join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
-                                            where propertyFeatures.Any(x => x.Feature.Id == id && EF.Functions.Like(x.Value, feature.From.Like()))
-                                            select que;
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                       && EF.Functions.Like(ftr.Value, from.Like())));
                                 }
                             }
                         }
-                        else if (string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
-                        {
-                            if (!int.TryParse(to, out var numTo))
-                                continue;
 
-                            if (type == FeatureTypeEnum.Item)
+                        if (!isFromFilled && isToFilled)
+                        {
+                            if (long.TryParse(to, out var numTo))
                             {
-                                query = from que in query
-                                        join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
-                                        where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo)
-                                        select que;
-                            }
-                            else if (type == FeatureTypeEnum.Property)
-                            {
-                                query = from que in query
-                                        join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
-                                        where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo)
-                                        select que;
+                                if (featureInDb.Type == FeatureTypeEnum.Item)
+                                {
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt64(ftr.Value) <= numTo));
+                                }
+                                else
+                                {
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                                    && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                                    && Convert.ToInt64(ftr.Value) <= numTo));
+                                }
                             }
                         }
-                        else if (!string.IsNullOrEmpty(from) && !string.IsNullOrEmpty(to))
-                        {
-                            if (!int.TryParse(@from, out var numFrom) || !int.TryParse(to, out var numTo) || numFrom >= numTo)
-                                continue;
 
-                            if (type == FeatureTypeEnum.Item)
+                        if (isFromFilled && isToFilled)
+                        {
+                            if (long.TryParse(from, out var numFrom) && long.TryParse(to, out var numTo))
                             {
-                                query = from que in query
-                                        join itemFeature in _itemFeatures on que.Id equals itemFeature.ItemId into itemFeatures
-                                        where itemFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo && x.Value.IsNumeric() >= numFrom)
-                                        select que;
-                            }
-                            else if (type == FeatureTypeEnum.Property)
-                            {
-                                query = from que in query
-                                        join propertyFeature in _propertyFeatures on que.PropertyId equals propertyFeature.PropertyId into propertyFeatures
-                                        where propertyFeatures.Any(x => x.Feature.Id == id && x.Value.IsNumeric() <= numTo && x.Value.IsNumeric() >= numFrom)
-                                        select que;
+                                if (featureInDb.Type == FeatureTypeEnum.Item)
+                                {
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                   && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                   && Convert.ToInt64(ftr.Value) >= numFrom
+                                                                                   && Convert.ToInt64(ftr.Value) <= numTo));
+                                }
+                                else
+                                {
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
+                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom
+                                                                                       && Convert.ToInt64(ftr.Value) <= numTo));
+                                }
                             }
                         }
                     }
@@ -689,12 +725,7 @@ namespace RealEstate.Services.ServiceLayer
                     query = query.Where(x => x.Description.Contains("قابل مذاکره"));
 
                 if (searchModel.HasPicture)
-                {
-                    query = from que in query
-                            join picture in _pictures on que.Property.Id equals picture.PropertyId into pictures
-                            where pictures.Any()
-                            select que;
-                }
+                    query = query.Where(x => x.Property.Pictures.Any());
 
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }

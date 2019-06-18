@@ -46,6 +46,9 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.authentication.cookies\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Cookies.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.AspNetCore.Hosting">
+      <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.hosting\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.hosting.abstractions\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
     </Reference>
@@ -75,6 +78,9 @@
     </Reference>
     <Reference Include="Microsoft.Extensions.Localization.Abstractions">
       <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.extensions.localization.abstractions\2.2.0\lib\netstandard2.0\Microsoft.Extensions.Localization.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="MiniOR8">
+      <HintPath>..\..\MiniOR8\MiniOR8\MiniOR8\bin\Debug\netcoreapp2.2\MiniOR8.dll</HintPath>
     </Reference>
   </ItemGroup>
 

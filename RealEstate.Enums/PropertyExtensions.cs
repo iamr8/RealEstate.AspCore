@@ -59,16 +59,15 @@ namespace RealEstate.Base
         public static List<Type> GetBaseTypes(this Type type)
         {
             var nestedTypes = new List<Type>();
-            var currentType = type;
             var found = false;
             do
             {
-                nestedTypes.Add(currentType);
+                nestedTypes.Add(type);
 
-                if (currentType.IsAbstract)
+                if (type.IsAbstract || type.BaseType == null)
                     found = true;
 
-                currentType = currentType.BaseType;
+                type = type.BaseType;
             } while (found == false);
 
             return nestedTypes;

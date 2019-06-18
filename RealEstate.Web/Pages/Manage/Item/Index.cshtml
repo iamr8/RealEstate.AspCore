@@ -59,73 +59,84 @@
             <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
-            <ul class="nav justify-content-start navbar-light bg-light mb-2">
-                <li class="nav-item">
-                    <button type="button" class="nav-link btn-secondary btn-sm @(Model.SearchInput.IsTriggered? "active" : "")" data-toggle="modal" data-target="#searchModal">
-                        <i class="fa fa-search"></i>@SharedLocalizer[SharedResource.SearchFilters]
-                    </button>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="creationDate" data-sort-ascending="true">@SharedLocalizer[SharedResource.Oldest]</button>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت نهایی</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت هر متر</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">متراژ</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">تعداد خواب</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                    </div>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">سال ساخت</a>
-                    <div class="dropdown-menu">
-                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                        <div class="dropdown-divider"></div>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
-                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
-                    </div>
-                </li>
-                @if (Model.SearchInput.IsTriggered)
-                {
-                    <li class="nav-item mr-auto">
-                        <a asp-page="@typeof(IndexModel).Page()" asp-route-pageNo="@Model.SearchInput.PageNo" class="nav-link btn-secondary btn-sm">
-                            @SharedLocalizer[SharedResource.ClearSearch]
-                        </a>
-                    </li>
-                }
-            </ul>
+            <nav class="navbar navbar-expand navbar-light bg-light mb-2 p-0">
+                <div class="collapse navbar-collapse show">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <button type="button" class="nav-link btn-secondary btn-sm @(Model.SearchInput.IsTriggered ? " active" : "" )" data-toggle="modal" data-target="#searchModal">
+                                <i class="fa fa-search"></i>@SharedLocalizer[SharedResource.SearchFilters]
+                            </button>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="creationDate" data-sort-ascending="true">@SharedLocalizer[SharedResource.Oldest]</button>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت نهایی</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت هر متر</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">متراژ</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">تعداد خواب</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">سال ساخت</a>
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
+                                <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
+                            </div>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav mr-auto">
+                        @if (Model.SearchInput.IsTriggered)
+                        {
+                            <li class="nav-item mr-auto">
+                                <a asp-page="@typeof(IndexModel).Page()" asp-route-pageNo="@Model.SearchInput.PageNo" class="nav-link btn-secondary btn-sm">
+                                    @SharedLocalizer[SharedResource.ClearSearch]
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <button type="button" class="nav-link btn-sm">
+                                @Model.List.Rows آیتم
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
             @if (Model.SearchInput.IsTriggered)
             {
                 <div class="row justify-content-center align-items-center mb-2">
@@ -196,7 +207,7 @@
                                     <span>
                                         @SharedLocalizer[SharedResource.Owner] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var ownership in item.Property?.CurrentPropertyOwnership?.Ownerships)
+                                            @foreach (var ownership in item.Property?.CurrentPropertyOwnership?.Ownerships.OrderBy(x => x.Customer.Name))
                                             {
                                                 <text>
                                                     <li>
@@ -219,7 +230,7 @@
                                     <span>
                                         @SharedLocalizer[SharedResource.PropertyFacilities] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property?.PropertyFacilities)
+                                            @foreach (var feature in item.Property?.PropertyFacilities.OrderBy(x => x.Facility.Name))
                                             {
                                                 <text>
                                                     <li>@feature.Facility?.Name</li>
@@ -234,10 +245,10 @@
                                     <span>
                                         @SharedLocalizer[SharedResource.PropertyFeatures] :
                                         <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property?.PropertyFeatures)
+                                            @foreach (var feature in item.Property?.PropertyFeatures.OrderBy(x => x.Feature.Name))
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
+                                                    <li>@Html.Raw(feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime))</li>
                                                 </text>
                                             }
                                         </ul>
@@ -252,7 +263,7 @@
                                             @foreach (var feature in item.ItemFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
+                                                    <li>@Html.Raw(feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime))</li>
                                                 </text>
                                             }
                                         </ul>

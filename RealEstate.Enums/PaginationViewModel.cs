@@ -15,5 +15,6 @@ namespace RealEstate.Base
         public int CurrentPage { get; set; }
         public int Pages { get; set; }
         public bool HasDuplicates { get; set; }
+        public int Rows { get; set; }
     }
 }

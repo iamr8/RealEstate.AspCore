@@ -111,7 +111,7 @@ namespace RealEstate.Base
                                             }
                                             featuresList.Add(string.Join(" ", strList));
                                         }
-                                        conditions.Add(key, string.Join(" | ", featuresList));
+                                        conditions.Add(key, string.Join(" • ", featuresList));
                                     }
                                 }
                                 else

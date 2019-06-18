@@ -1,11 +1,49 @@
 ﻿using RealEstate.Base;
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace RealEstate.Services.Extensions
 {
     public static class FeatureFixExtension
     {
+        public static Regex FeatureRegex(this string featureName)
+        {
+            if (string.IsNullOrEmpty(featureName))
+                return default;
+
+            string pattern;
+            switch (featureName)
+            {
+                case "سال ساخت":
+                    pattern = "1(3|4)[0-9]{2}";
+                    break;
+
+                case "تعداد واحدهای مجتمع":
+                case "متراژ":
+                case "بر زمین":
+                case "تعداد خواب":
+                    pattern = RegexPatterns.NumbersOnly.GetDisplayName();
+                    break;
+
+                case "وام":
+                case "قیمت نهایی":
+                case "قیمت هر متر":
+                    pattern = "\\d*000000";
+                    break;
+
+                case "مستاجر":
+                    pattern = "(09|۰۹)([0-9]|[۰-۹]){9} ([\u0600-\u06FF ])+";
+                    break;
+
+                default:
+                    pattern = RegexPatterns.SafeText.GetDisplayName();
+                    break;
+            }
+
+            return new Regex(pattern, RegexOptions.Singleline);
+        }
+
         public static string TranslateFeature(this string featureName, string featureValue, DateTime lastAudit)
         {
             if (string.IsNullOrEmpty(featureName) || string.IsNullOrEmpty(featureValue))
@@ -24,9 +62,10 @@ namespace RealEstate.Services.Extensions
                             : int.Parse($"13{year}")
                         : year;
 
+                    var error2 = year < 100 ? " <b style=\"color: red\">( خطا در ثبت )</b>" : "";
                     var finalYear = currentYear - processedYear;
                     var term = finalYear == 0 ? "نوساز" : $"{finalYear} سال ساخت";
-                    return $"{term} ( {processedYear} )";
+                    return $"{term} ( {processedYear} ) {error2}";
 
                 case "متراژ":
                     var isMeter = int.TryParse(featureValue, out var priceByMeter);
@@ -40,9 +79,10 @@ namespace RealEstate.Services.Extensions
 
                 case "وام":
                 case "قیمت نهایی":
-                    featureValue = featureValue.Length <= 3 ? $"{featureValue}/000/000" : featureValue;
+                    featureValue = featureValue.Length <= 3 ? $"{featureValue}000000" : featureValue;
                     var words1 = featureValue.CurrencyToWords();
-                    return $"{featureName} : {words1} تومان ( تا تاریخ {date} )";
+                    var error1 = featureValue.Length <= 3 ? $" <b style=\"color: red\">( {featureValue.FixCurrency()} )</b>" : "";
+                    return $"{featureName} : {words1} تومان ( تا تاریخ {date} ){error1}";
 
                 case "قیمت هر متر":
                     var words2 = featureValue.CurrencyToWords();

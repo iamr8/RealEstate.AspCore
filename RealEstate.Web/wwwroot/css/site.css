@@ -48,6 +48,12 @@ body {
     @media (min-width: 769px) {
       body > [role="main"] {
         padding-right: 265px; } }
+  @media (min-width: 768px) {
+    body > .navbar {
+      padding-right: 265px; } }
+
+ul {
+  padding-inline-start: 0; }
 
 .row > .widget {
   width: 100%;
@@ -125,7 +131,7 @@ body {
           margin-left: 0; }
   .widget > section {
     padding: 10px;
-    padding-top: 20px; }
+    padding-top: 20px !important; }
     .widget > section > div {
       /*margin-bottom: 10px;*/ }
   .widget > footer {
@@ -465,9 +471,6 @@ input[type=submit], button {
 .navbar {
   -webkit-transition: all 0.5s ease-in-out;
   transition: all 0.5s ease-in-out; }
-  @media (min-width: 768px) {
-    .navbar {
-      padding-right: 265px; } }
   .navbar .navbar-toggler {
     border: none !important; }
     @media (min-width: 769px) {
@@ -1421,6 +1424,8 @@ button > i.fa {
   -moz-border-radius: 0;
   -ms-border-radius: 0;
   -o-border-radius: 0; }
+  .nav-link.btn-secondary.active {
+    color: white !important; }
 
 .element-item > .detail button.btn-sm, .element-item > .tracker button.btn-sm {
   margin: auto 6px;

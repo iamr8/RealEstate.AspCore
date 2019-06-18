@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using MoreLinq;
 using Newtonsoft.Json;
 using RealEstate.Base;
@@ -17,7 +18,6 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
@@ -38,11 +38,7 @@ namespace RealEstate.Services.ServiceLayer.Base
         Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
             where TEntity : BaseEntity;
 
-        IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(IQueryable<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser)
-            where TSource : BaseEntity where TSearch : BaseSearchModel;
-
-        IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser)
-            where TSource : BaseEntity where TSearch : BaseSearchModel;
+        IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel;
 
         IQueryable<TSource> QueryByRole<TSource>(IQueryable<TSource> source, params Role[] allowedRolesToShowDeletedItems) where TSource : class;
 
@@ -86,14 +82,20 @@ namespace RealEstate.Services.ServiceLayer.Base
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _accessor;
+        private readonly ApplicationDbContext _database;
+        private readonly IServiceProvider _serviceProvider;
 
         public BaseService(
             IUnitOfWork unitOfWork,
-            IHttpContextAccessor accessor
+            IHttpContextAccessor accessor,
+            IServiceProvider serviceProvider,
+            ApplicationDbContext database
             )
         {
             _unitOfWork = unitOfWork;
             _accessor = accessor;
+            _database = database;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
@@ -109,37 +111,28 @@ namespace RealEstate.Services.ServiceLayer.Base
             page = page <= 1 ? 1 : page;
             const int pageSize = 10;
 
-            //            query = query.OrderDescendingByCreationDateTime();
-            //            var pagingQuery = page > 1
-            //            ? query.Skip(pageSize * (page - 1))
-            //            : query;
-            //            pagingQuery = pagingQuery.Take(pageSize);
-
-            var dbServices = _unitOfWork.Db.GetService<IDbContextServices>();
-            var entityType = dbServices.Model.FindEntityType(query.ElementType);
-            var tableName = entityType.Relational().TableName;
-            var columns = entityType.GetProperties().Select(x => x.Relational().ColumnName).ToList();
-
-            var pageFrom = (page * pageSize) - pageSize;
-            pageFrom = pageFrom == 0 ? 1 : pageFrom;
-            var pageTo = pageSize * page;
-
-            var columnsString = string.Join(", ", columns);
-            var rowFrom = new SqlParameter("rowFrom", pageFrom);
-            var rowTo = new SqlParameter("rowTo", pageTo);
-
-            var queee = string.Format("SELECT TOP({0}) {1} FROM (SELECT ROW_NUMBER() OVER ( ORDER BY J.Date DESC ) AS RowNumber, I.*  FROM "
-                                      + "{2} AS I "
-                                      + "JOIN(SELECT Id, JSON_VALUE(Audit, '$[0].t') AS Type, JSON_VALUE(Audit, '$[0].d') AS Date FROM {2} WHERE ISJSON(Audit) > 0) AS J ON J.Id = I.Id) AS RowResult "
-                                      + "WHERE RowNumber >= @rowFrom AND RowNumber <= @rowTo", pageSize, columnsString, tableName);
-            var pagingQuery = query.FromSql(queee, rowFrom, rowTo);
-
             var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             });
-            var efPolicy = new EFCachePolicy(CacheExpirationMode.Sliding, TimeSpan.FromDays(1), efCacheKey);
+            var efPolicy = new EFCachePolicy(CacheExpirationMode.Absolute, TimeSpan.FromDays(1), efCacheKey);
             var efDebug = new EFCacheDebugInfo();
+
+            query = query.OrderDescendingByCreationDateTime();
+            var rowCount = await query
+                .Cacheable(efPolicy, efDebug)
+                .CountAsync();
+            if (rowCount <= 0)
+                return output;
+
+            var pageCount = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
+            if (page > pageCount)
+                page = pageCount;
+
+            var pagingQuery = page > 1
+            ? query.Skip(pageSize * (page - 1))
+            : query;
+            pagingQuery = pagingQuery.Take(pageSize);
 
             var entities = await pagingQuery
                 .Cacheable(efPolicy, efDebug)
@@ -147,15 +140,10 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (entities?.Any() != true)
                 return output;
 
-            var rowCount = await query
-                .Cacheable(efPolicy, efDebug)
-                .CountAsync();
-
             var viewList = entities
                 .Select(viewModel.Invoke)
-                .ToHasNotNullList()
-                .OrderDescendingByCreationDateTime()
-                .ToList();
+                //.OrderByDescending(x => x.Logs.Create.DateTime)
+                .ToHasNotNullList();
 
             if (viewList == null)
                 return output;
@@ -164,6 +152,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             output.Pages = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
             output.Items = viewList;
             output.HasDuplicates = await hasDuplicate;
+            output.Rows = rowCount;
 
             return output;
         }
@@ -215,23 +204,19 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (currentUser == null)
                 return null;
 
+            var isAdmin = searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin);
             var query = source.AsQueryable();
-            if (searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin))
-                query = query.IgnoreQueryFilters();
+            var dbServices = _database.GetService<IDbContextServices>();
+            var entityType = dbServices.Model.FindEntityType(query.ElementType);
+            var tableName = entityType.Relational().TableName;
 
-            return query;
-        }
+            var rawQuery =
+                $"SELECT * FROM [{tableName}] I CROSS APPLY ( SELECT TOP(1) JSON_VALUE(value, '$.d') ActivityDate, JSON_VALUE(value, '$.t') ActivityType FROM OPENJSON(I.Audit, '$') J ORDER BY [key] DESC ) J2 ";
 
-        public IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(IQueryable<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel
-        {
-            currentUser = CurrentUser();
-            if (currentUser == null)
-                return null;
+            if (!isAdmin)
+                rawQuery += $"WHERE ActivityType != {(int)LogTypeEnum.Delete}";
 
-            var query = source.AsQueryable();
-            if (searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin))
-                query = query.IgnoreQueryFilters();
-
+            query = query.IgnoreQueryFilters().FromSql(rawQuery);
             return query;
         }
 
@@ -394,7 +379,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, null, DeleteEnum.Hide, false);
+                        await RemoveAsync(redundant, null, DeleteEnum.Delete, false);
             }
 
             if (newList?.Any() != true)

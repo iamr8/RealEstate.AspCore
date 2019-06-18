@@ -18,6 +18,16 @@ body {
             padding-right: 265px;
         }
     }
+
+    > .navbar {
+        @media (min-width: 768px) {
+            padding-right: 265px;
+        }
+    }
+}
+
+ul {
+    padding-inline-start: 0;
 }
 
 @mixin widget-headerfooter() {
@@ -105,7 +115,7 @@ body {
 
     > section {
         padding: 10px;
-        padding-top: 20px;
+        padding-top: 20px !important;
 
         > div {
             /*margin-bottom: 10px;*/
@@ -444,10 +454,6 @@ input[type=submit], button {
 
 .navbar {
     @include transition(all, 0.5s, ease-in-out);
-
-    @media (min-width: 768px) {
-        padding-right: 265px;
-    }
 
     .navbar-toggler {
         border: none !important;
@@ -1650,6 +1656,10 @@ button {
         background-color: #b9bdc1;
         color: black;
         @include border-radius(0);
+
+        &.active {
+            color: white !important;
+        }
     }
 }
 
