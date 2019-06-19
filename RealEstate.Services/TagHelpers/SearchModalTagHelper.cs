@@ -45,6 +45,7 @@ namespace RealEstate.Services.TagHelpers
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var content = (await output.GetChildContentAsync()).GetContent();
+            BaseSearchModel search;
 
             var modalTitle = new TagBuilder("h5");
             modalTitle.AddCssClass("modal-title");
@@ -77,6 +78,13 @@ namespace RealEstate.Services.TagHelpers
             var form = new TagBuilder("form");
             form.Attributes.Add("method", "post");
 
+            var pageNoInput = await new InputTagHelper(Generator)
+            {
+                ViewContext = ViewContext,
+                For = SearchModel.GetPropertyModelExpression(nameof(search.PageNo))
+            }.RenderTagHelperAsync();
+            form.InnerHtml.AppendHtml(pageNoInput);
+
             var antiforgery = Generator.GenerateAntiforgery(ViewContext);
             form.InnerHtml.AppendHtml(antiforgery);
 
@@ -86,7 +94,6 @@ namespace RealEstate.Services.TagHelpers
             var hasPrevillege = ViewContext.HttpContext.User.IsInRole(nameof(Role.Admin)) || ViewContext.HttpContext.User.IsInRole(nameof(Role.SuperAdmin));
             if (hasPrevillege)
             {
-                BaseSearchModel search;
                 var includeDeletedItemsProperty = SearchModel.Model.GetType().GetPublicProperties()
                     .FirstOrDefault(x => x.Name.Equals(nameof(search.IncludeDeletedItems), StringComparison.CurrentCulture));
 

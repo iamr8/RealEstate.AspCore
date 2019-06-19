@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -83,9 +84,9 @@ namespace RealEstate.Web
                     });
                 options.ConfigureWarnings(config =>
                 {
-//                    config.Log(CoreEventId.IncludeIgnoredWarning);
-//                    config.Log(CoreEventId.NavigationIncluded);
-//                    config.Log(CoreEventId.NavigationLazyLoading);
+                    //                    config.Log(CoreEventId.IncludeIgnoredWarning);
+                    //                    config.Log(CoreEventId.NavigationIncluded);
+                    //                    config.Log(CoreEventId.NavigationLazyLoading);
                     config.Log(CoreEventId.DetachedLazyLoadingWarning);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
                     config.Log(RelationalEventId.QueryClientEvaluationWarning);

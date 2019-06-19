@@ -9,20 +9,7 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewDistrict"]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
-                <form method="post" class="search">
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-xs-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Name"></label>
-                                <input asp-for="SearchInput.Name" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </form>
-            </search-pane>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
@@ -54,3 +41,14 @@
         </section>
     </div>
 </div>
+
+<search-modal searchModel="@Model.SearchInput">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Name"></label>
+                <input asp-for="SearchInput.Name" class="form-control" />
+            </div>
+        </div>
+    </div>
+</search-modal>

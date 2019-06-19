@@ -16,6 +16,7 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
@@ -80,20 +81,14 @@ namespace RealEstate.Services.ServiceLayer.Base
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor _accessor;
-        private readonly ApplicationDbContext _database;
-        private readonly IServiceProvider _serviceProvider;
 
         public BaseService(
             IUnitOfWork unitOfWork,
-            IHttpContextAccessor accessor,
-            IServiceProvider serviceProvider,
-            ApplicationDbContext database
+            IHttpContextAccessor accessor
             )
         {
             _unitOfWork = unitOfWork;
             _accessor = accessor;
-            _database = database;
-            _serviceProvider = serviceProvider;
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
@@ -168,17 +163,14 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             if (!string.IsNullOrEmpty(searchModel.CreationDateFrom))
             {
-                var dtFrom = searchModel.CreationDateFrom.PersianToGregorian();
-                query = query.Where(x => EF.Functions.DateDiffSecond(dtFrom.Date, x.Audits.FirstOrDefault(c => c.Type == LogTypeEnum.Create).DateTime.Date) >= 0);
+                var dateTime = searchModel.CreationDateFrom.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
+                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dateTime, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) <= 0);
             }
 
             if (!string.IsNullOrEmpty(searchModel.CreationDateTo))
             {
-                var dtTo = searchModel.CreationDateTo.PersianToGregorian();
-                var dtString = dtTo.ToString("YYYY/MM/dd");
-                //                query = query.Where(x =>  EF.Functions.DateDiffDay(dtTo, Convert.ToDateTime(QueryFilterExtensions.JsonValue(x.Audit, "$[0].d"))) >= 0);
-                //                query = query.Where(x => x.Audits.FirstOrDefault(c => c.Type == LogTypeEnum.Create).DateTime.Date <= dtTo.Date);
-                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dtString, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
+                var dateTime = searchModel.CreationDateTo.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
+                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dateTime, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
             }
 
             if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
@@ -200,8 +192,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var isAdmin = searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin);
             var query = source.AsQueryable();
-            var entityType = _unitOfWork.GetDbContextServices().Model.FindEntityType(query.ElementType);
-            var tableName = entityType.Relational().TableName;
+            var tableName = query.ElementType.Name;
 
             var rawQuery =
                 $"SELECT * FROM [{tableName}] I CROSS APPLY ( SELECT TOP(1) JSON_VALUE(value, '$.d') ActivityDate, JSON_VALUE(value, '$.t') ActivityType FROM OPENJSON(I.Audit, '$') J ORDER BY [key] DESC ) J2 ";

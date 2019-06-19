@@ -2,6 +2,17 @@
 @model IndexModel
 @{
     var features = SelectItemExtensions.ToSelectList<FeatureTypeEnum>().AddNone();
+    var forbidden = new[]
+    {
+        "تعداد واحدهای مجتمع",
+        "مستاجر",
+        "سال ساخت",
+        "وام",
+        "تعداد خواب",
+        "متراژ",
+        "قیمت نهایی",
+        "قیمت هر متر"
+    };
 }
 <div class="col-12">
     <status>
@@ -12,26 +23,7 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewFeature"]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
-                <form method="post" class="search">
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-xs-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Name"></label>
-                                <input asp-for="SearchInput.Name" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Type"></label>
-                                <select asp-items="features" asp-for="SearchInput.Type" class="custom-select"></select>
-                            </div>
-                        </div>
-                    </div>
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </form>
-            </search-pane>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
@@ -54,10 +46,13 @@
                                 </span>
                             </div>
                             <div class="button">
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                @if (!forbidden.Any(x => x.Equals(item.Name, StringComparison.CurrentCulture)))
                                 {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
-                                    <a asp-controller="Remove" asp-action="FeatureAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                    {
+                                        <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
+                                        <a asp-controller="Remove" asp-action="FeatureAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                                    }
                                 }
                             </div>
                         </div>
@@ -69,3 +64,20 @@
         </section>
     </div>
 </div>
+
+<search-modal searchModel="@Model.SearchInput">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Name"></label>
+                <input asp-for="SearchInput.Name" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Type"></label>
+                <select asp-items="features" asp-for="SearchInput.Type" class="custom-select"></select>
+            </div>
+        </div>
+    </div>
+</search-modal>

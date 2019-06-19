@@ -15,8 +15,10 @@ using RealEstate.Services.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Query.Expressions;
 
 namespace RealEstate.Services.Database
 {
@@ -115,7 +117,16 @@ namespace RealEstate.Services.Database
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
             modelBuilder.HasDbFunction(() => QueryFilterExtensions.JsonValue(default, default));
             modelBuilder.HasDbFunction(() => QueryFilterExtensions.IsNumeric(default));
-            modelBuilder.HasDbFunction(() => QueryFilterExtensions.DateDiff(default, default, default));
+            modelBuilder.HasDbFunction(typeof(QueryFilterExtensions)
+                    .GetMethod(nameof(QueryFilterExtensions.DateDiff)))
+                .HasTranslation(args => {
+                    var newArgs = args.ToArray();
+                    newArgs[0] = new SqlFragmentExpression((string)((ConstantExpression)newArgs[0]).Value);
+                    return new SqlFunctionExpression(
+                        "DATEDIFF",
+                        typeof(int),
+                        newArgs);
+                });
 
             modelBuilder.SeedDatabase();
             base.OnModelCreating(modelBuilder);

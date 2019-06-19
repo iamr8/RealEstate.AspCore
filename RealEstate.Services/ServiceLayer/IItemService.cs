@@ -139,20 +139,20 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
-                    Items = x.Select(item => new
-                    {
-                        ItemCategory = item.Category.Name,
-                        ItemAudit = item.Audit,
-                        ItemAudits = item.Audits,
-                        PropertyAudit = item.Property.Audit,
-                        PropertyAudits = item.Property.Audits,
-                        ItemId = item.Id,
-                        PropertyId = item.PropertyId,
-                        PropertyStreet = item.Property.Street,
-                        PropertyDistrict = item.Property.District.Name,
-                        PropertyCategory = item.Property.Category.Name,
-                        PropertyOwners = item.Property.PropertyOwnerships.SelectMany(c => c.Ownerships.Select(v => new { v.Customer.Name, v.Customer.MobileNumber })).ToList()
-                    }).ToList(),
+                    //Items = x.Select(item => new
+                    //{
+                    //    ItemCategory = item.Category.Name,
+                    //    ItemAudit = item.Audit,
+                    //    ItemAudits = item.Audits,
+                    //    PropertyAudit = item.Property.Audit,
+                    //    PropertyAudits = item.Property.Audits,
+                    //    ItemId = item.Id,
+                    //    PropertyId = item.PropertyId,
+                    //    PropertyStreet = item.Property.Street,
+                    //    PropertyDistrict = item.Property.District.Name,
+                    //    PropertyCategory = item.Property.Category.Name,
+                    //    PropertyOwners = item.Property.PropertyOwnerships.SelectMany(c => c.Ownerships.Select(v => new { v.Customer.Name, v.Customer.MobileNumber })).ToList()
+                    //}).ToList(),
                     Count = x.Count(),
                     Pictures = x.SelectMany(item => item.Property.Pictures).Select(c => new
                     {

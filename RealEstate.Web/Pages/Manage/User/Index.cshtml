@@ -12,26 +12,7 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewUser"]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
-                <form method="post">
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Username"></label>
-                                <input asp-for="SearchInput.Username" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Role"></label>
-                                <select asp-for="SearchInput.Role" asp-items="roles" class="custom-select"></select>
-                            </div>
-                        </div>
-                    </div>
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </form>
-            </search-pane>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
@@ -129,3 +110,20 @@
         </section>
     </div>
 </div>
+
+<search-modal searchModel="@Model.SearchInput">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Username"></label>
+                <input asp-for="SearchInput.Username" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Role"></label>
+                <select asp-for="SearchInput.Role" asp-items="roles" class="custom-select"></select>
+            </div>
+        </div>
+    </div>
+</search-modal>

@@ -9,47 +9,7 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewEmployee]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-pane is-under-condition="@Model.SearchInput.IsTriggered">
-                <form method="post">
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.FirstName"></label>
-                                <input asp-for="SearchInput.FirstName" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.LastName"></label>
-                                <input asp-for="SearchInput.LastName" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Mobile"></label>
-                                <input asp-for="SearchInput.Mobile" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-xs-12 col-md-4 margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Phone"></label>
-                                <input asp-for="SearchInput.Phone" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-md margin-bottomed">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Address"></label>
-                                <input asp-for="SearchInput.Address" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </form>
-            </search-pane>
-
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
             <item-viewer model="@Model.List.Items">
 
                 @foreach (var item in Model.List.Items)
@@ -154,3 +114,40 @@
         </section>
     </div>
 </div>
+
+<search-modal searchModel="@Model.SearchInput">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-xs-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.FirstName"></label>
+                <input asp-for="SearchInput.FirstName" class="form-control" />
+            </div>
+        </div>
+        <div class="col-xs-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.LastName"></label>
+                <input asp-for="SearchInput.LastName" class="form-control" />
+            </div>
+        </div>
+        <div class="col-xs-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Mobile"></label>
+                <input asp-for="SearchInput.Mobile" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center align-items-center">
+        <div class="col-xs-12 col-md-4 margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Phone"></label>
+                <input asp-for="SearchInput.Phone" class="form-control" />
+            </div>
+        </div>
+        <div class="col-xs-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Address"></label>
+                <input asp-for="SearchInput.Address" class="form-control" />
+            </div>
+        </div>
+    </div>
+</search-modal>

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
@@ -27,6 +28,11 @@ namespace RealEstate.Services.Extensions
 
         [DbFunction("ISNUMERIC", "")]
         public static string IsNumeric(string str) => throw new NotSupportedException();
+
+        public static string ToSql<TSource>(this IQueryable<TSource> query)
+        {
+            return query.ToSql(query.Expression, new EFCacheKeyHashProvider())?.Sql;
+        }
 
         public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
