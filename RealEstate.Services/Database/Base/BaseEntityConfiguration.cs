@@ -19,7 +19,7 @@ namespace RealEstate.Services.Database.Base
             builder.Property(e => e.Id)
                 .ValueGeneratedOnAdd();
 
-            builder.HasQueryFilter(entity => Convert.ToInt32(QueryFilterExtensions.JsonValue(entity.Audit, "$[0].t")) != (int)LogTypeEnum.Delete);
+            builder.HasQueryFilter(entity => Convert.ToInt32(CustomDbFunctionsExtensions.JsonValue(entity.Audit, "$[0].t")) != (int)LogTypeEnum.Delete);
         }
     }
 }

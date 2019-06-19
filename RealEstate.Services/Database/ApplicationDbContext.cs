@@ -115,10 +115,10 @@ namespace RealEstate.Services.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-            modelBuilder.HasDbFunction(() => QueryFilterExtensions.JsonValue(default, default));
-            modelBuilder.HasDbFunction(() => QueryFilterExtensions.IsNumeric(default));
-            modelBuilder.HasDbFunction(typeof(QueryFilterExtensions)
-                    .GetMethod(nameof(QueryFilterExtensions.DateDiff)))
+            modelBuilder.HasDbFunction(() => CustomDbFunctionsExtensions.JsonValue(default, default));
+            modelBuilder.HasDbFunction(() => CustomDbFunctionsExtensions.IsNumeric(default));
+            modelBuilder.HasDbFunction(typeof(CustomDbFunctionsExtensions)
+                    .GetMethod(nameof(CustomDbFunctionsExtensions.DateDiff)))
                 .HasTranslation(args => {
                     var newArgs = args.ToArray();
                     newArgs[0] = new SqlFragmentExpression((string)((ConstantExpression)newArgs[0]).Value);

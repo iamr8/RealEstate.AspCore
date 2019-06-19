@@ -66,26 +66,15 @@ namespace RealEstate.Services.ServiceLayer
         private readonly IBaseService _baseService;
 
         private readonly ICustomerService _customerService;
-        private readonly IFeatureService _featureService;
         private readonly IPropertyService _propertyService;
-        private readonly DbSet<Deal> _itemRequests;
         private readonly DbSet<Item> _items;
-        private readonly DbSet<Ownership> _ownerships;
         private readonly DbSet<Customer> _customers;
         private readonly DbSet<DealRequest> _dealRequests;
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Feature> _features;
         private readonly DbSet<User> _users;
-        private readonly DbSet<Category> _categories;
         private readonly DbSet<Picture> _pictures;
-        private readonly DbSet<Property> _properties;
         private readonly DbSet<ItemFeature> _itemFeatures;
-        private readonly DbSet<PropertyFeature> _propertyFeatures;
-        private readonly DbSet<PropertyFacility> _propertyFacilities;
-        private readonly DbSet<Facility> _facilities;
-        private readonly DbSet<UserPropertyCategory> _userPropertyCategories;
-        private readonly DbSet<UserItemCategory> _userItemCategories;
-        private readonly DbSet<PropertyOwnership> _propertyOwnerships;
 
         public ItemService(
             IBaseService baseService,
@@ -97,26 +86,15 @@ namespace RealEstate.Services.ServiceLayer
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
-            _featureService = featureService;
             _customerService = customerService;
             _propertyService = propertyService;
-            _itemRequests = _unitOfWork.Set<Deal>();
-            _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
             _applicants = _unitOfWork.Set<Applicant>();
-            _properties = _unitOfWork.Set<Property>();
             _items = _unitOfWork.Set<Item>();
-            _userItemCategories = _unitOfWork.Set<UserItemCategory>();
-            _userPropertyCategories = _unitOfWork.Set<UserPropertyCategory>();
-            _ownerships = _unitOfWork.Set<Ownership>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
-            _facilities = _unitOfWork.Set<Facility>();
             _itemFeatures = _unitOfWork.Set<ItemFeature>();
-            _propertyFeatures = _unitOfWork.Set<PropertyFeature>();
             _users = _unitOfWork.Set<User>();
-            _propertyFacilities = _unitOfWork.Set<PropertyFacility>();
-            _categories = _unitOfWork.Set<Category>();
             _pictures = _unitOfWork.Set<Picture>();
         }
 
@@ -130,31 +108,22 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Category)
                 .Include(x => x.Category)
                 .Where(x => x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any()))
+                .GroupJoin(_pictures, x => x.PropertyId, x => x.PropertyId, (item, pictures) => new
+                {
+                    Item = item,
+                    Picture = pictures,
+                })
                 .GroupBy(x => new
                 {
-                    ItemCategory = x.Category.Name,
-                    PropertyCategory = x.Property.Category.Name,
+                    ItemCategory = x.Item.Category.Name,
+                    PropertyCategory = x.Item.Property.Category.Name,
                 })
                 .Select(x => new
                 {
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
-                    //Items = x.Select(item => new
-                    //{
-                    //    ItemCategory = item.Category.Name,
-                    //    ItemAudit = item.Audit,
-                    //    ItemAudits = item.Audits,
-                    //    PropertyAudit = item.Property.Audit,
-                    //    PropertyAudits = item.Property.Audits,
-                    //    ItemId = item.Id,
-                    //    PropertyId = item.PropertyId,
-                    //    PropertyStreet = item.Property.Street,
-                    //    PropertyDistrict = item.Property.District.Name,
-                    //    PropertyCategory = item.Property.Category.Name,
-                    //    PropertyOwners = item.Property.PropertyOwnerships.SelectMany(c => c.Ownerships.Select(v => new { v.Customer.Name, v.Customer.MobileNumber })).ToList()
-                    //}).ToList(),
                     Count = x.Count(),
-                    Pictures = x.SelectMany(item => item.Property.Pictures).Select(c => new
+                    Pictures = x.SelectMany(item => item.Picture).Select(c => new
                     {
                         c.File
                     }).ToList()
@@ -619,13 +588,13 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                             }
@@ -651,13 +620,13 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                        && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                                    && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                                    && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                                     && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                             }
@@ -670,14 +639,14 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                   && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                   && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                    && Convert.ToInt64(ftr.Value) >= numFrom
                                                                                    && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(QueryFilterExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom
                                                                                        && Convert.ToInt64(ftr.Value) <= numTo));
                                 }

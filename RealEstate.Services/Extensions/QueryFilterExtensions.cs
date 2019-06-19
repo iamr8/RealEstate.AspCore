@@ -1,10 +1,8 @@
 ﻿using EFSecondLevelCache.Core;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,19 +13,10 @@ namespace RealEstate.Services.Extensions
         public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
             var source = from que in entities
-                         orderby JsonValue(que.Audit, "$[0].d") descending
+                         orderby CustomDbFunctionsExtensions.JsonValue(que.Audit, "$[0].d") descending
                          select que;
             return source;
         }
-
-        [DbFunction("JSON_VALUE", "")]
-        public static string JsonValue(string source, string path) => throw new NotSupportedException();
-
-        [DbFunction("DATEDIFF")]
-        public static int DateDiff(string interval, string startingDate, string endingDate) => throw new NotSupportedException();
-
-        [DbFunction("ISNUMERIC", "")]
-        public static string IsNumeric(string str) => throw new NotSupportedException();
 
         public static string ToSql<TSource>(this IQueryable<TSource> query)
         {

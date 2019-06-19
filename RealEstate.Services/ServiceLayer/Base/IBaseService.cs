@@ -164,13 +164,13 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (!string.IsNullOrEmpty(searchModel.CreationDateFrom))
             {
                 var dateTime = searchModel.CreationDateFrom.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
-                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dateTime, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) <= 0);
+                query = query.Where(x => CustomDbFunctionsExtensions.DateDiff("DAY", dateTime, CustomDbFunctionsExtensions.JsonValue(x.Audit, "$[0].d")) <= 0);
             }
 
             if (!string.IsNullOrEmpty(searchModel.CreationDateTo))
             {
                 var dateTime = searchModel.CreationDateTo.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
-                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dateTime, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
+                query = query.Where(x => CustomDbFunctionsExtensions.DateDiff("DAY", dateTime, CustomDbFunctionsExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
             }
 
             if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
@@ -178,7 +178,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 if (string.IsNullOrEmpty(searchModel.CreatorId))
                     return query;
 
-                query = query.Where(entity => QueryFilterExtensions.JsonValue(entity.Audit, "$[0].i") == searchModel.CreatorId);
+                query = query.Where(entity => CustomDbFunctionsExtensions.JsonValue(entity.Audit, "$[0].i") == searchModel.CreatorId);
             }
 
             return query;
