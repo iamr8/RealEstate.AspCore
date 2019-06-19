@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services.Extensions;
 
-namespace RealEstate.Web.Components
+namespace RealEstate.Services.ViewComponents
 {
     public class PersonSelectorComplexViewComponent : ViewComponent
     {

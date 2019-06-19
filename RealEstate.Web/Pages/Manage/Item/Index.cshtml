@@ -59,106 +59,60 @@
             <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
-            <nav class="navbar navbar-expand navbar-light bg-light mb-2 p-0">
-                <div class="collapse navbar-collapse show">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <button type="button" class="nav-link btn-secondary btn-sm @(Model.SearchInput.IsTriggered ? " active" : "" )" data-toggle="modal" data-target="#searchModal">
-                                <i class="fa fa-search"></i>@SharedLocalizer[SharedResource.SearchFilters]
-                            </button>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="creationDate" data-sort-ascending="true">@SharedLocalizer[SharedResource.Oldest]</button>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت نهایی</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت هر متر</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">متراژ</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">تعداد خواب</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
-                            </div>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">سال ساخت</a>
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
-                                <div class="dropdown-divider"></div>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
-                                <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
-                            </div>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav mr-auto">
-                        @if (Model.SearchInput.IsTriggered)
-                        {
-                            <li class="nav-item mr-auto">
-                                <a asp-page="@typeof(IndexModel).Page()" asp-route-pageNo="@Model.SearchInput.PageNo" class="nav-link btn-secondary btn-sm">
-                                    @SharedLocalizer[SharedResource.ClearSearch]
-                                </a>
-                            </li>
-                        }
-                        <li class="nav-item">
-                            <button type="button" class="nav-link btn-sm">
-                                @Model.List.Rows آیتم
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            @if (Model.SearchInput.IsTriggered)
-            {
-                <div class="row justify-content-center align-items-center mb-2">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body text-right">
-                                <h5>
-                                    جستجو بر اساس:
-                                </h5>
-                                <ul class="info-breadcrumb no-border-bottom">
-                                    @foreach (var (key, value) in Model.SearchInput.SearchOptions)
-                                    {
-                                        <li>
-                                            <b class="text-dark">@key@(value != null ? ":" : "")</b> @value
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        </div>
+            <search-nav rows="@Model.List.Rows" searchModel="@Model.SearchInput">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="creationDate" data-sort-ascending="true">@SharedLocalizer[SharedResource.Oldest]</button>
                     </div>
-                </div>
-            }
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت نهایی</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="finalPrice" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">قیمت هر متر</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="pricePerMeter" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">متراژ</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="meters" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">تعداد خواب</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="true">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="bedRooms" data-sort-ascending="false">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">سال ساخت</a>
+                    <div class="dropdown-menu">
+                        <button type="button" class="dropdown-item sorter active">@SharedLocalizer[SharedResource.Cancel]</button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
+                        <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
+                    </div>
+                </li>
+            </search-nav>
         </section>
         <section class="container-fluid grid">
             <item-viewer model="@Model.List.Items">
@@ -321,145 +275,117 @@
         </section>
     </div>
 </div>
-<form method="post" class="modal fade search" id="searchModal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">@SharedLocalizer[SharedResource.SearchFilters]</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+<search-modal searchModel="@Model.SearchInput">
+    <hr subject="@SharedLocalizer[SharedResource.Category]" />
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
+                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
             </div>
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <hr subject="@SharedLocalizer[SharedResource.Category]" />
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.ItemCategory"></label>
-                                <select asp-items="itemCategories" asp-for="SearchInput.ItemCategory" class="custom-select"></select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
-                                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
-                            </div>
-                        </div>
-                    </div>
-                    <hr subject="محل ملک" />
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.District"></label>
-                                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Street"></label>
-                                <input asp-for="SearchInput.Street" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-                    <hr subject="@SharedLocalizer[SharedResource.Ownership]" />
-                    <div class="row justify-content-center align-items-center">
-                        <input asp-for="SearchInput.PageNo" />
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.Owner"></label>
-                                <input asp-for="SearchInput.Owner" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-12 col-md">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
-                                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-
-                    @if (features?.Any() == true)
-                    {
-                        <hr />
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-12" id="features-wrapper">
-                                <div class="itemShow adder input-wrapper">
-                                    <input asp-for="SearchInput.FeaturesJson" />
-                                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
-                                    <select asp-items="featuresSelect" id="features-select" class="custom-select"></select>
-                                    <label class="control-label">@SharedLocalizer[SharedResource.FromEqual]</label>
-                                    <input class="form-control" id="featureFrom" />
-                                    <label class="control-label">@SharedLocalizer[SharedResource.To]</label>
-                                    <input class="form-control" id="featureTo" />
-                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                </div>
-                                <div class="items hidden"></div>
-                            </div>
-                        </div>
-                        <hr subject="مبلغ های پیش فرض" />
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="" data-feature-to="200000000" class="badge badge-secondary feature-default">زیر 200 میلیون تومان</a>
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="200000000" data-feature-to="300000000" class="badge badge-secondary feature-default">بین 200 تا 300 میلیون تومان</a>
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="300000000" data-feature-to="500000000" class="badge badge-secondary feature-default">بین 300 تا 500 میلیون تومان</a>
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="500000000" data-feature-to="700000000" class="badge badge-secondary feature-default">بین 500 تا 700 میلیون تومان</a>
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="700000000" data-feature-to="1000000000" class="badge badge-secondary feature-default">بین 700 تا یک میلیارد تومان</a>
-                        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="1000000000" data-feature-to="" class="badge badge-secondary feature-default">بالای 1 میلیارد تومان</a>
-                        <hr subject="متراژ های پیش فرض" />
-                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="" data-feature-to="70" class="badge badge-secondary feature-default">زیر 70 متر</a>
-                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="70" data-feature-to="90" class="badge badge-secondary feature-default">بین 70 تا 90 متر</a>
-                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="90" data-feature-to="120" class="badge badge-secondary feature-default">بین 90 تا 120 متر</a>
-                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="120" data-feature-to="150" class="badge badge-secondary feature-default">بین 120 تا 150 متر</a>
-                        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="150" data-feature-to="" class="badge badge-secondary feature-default">بالای 150 متر</a>
-                    }
-                    @if (facilities?.Any() == true)
-                    {
-                        <hr />
-                        <div class="row justify-content-center align-items-center">
-                            <div class="col-12" id="facilities-wrapper">
-                                <div class="itemShow adder input-wrapper">
-                                    <input asp-for="SearchInput.FacilitiesJson" />
-                                    <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
-                                    <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
-                                    <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                </div>
-                                <div class="items hidden"></div>
-                            </div>
-                        </div>
-                    }
-                    <hr />
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-12 col-lg">
-                            <div class="custom-control custom-switch" dir="rtl">
-                                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IsNegotiable">
-                                <label class="custom-control-label" asp-for="@Model.SearchInput.IsNegotiable"></label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg">
-                            <div class="custom-control custom-switch" dir="rtl">
-                                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.HasPicture">
-                                <label class="custom-control-label" asp-for="@Model.SearchInput.HasPicture"></label>
-                            </div>
-                        </div>
-                    </div>
-                    <vc:admin-search-condition model="@Model.SearchInput" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                {
-                    <div class="ml-auto">
-                        <div class="custom-control custom-switch" dir="rtl">
-                            <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IncludeDeletedItems">
-                            <label class="custom-control-label" asp-for="@Model.SearchInput.IncludeDeletedItems"></label>
-                        </div>
-                    </div>
-                }
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">@SharedLocalizer[SharedResource.Cancel]</button>
-                <button type="submit" class="btn btn-primary btn-sm">@SharedLocalizer[SharedResource.Search]</button>
+        </div>
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.PropertyCategory"></label>
+                <select asp-items="propertyCategories" asp-for="SearchInput.PropertyCategory" class="custom-select"></select>
             </div>
         </div>
     </div>
-</form>
+    <hr subject="محل ملک" />
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.District"></label>
+                <select asp-items="districtsSelect" asp-for="SearchInput.District" class="custom-select"></select>
+            </div>
+        </div>
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Street"></label>
+                <input asp-for="SearchInput.Street" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <hr subject="@SharedLocalizer[SharedResource.Ownership]" />
+    <div class="row justify-content-center align-items-center">
+        <input asp-for="SearchInput.PageNo" />
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Owner"></label>
+                <input asp-for="SearchInput.Owner" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.OwnerMobile"></label>
+                <input asp-for="SearchInput.OwnerMobile" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    @if (features?.Any() == true)
+    {
+        <hr />
+        <div class="row justify-content-center align-items-center">
+            <div class="col-12" id="features-wrapper">
+                <div class="itemShow adder input-wrapper">
+                    <input asp-for="SearchInput.FeaturesJson" />
+                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
+                    <select asp-items="featuresSelect" id="features-select" class="custom-select"></select>
+                    <label class="control-label">@SharedLocalizer[SharedResource.FromEqual]</label>
+                    <input class="form-control" id="featureFrom" />
+                    <label class="control-label">@SharedLocalizer[SharedResource.To]</label>
+                    <input class="form-control" id="featureTo" />
+                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                </div>
+                <div class="items hidden"></div>
+            </div>
+        </div>
+        <hr subject="مبلغ های پیش فرض" />
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="" data-feature-to="200000000" class="badge badge-secondary feature-default">زیر 200 میلیون تومان</a>
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="200000000" data-feature-to="300000000" class="badge badge-secondary feature-default">بین 200 تا 300 میلیون تومان</a>
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="300000000" data-feature-to="500000000" class="badge badge-secondary feature-default">بین 300 تا 500 میلیون تومان</a>
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="500000000" data-feature-to="700000000" class="badge badge-secondary feature-default">بین 500 تا 700 میلیون تومان</a>
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="700000000" data-feature-to="1000000000" class="badge badge-secondary feature-default">بین 700 تا یک میلیارد تومان</a>
+        <a href="#" data-feature-name="@defaultFinalPriceFeatureName" data-feature-id="@defaultFinalPriceFeatureId" data-feature-from="1000000000" data-feature-to="" class="badge badge-secondary feature-default">بالای 1 میلیارد تومان</a>
+        <hr subject="متراژ های پیش فرض" />
+        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="" data-feature-to="70" class="badge badge-secondary feature-default">زیر 70 متر</a>
+        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="70" data-feature-to="90" class="badge badge-secondary feature-default">بین 70 تا 90 متر</a>
+        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="90" data-feature-to="120" class="badge badge-secondary feature-default">بین 90 تا 120 متر</a>
+        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="120" data-feature-to="150" class="badge badge-secondary feature-default">بین 120 تا 150 متر</a>
+        <a href="#" data-feature-name="@defaultMetersFeatureName" data-feature-id="@defaultMetersFeatureId" data-feature-from="150" data-feature-to="" class="badge badge-secondary feature-default">بالای 150 متر</a>
+    }
+    @if (facilities?.Any() == true)
+    {
+        <hr />
+        <div class="row justify-content-center align-items-center">
+            <div class="col-12" id="facilities-wrapper">
+                <div class="itemShow adder input-wrapper">
+                    <input asp-for="SearchInput.FacilitiesJson" />
+                    <label class="control-label">@SharedLocalizer[SharedResource.Facilities]</label>
+                    <select asp-items="facilitiesSelect" id="facility-select" class="custom-select"></select>
+                    <input type="button" id="addNewFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                </div>
+                <div class="items hidden"></div>
+            </div>
+        </div>
+    }
+    <hr />
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-lg">
+            <div class="custom-control custom-switch" dir="rtl">
+                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.IsNegotiable">
+                <label class="custom-control-label" asp-for="@Model.SearchInput.IsNegotiable"></label>
+            </div>
+        </div>
+        <div class="col-12 col-lg">
+            <div class="custom-control custom-switch" dir="rtl">
+                <input type="checkbox" class="custom-control-input" asp-for="@Model.SearchInput.HasPicture">
+                <label class="custom-control-label" asp-for="@Model.SearchInput.HasPicture"></label>
+            </div>
+        </div>
+    </div>
+</search-modal>
 @section Styles
 {
     <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />

@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RealEstate.Base;
 using RealEstate.Services.BaseLog;
 using RestSharp.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace RealEstate.Web.Components
+namespace RealEstate.Services.ViewComponents
 {
     public class PaginationViewComponent : ViewComponent
     {

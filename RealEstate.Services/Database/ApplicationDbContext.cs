@@ -115,6 +115,7 @@ namespace RealEstate.Services.Database
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
             modelBuilder.HasDbFunction(() => QueryFilterExtensions.JsonValue(default, default));
             modelBuilder.HasDbFunction(() => QueryFilterExtensions.IsNumeric(default));
+            modelBuilder.HasDbFunction(() => QueryFilterExtensions.DateDiff(default, default, default));
 
             modelBuilder.SeedDatabase();
             base.OnModelCreating(modelBuilder);

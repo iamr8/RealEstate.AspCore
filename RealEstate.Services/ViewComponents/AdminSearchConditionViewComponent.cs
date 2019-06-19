@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RealEstate.Base;
 
-namespace RealEstate.Web.Components
+namespace RealEstate.Services.ViewComponents
 {
     public class AdminSearchConditionViewComponent : ViewComponent
     {

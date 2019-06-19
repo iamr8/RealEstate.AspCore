@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services.BaseLog;
 
-namespace RealEstate.Web.Components
+namespace RealEstate.Services.ViewComponents
 {
     public class LogViewComponent : ViewComponent
     {

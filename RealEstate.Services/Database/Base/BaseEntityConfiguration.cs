@@ -20,8 +20,6 @@ namespace RealEstate.Services.Database.Base
                 .ValueGeneratedOnAdd();
 
             builder.HasQueryFilter(entity => Convert.ToInt32(QueryFilterExtensions.JsonValue(entity.Audit, "$[0].t")) != (int)LogTypeEnum.Delete);
-//            builder.HasQueryFilter(entity => string.IsNullOrEmpty(entity.Audit)
-//            || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
         }
     }
 }

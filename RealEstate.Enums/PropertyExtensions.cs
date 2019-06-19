@@ -221,11 +221,24 @@ namespace RealEstate.Base
             }
         }
 
-        public static IHtmlContent GetValidator<TModel>(this Expression<Func<TModel, object>> property) where TModel : class
+        public static Dictionary<string, object> GetValidator(this Type modelType, string expression)
         {
+            if (string.IsNullOrEmpty(expression))
+                return default;
+
+            var property = modelType.GetPublicProperties().FirstOrDefault(x => x.Name.Equals(expression, StringComparison.CurrentCulture));
+            if (property == null)
+                return default;
+
+            var result = new Dictionary<string, object>
+            {
+                {
+                    "data-val", "true"
+                }
+            };
             var regTerm = string.Empty;
-            var finalTerm = "data-val=\"true\"";
-            var required = property.GetPropertyAttribute<TModel, RequiredAttribute>();
+
+            var required = property.GetCustomAttribute<RequiredAttribute>();
             if (required != null)
             {
                 var finalRequired = string.Empty;
@@ -242,14 +255,19 @@ namespace RealEstate.Base
                     finalRequired += required.ErrorMessage;
                 }
 
-                finalTerm += $"data-val-required=\"{finalRequired}\"";
+                result.Add("data-val-required", finalRequired);
             }
 
-            var (pattern, regex) = property.GetRegularExpression();
+            var (pattern, regex) = modelType.GetRegularExpression(expression);
             if (pattern != null && regex != null)
                 regTerm = $"{pattern} {regex}";
 
-            return new HtmlString($"{finalTerm} {regTerm}");
+            return result;
+        }
+
+        public static Dictionary<string, object> GetValidator<TModel>(this Expression<Func<TModel, object>> property) where TModel : class
+        {
+            return GetValidator(property.Type, property.Name);
         }
 
         public static string GetDescription(this Enum value)
@@ -292,9 +310,19 @@ namespace RealEstate.Base
             return propertyInfo.Name;
         }
 
-        public static (IHtmlContent, IHtmlContent) GetRegularExpression<TModel>(this Expression<Func<TModel, object>> property, bool requireTag = true)
+        public static (IHtmlContent, IHtmlContent) GetRegularExpression(this Type modelType, string expression, bool requireTag = true)
         {
-            var validator = property.GetPropertyAttribute<TModel, ValueValidationAttribute>();
+            if (modelType == null)
+                return default;
+
+            if (string.IsNullOrEmpty(expression))
+                return default;
+
+            var property = modelType.GetPublicProperties().FirstOrDefault(x => x.Name.Equals(expression, StringComparison.CurrentCulture));
+            if (property == null)
+                return default;
+
+            var validator = property.GetCustomAttribute<ValueValidationAttribute>();
             if (validator != null)
             {
                 return new ValueTuple<IHtmlContent, IHtmlContent>
@@ -308,7 +336,7 @@ namespace RealEstate.Base
                 };
             }
 
-            var regular = property.GetPropertyAttribute<TModel, RegularExpressionAttribute>();
+            var regular = property.GetCustomAttribute<RegularExpressionAttribute>();
             if (regular != null)
             {
                 return new ValueTuple<IHtmlContent, IHtmlContent>
@@ -323,6 +351,11 @@ namespace RealEstate.Base
             }
 
             return new ValueTuple<IHtmlContent, IHtmlContent>(null, null);
+        }
+
+        public static (IHtmlContent, IHtmlContent) GetRegularExpression<TModel>(this Expression<Func<TModel, object>> property, bool requireTag = true)
+        {
+            return GetRegularExpression(property.Type, property.Name);
         }
     }
 }

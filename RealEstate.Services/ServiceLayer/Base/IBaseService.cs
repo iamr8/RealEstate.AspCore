@@ -3,10 +3,8 @@ using EFSecondLevelCache.Core.Contracts;
 using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using MoreLinq;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -171,13 +169,16 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (!string.IsNullOrEmpty(searchModel.CreationDateFrom))
             {
                 var dtFrom = searchModel.CreationDateFrom.PersianToGregorian();
-                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date >= dtFrom.Date);
+                query = query.Where(x => EF.Functions.DateDiffSecond(dtFrom.Date, x.Audits.FirstOrDefault(c => c.Type == LogTypeEnum.Create).DateTime.Date) >= 0);
             }
 
             if (!string.IsNullOrEmpty(searchModel.CreationDateTo))
             {
                 var dtTo = searchModel.CreationDateTo.PersianToGregorian();
-                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).DateTime.Date <= dtTo.Date);
+                var dtString = dtTo.ToString("YYYY/MM/dd");
+                //                query = query.Where(x =>  EF.Functions.DateDiffDay(dtTo, Convert.ToDateTime(QueryFilterExtensions.JsonValue(x.Audit, "$[0].d"))) >= 0);
+                //                query = query.Where(x => x.Audits.FirstOrDefault(c => c.Type == LogTypeEnum.Create).DateTime.Date <= dtTo.Date);
+                query = query.Where(x => QueryFilterExtensions.DateDiff("DAY", dtString, QueryFilterExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
             }
 
             if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
@@ -185,14 +186,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 if (string.IsNullOrEmpty(searchModel.CreatorId))
                     return query;
 
-                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == searchModel.CreatorId);
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(searchModel.CreatorId))
-                    return query;
-
-                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
+                query = query.Where(entity => QueryFilterExtensions.JsonValue(entity.Audit, "$[0].i") == searchModel.CreatorId);
             }
 
             return query;
