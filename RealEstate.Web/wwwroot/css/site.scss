@@ -551,6 +551,9 @@ input[type=submit], button {
         margin-top: 10px;
 
         @media (max-width: 768px) {
+            padding-left: 0;
+            padding-right: 0;
+
             > .row {
                 > div {
                     margin-bottom: 5px;
@@ -571,6 +574,8 @@ input[type=submit], button {
 
         @media (max-width: 768px) {
             @include flex-flow(column);
+            padding-left: 0;
+            padding-right: 0;
 
             > .info {
                 margin-bottom: 10px;
@@ -1676,6 +1681,26 @@ button {
             button.btn-sm {
                 background-color: lightgrey;
             }
+        }
+    }
+}
+
+.navbar-toggler-title {
+    font-size: 10pt;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.nav-link {
+    text-align: right;
+}
+
+#searchNavBar {
+    .nav-link {
+        padding: 10px;
+
+        > i {
+            margin-left: 5px;
         }
     }
 }

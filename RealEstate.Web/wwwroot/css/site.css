@@ -538,10 +538,13 @@ input[type=submit], button {
     padding-top: 10px;
     margin-top: 10px; }
     @media (max-width: 768px) {
-      .itemShow > .tracker > .row > div {
-        margin-bottom: 5px; }
-        .itemShow > .tracker > .row > div:last-child {
-          margin-bottom: 0; } }
+      .itemShow > .tracker {
+        padding-left: 0;
+        padding-right: 0; }
+        .itemShow > .tracker > .row > div {
+          margin-bottom: 5px; }
+          .itemShow > .tracker > .row > div:last-child {
+            margin-bottom: 0; } }
   .itemShow > .detail {
     display: -webkit-box;
     display: -ms-flexbox;
@@ -567,7 +570,9 @@ input[type=submit], button {
         -webkit-flex-flow: column;
         flex-flow: column;
         -webkit-box-orient: vertical;
-        -webkit-box-direction: normal; }
+        -webkit-box-direction: normal;
+        padding-left: 0;
+        padding-right: 0; }
         .itemShow > .detail > .info {
           margin-bottom: 10px; }
           .itemShow > .detail > .info > span > .title {
@@ -1434,3 +1439,16 @@ button > i.fa {
 
 .element-item:hover > .detail button.btn-sm, .element-item:hover > .tracker button.btn-sm, .element-item:focus > .detail button.btn-sm, .element-item:focus > .tracker button.btn-sm {
   background-color: lightgrey; }
+
+.navbar-toggler-title {
+  font-size: 10pt;
+  margin-right: 10px;
+  vertical-align: middle; }
+
+.nav-link {
+  text-align: right; }
+
+#searchNavBar .nav-link {
+  padding: 10px; }
+  #searchNavBar .nav-link > i {
+    margin-left: 5px; }

@@ -51,7 +51,7 @@ $(document).ready(function() {
 
   $('[data-toggle="tooltip"]').tooltip();
 });
-$(".navbar-toggler").click(function(e) {
+$("#mainNavBar > .navbar-toggler").click(function(e) {
   $(".backdrop").toggleClass("in");
   $("#navbarNavDropdown").toggleClass("in");
 });

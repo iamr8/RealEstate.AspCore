@@ -111,7 +111,7 @@ namespace RealEstate.Services.ServiceLayer
                 .GroupJoin(_pictures, x => x.PropertyId, x => x.PropertyId, (item, pictures) => new
                 {
                     Item = item,
-                    Picture = pictures,
+                    Pictures = pictures,
                 })
                 .GroupBy(x => new
                 {
@@ -123,7 +123,7 @@ namespace RealEstate.Services.ServiceLayer
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
                     Count = x.Count(),
-                    Pictures = x.SelectMany(item => item.Picture).Select(c => new
+                    Pictures = x.SelectMany(item => item.Pictures).Select(c => new
                     {
                         c.File
                     }).ToList()

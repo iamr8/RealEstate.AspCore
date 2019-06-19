@@ -69,7 +69,7 @@ namespace RealEstate.Services.TagHelpers
             var search = new TagBuilder("li");
             search.AddCssClass("nav-item");
 
-            var searchModalButton = new TagBuilder("button");
+            var searchModalButton = new TagBuilder("a");
             searchModalButton.AddCssClass("nav-link");
             searchModalButton.AddCssClass("btn-sm");
             searchModalButton.AddCssClass("btn-secondary");
@@ -138,21 +138,37 @@ namespace RealEstate.Services.TagHelpers
 
             #endregion RowCount
 
-            var collpase = new TagBuilder("div");
-            collpase.AddCssClass("collapse");
-            collpase.AddCssClass("navbar-collapse");
-            collpase.AddCssClass("show");
-            collpase.InnerHtml.AppendHtml(navbarLeft).AppendHtml(navbarRight);
+            var collapse = new TagBuilder("div");
+            collapse.AddCssClass("collapse");
+            collapse.AddCssClass("navbar-collapse");
+            collapse.Attributes.Add("id", "searchNavBar");
+            collapse.InnerHtml.AppendHtml(navbarLeft).AppendHtml(navbarRight);
+
+            var buttonToggler = new TagBuilder("button");
+            buttonToggler.AddCssClass("navbar-toggler");
+            buttonToggler.Attributes.Add("type", "button");
+            buttonToggler.Attributes.Add("data-toggle", "collapse");
+            buttonToggler.Attributes.Add("data-target", "#searchNavBar");
+            buttonToggler.Attributes.Add("aria-controls", "searchNavBar");
+
+            var buttonTogglerIcon = new TagBuilder("span");
+            buttonTogglerIcon.AddCssClass("navbar-toggler-icon");
+
+            var buttonTogglerTitle = new TagBuilder("span");
+            buttonTogglerTitle.AddCssClass("navbar-toggler-title");
+            buttonTogglerTitle.InnerHtml.AppendHtml("جستجو و مرتب سازی");
+
+            buttonToggler.InnerHtml.AppendHtml(buttonTogglerIcon).AppendHtml(buttonTogglerTitle);
 
             output.TagMode = TagMode.StartTagAndEndTag;
             output.TagName = "nav";
             output.AddClass("navbar", HtmlEncoder.Default);
-            output.AddClass("navbar-expand", HtmlEncoder.Default);
+            output.AddClass("navbar-expand-md", HtmlEncoder.Default);
             output.AddClass("navbar-light", HtmlEncoder.Default);
             output.AddClass("bg-light", HtmlEncoder.Default);
             output.AddClass("mb-2", HtmlEncoder.Default);
             output.AddClass("p-0", HtmlEncoder.Default);
-            output.Content.AppendHtml(collpase);
+            output.Content.AppendHtml(buttonToggler).AppendHtml(collapse);
 
             if (isTriggered != null && isTriggered == true)
             {
