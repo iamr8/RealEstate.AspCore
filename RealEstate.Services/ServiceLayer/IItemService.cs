@@ -1,13 +1,17 @@
 ﻿using EFSecondLevelCache.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Resources;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels;
+using RealEstate.Services.ViewModels.Api.Request;
+using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -38,7 +42,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<Item>> ItemComplexUpdateAsync(ItemComplexInputViewModel model, bool save);
 
-        Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory);
+        Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model);
 
         Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street);
 
@@ -64,9 +68,10 @@ namespace RealEstate.Services.ServiceLayer
         private readonly IUnitOfWork _unitOfWork;
 
         private readonly IBaseService _baseService;
-
+        private readonly IStringLocalizer<SharedResource> _localizer;
         private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
+        private readonly IUserService _userService;
         private readonly DbSet<Item> _items;
         private readonly DbSet<Customer> _customers;
         private readonly DbSet<DealRequest> _dealRequests;
@@ -81,13 +86,17 @@ namespace RealEstate.Services.ServiceLayer
             IUnitOfWork unitOfWork,
             IFeatureService featureService,
             IPropertyService propertyService,
-            ICustomerService customerService
+            IUserService userService,
+            ICustomerService customerService,
+            IStringLocalizer<SharedResource> localizer
             )
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
             _customerService = customerService;
             _propertyService = propertyService;
+            _userService = userService;
+            _localizer = localizer;
             _applicants = _unitOfWork.Set<Applicant>();
             _items = _unitOfWork.Set<Item>();
             _customers = _unitOfWork.Set<Customer>();
@@ -243,97 +252,116 @@ namespace RealEstate.Services.ServiceLayer
             return await _baseService.SaveChangesAsync();
         }
 
-        public async Task<SyncJsonViewModel> ItemListAsync(string user, string pass, string itmCategory, string propCategory)
+        public async Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model)
         {
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(pass))
-            {
-                return new SyncJsonViewModel
+            if (model == null)
+                return new Response<ItemOutJsonViewModel>
                 {
-                    StatusCode = (int)StatusEnum.CredentialError,
-                    Message = StatusEnum.CredentialError.GetDisplayName()
+                    Success = false,
+                    Message = StatusEnum.Failed.GetDisplayName()
                 };
-            }
-
-            var encryptedPass = pass.Cipher(CryptologyExtension.CypherMode.Encryption);
-            var userDb = await _users
-                .WhereNotDeleted()
-                .Where(x => x.Username.Equals(user, StringComparison.CurrentCultureIgnoreCase) && x.Password == encryptedPass)
-                .FirstOrDefaultAsync()
-                ;
-            if (userDb == null)
-            {
-                return new SyncJsonViewModel
+            var tokenState = await _userService.ValidateToken(model?.Token);
+            if (!tokenState.Success)
+                return new Response<ItemOutJsonViewModel>
                 {
-                    StatusCode = (int)StatusEnum.UserNotFound,
-                    Message = StatusEnum.UserNotFound.GetDisplayName()
+                    Message = tokenState.Message,
+                    Success = tokenState.Success
                 };
-            }
 
-            var allowedItemCategories = userDb.UserItemCategories.ToList().Select(x => x.Category.Name).ToList();
-            var allowedPropertyCategories = userDb.UserPropertyCategories.ToList().Select(x => x.Category.Name).ToList();
+            if (string.IsNullOrEmpty(model.ItemCategory))
+                return new Response<ItemOutJsonViewModel>
+                {
+                    Success = false,
+                    Message = "دسته بندی مورد را پر کنید"
+                };
 
-            var query = from item in _items
-                        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
-                        let lastRequest = requests.FirstOrDefault()
-                        where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
-                        let category = item.Category
-                        let property = item.Property
-                        let propertyCategory = property.Category
-                        where category.UserItemCategories.Any(userItemCategory => userItemCategory.UserId == userDb.Id && userItemCategory.CategoryId == category.Id)
-                        where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
-                            userPropertyCategory.UserId == userDb.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
-                        select item;
+            if (string.IsNullOrEmpty(model.PropertyCategory))
+                return new Response<ItemOutJsonViewModel>
+                {
+                    Success = false,
+                    Message = "دسته بندی ملک را پر کنید"
+                };
 
-            if (!string.IsNullOrEmpty(itmCategory))
-                query = query.Where(x => x.Category.Name == itmCategory);
+            var query = _items.AsQueryable();
+            query = query.Include(x => x.Property)
+               .ThenInclude(x => x.Category);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.District);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.Pictures);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyFacilities)
+                .ThenInclude(x => x.Facility);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyFeatures)
+                .ThenInclude(x => x.Feature);
+            query = query.Include(x => x.Property)
+                .ThenInclude(x => x.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Customer);
+            query = query.Include(x => x.Category);
+            query = query.Include(x => x.DealRequests);
+            query = query.Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature);
+            query = query.Include(x => x.Applicants)
+                .ThenInclude(x => x.Customer);
 
-            if (!string.IsNullOrEmpty(propCategory))
-                query = query.Where(x => x.Property.Category.Name == propCategory);
+            query = query.Where(x => x.Category.Name == model.ItemCategory);
+            query = query.Where(x => x.Property.Category.Name == model.PropertyCategory);
+            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == tokenState.UserId));
+            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == tokenState.UserId));
 
-            var items = await query.ToListAsync();
+            var items = await query.Cacheable().ToListAsync();
             if (items?.Any() != true)
-            {
-                return new SyncJsonViewModel
+                return new Response<ItemOutJsonViewModel>
                 {
-                    StatusCode = (int)StatusEnum.Success,
-                    Message = StatusEnum.Success.GetDisplayName(),
-                    ItemCategories = allowedItemCategories,
-                    PropertyCategories = allowedPropertyCategories
+                    Message = _localizer[SharedResource.NoItemToShow],
+                    Success = true,
                 };
-            }
 
-            var result = new List<ItemOutJsonViewModel>();
-            foreach (var model in items)
+            var result = from item in items
+                         let converted = item.Map<ItemViewModel>(ent =>
+                         {
+                             ent.IncludeAs<Property, PropertyViewModel>(ent.Entity.Property, ent2 =>
+                             {
+                                 ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category);
+                                 ent2.IncludeAs<District, DistrictViewModel>(ent2.Entity.District);
+                                 ent2.IncludeAs<PropertyFacility, PropertyFacilityViewModel>(ent2.Entity.PropertyFacilities,
+                                     ent3 => ent3.IncludeAs<Facility, FacilityViewModel>(ent3.Entity.Facility));
+                                 ent2.IncludeAs<PropertyFeature, PropertyFeatureViewModel>(ent2.Entity.PropertyFeatures,
+                                     ent3 => ent3.IncludeAs<Feature, FeatureViewModel>(ent3.Entity.Feature));
+                                 ent2.IncludeAs<PropertyOwnership, PropertyOwnershipViewModel>(ent2.Entity.PropertyOwnerships,
+                                     ent3 => ent3.IncludeAs<Ownership, OwnershipViewModel>(ent3.Entity.Ownerships,
+                                         ent4 => ent4.IncludeAs<Customer, CustomerViewModel>(ent4.Entity.Customer)));
+                             });
+                             ent.IncludeAs<Category, CategoryViewModel>(ent.Entity.Category);
+                             ent.IncludeAs<ItemFeature, ItemFeatureViewModel>(ent.Entity.ItemFeatures,
+                                 ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                         })
+                         where converted != null
+                         let property = converted.Property
+                         where property != null
+                         select new ItemOutJsonViewModel
+                         {
+                             Property = new PropertyOutJsonViewModel
+                             {
+                                 Address = property.Address,
+                                 Category = property.Category?.Name,
+                                 District = property.District?.Name,
+                                 Description = converted.Description,
+                                 Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                                 Ownerships = property.PropertyOwnerships?.SelectMany(x => x.Ownerships?.Select(c => c.Customer?.Name)).ToList(),
+                                 Features = property.PropertyFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList(),
+                             },
+                             Category = converted.Category?.Name,
+                             ItemFeatures = converted.ItemFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList()
+                         };
+
+            return new Response<ItemOutJsonViewModel>
             {
-                var converted = model.Map<ItemViewModel>();
-                if (converted == null)
-                    continue;
-
-                var item = new ItemOutJsonViewModel
-                {
-                    Property = new PropertyOutJsonViewModel
-                    {
-                        Address = converted.Property?.Address,
-                        Category = converted.Property?.Category?.Name,
-                        District = converted.Property?.District?.Name,
-                        Description = converted.Description,
-                        Facilities = converted.Property?.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                        Ownerships = converted.Property?.PropertyOwnerships?.SelectMany(x => x.Ownerships?.Select(c => c.Customer?.Name)).ToList(),
-                        Features = converted.Property?.PropertyFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList(),
-                    },
-                    Category = converted.Category?.Name,
-                    ItemFeatures = converted.ItemFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList()
-                };
-                result.Add(item);
-            }
-
-            return new SyncJsonViewModel
-            {
-                StatusCode = (int)StatusEnum.Success,
                 Message = StatusEnum.Success.GetDisplayName(),
-                Items = result,
-                ItemCategories = allowedItemCategories,
-                PropertyCategories = allowedPropertyCategories
+                Success = true,
+                Result = result.ToList()
             };
         }
 

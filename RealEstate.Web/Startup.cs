@@ -1,6 +1,7 @@
 using CacheManager.Core;
 using EFSecondLevelCache.Core;
 using ElmahCore.Mvc;
+using HibernatingRhinos.Profiler.Appender.EntityFramework;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -158,6 +159,7 @@ namespace RealEstate.Web
                     }
                 );
 
+            EntityFrameworkProfiler.Initialize();
             services.AddHealthChecks()
                 .AddCheck("sql-server", () =>
                 {

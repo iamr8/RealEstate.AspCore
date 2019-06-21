@@ -30,6 +30,8 @@ namespace RealEstate.Base.Enums
         DistrictIsNull,
         PropertyIsNull,
         NoNeedToSave,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "Forbidden")]
         Forbidden,
 
         [Display(ResourceType = typeof(SharedResource), Name = "PartialSuccess")]
@@ -101,6 +103,6 @@ namespace RealEstate.Base.Enums
         PropertyIsAlreadyExists,
 
         [Display(ResourceType = typeof(SharedResource), Name = "PropertyIsAlreadyExistsWithDifferentOwner")]
-        PropertyIsAlreadyExistsWithDifferentOwner
+        PropertyIsAlreadyExistsWithDifferentOwner,
     }
 }

@@ -2,20 +2,26 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer.Base;
+using RealEstate.Services.ViewModels.Api;
+using RealEstate.Services.ViewModels.Api.Request;
+using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -24,9 +30,13 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
+        Task<TokenValidation> ValidateToken(string token);
+
         Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true);
+
+        Task<Response<SignInResponse>> SignInAsync(SignInRequest model);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
 
@@ -43,17 +53,16 @@ namespace RealEstate.Services.ServiceLayer
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
-        private readonly IPaymentService _paymentService;
-        private readonly IEmployeeService _employeeService;
         private readonly DbSet<User> _users;
-
+        private readonly DbSet<UserItemCategory> _userItemCategories;
+        private readonly DbSet<UserPropertyCategory> _userPropertyCategories;
+        private readonly DbSet<EmployeeDivision> _employeeDivisions;
+        private readonly DbSet<Employee> _employees;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public UserService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
-            IPaymentService paymentService,
-            IEmployeeService employeeService,
             IHttpContextAccessor httpContextAccessor
             )
         {
@@ -61,8 +70,10 @@ namespace RealEstate.Services.ServiceLayer
             _baseService = baseService;
             _httpContextAccessor = httpContextAccessor;
             _users = _unitOfWork.Set<User>();
-            _employeeService = employeeService;
-            _paymentService = paymentService;
+            _employeeDivisions = _unitOfWork.Set<EmployeeDivision>();
+            _userItemCategories = _unitOfWork.Set<UserItemCategory>();
+            _userPropertyCategories = _unitOfWork.Set<UserPropertyCategory>();
+            _employees = _unitOfWork.Set<Employee>();
         }
 
         private HttpContext HttpContext => _httpContextAccessor.HttpContext;
@@ -101,6 +112,61 @@ namespace RealEstate.Services.ServiceLayer
                          };
 
             return result.ToList();
+        }
+
+        public async Task<TokenValidation> ValidateToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return new TokenValidation
+                {
+                    Message = StatusEnum.Forbidden.GetDisplayName(),
+                    Success = false
+                };
+            }
+
+            var handler = new JwtSecurityTokenHandler();
+            if (!(handler.ReadToken(token) is JwtSecurityToken jwtSecurityToken))
+                return default;
+
+            var claims = jwtSecurityToken.Claims.ToList();
+            if (claims?.Any() != true)
+                return new TokenValidation
+                {
+                    Message = StatusEnum.Forbidden.GetDisplayName(),
+                    Success = false
+                };
+
+            var id = claims.FirstOrDefault(x => x.Type.Equals("Id", StringComparison.CurrentCulture))?.Value;
+            var userName = claims.FirstOrDefault(x => x.Type.Equals("Username", StringComparison.CurrentCulture))?.Value;
+            var password = claims.FirstOrDefault(x => x.Type.Equals("Password", StringComparison.CurrentCulture))?.Value;
+
+            if (string.IsNullOrEmpty(id)
+                || string.IsNullOrEmpty(userName)
+                || string.IsNullOrEmpty(password))
+                return new TokenValidation
+                {
+                    Message = StatusEnum.Forbidden.GetDisplayName(),
+                    Success = false
+                };
+
+            var isUserValid = await _users.AnyAsync(x =>
+                x.Id == id
+                && x.Username == userName
+                && x.Password == password);
+            if (!isUserValid)
+                return new TokenValidation
+                {
+                    Message = StatusEnum.UserNotFound.GetDisplayName(),
+                    Success = false,
+                };
+
+            return new TokenValidation
+            {
+                Message = StatusEnum.Success.GetDisplayName(),
+                Success = true,
+                UserId = id
+            };
         }
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
@@ -294,14 +360,16 @@ namespace RealEstate.Services.ServiceLayer
         {
             var currentUser = _baseService.CurrentUser(claims);
 
-            var foundUser = await (from user in _users
-                                   where user.Id == currentUser.Id
-                                   where user.Username == currentUser.Username
-                                   where user.Password == currentUser.EncryptedPassword
-                                   where user.EmployeeId == currentUser.EmployeeId
-                                   where user.Role == currentUser.Role
-                                   select user).FirstOrDefaultAsync().ConfigureAwait(false);
-            return foundUser != null;
+            var query = from user in _users
+                        where user.Id == currentUser.Id
+                        where user.Username == currentUser.Username
+                        where user.Password == currentUser.EncryptedPassword
+                        where user.EmployeeId == currentUser.EmployeeId
+                        where user.Role == currentUser.Role
+                        select user;
+
+            var foundUser = await query.Cacheable().AnyAsync();
+            return foundUser;
         }
 
         public async Task<StatusEnum> RemoveAsync(string userId)
@@ -323,6 +391,153 @@ namespace RealEstate.Services.ServiceLayer
         public async Task SignOutAsync()
         {
             await HttpContext.SignOutAsync().ConfigureAwait(false);
+        }
+
+        public async Task<Response<SignInResponse>> SignInAsync(SignInRequest model)
+        {
+            var query = _users.IgnoreQueryFilters()
+                .Include(x => x.Employee)
+                .ThenInclude(x => x.EmployeeDivisions)
+                .ThenInclude(x => x.Division)
+                .Include(x => x.UserItemCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.UserPropertyCategories)
+                .ThenInclude(x => x.Category)
+                .Where(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase))
+                .Select(x => new
+                {
+                    Id = x.Id,
+                    MobileNumber = x.Employee.Mobile,
+                    Password = x.Password,
+                    Role = x.Role,
+                    EmployeeId = x.EmployeeId,
+                    FirstName = x.Employee.FirstName,
+                    LastName = x.Employee.LastName,
+                    Audits = x.Audits,
+                    UserItemCategories = x.UserItemCategories.Select(c => new
+                    {
+                        c.Category.Name
+                    }).ToList(),
+                    UserPropertyCategories = x.UserPropertyCategories.Select(c => new
+                    {
+                        c.Category.Name
+                    }).ToList(),
+                    EmployeeDivisions = x.Employee.EmployeeDivisions.Select(c => new
+                    {
+                        c.Division.Name
+                    }).ToList()
+                });
+
+            var sql = query.ToSql();
+            var userDb = await query.Cacheable().FirstOrDefaultAsync();
+            if (userDb == null)
+                return new Response<SignInResponse>
+                {
+                    Success = false,
+                    Message = StatusEnum.UserNotFound.GetDisplayName()
+                };
+            try
+            {
+                var decryptedPasswordInDb = userDb.Password.Cipher(CryptologyExtension.CypherMode.Decryption);
+                if (decryptedPasswordInDb != model.Password)
+                    return new Response<SignInResponse>
+                    {
+                        Success = false,
+                        Message = StatusEnum.WrongPassword.GetDisplayName()
+                    };
+            }
+            catch
+            {
+                return new Response<SignInResponse>
+                {
+                    Success = false,
+                    Message = StatusEnum.WrongPassword.GetDisplayName()
+                };
+            }
+
+            if (userDb.Audits.LastOrDefault()?.Type == LogTypeEnum.Delete)
+                return new Response<SignInResponse>
+                {
+                    Success = false,
+                    Message = StatusEnum.Deactivated.GetDisplayName()
+                };
+
+            var itemCategories = userDb.UserItemCategories.Select(x => x.Name).ToList();
+            var propertyCategories = userDb.UserPropertyCategories.Select(x => x.Name).ToList();
+            var employeeDivisions = userDb.EmployeeDivisions.Select(x => x.Name).ToList();
+
+            var id = userDb.Id;
+            var mobileNumber = userDb.MobileNumber;
+            var encryptedPassword = userDb.Password;
+            var firstname = userDb.FirstName;
+            var lastname = userDb.LastName;
+            var employeeId = userDb.Id;
+            var role = userDb.Role.ToString();
+
+            var claims = new List<Claim>
+            {
+                new Claim("Id", id),
+                new Claim("Username", model.Username),
+                new Claim("Password", encryptedPassword),
+            };
+            var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);
+
+            const string privateKey = PrivateKeyConstant.PrivateKey;
+            var now = DateTime.UtcNow;
+            var symmetricKey = Encoding.UTF8.GetBytes(privateKey);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = identity,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(symmetricKey),
+                    SecurityAlgorithms.HmacSha256Signature),
+                Expires = now.AddDays(1),
+                Issuer = "http://localhost/",
+                Audience = "Any",
+                NotBefore = now,
+            };
+            var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
+
+            if (string.IsNullOrEmpty(token))
+                return new Response<SignInResponse>
+                {
+                    Success = false,
+                    Message = StatusEnum.TokenIsNull.GetDisplayName()
+                };
+
+            try
+            {
+                return new Response<SignInResponse>
+                {
+                    Success = true,
+                    Message = StatusEnum.SignedIn.GetDisplayName(),
+                    Result = new List<SignInResponse>
+                    {
+                        new SignInResponse
+                        {
+                            FirstName = firstname,
+                            LastName = lastname,
+                            UserItemCategories = itemCategories,
+                            UserPropertyCategories = propertyCategories,
+                            EmployeeDivisions = employeeDivisions,
+                            EmployeeId = employeeId,
+                            Role = role,
+                            MobileNumber = mobileNumber,
+                            EncryptedPassword = encryptedPassword,
+                            UserId = id,
+                            Token = token
+                        }
+                    }
+                };
+            }
+            catch
+            {
+                return new Response<SignInResponse>
+                {
+                    Success = false,
+                    Message = StatusEnum.Failed.GetDisplayName()
+                };
+            }
         }
 
         public async Task<StatusEnum> SignInAsync(UserLoginViewModel model)

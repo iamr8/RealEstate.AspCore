@@ -18,10 +18,10 @@ namespace RealEstate.Services.Extensions
             return source;
         }
 
-        //public static string ToSql<TSource>(this IQueryable<TSource> query)
-        //{
-        //    return query.ToSql(query.Expression, new EFCacheKeyHashProvider())?.Sql;
-        //}
+        public static string ToSql<TSource>(this IQueryable<TSource> query)
+        {
+            return query.ToSql(query.Expression, new EFCacheKeyHashProvider())?.Sql;
+        }
 
         public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {

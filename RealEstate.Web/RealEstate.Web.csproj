@@ -90,4 +90,11 @@
     <Folder Include="wwwroot\img\" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <Reference Include="HibernatingRhinos.Profiler.Appender">
+      <HintPath>..\..\..\..\..\Softwares\Programming\Dot Net\EntityFramework Profiler 5.0 Build 5033\Appender\netcoreapp2.0\HibernatingRhinos.Profiler.Appender.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
