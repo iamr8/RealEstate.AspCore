@@ -28,19 +28,17 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false);
 
+        Task<ItemOutJsonViewModel> ItemJsonAsync(string id);
+
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
         Task<StatusEnum> ItemRemoveAsync(string id);
 
         Task<bool> ItemCheckAsync(PropertyCheckViewModel model);
 
-        Task<ItemComplexInputViewModel> ItemComplexInputAsync(string id);
+        Task<ItemComplexInputViewModel> ItemInputAsync(string id);
 
-        Task<MethodStatus<Item>> ItemComplexAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save);
-
-        Task<MethodStatus<Item>> ItemComplexAddAsync(ItemComplexInputViewModel model, bool save);
-
-        Task<MethodStatus<Item>> ItemComplexUpdateAsync(ItemComplexInputViewModel model, bool save);
+        Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save);
 
         Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model);
 
@@ -48,19 +46,13 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<PaginationViewModel<ItemViewModel>> RequestListAsync(DealRequestSearchViewModel searchModel);
 
-        Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save);
-
         Task<List<ZoonkanViewModel>> ZoonkansAsync();
 
         Task<MethodStatus<Item>> RequestAsync(DealRequestInputViewModel model, bool save);
 
         Task<Item> ItemEntityAsync(string id);
 
-        Task<ItemInputViewModel> ItemInputAsync(string id);
-
         Task<ItemViewModel> ItemAsync(string id, DealStatusEnum? specificStatus);
-
-        Task<MethodStatus<Item>> ItemAddAsync(ItemInputViewModel model, bool save);
     }
 
     public class ItemService : IItemService
@@ -80,6 +72,7 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<User> _users;
         private readonly DbSet<Picture> _pictures;
         private readonly DbSet<ItemFeature> _itemFeatures;
+        private readonly DbSet<Property> _properties;
 
         public ItemService(
             IBaseService baseService,
@@ -99,6 +92,7 @@ namespace RealEstate.Services.ServiceLayer
             _localizer = localizer;
             _applicants = _unitOfWork.Set<Applicant>();
             _items = _unitOfWork.Set<Item>();
+            _properties = _unitOfWork.Set<Property>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
@@ -110,35 +104,36 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<List<ZoonkanViewModel>> ZoonkansAsync()
         {
             var query = _items
-                .AsNoTracking()
-                .Include(x => x.Property)
-                .ThenInclude(x => x.Pictures)
-                .Include(x => x.Property)
-                .ThenInclude(x => x.Category)
+                .Include(x => x.Property.Pictures)
+                .Include(x => x.Property.Category)
                 .Include(x => x.Category)
                 .Where(x => x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any()))
-                .GroupJoin(_pictures, x => x.PropertyId, x => x.PropertyId, (item, pictures) => new
-                {
-                    Item = item,
-                    Pictures = pictures,
-                })
+                //.GroupJoin(_pictures, x => x.PropertyId, x => x.PropertyId, (item, pictures) => new
+                //{
+                //    Item = item,
+                //    Pictures = pictures,
+                //})
                 .GroupBy(x => new
                 {
-                    ItemCategory = x.Item.Category.Name,
-                    PropertyCategory = x.Item.Property.Category.Name,
+                    ItemCategory = x.Category.Name,
+                    PropertyCategory = x.Property.Category.Name,
                 })
                 .Select(x => new
                 {
                     x.Key.ItemCategory,
                     x.Key.PropertyCategory,
                     Count = x.Count(),
-                    Pictures = x.SelectMany(item => item.Pictures).Select(c => new
-                    {
-                        c.File
-                    }).ToList()
+                    //                    Pictures = from item in x
+                    //                               let property = item.Property
+                    //                               select new
+                    //                               {
+                    //                                   property.Pictures
+                    //                               }
                 });
 
-            var categories = await query.Cacheable().ToListAsync();
+            var categories = await query
+                .Cacheable()
+                .ToListAsync();
             if (categories?.Any() != true)
                 return default;
 
@@ -147,7 +142,7 @@ namespace RealEstate.Services.ServiceLayer
                 ItemCategory = x.ItemCategory,
                 PropertyCategory = x.PropertyCategory,
                 Count = x.Count,
-                Picture = x.Pictures.ToList().Select(c => c.File).SelectRandom()
+                //                Picture = x.Pictures.ToList().Select(c => c.Pictures).SelectRandom().Select(c => c.File).FirstOrDefault()
             }).ToList();
             return result;
         }
@@ -252,34 +247,112 @@ namespace RealEstate.Services.ServiceLayer
             return await _baseService.SaveChangesAsync();
         }
 
+        public async Task<ItemOutJsonViewModel> ItemJsonAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return default;
+
+            var entity = await _items
+                .AsNoTracking()
+                .Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Category)
+                .Include(x => x.Property.Pictures)
+                .Include(x => x.Property.Category)
+                .Include(x => x.Property.District)
+                .Include(x => x.Property.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Property.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.Property.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Customer)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            var viewModel = entity?.Map<ItemViewModel>(ent =>
+            {
+                ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
+                    ent2 => ent2.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 =>
+                {
+                    ent2.IncludeAs<Property, Picture, PictureViewModel>(_unitOfWork, x => x.Pictures);
+                    ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                    ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
+                    ent2.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
+                        ent3 => ent3.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                    ent2.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
+                        ent3 => ent3.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
+                    ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships,
+                        ent3 => ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships,
+                            ent4 => ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
+                });
+            });
+            if (viewModel == null)
+                return default;
+
+            var result = new ItemOutJsonViewModel
+            {
+                Id = viewModel.Id,
+                Features = viewModel.ItemFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
+                IsNegotiable = viewModel.IsNegotiable,
+                Category = viewModel.Category?.Name,
+                Description = viewModel.Description,
+                Property = viewModel.Property != null
+                    ? new PropertyOutJsonViewModel
+                    {
+                        Id = viewModel.Property.Id,
+                        Pictures = viewModel.Property.Pictures?.Select(x => x.File).ToList(),
+                        Category = viewModel.Property.Category?.Name,
+                        Address = viewModel.Property.Address,
+                        District = viewModel.Property.District?.Name,
+                        Facilities = viewModel.Property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                        Features = viewModel.Property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
+                        Ownership = viewModel.Property.CurrentPropertyOwnership?.Ownership != null
+                            ? new OwnershipOutJsonViewModel
+                            {
+                                Id = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
+                                Name = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                Mobile = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
+                            }
+                            : default
+                    }
+                    : default
+            };
+            return result;
+        }
+
         public async Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model)
         {
             if (model == null)
                 return new Response<ItemOutJsonViewModel>
                 {
                     Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName()
+                    Message = StatusEnum.Failed.GetDisplayName(),
+                    BaseUrl = _userService.BaseUrl
                 };
             var tokenState = await _userService.ValidateToken(model?.Token);
             if (!tokenState.Success)
                 return new Response<ItemOutJsonViewModel>
                 {
                     Message = tokenState.Message,
-                    Success = tokenState.Success
+                    Success = tokenState.Success,
+                    BaseUrl = tokenState.BaseUrl
                 };
 
             if (string.IsNullOrEmpty(model.ItemCategory))
                 return new Response<ItemOutJsonViewModel>
                 {
                     Success = false,
-                    Message = "دسته بندی مورد را پر کنید"
+                    Message = "دسته بندی مورد را پر کنید",
+                    BaseUrl = tokenState.BaseUrl
                 };
 
             if (string.IsNullOrEmpty(model.PropertyCategory))
                 return new Response<ItemOutJsonViewModel>
                 {
                     Success = false,
-                    Message = "دسته بندی ملک را پر کنید"
+                    Message = "دسته بندی ملک را پر کنید",
+                    BaseUrl = tokenState.BaseUrl
                 };
 
             var query = _items.AsQueryable();
@@ -317,26 +390,27 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Message = _localizer[SharedResource.NoItemToShow],
                     Success = true,
+                    BaseUrl = tokenState.BaseUrl
                 };
 
             var result = from item in items
                          let converted = item.Map<ItemViewModel>(ent =>
                          {
-                             ent.IncludeAs<Property, PropertyViewModel>(ent.Entity.Property, ent2 =>
+                             ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 =>
                              {
-                                 ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category);
-                                 ent2.IncludeAs<District, DistrictViewModel>(ent2.Entity.District);
-                                 ent2.IncludeAs<PropertyFacility, PropertyFacilityViewModel>(ent2.Entity.PropertyFacilities,
-                                     ent3 => ent3.IncludeAs<Facility, FacilityViewModel>(ent3.Entity.Facility));
-                                 ent2.IncludeAs<PropertyFeature, PropertyFeatureViewModel>(ent2.Entity.PropertyFeatures,
-                                     ent3 => ent3.IncludeAs<Feature, FeatureViewModel>(ent3.Entity.Feature));
-                                 ent2.IncludeAs<PropertyOwnership, PropertyOwnershipViewModel>(ent2.Entity.PropertyOwnerships,
-                                     ent3 => ent3.IncludeAs<Ownership, OwnershipViewModel>(ent3.Entity.Ownerships,
-                                         ent4 => ent4.IncludeAs<Customer, CustomerViewModel>(ent4.Entity.Customer)));
+                                 ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                                 ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
+                                 ent2.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
+                                     ent3 => ent3.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
+                                 ent2.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
+                                     ent3 => ent3.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                                 ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships,
+                                     ent3 => ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships,
+                                         ent4 => ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
                              });
-                             ent.IncludeAs<Category, CategoryViewModel>(ent.Entity.Category);
-                             ent.IncludeAs<ItemFeature, ItemFeatureViewModel>(ent.Entity.ItemFeatures,
-                                 ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
+                             ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                             ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
+                                 ent2 => ent2.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
                          })
                          where converted != null
                          let property = converted.Property
@@ -348,20 +422,27 @@ namespace RealEstate.Services.ServiceLayer
                                  Address = property.Address,
                                  Category = property.Category?.Name,
                                  District = property.District?.Name,
-                                 Description = converted.Description,
                                  Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                                 Ownerships = property.PropertyOwnerships?.SelectMany(x => x.Ownerships?.Select(c => c.Customer?.Name)).ToList(),
-                                 Features = property.PropertyFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList(),
+                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null
+                                     ? new OwnershipOutJsonViewModel
+                                     {
+                                         Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                         Id = property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
+                                         Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
+                                     }
+                                     : default,
+                                 Features = property.PropertyFeatures.ToDictionary(x => x.Feature?.Name, x => x.Value),
                              },
                              Category = converted.Category?.Name,
-                             ItemFeatures = converted.ItemFeatures?.Select(x => new ValueTuple<string, string>(x.Feature?.Name, x.Value)).ToList()
+                             Features = converted.ItemFeatures.ToDictionary(x => x.Feature?.Name, x => x.Value.CurrencyToWords())
                          };
 
             return new Response<ItemOutJsonViewModel>
             {
                 Message = StatusEnum.Success.GetDisplayName(),
                 Success = true,
-                Result = result.ToList()
+                Result = result.ToList(),
+                BaseUrl = tokenState.BaseUrl
             };
         }
 
@@ -409,7 +490,7 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return default;
 
-            var query = from item in _items.WhereNotDeleted()
+            var query = from item in _items
                         let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
                         let lastRequest = requests.FirstOrDefault()
                         where !requests.Any() || lastRequest.Status == DealStatusEnum.Rejected
@@ -499,27 +580,21 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
 
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.Category);
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.District);
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.Pictures);
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.PropertyFacilities)
-            .ThenInclude(x => x.Facility);
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.PropertyFeatures)
-            .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Property)
-            .ThenInclude(x => x.PropertyOwnerships)
-            .ThenInclude(x => x.Ownerships)
-            .ThenInclude(x => x.Customer);
-            query = query.Include(x => x.Category);
-            query = query.Include(x => x.DealRequests);
-            query = query.Include(x => x.ItemFeatures)
-            .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Applicants)
+            query = query.Include(x => x.Property.Category)
+                .Include(x => x.Property.District)
+                .Include(x => x.Property.Pictures)
+                .Include(x => x.Property.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.Property.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Property.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Customer)
+                .Include(x => x.Category)
+                .Include(x => x.DealRequests)
+                .Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Applicants)
                 .ThenInclude(x => x.Customer);
 
             //query = from item in query
@@ -616,13 +691,13 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                             }
@@ -648,13 +723,13 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                        && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                                    && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                                    && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                                     && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                             }
@@ -667,14 +742,14 @@ namespace RealEstate.Services.ServiceLayer
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
                                     query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                   && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                   && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                    && Convert.ToInt64(ftr.Value) >= numFrom
                                                                                    && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
                                     query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && Convert.ToInt32(CustomDbFunctionsExtensions.IsNumeric(ftr.Value)) == 1
+                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
                                                                                        && Convert.ToInt64(ftr.Value) >= numFrom
                                                                                        && Convert.ToInt64(ftr.Value) <= numTo));
                                 }
@@ -697,24 +772,27 @@ namespace RealEstate.Services.ServiceLayer
             var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<ItemViewModel>(act =>
                 {
-                    act.IncludeAs<Property, PropertyViewModel>(item.Property, ent =>
+                    act.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent =>
                     {
-                        ent.IncludeAs<Category, CategoryViewModel>(ent.Entity?.Category);
-                        ent.IncludeAs<District, DistrictViewModel>(ent.Entity?.District);
-                        ent.IncludeAs<Picture, PictureViewModel>(ent.Entity?.Pictures);
-                        ent.IncludeAs<PropertyFacility, PropertyFacilityViewModel>(ent.Entity?.PropertyFacilities,
-                            ent2 => ent2.IncludeAs<Facility, FacilityViewModel>(ent2.Entity?.Facility));
-                        ent.IncludeAs<PropertyFeature, PropertyFeatureViewModel>(ent.Entity?.PropertyFeatures,
-                            ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity?.Feature));
-                        ent.IncludeAs<PropertyOwnership, PropertyOwnershipViewModel>(ent.Entity?.PropertyOwnerships,
-                            ent2 => ent2.IncludeAs<Ownership, OwnershipViewModel>(ent2.Entity?.Ownerships,
-                                ent3 => ent3.IncludeAs<Customer, CustomerViewModel>(ent3.Entity?.Customer)));
+                        ent.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                        ent.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
+                        ent.IncludeAs<Property, Picture, PictureViewModel>(_unitOfWork, x => x.Pictures);
+                        ent.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
+                            ent2 => ent2.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
+                        ent.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
+                            ent2 => ent2.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                        ent.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships,
+                            ent2 => ent2.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships,
+                                ent3 => ent3.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
                     });
-                    act.IncludeAs<Category, CategoryViewModel>(item.Category);
-                    act.IncludeAs<Applicant, ApplicantViewModel>(item.Applicants, ent => ent.IncludeAs<Customer, CustomerViewModel>(ent.Entity?.Customer));
-                    act.IncludeAs<DealRequest, DealRequestViewModel>(item.DealRequests);
-                    act.IncludeAs<ItemFeature, ItemFeatureViewModel>(item.ItemFeatures, ent => ent.IncludeAs<Feature, FeatureViewModel>(ent.Entity?.Feature));
-                }), CheckDuplicatesAsync(), currentUser);
+                    act.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                    act.IncludeAs<Item, Applicant, ApplicantViewModel>(_unitOfWork, x => x.Applicants,
+                        ent => ent.IncludeAs<Applicant, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer));
+                    act.IncludeAs<Item, DealRequest, DealRequestViewModel>(_unitOfWork, x => x.DealRequests);
+                    act.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
+                        ent => ent.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                }), Task.FromResult(false), currentUser, 12);
+
             return result;
         }
 
@@ -751,23 +829,50 @@ namespace RealEstate.Services.ServiceLayer
             return await _baseService.SaveChangesAsync(item, save);
         }
 
-        public async Task<ItemComplexInputViewModel> ItemComplexInputAsync(string id)
+        public async Task<ItemComplexInputViewModel> ItemInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
+            var query = _items.AsQueryable().AsNoTracking();
+            query = query.Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Category)
+                .Include(x => x.Property.PropertyFeatures)
+                .ThenInclude(x => x.Feature)
+                .Include(x => x.Property.PropertyFacilities)
+                .ThenInclude(x => x.Facility)
+                .Include(x => x.Property.Category)
+                .Include(x => x.Property.District)
+                .Include(x => x.Property.PropertyOwnerships)
+                .ThenInclude(x => x.Ownerships)
+                .ThenInclude(x => x.Customer);
+            var entity = await query.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = entity?.Map<ItemViewModel>(ent =>
             {
-                ent.IncludeAs<ItemFeature, ItemFeatureViewModel>(entity.ItemFeatures, ent2 => ent2.IncludeAs<Feature, FeatureViewModel>(ent2.Entity.Feature));
-                ent.IncludeAs<Category, CategoryViewModel>(entity.Category);
+                ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
+                    ent2 => ent2.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 =>
+                {
+                    ent2.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
+                        ent3 => ent3.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
+                    ent2.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
+                        ent3 => ent3.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
+                    ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
+                    ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
+                    ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships, ent3 =>
+                        ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships, ent4 =>
+                            ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
+                });
             });
 
-            if (viewModel == null)
+            #region Property
+
+            var ownership = viewModel?.Property.CurrentPropertyOwnership?.Ownership;
+            if (ownership == null)
                 return default;
 
-            var propertyInput = await _propertyService.PropertyComplexInputAsync(entity.PropertyId);
-            if (propertyInput == null)
-                return default;
+            #endregion Property
 
             var result = new ItemComplexInputViewModel
             {
@@ -778,36 +883,43 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Id = x.Feature?.Id,
                     Name = x.Feature?.Name,
-                    Value = x.Value
+                    Value = x.OriginalValue
                 }).ToList(),
-                Property = propertyInput,
-                IsNegotiable = viewModel.IsNegotiable
-            };
-            return result;
-        }
-
-        public async Task<ItemInputViewModel> ItemInputAsync(string id)
-        {
-            if (string.IsNullOrEmpty(id)) return default;
-
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
-            var viewModel = entity?.Map<ItemViewModel>();
-
-            if (viewModel == null)
-                return default;
-
-            var result = new ItemInputViewModel
-            {
-                Id = viewModel.Id,
-                Description = viewModel.Description,
-                CategoryId = viewModel.Category?.Id,
-                ItemFeatures = viewModel.ItemFeatures?.Select(x => new FeatureJsonValueViewModel
+                Property = new PropertyComplexInputViewModel
                 {
-                    Id = x.Feature?.Id,
-                    Name = x.Feature?.Name,
-                    Value = x.Value
-                }).ToList(),
-                PropertyId = viewModel.Property?.Id
+                    Id = viewModel.Property?.Id,
+                    Description = viewModel.Property?.Description,
+                    PropertyFacilities = viewModel.Property?.PropertyFacilities?.Select(x => new FacilityJsonViewModel
+                    {
+                        Id = x.Facility?.Id,
+                        Name = x.Facility?.Name
+                    }).ToList(),
+                    CategoryId = viewModel.Property?.Category?.Id,
+                    PropertyFeatures = viewModel.Property?.PropertyFeatures?.Select(x => new FeatureJsonValueViewModel
+                    {
+                        Id = x.Feature?.Id,
+                        Name = x.Feature?.Name,
+                        Value = x.OriginalValue
+                    }).ToList(),
+                    Number = viewModel.Property?.Number,
+                    Street = viewModel.Property?.Street,
+                    Flat = viewModel.Property?.Flat ?? 0,
+                    DistrictId = viewModel.Property?.District?.Id,
+                    Alley = viewModel.Property?.Alley,
+                    BuildingName = viewModel.Property?.BuildingName,
+                    Floor = viewModel.Property?.Floor ?? 0,
+                    Ownership = new OwnershipInputViewModel
+                    {
+                        Id = ownership.Customer.Id,
+                        Name = ownership.Customer.Name,
+                        Address = ownership.Customer.Address,
+                        Mobile = ownership.Customer.Mobile,
+                        Phone = ownership.Customer.Phone,
+                        Description = ownership.Description,
+                        Dong = ownership.Dong
+                    }
+                },
+                IsNegotiable = viewModel.IsNegotiable
             };
             return result;
         }
@@ -875,21 +987,14 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemInputViewModel model, bool update, bool save)
+        public Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save)
         {
             return update
                 ? ItemUpdateAsync(model, save)
                 : ItemAddAsync(model, save);
         }
 
-        public Task<MethodStatus<Item>> ItemComplexAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save)
-        {
-            return update
-                ? ItemComplexUpdateAsync(model, save)
-                : ItemComplexAddAsync(model, save);
-        }
-
-        public async Task<MethodStatus<Item>> ItemComplexUpdateAsync(ItemComplexInputViewModel model, bool save)
+        private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemComplexInputViewModel model, bool save)
         {
             if (model == null)
                 return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
@@ -904,7 +1009,11 @@ namespace RealEstate.Services.ServiceLayer
             if (propertyUpdateStatus != StatusEnum.Success && propertyUpdateStatus != StatusEnum.PropertyIsAlreadyExists)
                 return new MethodStatus<Item>(propertyUpdateStatus, null);
 
-            var entity = await ItemEntityAsync(model.Id);
+            var entity = await _items
+                .IgnoreQueryFilters()
+                .Include(x => x.ItemFeatures)
+                .ThenInclude(x => x.Feature)
+                .FirstOrDefaultAsync(x => x.Id == model.Id);
             if (model.IsNegotiable)
             {
                 if (string.IsNullOrEmpty(model.Description))
@@ -935,51 +1044,11 @@ namespace RealEstate.Services.ServiceLayer
             if (updatedItem == null)
                 return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
 
-            await ItemComplexSyncAsync(updatedItem, model, false);
-            return await _baseService.SaveChangesAsync(updatedItem, save);
-        }
-
-        private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemInputViewModel model, bool save)
-        {
-            if (model == null)
-                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
-
-            if (model.IsNew)
-                return new MethodStatus<Item>(StatusEnum.IdIsNull, null);
-
-            var entity = await ItemEntityAsync(model.Id);
-            var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
-                _ =>
-                {
-                    entity.CategoryId = model.CategoryId;
-                    entity.Description = model.Description;
-                    entity.PropertyId = model.PropertyId;
-                }, null, false, StatusEnum.PropertyIsNull);
-
-            if (updatedItem == null)
-                return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
-
             await ItemSyncAsync(updatedItem, model, false);
             return await _baseService.SaveChangesAsync(updatedItem, save);
         }
 
-        public async Task<MethodStatus<Item>> ItemAddAsync(ItemInputViewModel model, bool save)
-        {
-            if (model == null)
-                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
-
-            var (itemAddStatus, newItem) = await _baseService.AddAsync(new Item
-            {
-                CategoryId = model.CategoryId,
-                Description = model.Description,
-                PropertyId = model.PropertyId,
-            }, null, false);
-
-            await ItemSyncAsync(newItem, model, false);
-            return await _baseService.SaveChangesAsync(newItem, save);
-        }
-
-        public async Task<MethodStatus<Item>> ItemComplexAddAsync(ItemComplexInputViewModel model, bool save)
+        private async Task<MethodStatus<Item>> ItemAddAsync(ItemComplexInputViewModel model, bool save)
         {
             if (model == null)
                 return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
@@ -1019,11 +1088,11 @@ namespace RealEstate.Services.ServiceLayer
             if (itemAddStatus != StatusEnum.Success)
                 return new MethodStatus<Item>(itemAddStatus, null);
 
-            await ItemComplexSyncAsync(newItem, model, false);
+            await ItemSyncAsync(newItem, model, false);
             return await _baseService.SaveChangesAsync(newItem, save);
         }
 
-        private async Task<StatusEnum> ItemComplexSyncAsync(Item newItem, ItemComplexInputViewModel model, bool save)
+        private async Task<StatusEnum> ItemSyncAsync(Item newItem, ItemComplexInputViewModel model, bool save)
         {
             var syncFeatures = await _baseService.SyncAsync(
                 newItem.ItemFeatures,
@@ -1033,25 +1102,12 @@ namespace RealEstate.Services.ServiceLayer
                     FeatureId = feature.Id,
                     Value = feature.Value,
                     ItemId = newItem.Id
-                }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
-                null,
-                save);
-            return syncFeatures;
-        }
-
-        private async Task<StatusEnum> ItemSyncAsync(Item newItem, ItemInputViewModel model, bool save)
-        {
-            var syncFeatures = await _baseService.SyncAsync(
-                newItem.ItemFeatures,
-                model.ItemFeatures,
-                (feature, currentUser) => new ItemFeature
-                {
-                    FeatureId = feature.Id,
-                    Value = feature.Value,
-                    ItemId = newItem.Id
-                }, (currentFeature, newFeature) => currentFeature.FeatureId == newFeature.Id,
-                null,
-                save);
+                },
+                inDb => new { inDb.FeatureId, inDb.Value },
+                (inDb, inModel) => inDb.FeatureId == inModel.Id,
+                (inDb, inModel) => inDb.Value == inModel.Value,
+                (inDb, inModel) => inDb.Value = inModel.Value,
+                null);
             return syncFeatures;
         }
     }

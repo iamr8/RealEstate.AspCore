@@ -91,7 +91,7 @@ namespace RealEstate.Services.TagHelpers
 
             var navbarRight = new TagBuilder("ul");
             navbarRight.AddCssClass("navbar-nav");
-            navbarRight.AddCssClass("mr-auto");
+            navbarRight.AddCssClass("mr-sm-auto");
 
             #region ClearSearch
 
@@ -182,7 +182,7 @@ namespace RealEstate.Services.TagHelpers
                 var card = new TagBuilder("div");
                 card.AddCssClass("card");
                 var cardBody = new TagBuilder("div");
-                cardBody.AddCssClass("card-body");
+                cardBody.AddCssClass("card-body search-options");
                 cardBody.AddCssClass("text-right");
                 var h5 = new TagBuilder("h5");
                 h5.InnerHtml.AppendHtml("جستجو بر اساس:");

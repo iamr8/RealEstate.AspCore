@@ -6,5 +6,10 @@ namespace RealEstate.Services.ViewModels.Json
     {
         [JsonProperty("v")]
         public string Value { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name ?? "نامشخص"} : {Value}";
+        }
     }
 }

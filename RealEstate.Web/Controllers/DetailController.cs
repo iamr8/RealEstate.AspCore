@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RealEstate.Services;
-using System.Threading.Tasks;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
+using System.Threading.Tasks;
 
 namespace RealEstate.Web.Controllers
 {
@@ -11,14 +11,17 @@ namespace RealEstate.Web.Controllers
     {
         private readonly ICustomerService _customerService;
         private readonly IPropertyService _propertyService;
+        private readonly IItemService _itemService;
 
         public DetailController(
             ICustomerService customerService,
-            IPropertyService propertyService
+            IPropertyService propertyService,
+            IItemService itemService
             )
         {
             _customerService = customerService;
             _propertyService = propertyService;
+            _itemService = itemService;
         }
 
         [Route("customer/detail")]
@@ -27,7 +30,7 @@ namespace RealEstate.Web.Controllers
             if (string.IsNullOrEmpty(id))
                 return new JsonResult(null);
 
-            var models = await _customerService.CustomerJsonAsync(id).ConfigureAwait(false);
+            var models = await _customerService.CustomerJsonAsync(id);
             return new JsonResult(models);
         }
 
@@ -37,7 +40,7 @@ namespace RealEstate.Web.Controllers
             if (string.IsNullOrEmpty(id))
                 return new JsonResult(null);
 
-            var models = await _customerService.OwnershipJsonAsync(id).ConfigureAwait(false);
+            var models = await _customerService.OwnershipJsonAsync(id);
             return new JsonResult(models);
         }
 
@@ -47,8 +50,24 @@ namespace RealEstate.Web.Controllers
             if (string.IsNullOrEmpty(id))
                 return new JsonResult(null);
 
-            var models = await _propertyService.PropertyJsonAsync(id).ConfigureAwait(false);
+            var models = await _propertyService.PropertyJsonAsync(id);
             return new JsonResult(models);
+        }
+
+        [Route("item/detail")]
+        public IActionResult Item(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return new JsonResult(null);
+
+            return new ViewComponentResult
+            {
+                ViewComponentType = typeof(ItemDetailViewComponent),
+                Arguments = new
+                {
+                    id
+                },
+            };
         }
     }
 }

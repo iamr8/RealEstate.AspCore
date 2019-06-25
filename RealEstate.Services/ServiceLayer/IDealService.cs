@@ -165,33 +165,33 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<StatusEnum> SyncAsync(Deal deal, DealInputViewModel model, bool save)
         {
-            await _baseService.SyncAsync(
-                deal.Reminders,
-                model.Checks,
-                (reminder, currentUser) => new Reminder
-                {
-                    DealId = deal.Id,
-                    CheckBank = reminder.Bank,
-                    CheckNumber = reminder.Number,
-                    Date = reminder.Date.PersianToGregorian(),
-                    Price = reminder.Price,
-                    UserId = currentUser.Id,
-                },
-                (inDb, inModel) => inDb.DealId == deal.Id && inDb.Date == inModel.Date.PersianToGregorian(),
-                null, false).ConfigureAwait(false);
+            //await _baseService.SyncAsync(
+            //    deal.Reminders,
+            //    model.Checks,
+            //    (reminder, currentUser) => new Reminder
+            //    {
+            //        DealId = deal.Id,
+            //        CheckBank = reminder.Bank,
+            //        CheckNumber = reminder.Number,
+            //        Date = reminder.Date.PersianToGregorian(),
+            //        Price = reminder.Price,
+            //        UserId = currentUser.Id,
+            //    },
+            //    (inDb, inModel) => inDb.DealId == deal.Id && inDb.Date == inModel.Date.PersianToGregorian(),
+            //    null, false).ConfigureAwait(false);
 
-            await _baseService.SyncAsync(
-                deal.Beneficiaries,
-                model.Beneficiaries,
-                (beneficiary, currentUser) => new Beneficiary
-                {
-                    CommissionPercent = beneficiary.CommissionPercent,
-                    TipPercent = beneficiary.TipPercent,
-                    UserId = beneficiary.UserId,
-                    DealId = deal.Id
-                },
-                (inDb, inModel) => inDb.UserId == inModel.UserId,
-                null, false).ConfigureAwait(false);
+            //await _baseService.SyncAsync(
+            //    deal.Beneficiaries,
+            //    model.Beneficiaries,
+            //    (beneficiary, currentUser) => new Beneficiary
+            //    {
+            //        CommissionPercent = beneficiary.CommissionPercent,
+            //        TipPercent = beneficiary.TipPercent,
+            //        UserId = beneficiary.UserId,
+            //        DealId = deal.Id
+            //    },
+            //    (inDb, inModel) => inDb.UserId == inModel.UserId,
+            //    null, false).ConfigureAwait(false);
             return await _baseService.SaveChangesAsync().ConfigureAwait(false);
         }
 

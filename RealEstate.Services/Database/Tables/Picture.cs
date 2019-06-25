@@ -1,5 +1,6 @@
 ﻿using RealEstate.Services.Database.Base;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -22,7 +23,7 @@ namespace RealEstate.Services.Database.Tables
 
         public override string ToString()
         {
-            return File;
+            return Path.GetFileName(File);
         }
     }
 }

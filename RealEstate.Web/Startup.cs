@@ -85,14 +85,14 @@ namespace RealEstate.Web
                     });
                 options.ConfigureWarnings(config =>
                 {
-                    //                    config.Log(CoreEventId.IncludeIgnoredWarning);
-                    //                    config.Log(CoreEventId.NavigationIncluded);
-                    //                    config.Log(CoreEventId.NavigationLazyLoading);
-                    config.Log(CoreEventId.DetachedLazyLoadingWarning);
+                    config.Log(CoreEventId.IncludeIgnoredWarning);
+                    config.Log(CoreEventId.NavigationIncluded);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
-                    config.Log(RelationalEventId.QueryClientEvaluationWarning);
+                    config.Throw(RelationalEventId.QueryClientEvaluationWarning);
+                    config.Throw(CoreEventId.LazyLoadOnDisposedContextWarning);
+                    config.Throw(CoreEventId.NavigationLazyLoading);
                 });
-                //options.EnableSensitiveDataLogging();
+                options.EnableSensitiveDataLogging();
             });
 
             services.AddCors();
@@ -273,15 +273,25 @@ namespace RealEstate.Web
                 }
             });
 
-            app.UseStatusCodePages(async context =>
+            if (!env.IsDevelopment())
             {
-                var statusCode = context.HttpContext.Response.StatusCode;
-                if (statusCode == 404)
-                    context.HttpContext.Response.Redirect("/Error");
-            });
+                app.UseStatusCodePages(async context =>
+                {
+                    var statusCode = context.HttpContext.Response.StatusCode;
+                    if (statusCode == 404)
+                        context.HttpContext.Response.Redirect("/Error");
+                });
+            }
 
             app.UseAuthentication();
             app.UseElmah();
+
+            if (!env.IsDevelopment())
+            {
+                app.UseResponseCaching();
+                app.UseResponseCompression();
+                app.UseWebMarkupMin();
+            }
 
             if (!env.IsDevelopment())
             {

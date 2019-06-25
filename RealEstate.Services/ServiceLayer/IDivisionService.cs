@@ -67,10 +67,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<DivisionViewModel>> ListAsync()
         {
-            var query = _divisions.AsQueryable();
-            query = query.WhereNotDeleted();
-
-            var divisions = await query.ToListAsync().ConfigureAwait(false);
+            var divisions = await _divisions.ToListAsync().ConfigureAwait(false);
             return divisions.Map<Division, DivisionViewModel>();
         }
 

@@ -4,8 +4,9 @@
 @import "_bs.override";
 
 body {
-    background-color: $background-color;
-    font-family: Yekan;
+    background-color: #fff;
+    font-family: IranSans;
+    font-weight: normal;
     font-size: 10pt;
     overflow-x: hidden;
     margin-bottom: 20px;
@@ -1435,23 +1436,6 @@ ul.info-breadcrumb {
         @include background-image-div();
         height: 200px;
         position: relative;
-
-        &.no-img {
-            &:before {
-                position: absolute;
-                top: 0;
-                left: 0;
-                content: "بدون تصویر";
-                font-weight: bold;
-                font-size: 15pt;
-                color: white;
-                width: 100%;
-                height: 100%;
-                @include flexbox();
-                @include justify-content(center);
-                @include align-items(center);
-            }
-        }
     }
 
     > .btn {
@@ -1575,7 +1559,8 @@ button {
 }
 
 .tooltip-inner {
-    font-family: Yekan;
+    font-family: IranSans;
+    font-weight: bold;
     font-size: 9pt;
 }
 
@@ -1702,5 +1687,225 @@ button {
         > i {
             margin-left: 5px;
         }
+    }
+}
+
+.items--item-wrapper {
+    margin-bottom: 15px;
+
+    &.disabled {
+        opacity: 0.3;
+    }
+
+    .items--item {
+        @include border-radius(7px);
+        overflow: hidden;
+        background-color: white;
+        box-shadow: 0 4px 24px rgba(0,0,0,.16);
+        margin-bottom: 15px;
+        @include flexbox;
+        height: 100%;
+        flex-wrap: wrap;
+        @include flex-flow(column);
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .picture {
+            height: 150px;
+            @include background-image-div();
+            position: relative;
+
+            > .fadeIn {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                text-align: right;
+                width: 100%;
+                padding: 8px 1em;
+                background: -webkit-gradient(linear,left top,left bottom,from(rgba(8,10,11,0)),to(rgba(8,10,11,.7)));
+                background: -o-linear-gradient(top,rgba(8,10,11,0) 0,rgba(8,10,11,.7) 100%);
+                background: linear-gradient(180deg,rgba(8,10,11,0),rgba(8,10,11,.7));
+                @include flexbox;
+
+                span {
+                    color: white;
+
+                    > i {
+                        margin-left: 5px;
+                    }
+
+                    > span {
+                        font-weight: bolder;
+                    }
+                }
+            }
+        }
+
+        ul.featureCards {
+            border-top: 1px solid #eee;
+            @include flexbox;
+            padding-inline-start: 0;
+            list-style: none;
+            @include flex-flow(row);
+            margin-bottom: 0;
+            padding: 10px;
+            min-height: 77px;
+
+            > li {
+                padding: 3px;
+                @include flexbox;
+                @include flex-flow(column);
+                text-align: center;
+                width: 25%;
+
+                > i {
+                    font-size: 15pt;
+                    margin-bottom: 10px;
+                }
+
+                > span {
+                    font-weight: bolder;
+
+                    @media (max-width:768px) {
+                        font-size: 9pt;
+                    }
+                }
+
+                &.disabled {
+                    > i, > span {
+                        color: #ccc;
+                    }
+                }
+            }
+        }
+
+        ul.admin-keys {
+            list-style: none;
+            padding-inline-start: 0;
+            @include flexbox;
+            @include flex-flow(row);
+            @include justify-content(center);
+            border-top: 1px solid #eee;
+            margin: 0 !important;
+
+            > li {
+                text-align: center;
+
+                > a {
+                    display: block;
+                    padding: 10px 15px;
+                }
+            }
+        }
+
+        ul.features {
+            padding-top: 15px;
+            list-style: none;
+            padding-inline-start: 0;
+            padding-right: 15px;
+            padding-left: 15px;
+            @include flexbox;
+            @include flex-flow(column);
+            text-align: right;
+
+            .feature-important {
+                font-size: 11pt;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 5px;
+            }
+
+            > li {
+                margin-bottom: 5px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                    border-bottom: none !important;
+                }
+
+                > b {
+                    font-weight: bolder;
+                }
+
+                > span {
+                    font-weight: lighter;
+                }
+            }
+        }
+    }
+}
+
+.text-green {
+    color: seagreen;
+}
+
+.search-options {
+    @media (max-width:768px) {
+        ul.info-breadcrumb {
+            list-style: circle;
+            margin: 0;
+            padding: 0;
+
+            > li {
+                display: block;
+                margin-bottom: 5px;
+                margin-left: 0;
+
+                &:before {
+                    content: none;
+                }
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
+}
+
+.no-img {
+    &:before {
+        position: absolute;
+        top: 0;
+        left: 0;
+        content: "بدون تصویر";
+        font-weight: bold;
+        font-size: 15pt;
+        color: white;
+        width: 100%;
+        height: 100%;
+        @include flexbox();
+        @include justify-content(center);
+        @include align-items(center);
+    }
+}
+
+.animate-bottom {
+    position: relative;
+    animation: animatebottom 0.4s;
+}
+
+@keyframes animatebottom {
+    from {
+        bottom: -300px;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 1;
+    }
+}
+
+#itemDetailModal {
+    .address {
+        font-size: 12pt;
+    }
+
+    .info-breadcrumb {
+        font-size: 10pt;
+        border-bottom: none;
+        margin-bottom: 0;
     }
 }

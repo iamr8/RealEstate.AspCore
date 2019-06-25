@@ -129,7 +129,7 @@ namespace RealEstate.Services.ServiceLayer
                 .AsQueryable();
 
             if (currentUser.Role != Role.SuperAdmin && currentUser.Role != Role.Admin)
-                query = query.Where(x => x.Audits.Find(c => c.Type == LogTypeEnum.Create).UserId == currentUser.Id);
+                query = query.Where(entity => CustomDbFunctions.JsonValue(entity.Audit, "$[0].i") == currentUser.Id);
 
             if (searchModel != null)
                 query = _baseService.AdminSeachConditions(query, searchModel);
@@ -142,16 +142,16 @@ namespace RealEstate.Services.ServiceLayer
             var dateTimeMonthString = dateTimeMonth.ToString("yyyy/MM/dd", new CultureInfo("en-US"));
 
             var monthQuery = await query
-                .Where(x => CustomDbFunctionsExtensions.DateDiff("DAY", dateTimeMonthString, CustomDbFunctionsExtensions.JsonValue(x.Audit, "$[0].d")) <= 0)
+                .Where(x => CustomDbFunctions.DateDiff("DAY", dateTimeMonthString, CustomDbFunctions.JsonValue(x.Audit, "$[0].d")) <= 0)
                 .Cacheable()
                 .ToListAsync();
             if (monthQuery?.Any() != true)
                 return default;
 
-            var viewModels = monthQuery?.Select(x => x.Map<ItemViewModel>(ent =>
+            var viewModels = monthQuery?.Select(item => item.Map<ItemViewModel>(ent =>
             {
-                ent.IncludeAs<Property, PropertyViewModel>(x.Property, ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.IncludeAs<Category, CategoryViewModel>(x.Category);
+                ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 => ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
             })).ToList();
             if (viewModels?.Any() != true)
                 return default;

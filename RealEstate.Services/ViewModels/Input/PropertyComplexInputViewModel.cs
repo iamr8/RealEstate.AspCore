@@ -54,8 +54,8 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string DistrictId { get; set; }
 
-        //        public double Latitude { get; set; }
-        //        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         public OwnershipInputViewModel Ownership { get; set; }
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Query.Expressions;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Configuration;
@@ -18,7 +19,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Query.Expressions;
 
 namespace RealEstate.Services.Database
 {
@@ -115,11 +115,12 @@ namespace RealEstate.Services.Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
-            modelBuilder.HasDbFunction(() => CustomDbFunctionsExtensions.JsonValue(default, default));
-            modelBuilder.HasDbFunction(() => CustomDbFunctionsExtensions.IsNumeric(default));
-            modelBuilder.HasDbFunction(typeof(CustomDbFunctionsExtensions)
-                    .GetMethod(nameof(CustomDbFunctionsExtensions.DateDiff)))
-                .HasTranslation(args => {
+            modelBuilder.HasDbFunction(() => CustomDbFunctions.JsonValue(default, default));
+            modelBuilder.HasDbFunction(() => CustomDbFunctions.IsNumeric(default));
+            modelBuilder.HasDbFunction(typeof(CustomDbFunctions)
+                    .GetMethod(nameof(CustomDbFunctions.DateDiff)))
+                .HasTranslation(args =>
+                {
                     var newArgs = args.ToArray();
                     newArgs[0] = new SqlFragmentExpression((string)((ConstantExpression)newArgs[0]).Value);
                     return new SqlFunctionExpression(
@@ -135,6 +136,11 @@ namespace RealEstate.Services.Database
         public new DbSet<TEntity> Set<TEntity>() where TEntity : class
         {
             return base.Set<TEntity>();
+        }
+
+        public EntityEntry<TEntity> GetEntityEntry<TEntity>(TEntity entity) where TEntity : class
+        {
+            return Entry(entity);
         }
 
         public IDbContextServices GetDbContextServices()

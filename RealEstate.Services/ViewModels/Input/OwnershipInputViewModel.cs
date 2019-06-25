@@ -13,5 +13,10 @@ namespace RealEstate.Services.ViewModels.Input
         [DefaultValue(6)]
         [JsonProperty("dng")]
         public int Dong { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name ?? "نامشخص"} : {Mobile ?? "نامشخص"} : {Dong}";
+        }
     }
 }

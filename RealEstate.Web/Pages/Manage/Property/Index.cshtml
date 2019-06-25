@@ -83,7 +83,7 @@
                     </div>
                 </div>
             </form>*@
-            <item-viewer model="@Model.List.Items">
+            @*<item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
@@ -157,7 +157,7 @@
                                             @foreach (var feature in item.PropertyFeatures)
                                             {
                                                 <text>
-                                                    <li>@feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime)</li>
+                                                    <li>@feature.Feature?.Name.NormalizeFeature(feature.Value, feature.Logs.Last.DateTime)</li>
                                                 </text>
                                             }
                                         </ul>
@@ -198,7 +198,7 @@
                         <vc:log logs="@item.Logs" cat="Property" id="@item.Id"/>
                     </div>
                 }
-            </item-viewer>
+            </item-viewer>*@
             <vc:pagination model="@Model.List"/>
         </section>
     </div>

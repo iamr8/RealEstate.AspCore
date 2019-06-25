@@ -432,18 +432,13 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<FacilityViewModel>> FacilityListAsync()
         {
-            var query = _facilities.AsQueryable();
-            query = query.WhereNotDeleted();
-
-            var facilities = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var facilities = await _facilities.Cacheable().ToListAsync().ConfigureAwait(false);
             return facilities.Map<Facility, FacilityViewModel>();
         }
 
         public async Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] types)
         {
             var query = _features.AsQueryable();
-            query = query.WhereNotDeleted();
-
             if (types?.Any() == true)
                 query = query.Where(x => types.Contains(x.Type));
 

@@ -22,6 +22,8 @@ namespace RealEstate.Services.Database
 
         IDbContextServices GetDbContextServices();
 
+        EntityEntry<TEntity> GetEntityEntry<TEntity>(TEntity entity) where TEntity : class;
+
         void Detach<TEntity>(bool isNew = false) where TEntity : class;
 
         DatabaseFacade Db { get; }

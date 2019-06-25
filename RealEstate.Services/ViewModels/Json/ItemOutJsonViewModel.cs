@@ -12,6 +12,15 @@ namespace RealEstate.Services.ViewModels.Json
         public string Category { get; set; }
 
         [JsonProperty("ftr")]
-        public List<(string, string)> ItemFeatures { get; set; }
+        public Dictionary<string, string> Features { get; set; }
+
+        [JsonProperty("neg")]
+        public bool IsNegotiable { get; set; }
+
+        [JsonProperty("desc")]
+        public string Description { get; set; }
+
+        [JsonProperty("id")]
+        public string Id { get; set; }
     }
 }

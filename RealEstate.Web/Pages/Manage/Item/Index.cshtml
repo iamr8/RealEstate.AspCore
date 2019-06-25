@@ -116,158 +116,136 @@
         </section>
         <section class="container-fluid grid">
             <item-viewer model="@Model.List.Items">
-                @foreach (var item in Model.List.Items)
-                {
-                    var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
-                    var category = item.Category;
-                    var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                    var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                    var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                    var bedRooms = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "تعداد خواب")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                    var buildYear = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "سال ساخت")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                <div class="row">
+                    @foreach (var item in Model.List.Items)
+                    {
+                        var disabledClass = item.IsDeleted ? "disabled" : "";
+                        var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
+                        var category = item.Category;
+                        var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                        var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                        var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                        var bedRooms = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "تعداد خواب")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                        var buildYear = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "سال ساخت")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+                        var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures?.SelectRandom()?.File}");
+                        var hasImage = item.Property?.Pictures?.Any() == true;
 
-                    <div class="row justify-content-center itemShow w-100 element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString("s",new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <ul class="info-breadcrumb">
-                                    <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-itemCategory="@category?.Name">@category?.Name</a>
-                                    </li>
-                                    <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-propertyCategory="@item.Property?.Category.Name">
-                                            @item.Property?.Category.Name
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-district="@item.Property?.District.Name">
-                                            @item.Property?.District.Name
-                                        </a>
-                                    </li>
-                                </ul>
-                                <span>
-                                    @Html.Raw(item.Property?.AddressHtmlStyled)
-                                    @if (item.Property?.Pictures?.Any() == true)
+                        <div class="col-12 col-md-3 items--item-wrapper element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString(" s", new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
+                            <div class="items--item">
+                                <a href="#" data-toggle="modal" data-target="#itemDetailModal" data-item-id="@item.Id">
+                                    <div class="picture @(!hasImage ? " no-img" : "" )" @(Html.Raw(hasImage ? $"style=\"background-image: url('{Url.Content(imgPath)}')\"" : ""))>
+                                        <div class="fadeIn">
+                                            <span>
+                                                <i class="fa fa-map-marker"></i>
+                                                <span>@item.Property.District.Name</span>
+                                            </span>
+                                            <span class="mr-auto">
+                                                @item.Category.Name • @item.Property.Category.Name
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <ul class="features">
+                                        <li>
+                                            @Html.Raw(item.Property.Address)
+                                        </li>
+                                        @{
+                                            var neededFeatures = new List
+                                                <string>
+                                                                                                    {
+                                                "قیمت نهایی",
+                                                "قیمت هر متر",
+                                                "پیش پرداخت",
+                                                "اجاره"
+                                            };
+                                            var workingFeatures = item.ItemFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures.IndexOf(x.Feature.Name)).ToList();
+                                        }
+                                        @if (workingFeatures?.Any() == true)
+                                        {
+                                            foreach (var wFeature in workingFeatures)
+                                            {
+                                                var (key, value) = wFeature.Feature.Name.NormalizeFeature(wFeature.Value, wFeature.Logs);
+                                                var hasError = wFeature.HasErrorInValue;
+                                                var originalValue = wFeature.OriginalValue.CurrencyToWords();
+
+                                                <li class="@(key?.Equals(" قیمت نهایی", StringComparison.CurrentCultureIgnoreCase) == true ? "feature-important" : "" )">
+                                                    @if (!string.IsNullOrEmpty(key))
+                                                    {
+                                                        <b>@key</b>
+                                                    }
+                                                    <span>@Html.Raw(value)</span> @Html.Raw(hasError ? $"<b class=\"text-danger\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"مقدار ثبت شده: {originalValue}\">(خطا)</b>" : "")
+                                                </li>
+                                            }
+                                        }
+                                    </ul>
+                                </a>
+                                <ul class="featureCards mt-auto">
+                                    @{
+                                        var neededFeatures2 = new List
+                                        <string>
+                                            ()
+                                                                                                                    {
+                                        "متراژ",
+                                        "تعداد خواب",
+                                        "سال ساخت"
+                                        };
+                                        var workingFeatures2 = item.Property.PropertyFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures2?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures2.IndexOf(x.Feature.Name)).ToList();
+                                    }
+                                    @if (workingFeatures2?.Any() == true)
                                     {
-                                        <i data-toggle="tooltip" data-placement="bottom" title="@SharedLocalizer[SharedResource.HasPicture]" class="fa fa-check-circle verified"></i>
+                                        foreach (var wFeature in workingFeatures2)
+                                        {
+                                            var (key, value) = wFeature.Feature.Name.NormalizeFeature(wFeature.Value, wFeature.Logs);
+                                            var hasError = wFeature.HasErrorInValue;
+                                            var originalValue = wFeature.OriginalValue.CurrencyToWords();
+
+                                            var icon = string.Empty;
+                                            switch (key)
+                                            {
+                                                case "تعداد خواب":
+                                                    icon = "bed";
+                                                    break;
+                                                case "سال ساخت":
+                                                    icon = "hashtag";
+                                                    break;
+
+                                                case "متراژ":
+                                                    icon = "ruler";
+                                                    break;
+                                            }
+                                            <li @(@Html.Raw(hasError ? $"class=\"text-danger\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"مقدار ثبت شده: {originalValue}\"" : ""))>
+                                                <i class="fa fa-@icon"></i>
+                                                <span>@Html.Raw(value)</span>
+                                            </li>
+                                        }
                                     }
                                     @if (item.IsNegotiable)
                                     {
-                                        <i data-toggle="tooltip" data-placement="bottom" title="@SharedLocalizer[SharedResource.Negotitable]" class="fa fa-asterisk verified-green"></i>
+                                        <li class="mr-auto">
+                                            <i class="fa fa-check text-green"></i>
+                                            <span>@SharedLocalizer[SharedResource.Negotitable]</span>
+                                        </li>
                                     }
-                                </span>
-                                @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.Owner] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var ownership in item.Property?.CurrentPropertyOwnership?.Ownerships.OrderBy(x => x.Customer.Name))
-                                            {
-                                                <text>
-                                                    <li>
-                                                        <a asp-page="@typeof(IndexModel).Page()" asp-route-ownerName="@ownership.Customer?.Name">
-                                                            @ownership.Customer?.Name
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="tel:@ownership.Customer?.Mobile">
-                                                            @ownership.Customer?.Mobile
-                                                        </a>
-                                                    </li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
-                                }
-                                @if (item.Property?.PropertyFacilities?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.PropertyFacilities] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property?.PropertyFacilities.OrderBy(x => x.Facility.Name))
-                                            {
-                                                <text>
-                                                    <li>@feature.Facility?.Name</li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
+                                </ul>
+                                <ul class="row admin-keys mt-auto">
+                                    <li class="col">
+                                        <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
+                                    </li>
+                                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                    {
+                                        <li class="col">
+                                            <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer["EditItem"]</a>
+                                        </li>
+                                        <li class="col">
 
-                                }
-                                @if (item.Property?.PropertyFeatures?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.PropertyFeatures] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.Property?.PropertyFeatures.OrderBy(x => x.Feature.Name))
-                                            {
-                                                <text>
-                                                    <li>@Html.Raw(feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime))</li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
-
-                                }
-                                @if (item.ItemFeatures?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.ItemFeatures] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.ItemFeatures)
-                                            {
-                                                <text>
-                                                    <li>@Html.Raw(feature.Feature?.Name.TranslateFeature(feature.Value, feature.Logs.Last.DateTime))</li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
-
-                                }
-                                @if (item.Property?.Pictures?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.Photos] :
-                                        <ul class="info-breadcrumb gallery no-image">
-                                            @for (var i = 0; i < item.Property?.Pictures.Count; i++)
-                                            {
-                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures[i].File}");
-                                                <li>
-                                                    <img class="hidden" src="@imgPath">
-                                                    @SharedLocalizer[SharedResource.Picture] @(i + 1)
-                                                </li>
-                                            }
-                                        </ul>
-                                    </span>
-                                }
-                                @if (!string.IsNullOrEmpty(item.Description))
-                                {
-                                    <span class="text-justify description">
-                                        @SharedLocalizer[SharedResource.Description] :
-                                        <ul class="info-breadcrumb">
-                                            <li>@item.Description</li>
-                                        </ul>
-                                    </span>
-                                }
-                            </div>
-                            @*@if (item.LastState != DealStatusEnum.Requested)
-                                {
-                                <a asp-page="@typeof(RequestModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-success" data-confirm="@SharedLocalizer[" AreYouSureToDoThisRequest"]">@SharedLocalizer["DealRequest"]</a>
-                                }*@
-
-                            <div class="button">
-                                <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                                {
-                                    @*<a asp-page="@typeof(Property.AddModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="btn btn-sm btn-secondary @disabledClass">@SharedLocalizer["EditProperty"]</a>*@
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["EditItem"]</a>
-                                    <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                }
+                                            <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="col btn-sm text-danger">@disabledTerm</a>
+                                        </li>
+                                    }
+                                </ul>
+                                
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="Item" id="@item.Id" />
-                    </div>
-                }
+                    }
+                </div>
             </item-viewer>
         </section>
         <section class="container-fluid">
@@ -385,6 +363,12 @@
         </div>
     </div>
 </search-modal>
+<div class="modal fade animate" id="itemDetailModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content animate-bottom">
+        </div>
+    </div>
+</div>
 @section Styles
 {
     <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
@@ -393,13 +377,29 @@
 {
     <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
 
-            const opts = {
-                "classes": "",
-                "hasModal": true
-            }
-            $('.gallery').bsPhotoGallery(opts);
+            const detailModal = "#itemDetailModal";
+
+            $(detailModal).on('show.bs.modal',
+                function(event) {
+                    const button = $(event.relatedTarget); // Button that triggered the modal
+                    const itemId = button.data('item-id'); // Extract info from data-* attributes
+                    const modal = $(this);
+
+                    $.get("@Url.Action("Item", "Detail")", { id: itemId }).then(function(response) {
+                        console.log(response);
+                        if (response != null) {
+                            modal.find('.modal-content').html(response);
+                        }
+                    });
+
+                    const opts = {
+                        "classes": "",
+                        "hasModal": true
+                    }
+                    $('.gallery').bsPhotoGallery(opts);
+                });
         });
     </script>
     <script>
@@ -694,78 +694,78 @@
     <script>
         $(document).ready(function() {
 
-            const $grid = $(".grid").isotope({
-                itemSelector: '.element-item',
-                layoutMode: 'fitRows',
-                getSortData: {
-                    creationDate: function(itemElem) {
-                        const plainDate = $(itemElem).attr('data-creationDate');
-                        const result = Date.parse(plainDate);
-                        return result;
-                    },
-                    finalPrice: function(itemElem) {
-                        const finalPrice = $(itemElem).attr('data-finalPrice');
-                        const result = parseFloat(finalPrice);
-                        return result;
-                    },
-                    pricePerMeter: function(itemElem) {
-                        const pricePerMeter = $(itemElem).attr('data-pricePerMeter');
-                        const result = parseFloat(pricePerMeter);
-                        return result;
-                    },
-                    meters: function(itemElem) {
-                        const meters = $(itemElem).attr('data-meters');
-                        const result = parseFloat(meters);
-                        return result;
-                    },
-                    bedRooms: function(itemElem) {
-                        const bedRooms = $(itemElem).attr('data-bedRooms');
-                        const result = parseFloat(bedRooms);
-                        return result;
-                    },
-                    buildYear: function(itemElem) {
-                        const buildYear = $(itemElem).attr('data-buildYear');
-                        const result = parseFloat(buildYear);
-                        return result;
-                    }
+            @*const $grid = $(".grid").isotope({
+            itemSelector: '.element-item',
+            layoutMode: 'fitRows',
+            getSortData: {
+                creationDate: function (itemElem) {
+                    const plainDate = $(itemElem).attr('data-creationDate');
+                    const result = Date.parse(plainDate);
+                    return result;
+                },
+                finalPrice: function (itemElem) {
+                    const finalPrice = $(itemElem).attr('data-finalPrice');
+                    const result = parseFloat(finalPrice);
+                    return result;
+                },
+                pricePerMeter: function (itemElem) {
+                    const pricePerMeter = $(itemElem).attr('data-pricePerMeter');
+                    const result = parseFloat(pricePerMeter);
+                    return result;
+                },
+                meters: function (itemElem) {
+                    const meters = $(itemElem).attr('data-meters');
+                    const result = parseFloat(meters);
+                    return result;
+                },
+                bedRooms: function (itemElem) {
+                    const bedRooms = $(itemElem).attr('data-bedRooms');
+                    const result = parseFloat(bedRooms);
+                    return result;
+                },
+                buildYear: function (itemElem) {
+                    const buildYear = $(itemElem).attr('data-buildYear');
+                    const result = parseFloat(buildYear);
+                    return result;
                 }
+            }
 
-            });
+        });
 
-            //$grid.isotope({
-            //    sortBy: "creationDate",
-            //    sortAscending: "descending"
-            //});
+        //$grid.isotope({
+        //    sortBy: "creationDate",
+        //    sortAscending: "descending"
+        //});
 
-            $('.sorter').click(function() {
-                const sortState = $(this).html();
-                const parent = $(this).parent().prev();
-                var parentName = $(parent).html();
-                parentName = parentName.split(' - ').length > 0 ? parentName.split(' - ')[0] : parentName;
+        $('.sorter').click(function () {
+            const sortState = $(this).html();
+            const parent = $(this).parent().prev();
+            var parentName = $(parent).html();
+            parentName = parentName.split(' - ').length > 0 ? parentName.split(' - ')[0] : parentName;
 
-                if (sortState === "@Html.Raw(SharedLocalizer[SharedResource.Cancel])") {
-                    $grid.isotope({
-                        sortBy: ""
-                    });
-                    $(parent).html(parentName);
+            if (sortState === "@Html.Raw(SharedLocalizer[SharedResource.Cancel])") {
+                $grid.isotope({
+                    sortBy: ""
+                });
+                $(parent).html(parentName);
 
-                } else {
-                    const sortValue = $(this).attr('data-sort-by');
-                    const ascDesc = $(this).attr('data-sort-ascending');
-                    const direction = ascDesc === "true" ? true : false;
-                    $grid.isotope({
-                        sortBy: sortValue,
-                        sortAscending: direction
-                    });
+            } else {
+                const sortValue = $(this).attr('data-sort-by');
+                const ascDesc = $(this).attr('data-sort-ascending');
+                const direction = ascDesc === "true" ? true : false;
+                $grid.isotope({
+                    sortBy: sortValue,
+                    sortAscending: direction
+                });
 
-                    $(parent).html(`${parentName} - ${sortState}`);
-                }
+                $(parent).html(`${parentName} - ${sortState}`);
+            }
 
-                const alreadyActivatedState = $(this).parent().children(".dropdown-item.active")[0];
-                $(alreadyActivatedState).toggleClass("active");
-                $(this).toggleClass("active");
+            const alreadyActivatedState = $(this).parent().children(".dropdown-item.active")[0];
+            $(alreadyActivatedState).toggleClass("active");
+            $(this).toggleClass("active");
 
-            });
+        });*@
 
         });
     </script>

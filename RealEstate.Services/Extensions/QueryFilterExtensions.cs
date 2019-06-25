@@ -13,7 +13,7 @@ namespace RealEstate.Services.Extensions
         public static IOrderedQueryable<TSource> OrderDescendingByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
             var source = from que in entities
-                         orderby CustomDbFunctionsExtensions.JsonValue(que.Audit, "$[0].d") descending
+                         orderby CustomDbFunctions.JsonValue(que.Audit, "$[0].d") descending
                          select que;
             return source;
         }
@@ -25,7 +25,9 @@ namespace RealEstate.Services.Extensions
 
         public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity
         {
-            var source = entities.OrderBy(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
+            var source = from que in entities
+                         orderby CustomDbFunctions.JsonValue(que.Audit, "$[0].d")
+                         select que;
             return source;
         }
 
@@ -34,12 +36,6 @@ namespace RealEstate.Services.Extensions
             var source = sources
                 .OrderByDescending(x => x.Audits.FirstOrDefault(v => v.Type == LogTypeEnum.Create).DateTime);
 
-            return source;
-        }
-
-        public static IOrderedEnumerable<TModel> OrderByCreationDateTime<TModel>(this List<TModel> sources) where TModel : BaseLogViewModel
-        {
-            var source = sources.OrderBy(x => x.Logs.Create.DateTime);
             return source;
         }
 
@@ -69,13 +65,6 @@ namespace RealEstate.Services.Extensions
             var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
                                                   || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
             return result.ToList();
-        }
-
-        public static IQueryable<TEntity> WhereNotDeleted<TEntity>(this IQueryable<TEntity> entities) where TEntity : BaseEntity
-        {
-            var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
-                                                  || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
-            return result;
         }
     }
 }

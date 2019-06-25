@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.Api.Response
 {
@@ -23,17 +23,10 @@ namespace RealEstate.Services.ViewModels.Api.Response
         [JsonProperty("ed")]
         public List<string> EmployeeDivisions { get; set; }
 
-        [JsonProperty("ei")]
-        public string EmployeeId { get; set; }
-
         [JsonProperty("r")]
         public string Role { get; set; }
 
-        [JsonProperty("ep")]
-        public string EncryptedPassword { get; set; }
         [JsonProperty("mn")]
         public string MobileNumber { get; set; }
-        [JsonProperty("ui")]
-        public string UserId { get; set; }
     }
 }

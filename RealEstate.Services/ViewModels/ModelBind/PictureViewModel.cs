@@ -19,6 +19,10 @@ namespace RealEstate.Services.ViewModels.ModelBind
             act?.Invoke(this);
         }
 
+        public PictureViewModel()
+        {
+        }
+
         public string File => Entity?.File;
         public string Text => Entity?.Text;
 

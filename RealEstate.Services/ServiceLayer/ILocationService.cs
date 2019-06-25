@@ -53,10 +53,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<DistrictViewModel>> DistrictListAsync()
         {
-            var query = _districts.AsQueryable();
-            query = query.WhereNotDeleted();
-
-            var districts = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var districts = await _districts.Cacheable().ToListAsync().ConfigureAwait(false);
             return districts.Map<District, DistrictViewModel>();
         }
 
@@ -65,8 +62,6 @@ namespace RealEstate.Services.ServiceLayer
             var query = _baseService.CheckDeletedItemsPrevillege(_districts, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<DistrictViewModel>();
-
-            var cacheKey = new StringBuilder();
 
             if (searchModel != null)
             {

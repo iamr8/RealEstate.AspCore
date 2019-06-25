@@ -46,7 +46,7 @@ namespace RealEstate.Web.Pages.Manage.Item
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                model = await _itemService.ItemComplexInputAsync(id).ConfigureAwait(false);
+                model = await _itemService.ItemInputAsync(id).ConfigureAwait(false);
             }
 
             NewItem = !string.IsNullOrEmpty(id)
@@ -65,7 +65,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnPostAsync()
         {
             var (status, message) = await ModelState.IsValidAsync(
-                () => _itemService.ItemComplexAddOrUpdateAsync(NewItem, !NewItem.IsNew, true)
+                () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true)
             ).ConfigureAwait(false);
 
             PassJson = NewItem.SerializePassModel();

@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
+using RealEstate.Base;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
+using RealEstate.Services.Extensions;
 using System;
 
 namespace RealEstate.Services.ViewModels.ModelBind
@@ -19,8 +21,13 @@ namespace RealEstate.Services.ViewModels.ModelBind
             act?.Invoke(this);
         }
 
-        public string Value => Entity?.Value;
+        private FeatureFixExtension.NormalizeFeatureStatus Normalized => Feature != null
+            ? Entity?.Value.FixPersian().NormalizeFeature(Feature.Name)
+            : new FeatureFixExtension.NormalizeFeatureStatus(Entity?.Value.FixPersian(), Entity?.Value.FixPersian(), false);
 
+        public string Value => Normalized.Value;
+        public bool HasErrorInValue => Normalized.HasError;
+        public string OriginalValue => Normalized.OriginalValue;
         public PropertyViewModel Property { get; set; }
 
         public FeatureViewModel Feature { get; set; }

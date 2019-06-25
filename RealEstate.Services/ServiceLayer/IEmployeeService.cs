@@ -87,7 +87,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.Payments)
                 .ThenInclude(x => x.Checkout)
                 .FirstOrDefaultAsync(x => x.Id == id)
-                .ConfigureAwait(false);
+                ;
             var viewModel = employee?.Map<EmployeeViewModel>();
             if (viewModel == null)
                 return default;
@@ -114,7 +114,7 @@ namespace RealEstate.Services.ServiceLayer
             if (justFreeEmployees)
                 query = query.Where(x => x.Users.Count == 0);
 
-            var employees = await query.ToListAsync().ConfigureAwait(false);
+            var employees = await query.ToListAsync();
             return employees.Map<Employee, EmployeeViewModel>();
         }
 
@@ -123,13 +123,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var employee = await _employees.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var employee = await _employees.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(employee,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -139,13 +139,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await _presences.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var user = await _presences.FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -155,13 +155,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await _leaves.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var user = await _leaves.FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -212,12 +212,12 @@ namespace RealEstate.Services.ServiceLayer
             var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<EmployeeViewModel>(ent =>
                 {
-                    ent.IncludeAs<Insurance, InsuranceViewModel>(item.Insurances);
-                    ent.IncludeAs<FixedSalary, FixedSalaryViewModel>(item.FixedSalaries);
-                    ent.IncludeAs<Payment, PaymentViewModel>(item.Payments);
-                    ent.IncludeAs<User, UserViewModel>(item.Users);
-                    ent.IncludeAs<EmployeeDivision, EmployeeDivisionViewModel>(item.EmployeeDivisions,
-                        ent2 => ent2.IncludeAs<Division, DivisionViewModel>(ent2.Entity.Division));
+                    ent.IncludeAs<Employee, Insurance, InsuranceViewModel>(_unitOfWork, x => x.Insurances);
+                    ent.IncludeAs<Employee, FixedSalary, FixedSalaryViewModel>(_unitOfWork, x => x.FixedSalaries);
+                    ent.IncludeAs<Employee, Payment, PaymentViewModel>(_unitOfWork, x => x.Payments);
+                    ent.IncludeAs<Employee, User, UserViewModel>(_unitOfWork, x => x.Users);
+                    ent.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions,
+                        ent2 => ent2.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division));
                 }), Task.FromResult(false), currentUser);
 
             if (result?.Items?.Any() != true)
@@ -257,7 +257,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _baseService.QueryByRole(_employees, allowedRolesshowDeletedItems).FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.QueryByRole(_employees, allowedRolesshowDeletedItems).FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -280,7 +280,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.FixedSalaries)
                 .Include(x => x.Insurances)
                 .FirstOrDefaultAsync(x => x.Id == model.Id)
-                .ConfigureAwait(false);
+                ;
             var (updateStatus, updatedEmployee) = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -292,10 +292,10 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, false, StatusEnum.UserIsNull);
 
-            await SyncAsync(updatedEmployee, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(updatedEmployee, save).ConfigureAwait(false);
+            await SyncAsync(updatedEmployee, model, false);
+            return await _baseService.SaveChangesAsync(updatedEmployee, save);
         }
 
         public async Task<MethodStatus<Employee>> AddAsync(EmployeeInputViewModel model, bool save)
@@ -316,10 +316,10 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin
-            }, false).ConfigureAwait(false);
+            }, false);
 
-            await SyncAsync(newEmployee, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(newEmployee, save).ConfigureAwait(false);
+            await SyncAsync(newEmployee, model, false);
+            return await _baseService.SaveChangesAsync(newEmployee, save);
         }
 
         public Task<MethodStatus<Presence>> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save)
@@ -344,7 +344,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Leave>(StatusEnum.IdIsNull, null);
 
-            var entity = await _leaves.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _leaves.FirstOrDefaultAsync(x => x.Id == model.Id);
             if (entity == null)
                 return new MethodStatus<Leave>(StatusEnum.LeaveIsNull, null);
 
@@ -371,7 +371,7 @@ namespace RealEstate.Services.ServiceLayer
                     }, new[]
                     {
                         Role.SuperAdmin
-                    }, false, StatusEnum.UserIsNull).ConfigureAwait(false);
+                    }, false, StatusEnum.UserIsNull);
 
             return updateStatus;
         }
@@ -384,7 +384,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Presence>(StatusEnum.IdIsNull, null);
 
-            var entity = await _presences.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _presences.FirstOrDefaultAsync(x => x.Id == model.Id);
             if (entity == null)
                 return new MethodStatus<Presence>(StatusEnum.LeaveIsNull, null);
 
@@ -409,7 +409,7 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
 
             return updateStatus;
         }
@@ -422,7 +422,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(model.EmployeeId))
                 return new MethodStatus<Presence>(StatusEnum.EmployeeIsNull, null);
 
-            var employee = await EntityAsync(model.EmployeeId).ConfigureAwait(false);
+            var employee = await EntityAsync(model.EmployeeId);
             if (employee == null)
                 return new MethodStatus<Presence>(StatusEnum.EmployeeIsNull, null);
 
@@ -439,7 +439,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -451,7 +451,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(model.EmployeeId))
                 return new MethodStatus<Leave>(StatusEnum.EmployeeIsNull, null);
 
-            var employee = await EntityAsync(model.EmployeeId).ConfigureAwait(false);
+            var employee = await EntityAsync(model.EmployeeId);
             if (employee == null)
                 return new MethodStatus<Leave>(StatusEnum.EmployeeIsNull, null);
 
@@ -470,7 +470,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -487,7 +487,7 @@ namespace RealEstate.Services.ServiceLayer
                         Value = (double)model.FixedSalary
                     },
                         null,
-                        false).ConfigureAwait(false);
+                        false);
                 }
             }
             if (model.Insurance != null && model.Insurance > 0)
@@ -501,22 +501,24 @@ namespace RealEstate.Services.ServiceLayer
                         Price = (double)model.Insurance
                     },
                         null,
-                        false).ConfigureAwait(false);
+                        false);
                 }
             }
 
-            var result = await _baseService.SyncAsync(
-                    employee.EmployeeDivisions,
-                    model.Divisions,
-                    (division, currentUser) => new EmployeeDivision
-                    {
-                        DivisionId = division.DivisionId,
-                        EmployeeId = employee.Id
-                    },
-                    (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
-                    null,
-                    false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            await _baseService.SyncAsync(
+                employee.EmployeeDivisions,
+                model.Divisions,
+                (division, currentUser) => new EmployeeDivision
+                {
+                    DivisionId = division.DivisionId,
+                    EmployeeId = employee.Id
+                },
+                inDb => inDb.DivisionId,
+                (inDb, inModel) => inDb.DivisionId == inModel.DivisionId,
+                null,
+                null,
+                null);
+            return await _baseService.SaveChangesAsync();
         }
 
         public async Task<LeaveInputViewModel> LeaveInputAsync(string id)
@@ -524,7 +526,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var model = await _leaves.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var model = await _leaves.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = model?.Map<LeaveViewModel>();
             if (viewModel == null)
                 return default;
@@ -547,7 +549,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var model = await _presences.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var model = await _presences.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = model?.Map<PresenceViewModel>();
             if (viewModel == null)
                 return default;
@@ -567,13 +569,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var model = await EntityAsync(id, null).ConfigureAwait(false);
+            var model = await EntityAsync(id, null);
             var viewModel = model?.Map<EmployeeViewModel>(ent =>
             {
-                ent.IncludeAs<EmployeeDivision, EmployeeDivisionViewModel>(model.EmployeeDivisions,
-                    ent2 => ent2.IncludeAs<Division, DivisionViewModel>(ent2.Entity.Division));
-                ent.IncludeAs<Insurance, InsuranceViewModel>(model.Insurances);
-                ent.IncludeAs<FixedSalary, FixedSalaryViewModel>(model.FixedSalaries);
+                ent.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions,
+                    ent2 => ent2.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division));
+                ent.IncludeAs<Employee, Insurance, InsuranceViewModel>(_unitOfWork, x => x.Insurances);
+                ent.IncludeAs<Employee, FixedSalary, FixedSalaryViewModel>(_unitOfWork, x => x.FixedSalaries);
             });
             if (viewModel == null)
                 return default;

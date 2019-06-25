@@ -3,6 +3,7 @@ using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Tables;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewModels.ModelBind
 {
@@ -21,7 +22,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
         }
 
         public PropertyViewModel Property { get; set; }
-
+        public OwnershipViewModel Ownership => Ownerships?.FirstOrDefault();
         public List<OwnershipViewModel> Ownerships { get; set; }
 
         public override string ToString()

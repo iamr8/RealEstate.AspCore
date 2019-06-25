@@ -4,7 +4,6 @@ using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -16,10 +15,12 @@ using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -29,10 +30,9 @@ namespace RealEstate.Services.ServiceLayer.Base
     {
         CurrentUserViewModel CurrentUser();
 
-        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator,
-            Action<TSource, TModel> onUpdate,
-            Role[] allowedRoles, bool save) where TSource : BaseEntity;
+        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities, List<TModel> newList,
+            Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, object>> duplicateCheck, Expression<Func<TSource, TModel, bool>> idValidator,
+            Func<TSource, TModel, bool> valueValidator, Action<TSource, TModel> onUpdate, Role[] allowedRoles) where TSource : BaseEntity;
 
         Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
             where TEntity : BaseEntity;
@@ -62,15 +62,15 @@ namespace RealEstate.Services.ServiceLayer.Base
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
-            Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
+            Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null, int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
 
-        Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
-            bool save)
-            where TSource : BaseEntity;
+        //Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+        //    List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
+        //    bool save)
+        //    where TSource : BaseEntity;
 
         Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
 
@@ -91,7 +91,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             _accessor = accessor;
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null)
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null, int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
             var output = new PaginationViewModel<TOutput>();
@@ -102,7 +102,6 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var page = searchModel?.PageNo ?? 1;
             page = page <= 1 ? 1 : page;
-            const int pageSize = 10;
 
             var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
             {
@@ -120,7 +119,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var pageCount = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
             if (page > pageCount)
-                page = pageCount;
+                page = 1;
 
             var pagingQuery = page > 1
             ? query.Skip(pageSize * (page - 1))
@@ -135,7 +134,6 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var viewList = entities
                 .Select(viewModel.Invoke)
-                //.OrderByDescending(x => x.Logs.Create.DateTime)
                 .ToHasNotNullList();
 
             if (viewList == null)
@@ -164,13 +162,13 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (!string.IsNullOrEmpty(searchModel.CreationDateFrom))
             {
                 var dateTime = searchModel.CreationDateFrom.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
-                query = query.Where(x => CustomDbFunctionsExtensions.DateDiff("DAY", dateTime, CustomDbFunctionsExtensions.JsonValue(x.Audit, "$[0].d")) <= 0);
+                query = query.Where(x => CustomDbFunctions.DateDiff("DAY", dateTime, CustomDbFunctions.JsonValue(x.Audit, "$[0].d")) <= 0);
             }
 
             if (!string.IsNullOrEmpty(searchModel.CreationDateTo))
             {
                 var dateTime = searchModel.CreationDateTo.PersianToGregorian().ToString("yyyy/MM/dd", new CultureInfo("en-US"));
-                query = query.Where(x => CustomDbFunctionsExtensions.DateDiff("DAY", dateTime, CustomDbFunctionsExtensions.JsonValue(x.Audit, "$[0].d")) >= 0);
+                query = query.Where(x => CustomDbFunctions.DateDiff("DAY", dateTime, CustomDbFunctions.JsonValue(x.Audit, "$[0].d")) >= 0);
             }
 
             if (currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin)
@@ -178,7 +176,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 if (string.IsNullOrEmpty(searchModel.CreatorId))
                     return query;
 
-                query = query.Where(entity => CustomDbFunctionsExtensions.JsonValue(entity.Audit, "$[0].i") == searchModel.CreatorId);
+                query = query.Where(entity => CustomDbFunctions.JsonValue(entity.Audit, "$[0].i") == searchModel.CreatorId);
             }
 
             return query;
@@ -191,16 +189,24 @@ namespace RealEstate.Services.ServiceLayer.Base
                 return null;
 
             var isAdmin = searchModel?.IncludeDeletedItems == true && (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin);
-            var query = source.AsQueryable();
+            var query = source
+                .AsQueryable()
+                .AsNoTracking();
             var tableName = query.ElementType.Name;
 
             var rawQuery =
                 $"SELECT * FROM [{tableName}] I CROSS APPLY ( SELECT TOP(1) JSON_VALUE(value, '$.d') ActivityDate, JSON_VALUE(value, '$.t') ActivityType FROM OPENJSON(I.Audit, '$') J ORDER BY [key] DESC ) J2 ";
 
             if (!isAdmin)
+            {
                 rawQuery += $"WHERE ActivityType != {(int)LogTypeEnum.Delete}";
+            }
+            //else
+            //{
+            //            query = query.IgnoreQueryFilters();
+            //}
 
-            query = query.IgnoreQueryFilters().FromSql(rawQuery);
+            query = query.FromSql(rawQuery);
             return query;
         }
 
@@ -298,7 +304,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (propertyEntityId == null || !(propertyEntityId.GetValue(query) is string id))
                 return entity;
 
-            var templateBaseView = new BaseViewModel();
+            BaseViewModel templateBaseView;
             var propertyViewId = entity.GetType().GetProperty(nameof(templateBaseView.Id));
             if (propertyViewId != null && propertyViewId.PropertyType == typeof(string))
                 propertyViewId.SetValue(entity, id);
@@ -306,8 +312,9 @@ namespace RealEstate.Services.ServiceLayer.Base
             return entity;
         }
 
-        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Func<TSource, TModel, bool> validator, Action<TSource, TModel> onUpdate, Role[] allowedRoles, bool save) where TSource : BaseEntity
+        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities, List<TModel> newList,
+            Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, object>> duplicateCheck, Expression<Func<TSource, TModel, bool>> idValidator,
+            Func<TSource, TModel, bool> valueValidator, Action<TSource, TModel> onUpdate, Role[] allowedRoles) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
@@ -317,9 +324,12 @@ namespace RealEstate.Services.ServiceLayer.Base
             {
                 var mustBeLeft = new List<TSource>();
                 if (newList?.Any() == true)
-                    mustBeLeft = currentListEntities.Where(entity => newList.Any(model => indentifier.Compile().Invoke(entity, model))).ToList();
+                    mustBeLeft = currentListEntities.Where(entity => newList.Any(model => idValidator.Compile().Invoke(entity, model))).ToList();
 
+                var duplicates = mustBeLeft.GroupBy(x => duplicateCheck.Compile().Invoke(x)).Where(x => x.Count() > 1).Select(x => x.FirstOrDefault()).ToList();
                 var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
+                mustBeRemoved.AddRange(duplicates);
+
                 if (mustBeRemoved.Count > 0)
                     foreach (var redundant in mustBeRemoved)
                         await RemoveAsync(redundant, null, DeleteEnum.Delete, false);
@@ -330,16 +340,19 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             foreach (var model in newList)
             {
-                var source = currentListEntities?.FirstOrDefault(ent => indentifier.Compile().Invoke(ent, model));
+                var source = currentListEntities?.FirstOrDefault(ent => idValidator.Compile().Invoke(ent, model));
                 if (source == null)
                 {
-                    var newItem = newEntity.Invoke(model);
+                    var newItem = newEntity.Invoke(model, currentUser);
                     await AddAsync(newItem, allowedRoles, false);
                 }
                 else
                 {
-                    var noNeedChanges = validator?.Invoke(source, model) == true;
+                    var noNeedChanges = valueValidator?.Invoke(source, model) == true;
                     if (noNeedChanges)
+                        continue;
+
+                    if (onUpdate == null)
                         continue;
 
                     onUpdate.Invoke(source, model);
@@ -350,44 +363,44 @@ namespace RealEstate.Services.ServiceLayer.Base
             return await SaveChangesAsync();
         }
 
-        public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-            List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
-        {
-            var currentUser = CurrentUser();
-            if (currentUser == null)
-                return StatusEnum.UserIsNull;
+        //public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
+        //    List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles, bool save) where TSource : BaseEntity
+        //{
+        //    var currentUser = CurrentUser();
+        //    if (currentUser == null)
+        //        return StatusEnum.UserIsNull;
 
-            if (currentListEntities?.Any() == true)
-            {
-                var mustBeLeft = currentListEntities.Where(source => newList.Any(model => indentifier.Compile().Invoke(source, model))).ToList();
-                var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
-                if (mustBeRemoved.Count > 0)
-                    foreach (var redundant in mustBeRemoved)
-                        await RemoveAsync(redundant, null, DeleteEnum.Delete, false);
-            }
+        //    if (currentListEntities?.Any() == true)
+        //    {
+        //        var mustBeLeft = currentListEntities.Where(source => newList.Any(model => indentifier.Compile().Invoke(source, model))).ToList();
+        //        var mustBeRemoved = currentListEntities.Where(x => !mustBeLeft.Contains(x)).ToList();
+        //        if (mustBeRemoved.Count > 0)
+        //            foreach (var redundant in mustBeRemoved)
+        //                await RemoveAsync(redundant, null, DeleteEnum.Delete, false);
+        //    }
 
-            if (newList?.Any() != true)
-                return await SaveChangesAsync();
+        //    if (newList?.Any() != true)
+        //        return await SaveChangesAsync();
 
-            foreach (var model in newList)
-            {
-                var source = currentListEntities?.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
-                if (source == null)
-                {
-                    var newItem = newEntity.Invoke(model, currentUser);
-                    await AddAsync(newItem, allowedRoles, false);
-                }
-                else
-                {
-                    if (!source.IsDeleted)
-                        continue;
+        //    foreach (var model in newList)
+        //    {
+        //        var source = currentListEntities?.FirstOrDefault(entity => indentifier.Compile().Invoke(entity, model));
+        //        if (source == null)
+        //        {
+        //            var newItem = newEntity.Invoke(model, currentUser);
+        //            await AddAsync(newItem, allowedRoles, false);
+        //        }
+        //        else
+        //        {
+        //            if (!source.IsDeleted)
+        //                continue;
 
-                    _unitOfWork.UnDelete(source, currentUser);
-                }
-            }
+        //            _unitOfWork.UnDelete(source, currentUser);
+        //        }
+        //    }
 
-            return await SaveChangesAsync();
-        }
+        //    return await SaveChangesAsync();
+        //}
 
         public CurrentUserViewModel CurrentUser(List<Claim> claims)
         {
@@ -427,6 +440,24 @@ namespace RealEstate.Services.ServiceLayer.Base
             return roles?.Any() != true || roles.Any(x => x == currentUser.Role);
         }
 
+        private Dictionary<string, object> GetEntityProperties<TSource>(TSource entity) where TSource : BaseEntity
+        {
+            return entity
+                .GetPublicProperties()
+                .Where(x => (x.PropertyType == typeof(string)
+                             || x.PropertyType == typeof(int)
+                             || x.PropertyType == typeof(decimal)
+                             || x.PropertyType == typeof(double)
+                             || x.PropertyType == typeof(IPoint)
+                             || x.PropertyType == typeof(DateTime)
+                             || x.PropertyType == typeof(Enum))
+                            && x.Name != nameof(entity.Id)
+                            && x.Name != nameof(entity.Audit)
+                            && x.GetCustomAttribute<NotMappedAttribute>() == null
+                            && !x.GetGetMethod().IsVirtual)
+                .ToDictionary(x => x.Name, x => x.GetValue(entity));
+        }
+
         public async Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
          Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
         {
@@ -440,30 +471,17 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (entity == null)
                 return new MethodStatus<TSource>(modelNullStatus, null);
 
-            var oldEntity = entity.GetPublicProperties().Select(x => new
-            {
-                x.Name,
-                Value = x.GetValue(entity)
-            }).ToList();
+            var propertiesBeforeChanges = GetEntityProperties(entity);
             changes.Invoke(currentUser);
-            var properties = entity.GetPublicProperties().Where(x => (x.PropertyType == typeof(string)
-                                                                     || x.PropertyType == typeof(int)
-                                                                     || x.PropertyType == typeof(decimal)
-                                                                     || x.PropertyType == typeof(double)
-                                                                     || x.PropertyType == typeof(IPoint)
-                                                                     || x.PropertyType == typeof(DateTime)
-                                                                     || x.PropertyType == typeof(Enum))
-                                                                     && x.Name != nameof(entity.Id)
-                                                                     && x.Name != nameof(entity.Audit)).ToList();
-            if (properties?.Any() != true)
+            var propertiesAfterChanges = GetEntityProperties(entity);
+            if (propertiesAfterChanges?.Any() != true)
                 return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
             var changesList = new Dictionary<string, string>();
-            foreach (var property in properties)
+            foreach (var (name, value) in propertiesAfterChanges)
             {
-                var name = property.Name;
-                var oldValue = oldEntity.Find(x => x.Name.Equals(name)).Value;
-                var newValue = property.GetValue(entity);
+                var oldValue = propertiesBeforeChanges.FirstOrDefault(x => x.Key.Equals(name, StringComparison.CurrentCulture)).Value;
+                var newValue = value;
 
                 if (oldValue == null && newValue != null)
                     changesList.Add(name, null);
@@ -471,7 +489,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                     changesList.Add(name, oldValue.ToString());
             }
 
-            if (changesList?.Any() != true)
+            if (changesList.Any() != true)
                 return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
             _unitOfWork.Update(entity, currentUser, changesList);

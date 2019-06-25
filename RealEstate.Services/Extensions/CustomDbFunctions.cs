@@ -3,7 +3,7 @@ using System;
 
 namespace RealEstate.Services.Extensions
 {
-    public static class CustomDbFunctionsExtensions
+    public static class CustomDbFunctions
     {
         [DbFunction("JSON_VALUE", "")]
         public static string JsonValue(string source, string path) => throw new NotSupportedException();
@@ -12,6 +12,7 @@ namespace RealEstate.Services.Extensions
         public static int DateDiff(string interval, string startingDate, string endingDate) => throw new NotSupportedException();
 
         [DbFunction("ISNUMERIC", "")]
-        public static string IsNumeric(string str) => throw new NotSupportedException();
+        public static int IsNumeric(string str) => throw new NotSupportedException();
+
     }
 }

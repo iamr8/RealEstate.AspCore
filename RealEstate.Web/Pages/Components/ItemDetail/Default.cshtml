@@ -1,0 +1,158 @@
+﻿@model ItemOutJsonViewModel
+
+@if (Model != null)
+{
+    @*<div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">@Model.Property.Address</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>*@
+    <div class="modal-body">
+        <div class="container-fluid">
+            <ul class="info-breadcrumb">
+                <li>
+                    <a asp-page="@typeof(Pages.Manage.Item.IndexModel).Page()" asp-route-itemCategory="@Model.Category">@Model.Category</a>
+                </li>
+                <li>
+                    <a asp-page="@typeof(Pages.Manage.Item.IndexModel).Page()" asp-route-propertyCategory="@Model.Property?.Category">
+                        @Model.Property?.Category
+                    </a>
+                </li>
+                <li>
+                    <a asp-page="@typeof(Pages.Manage.Item.IndexModel).Page()" asp-route-district="@Model.Property?.District">
+                        @Model.Property?.District
+                    </a>
+                </li>
+                @if (Model.IsNegotiable)
+                {
+                    <li class="text-green">
+                        <i class="fa fa-check"></i>
+                        @SharedLocalizer[SharedResource.Negotitable]
+                    </li>
+                }
+            </ul>
+            <div class="row justify-content-center align-items-start text-right">
+                <div class="col-12 address">
+                    <b>@Model.Property?.Address</b>
+                </div>
+            </div>
+            @if (Model.Property?.Ownership != null)
+            {
+                <hr subject="@SharedLocalizer[SharedResource.Owner]" />
+                <div class="row justify-content-center align-items-start text-right">
+
+                    <div class="col-12">
+                        <ul class="info-breadcrumb text-dark">
+                            <li>
+                                <a asp-page="@typeof(Pages.Manage.Customer.IndexModel).Page()" asp-route-ownerName="@Model.Property.Ownership?.Name">
+                                    @Model.Property.Ownership?.Name
+                                </a>
+                            </li>
+                            <li>
+                                <a href="tel:@Model.Property.Ownership?.Mobile">
+                                    @Model.Property.Ownership?.Mobile
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Property.Features?.Any() == true)
+            {
+                <hr subject="@SharedLocalizer[SharedResource.PropertyFeatures]" />
+                <div class="row justify-content-center align-items-start text-right">
+                    <div class="col-12">
+                        <ul class="info-breadcrumb text-dark">
+                            @foreach (var (featureName, featureValue) in Model.Property.Features.OrderBy(x => x.Key))
+                            {
+                                var (key, value) = featureName.NormalizeFeature(featureValue, null);
+
+                                <li>
+                                    @*@if (!string.IsNullOrEmpty(key))
+                                        {
+                                            <b>@key: </b>
+                                        }*@
+                                    <span>@Html.Raw(value)</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.Property.Facilities?.Any() == true)
+            {
+                <hr subject="@SharedLocalizer[SharedResource.PropertyFacilities]" />
+                <div class="row justify-content-center align-items-start text-right">
+                    <div class="col-12">
+                        <ul class="info-breadcrumb text-dark">
+                            @foreach (var facility in Model.Property?.Facilities.OrderBy(x => x))
+                            {
+                                <li>@facility</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.Features?.Any() == true)
+            {
+                <hr subject="@SharedLocalizer[SharedResource.ItemFeatures]" />
+                <div class="row justify-content-center align-items-start text-right">
+                    <div class="col-12">
+                        <ul class="info-breadcrumb text-dark">
+                            @foreach (var (featureName, featureValue) in Model.Features.OrderBy(x => x.Key))
+                            {
+                                var (key, value) = featureName.NormalizeFeature(featureValue, null);
+
+                                <li>
+                                    @if (!string.IsNullOrEmpty(key))
+                                    {
+                                        <b>@key: </b>
+                                    }
+                                    <span>@Html.Raw(value)</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+            }
+            @if (Model.Property?.Pictures?.Any() == true)
+            {
+                <hr subject="@SharedLocalizer[SharedResource.Photos]" />
+                <ul class="info-breadcrumb gallery no-image">
+                    @for (var i = 0; i < Model.Property?.Pictures.Count; i++)
+                    {
+                        var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{Model.Property?.Pictures[i]}");
+                        var indicator = Model.Property.Pictures.Count == 1 ? "" : (i + 1).ToString();
+                        <li>
+                            @*<img class="hidden" src="@imgPath">
+                                @SharedLocalizer[SharedResource.Picture] @(i + 1)*@
+                            <a href="@imgPath" target="_blank">@SharedLocalizer[SharedResource.Picture] @indicator</a>
+                        </li>
+                    }
+                </ul>
+            }
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <hr subject="@SharedLocalizer[SharedResource.Description]" />
+                <div class="row justify-content-center align-items-start text-right">
+                    <div class="col-12">
+                        @Html.Raw(Model.Description)
+                    </div>
+                </div>
+
+            }
+
+            @*@if (User.IsInRole(nameof(Role.Admin)) || User.IsInRole(nameof(Role.SuperAdmin)))
+            {
+                <vc:log logs="@item.Logs" cat="Item" id="@item.Id" />
+            }*@
+        </div>
+    </div>
+}

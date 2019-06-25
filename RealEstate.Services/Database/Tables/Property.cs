@@ -1,5 +1,6 @@
 ﻿using GeoAPI.Geometries;
 using RealEstate.Services.Database.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,15 +11,6 @@ namespace RealEstate.Services.Database.Tables
 {
     public class Property : BaseEntity
     {
-        public Property()
-        {
-            Pictures = new HashSet<Picture>();
-            PropertyFacilities = new HashSet<PropertyFacility>();
-            Items = new HashSet<Item>();
-            PropertyFeatures = new HashSet<PropertyFeature>();
-            PropertyOwnerships = new HashSet<PropertyOwnership>();
-        }
-
         [Required]
         public string Street { get; set; }
 
@@ -70,6 +62,12 @@ namespace RealEstate.Services.Database.Tables
             get
             {
                 var finalString = new StringBuilder();
+
+                Street = Street?.StartsWith("خیابان ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("خیابان ")[1] : Street;
+                Street = Street?.StartsWith("خ ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("خ ")[1] : Street;
+
+//                Street = Street?.StartsWith("اتوبان ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("اتوبان ")[1] : Street;
+
                 finalString.Append("خیابان ").Append(Street);
 
                 if (!string.IsNullOrEmpty(Number))

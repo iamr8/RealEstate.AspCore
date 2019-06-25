@@ -1,26 +1,35 @@
 ﻿using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
+using RealEstate.Services.Database;
 using RealEstate.Services.Database.Base;
 using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace RealEstate.Services.BaseLog
 {
     public class BaseLogViewModel
     {
-        /// <summary>
-        /// Returns specific navigation property from entity to model
-        /// </summary>
-        /// <typeparam name="TSource">EntityFramework Core entity based on " BaseEntity "</typeparam>
-        /// <typeparam name="TModel">Output ViewModel based on " BaseLogViewModel "</typeparam>
-        /// <param name="entity">Entity ( subclass of BaseEntity )</param>
-        /// <param name="action">Action to do on viewmodel</param>
-        public TModel IncludeAs<TSource, TModel>(TSource entity, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity
+        public TModel IncludeAs<TEntity, TSource, TModel>(IUnitOfWork unitOfWork, Expression<Func<TEntity, TSource>> property, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity where TEntity : BaseEntity
         {
-            if (entity == null)
+            var entityProperty = GetType().GetPublicProperties().FirstOrDefault(x => x.Name.Equals("Entity", StringComparison.CurrentCulture));
+            if (entityProperty == null)
+                return default;
+
+            if (!(entityProperty.GetValue(this) is TEntity entity))
+                return default;
+
+            var entry = unitOfWork.GetEntityEntry(entity);
+            if (entry == null)
+                return default;
+
+            var reference2 = entry.Reference(property);
+            var currValue = reference2.CurrentValue;
+            if (currValue == null)
                 return default;
 
             var thisProperty = GetType().GetPublicProperties()
@@ -31,21 +40,31 @@ namespace RealEstate.Services.BaseLog
             if (thisProperty.GetValue(this) is TModel currentValue)
                 return default;
 
-            var value = Activator.CreateInstance(typeof(TModel), entity, action) as TModel;
+            var value = Activator.CreateInstance(typeof(TModel), currValue, action) as TModel;
             thisProperty.SetValue(this, value);
             return value;
         }
 
-        /// <summary>
-        /// Returns specific navigation property from entity to model
-        /// </summary>
-        /// <typeparam name="TSource">EntityFramework Core entity based on " BaseEntity "</typeparam>
-        /// <typeparam name="TModel">Output ViewModel based on " BaseLogViewModel "</typeparam>
-        /// <param name="entity">Entity ( subclass of BaseEntity )</param>
-        /// <param name="action">Action to do on viewmodel</param>
-        public List<TModel> IncludeAs<TSource, TModel>(ICollection<TSource> entity, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity
+        public List<TModel> IncludeAs<TEntity, TSource, TModel>(IUnitOfWork unitOfWork, Expression<Func<TEntity, IEnumerable<TSource>>> collection, Action<TModel> action = null) where TModel : BaseLogViewModel where TSource : BaseEntity where TEntity : BaseEntity
         {
-            if (entity?.Any() != true)
+            var entityProperty = GetType().GetPublicProperties().FirstOrDefault(x => x.Name.Equals("Entity", StringComparison.CurrentCulture));
+            if (entityProperty == null)
+                return default;
+
+            if (!(entityProperty.GetValue(this) is TEntity entity))
+                return default;
+
+            var entry = unitOfWork.GetEntityEntry(entity);
+            if (entry == null)
+                return default;
+
+            var reference2 = entry.Collection(collection);
+            var currValue = reference2.CurrentValue;
+            if (currValue == null)
+                return default;
+
+            var entityList = currValue.ToList();
+            if (entityList.Any() != true)
                 return default;
 
             var thisProperty = GetType().GetPublicProperties()
@@ -53,7 +72,7 @@ namespace RealEstate.Services.BaseLog
             if (thisProperty == null)
                 return default;
 
-            var values = entity.Select(source => Activator.CreateInstance(typeof(TModel), source, action) as TModel).ToList();
+            var values = entityList.Select(source => Activator.CreateInstance(typeof(TModel), source, action) as TModel).ToList();
             thisProperty.SetValue(this, values);
             return values;
         }

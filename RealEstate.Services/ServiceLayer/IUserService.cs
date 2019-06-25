@@ -36,6 +36,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true);
 
+        string BaseUrl { get; }
+
         Task<Response<SignInResponse>> SignInAsync(SignInRequest model);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
@@ -89,14 +91,14 @@ namespace RealEstate.Services.ServiceLayer
             if (exceptAdmin)
                 query = query.Where(x => !x.Username.Equals("admin", StringComparison.CurrentCultureIgnoreCase));
 
-            var models = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var models = await query.Cacheable().ToListAsync();
             if (models?.Any() != true)
                 return default;
 
             var list = new List<UserViewModel>();
             foreach (var user in models)
             {
-                var item = user.Map<UserViewModel>(act => act.IncludeAs<Employee, EmployeeViewModel>(act.Entity.Employee));
+                var item = user.Map<UserViewModel>(act => act.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee));
                 list.Add(item);
             }
             if (list?.Any() != true)
@@ -121,20 +123,27 @@ namespace RealEstate.Services.ServiceLayer
                 return new TokenValidation
                 {
                     Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false
+                    Success = false,
+                    BaseUrl = BaseUrl
                 };
             }
 
             var handler = new JwtSecurityTokenHandler();
             if (!(handler.ReadToken(token) is JwtSecurityToken jwtSecurityToken))
-                return default;
+                return new TokenValidation
+                {
+                    Message = StatusEnum.Forbidden.GetDisplayName(),
+                    Success = false,
+                    BaseUrl = BaseUrl
+                };
 
             var claims = jwtSecurityToken.Claims.ToList();
             if (claims?.Any() != true)
                 return new TokenValidation
                 {
                     Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false
+                    Success = false,
+                    BaseUrl = BaseUrl
                 };
 
             var id = claims.FirstOrDefault(x => x.Type.Equals("Id", StringComparison.CurrentCulture))?.Value;
@@ -147,7 +156,8 @@ namespace RealEstate.Services.ServiceLayer
                 return new TokenValidation
                 {
                     Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false
+                    Success = false,
+                    BaseUrl = BaseUrl
                 };
 
             var isUserValid = await _users.AnyAsync(x =>
@@ -159,13 +169,15 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Message = StatusEnum.UserNotFound.GetDisplayName(),
                     Success = false,
+                    BaseUrl = BaseUrl
                 };
 
             return new TokenValidation
             {
                 Message = StatusEnum.Success.GetDisplayName(),
                 Success = true,
-                UserId = id
+                UserId = id,
+                BaseUrl = BaseUrl
             };
         }
 
@@ -174,14 +186,14 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var model = await EntityAsync(id, null).ConfigureAwait(false);
+            var model = await EntityAsync(id, null);
             var viewModel = model?.Map<UserViewModel>(ent =>
             {
-                ent.IncludeAs<UserItemCategory, UserItemCategoryViewModel>(model.UserItemCategories,
-                    ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.IncludeAs<UserPropertyCategory, UserPropertyCategoryViewModel>(model.UserPropertyCategories,
-                    ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
-                ent.IncludeAs<Employee, EmployeeViewModel>(model.Employee);
+                ent.IncludeAs<User, UserItemCategory, UserItemCategoryViewModel>(_unitOfWork, x => x.UserItemCategories,
+                    ent2 => ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories,
+                    ent2 => ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee);
             });
             if (viewModel == null)
                 return default;
@@ -238,11 +250,11 @@ namespace RealEstate.Services.ServiceLayer
             var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<UserViewModel>(ent =>
                 {
-                    ent.IncludeAs<Employee, EmployeeViewModel>(item.Employee);
-                    ent.IncludeAs<UserItemCategory, UserItemCategoryViewModel>(item.UserItemCategories,
-                        ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
-                    ent.IncludeAs<UserPropertyCategory, UserPropertyCategoryViewModel>(item.UserPropertyCategories,
-                        ent2 => ent2.IncludeAs<Category, CategoryViewModel>(ent2.Entity.Category));
+                    ent.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee);
+                    ent.IncludeAs<User, UserItemCategory, UserItemCategoryViewModel>(_unitOfWork, x => x.UserItemCategories,
+                        ent2 => ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                    ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories,
+                        ent2 => ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
                 }), Task.FromResult(false), currentUser);
             return result;
         }
@@ -252,7 +264,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _baseService.QueryByRole(_users, allowedRolesshowDeletedItems).FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _baseService.QueryByRole(_users, allowedRolesshowDeletedItems).FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -268,7 +280,7 @@ namespace RealEstate.Services.ServiceLayer
             if (user == null)
                 return new MethodStatus<User>(StatusEnum.UserIsNull, null);
 
-            var entity = await EntityAsync(model.Id, null).ConfigureAwait(false);
+            var entity = await EntityAsync(model.Id, null);
             var (updateStatus, updatedUser) = await _baseService.UpdateAsync(entity,
                 currentUser =>
                 {
@@ -280,17 +292,17 @@ namespace RealEstate.Services.ServiceLayer
                 },
                 null,
                 false,
-                StatusEnum.UserIsNull).ConfigureAwait(false);
+                StatusEnum.UserIsNull);
 
             if (user.Role == Role.SuperAdmin)
-                await SyncAsync(updatedUser, model, false).ConfigureAwait(false);
+                await SyncAsync(updatedUser, model, false);
 
-            return await _baseService.SaveChangesAsync(updatedUser, save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(updatedUser, save);
         }
 
         public async Task<StatusEnum> SyncAsync(User user, UserInputViewModel model, bool save)
         {
-            var syncItemFeature = await _baseService.SyncAsync(
+            await _baseService.SyncAsync(
                 user.UserItemCategories,
                 model.UserItemCategories,
                 (itemCategory, currentUser) => new UserItemCategory
@@ -298,11 +310,13 @@ namespace RealEstate.Services.ServiceLayer
                     UserId = user.Id,
                     CategoryId = itemCategory.CategoryId
                 },
+                inDb => inDb.CategoryId,
                 (inDb, inModel) => inDb.CategoryId == inModel.CategoryId,
                 null,
-                false).ConfigureAwait(false);
+                null,
+                null);
 
-            var syncPropertyFeature = await _baseService.SyncAsync(
+            await _baseService.SyncAsync(
                 user.UserPropertyCategories,
                 model.UserPropertyCategories,
                 (propertyCategory, currentUser) => new UserPropertyCategory
@@ -310,12 +324,14 @@ namespace RealEstate.Services.ServiceLayer
                     UserId = user.Id,
                     CategoryId = propertyCategory.CategoryId
                 },
+                inDb => inDb.CategoryId,
                 (inDb, inModel) => inDb.CategoryId == inModel.CategoryId,
                 null,
-                false).ConfigureAwait(false);
+                null,
+                null);
 
-            //            await _paymentService.FixedSalarySyncAsync(model.FixedSalary, user.Id, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            //            await _paymentService.FixedSalarySyncAsync(model.FixedSalary, user.Id, false);
+            return await _baseService.SaveChangesAsync();
         }
 
         public Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save)
@@ -337,7 +353,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model == null)
                 return new MethodStatus<User>(StatusEnum.ModelIsNull, null);
 
-            var existing = await _users.AnyAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase)).ConfigureAwait(false);
+            var existing = await _users.AnyAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase));
             if (existing)
                 return new MethodStatus<User>(StatusEnum.AlreadyExists, null);
 
@@ -350,10 +366,10 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin
-            }, false).ConfigureAwait(false);
+            }, false);
 
-            await SyncAsync(newUser, model, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(newUser, save).ConfigureAwait(false);
+            await SyncAsync(newUser, model, false);
+            return await _baseService.SaveChangesAsync(newUser, save);
         }
 
         public async Task<bool> IsUserValidAsync(List<Claim> claims)
@@ -377,21 +393,23 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(userId))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _users.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == userId).ConfigureAwait(false);
+            var entity = await _users.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == userId);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
 
         public async Task SignOutAsync()
         {
-            await HttpContext.SignOutAsync().ConfigureAwait(false);
+            await HttpContext.SignOutAsync();
         }
+
+        public string BaseUrl => $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Host}:{HttpContext.Request.Host.Port}/";
 
         public async Task<Response<SignInResponse>> SignInAsync(SignInRequest model)
         {
@@ -434,7 +452,8 @@ namespace RealEstate.Services.ServiceLayer
                 return new Response<SignInResponse>
                 {
                     Success = false,
-                    Message = StatusEnum.UserNotFound.GetDisplayName()
+                    Message = StatusEnum.UserNotFound.GetDisplayName(),
+                    BaseUrl = BaseUrl
                 };
             try
             {
@@ -443,7 +462,8 @@ namespace RealEstate.Services.ServiceLayer
                     return new Response<SignInResponse>
                     {
                         Success = false,
-                        Message = StatusEnum.WrongPassword.GetDisplayName()
+                        Message = StatusEnum.WrongPassword.GetDisplayName(),
+                        BaseUrl = BaseUrl
                     };
             }
             catch
@@ -451,7 +471,8 @@ namespace RealEstate.Services.ServiceLayer
                 return new Response<SignInResponse>
                 {
                     Success = false,
-                    Message = StatusEnum.WrongPassword.GetDisplayName()
+                    Message = StatusEnum.WrongPassword.GetDisplayName(),
+                    BaseUrl = BaseUrl
                 };
             }
 
@@ -459,7 +480,8 @@ namespace RealEstate.Services.ServiceLayer
                 return new Response<SignInResponse>
                 {
                     Success = false,
-                    Message = StatusEnum.Deactivated.GetDisplayName()
+                    Message = StatusEnum.Deactivated.GetDisplayName(),
+                    BaseUrl = BaseUrl
                 };
 
             var itemCategories = userDb.UserItemCategories.Select(x => x.Name).ToList();
@@ -472,7 +494,7 @@ namespace RealEstate.Services.ServiceLayer
             var firstname = userDb.FirstName;
             var lastname = userDb.LastName;
             var employeeId = userDb.Id;
-            var role = userDb.Role.ToString();
+            var role = userDb.Role.GetDisplayName();
 
             var claims = new List<Claim>
             {
@@ -502,7 +524,8 @@ namespace RealEstate.Services.ServiceLayer
                 return new Response<SignInResponse>
                 {
                     Success = false,
-                    Message = StatusEnum.TokenIsNull.GetDisplayName()
+                    Message = StatusEnum.TokenIsNull.GetDisplayName(),
+                    BaseUrl = BaseUrl
                 };
 
             try
@@ -511,6 +534,7 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Success = true,
                     Message = StatusEnum.SignedIn.GetDisplayName(),
+                    BaseUrl = BaseUrl,
                     Result = new List<SignInResponse>
                     {
                         new SignInResponse
@@ -520,11 +544,8 @@ namespace RealEstate.Services.ServiceLayer
                             UserItemCategories = itemCategories,
                             UserPropertyCategories = propertyCategories,
                             EmployeeDivisions = employeeDivisions,
-                            EmployeeId = employeeId,
                             Role = role,
                             MobileNumber = mobileNumber,
-                            EncryptedPassword = encryptedPassword,
-                            UserId = id,
                             Token = token
                         }
                     }
@@ -543,8 +564,16 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<StatusEnum> SignInAsync(UserLoginViewModel model)
         {
             var userDb = await _users.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase))
-                .ConfigureAwait(false);
+                .AsNoTracking()
+                .Include(x => x.Employee)
+                .Include(x => x.UserItemCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.UserPropertyCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.Employee.EmployeeDivisions)
+                .ThenInclude(x => x.Division)
+                .FirstOrDefaultAsync(x => x.Username.ToLower() == model.Username)
+                ;
             if (userDb == null) return StatusEnum.UserNotFound;
             try
             {
@@ -560,34 +589,45 @@ namespace RealEstate.Services.ServiceLayer
             if (userDb.IsDeleted)
                 return StatusEnum.Deactivated;
 
-            var employee = userDb.Employee;
-            if (employee == null)
+            var viewModel = userDb.Map<UserViewModel>(ent =>
+            {
+                ent.IncludeAs<User, UserItemCategory, UserItemCategoryViewModel>(_unitOfWork, x => x.UserItemCategories, ent2 =>
+                    ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories, ent2 =>
+                    ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee, ent2 =>
+                    ent2.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions, ent3 =>
+                        ent3.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division)));
+            });
+
+            var employeeDeleted = viewModel.Employee?.IsDeleted == true;
+            if (employeeDeleted)
                 return StatusEnum.EmployeeIsNull;
 
-            var itemCategoriesJson = userDb.UserItemCategories?.WhereNotDeleted()?.JsonConversion(category => new CategoryJsonViewModel
+            var itemCategoriesJson = viewModel.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
             {
                 CategoryId = category.Category?.Id,
                 Name = category.Category?.Name,
             });
-            var propertyCategoriesJson = userDb.UserPropertyCategories?.WhereNotDeleted()?.JsonConversion(category => new CategoryJsonViewModel
+            var propertyCategoriesJson = viewModel.UserPropertyCategories.JsonConversion(category => new CategoryJsonViewModel
             {
                 CategoryId = category.Category?.Id,
                 Name = category.Category?.Name
             });
-            var employeeDivisionsJson = userDb.Employee?.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
+            var employeeDivisionsJson = viewModel.Employee?.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
             {
                 DivisionId = division.Division?.Id,
                 Name = division.Division?.Name
             });
 
-            var id = userDb.Id;
-            var username = userDb.Username;
-            var mobilePhone = userDb.Employee?.Mobile;
-            var password = userDb.Password;
-            var firstname = userDb.Employee?.FirstName;
-            var lastname = userDb.Employee?.LastName;
-            var employeeId = userDb.Employee?.Id;
-            var role = userDb.Role.ToString();
+            var id = viewModel.Id;
+            var username = viewModel.Username;
+            var mobilePhone = viewModel.Employee?.Mobile;
+            var password = viewModel.EncryptedPassword;
+            var firstname = viewModel.Employee?.FirstName;
+            var lastname = viewModel.Employee?.LastName;
+            var employeeId = viewModel.Employee?.Id;
+            var role = viewModel.Role.ToString();
             itemCategoriesJson = string.IsNullOrEmpty(itemCategoriesJson) ? "[]" : itemCategoriesJson;
             propertyCategoriesJson = string.IsNullOrEmpty(propertyCategoriesJson) ? "[]" : propertyCategoriesJson;
             employeeDivisionsJson = string.IsNullOrEmpty(employeeDivisionsJson) ? "[]" : employeeDivisionsJson;
@@ -597,12 +637,12 @@ namespace RealEstate.Services.ServiceLayer
                 new Claim(ClaimTypes.NameIdentifier, id),
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.MobilePhone, mobilePhone),
-                new Claim(ClaimTypes.Hash,password),
+                new Claim(ClaimTypes.Hash, password),
                 new Claim("FirstName", firstname),
                 new Claim("LastName", lastname),
                 new Claim("EmployeeId", employeeId),
-                new Claim("ItemCategories",itemCategoriesJson),
-                new Claim("PropertyCategories",propertyCategoriesJson),
+                new Claim("ItemCategories", itemCategoriesJson),
+                new Claim("PropertyCategories", propertyCategoriesJson),
                 new Claim(ClaimTypes.Role, role),
                 new Claim("EmployeeDivisions", employeeDivisionsJson)
             };
@@ -616,7 +656,7 @@ namespace RealEstate.Services.ServiceLayer
                 IsPersistent = true,
             };
 
-            await HttpContext.SignInAsync(Extensions.AuthenticationScheme.Scheme, principal, properties).ConfigureAwait(false);
+            await HttpContext.SignInAsync(Extensions.AuthenticationScheme.Scheme, principal, properties);
             HttpContext.User.AddIdentity(identity);
 
             var identities = HttpContext.User.Identities.Where(x => x.Claims.Any()).ToList();
