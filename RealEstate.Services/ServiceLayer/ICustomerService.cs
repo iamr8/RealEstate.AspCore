@@ -430,8 +430,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.UserId == currentUser.Id)
                 .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
 
-            var result = await _baseService.PaginateAsync(query, searchModel, item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer),
-                Task.FromResult(false));
+            var result = await _baseService.PaginateAsync(query, searchModel, item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer));
 
             return result;
         }
@@ -527,7 +526,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CustomerViewModel>(), Task.FromResult(false), currentUser);
+                item => item.Map<CustomerViewModel>(), currentUser);
 
             return result;
         }

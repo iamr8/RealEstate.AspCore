@@ -69,20 +69,16 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<DealRequest> _dealRequests;
         private readonly DbSet<Applicant> _applicants;
         private readonly DbSet<Feature> _features;
-        private readonly DbSet<User> _users;
-        private readonly DbSet<Picture> _pictures;
         private readonly DbSet<ItemFeature> _itemFeatures;
-        private readonly DbSet<Property> _properties;
 
         public ItemService(
             IBaseService baseService,
             IUnitOfWork unitOfWork,
-            IFeatureService featureService,
             IPropertyService propertyService,
             IUserService userService,
             ICustomerService customerService,
             IStringLocalizer<SharedResource> localizer
-            )
+        )
         {
             _baseService = baseService;
             _unitOfWork = unitOfWork;
@@ -92,13 +88,10 @@ namespace RealEstate.Services.ServiceLayer
             _localizer = localizer;
             _applicants = _unitOfWork.Set<Applicant>();
             _items = _unitOfWork.Set<Item>();
-            _properties = _unitOfWork.Set<Property>();
             _customers = _unitOfWork.Set<Customer>();
             _dealRequests = _unitOfWork.Set<DealRequest>();
             _features = _unitOfWork.Set<Feature>();
             _itemFeatures = _unitOfWork.Set<ItemFeature>();
-            _users = _unitOfWork.Set<User>();
-            _pictures = _unitOfWork.Set<Picture>();
         }
 
         public async Task<List<ZoonkanViewModel>> ZoonkansAsync()
@@ -297,26 +290,26 @@ namespace RealEstate.Services.ServiceLayer
                 IsNegotiable = viewModel.IsNegotiable,
                 Category = viewModel.Category?.Name,
                 Description = viewModel.Description,
-                Property = viewModel.Property != null
-                    ? new PropertyOutJsonViewModel
-                    {
-                        Id = viewModel.Property.Id,
-                        Pictures = viewModel.Property.Pictures?.Select(x => x.File).ToList(),
-                        Category = viewModel.Property.Category?.Name,
-                        Address = viewModel.Property.Address,
-                        District = viewModel.Property.District?.Name,
-                        Facilities = viewModel.Property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                        Features = viewModel.Property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
-                        Ownership = viewModel.Property.CurrentPropertyOwnership?.Ownership != null
-                            ? new OwnershipOutJsonViewModel
-                            {
-                                Id = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
-                                Name = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                                Mobile = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
-                            }
-                            : default
-                    }
-                    : default
+                Property = viewModel.Property != null ?
+                new PropertyOutJsonViewModel
+                {
+                    Id = viewModel.Property.Id,
+                    Pictures = viewModel.Property.Pictures?.Select(x => x.File).ToList(),
+                    Category = viewModel.Property.Category?.Name,
+                    Address = viewModel.Property.Address,
+                    District = viewModel.Property.District?.Name,
+                    Facilities = viewModel.Property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                    Features = viewModel.Property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
+                    Ownership = viewModel.Property.CurrentPropertyOwnership?.Ownership != null ?
+                new OwnershipOutJsonViewModel
+                {
+                    Id = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
+                    Name = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                    Mobile = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
+                } :
+                default
+                } :
+                default
             };
             return result;
         }
@@ -357,7 +350,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var query = _items.AsQueryable();
             query = query.Include(x => x.Property)
-               .ThenInclude(x => x.Category);
+                .ThenInclude(x => x.Category);
             query = query.Include(x => x.Property)
                 .ThenInclude(x => x.District);
             query = query.Include(x => x.Property)
@@ -423,14 +416,14 @@ namespace RealEstate.Services.ServiceLayer
                                  Category = property.Category?.Name,
                                  District = property.District?.Name,
                                  Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null
-                                     ? new OwnershipOutJsonViewModel
-                                     {
-                                         Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                                         Id = property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
-                                         Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
-                                     }
-                                     : default,
+                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null ?
+                             new OwnershipOutJsonViewModel
+                             {
+                                 Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                 Id = property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
+                                 Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
+                             } :
+                             default,
                                  Features = property.PropertyFeatures.ToDictionary(x => x.Feature?.Name, x => x.Value),
                              },
                              Category = converted.Category?.Name,
@@ -458,10 +451,10 @@ namespace RealEstate.Services.ServiceLayer
             //                .ThenInclude(x => x.Category);
 
             var query = from item in _items
-                        where (EF.Functions.Like(item.Property.Street, street.Like())
-                               || EF.Functions.Like(item.Property.Alley, street.Like()))
-                              && item.Property.District.Name == district
-                              && item.Property.Category.Name == category
+                        where (EF.Functions.Like(item.Property.Street, street.Like()) ||
+                                EF.Functions.Like(item.Property.Alley, street.Like())) &&
+                            item.Property.District.Name == district &&
+                            item.Property.Category.Name == category
                         select item;
 
             var models = await query.Select(x => x.Property).ToListAsync();
@@ -498,13 +491,13 @@ namespace RealEstate.Services.ServiceLayer
                         let property = item.Property
                         let propertyCategory = property.Category
                         where itemCategory.UserItemCategories.Any(userItemCategory =>
-                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
+                           userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
                         where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
-                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
-                        where (EF.Functions.Like(item.Property.Street, model.Street.Like())
-                               || EF.Functions.Like(item.Property.Alley, model.Street.Like()))
-                              && item.Property.District.Name == model.District
-                              && item.Property.Category.Name == model.Category
+                           userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
+                        where (EF.Functions.Like(item.Property.Street, model.Street.Like()) ||
+                                EF.Functions.Like(item.Property.Alley, model.Street.Like())) &&
+                            item.Property.District.Name == model.District &&
+                            item.Property.Category.Name == model.Category
                         select item;
 
             var models = await query.Select(x => x.Property).FirstOrDefaultAsync();
@@ -608,19 +601,19 @@ namespace RealEstate.Services.ServiceLayer
                 if (!string.IsNullOrEmpty(searchModel.HasFeature))
                 {
                     query = query.Where(x =>
-                        x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
+                       x.Property.PropertyFeatures.Any(c => c.FeatureId == searchModel.HasFeature) || x.ItemFeatures.Any(c => c.FeatureId == searchModel.HasFeature));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Owner))
                 {
                     query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
+                       x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.Name, searchModel.Owner.Like()))));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.OwnerMobile))
                 {
                     query = query.Where(x =>
-                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
+                       x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.Street))
@@ -645,8 +638,8 @@ namespace RealEstate.Services.ServiceLayer
 
                 if (!string.IsNullOrEmpty(searchModel.CustomerId))
                 {
-                    query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId)
-                                             || x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
+                    query = query.Where(x => x.Applicants.Any(c => c.CustomerId == searchModel.CustomerId) ||
+                       x.Property.PropertyOwnerships.Any(v => v.Ownerships.Any(b => b.CustomerId == searchModel.CustomerId)));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.District))
@@ -690,28 +683,28 @@ namespace RealEstate.Services.ServiceLayer
                             {
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom));
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                                 else
                                 {
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom));
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) >= numFrom));
                                 }
                             }
                             else
                             {
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                   && EF.Functions.Like(ftr.Value, from.Like())));
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      EF.Functions.Like(ftr.Value, from.Like())));
                                 }
                                 else
                                 {
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && EF.Functions.Like(ftr.Value, from.Like())));
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      EF.Functions.Like(ftr.Value, from.Like())));
                                 }
                             }
                         }
@@ -722,15 +715,15 @@ namespace RealEstate.Services.ServiceLayer
                             {
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                       && Convert.ToInt64(ftr.Value) <= numTo));
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                                    && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                                    && Convert.ToInt64(ftr.Value) <= numTo));
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                             }
                         }
@@ -741,17 +734,17 @@ namespace RealEstate.Services.ServiceLayer
                             {
                                 if (featureInDb.Type == FeatureTypeEnum.Item)
                                 {
-                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                   && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                   && Convert.ToInt64(ftr.Value) >= numFrom
-                                                                                   && Convert.ToInt64(ftr.Value) <= numTo));
+                                    query = query.Where(x => x.ItemFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) >= numFrom &&
+                                      Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                                 else
                                 {
-                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id
-                                                                                       && CustomDbFunctions.IsNumeric(ftr.Value) == 1
-                                                                                       && Convert.ToInt64(ftr.Value) >= numFrom
-                                                                                       && Convert.ToInt64(ftr.Value) <= numTo));
+                                    query = query.Where(x => x.Property.PropertyFeatures.Any(ftr => ftr.FeatureId == id &&
+                                      CustomDbFunctions.IsNumeric(ftr.Value) == 1 &&
+                                      Convert.ToInt64(ftr.Value) >= numFrom &&
+                                      Convert.ToInt64(ftr.Value) <= numTo));
                                 }
                             }
                         }
@@ -791,7 +784,7 @@ namespace RealEstate.Services.ServiceLayer
                     act.IncludeAs<Item, DealRequest, DealRequestViewModel>(_unitOfWork, x => x.DealRequests);
                     act.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
                         ent => ent.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                }), Task.FromResult(false), currentUser, 12);
+                }), currentUser, 12);
 
             return result;
         }
@@ -805,7 +798,7 @@ namespace RealEstate.Services.ServiceLayer
                         select item;
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<ItemViewModel>(), Task.FromResult(false));
+                item => item.Map<ItemViewModel>());
             return result;
         }
 
@@ -861,8 +854,8 @@ namespace RealEstate.Services.ServiceLayer
                     ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
                     ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
                     ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships, ent3 =>
-                        ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships, ent4 =>
-                            ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
+                       ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships, ent4 =>
+                          ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
                 });
             });
 
@@ -978,20 +971,18 @@ namespace RealEstate.Services.ServiceLayer
 
             var entity = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
-                    new[]
-                    {
-                        Role.SuperAdmin, Role.Admin
-                    })
-                ;
+                new[] {
+                    Role.SuperAdmin, Role.Admin
+                });
 
             return result;
         }
 
         public Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save)
         {
-            return update
-                ? ItemUpdateAsync(model, save)
-                : ItemAddAsync(model, save);
+            return update ?
+                ItemUpdateAsync(model, save) :
+                ItemAddAsync(model, save);
         }
 
         private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemComplexInputViewModel model, bool save)

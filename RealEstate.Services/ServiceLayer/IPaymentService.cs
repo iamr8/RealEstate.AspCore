@@ -336,7 +336,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = query.Where(x => x.Percent == searchModel.Percent);
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<ManagementPercentViewModel>(), Task.FromResult(false));
+                item => item.Map<ManagementPercentViewModel>());
 
             return result;
         }
@@ -346,7 +346,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _payments.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<PaymentViewModel>(), Task.FromResult(false));
+                item => item.Map<PaymentViewModel>());
             return result;
         }
 

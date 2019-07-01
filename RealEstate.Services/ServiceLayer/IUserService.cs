@@ -18,6 +18,7 @@ using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -186,7 +187,14 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var model = await EntityAsync(id, null);
+            var model = await _baseService.QueryByRole(_users)
+                .AsNoTracking()
+                .Include(x => x.UserItemCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.UserPropertyCategories)
+                .ThenInclude(x => x.Category)
+                .Include(x => x.Employee)
+                .FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = model?.Map<UserViewModel>(ent =>
             {
                 ent.IncludeAs<User, UserItemCategory, UserItemCategoryViewModel>(_unitOfWork, x => x.UserItemCategories,
@@ -255,7 +263,7 @@ namespace RealEstate.Services.ServiceLayer
                         ent2 => ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
                     ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories,
                         ent2 => ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
-                }), Task.FromResult(false), currentUser);
+                }), currentUser);
             return result;
         }
 
@@ -563,6 +571,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<StatusEnum> SignInAsync(UserLoginViewModel model)
         {
+            var lowerUsername = model.Username.ToLower(CultureInfo.CurrentCulture);
             var userDb = await _users.IgnoreQueryFilters()
                 .AsNoTracking()
                 .Include(x => x.Employee)
@@ -572,8 +581,7 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Category)
                 .Include(x => x.Employee.EmployeeDivisions)
                 .ThenInclude(x => x.Division)
-                .FirstOrDefaultAsync(x => x.Username.ToLower() == model.Username)
-                ;
+                .FirstOrDefaultAsync(x => x.Username.ToLower() == lowerUsername);
             if (userDb == null) return StatusEnum.UserNotFound;
             try
             {

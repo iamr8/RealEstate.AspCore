@@ -387,7 +387,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FeatureViewModel>(), Task.FromResult(false));
+                item => item.Map<FeatureViewModel>());
 
             return result;
         }
@@ -408,7 +408,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FacilityViewModel>(), Task.FromResult(false));
+                item => item.Map<FacilityViewModel>());
 
             return result;
         }
@@ -468,7 +468,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CategoryViewModel>(), Task.FromResult(false));
+                item => item.Map<CategoryViewModel>());
 
             return result;
         }

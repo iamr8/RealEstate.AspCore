@@ -170,7 +170,7 @@ namespace RealEstate.Base
             return array;
         }
 
-        public static string JsonSetAccessor<TModel>(this TModel obj)
+        public static string JsonSetAccessor<TModel>(this List<TModel> obj) where TModel : class
         {
             return JsonConvert.SerializeObject(obj);
         }

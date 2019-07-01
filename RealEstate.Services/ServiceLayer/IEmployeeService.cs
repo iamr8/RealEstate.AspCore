@@ -218,7 +218,7 @@ namespace RealEstate.Services.ServiceLayer
                     ent.IncludeAs<Employee, User, UserViewModel>(_unitOfWork, x => x.Users);
                     ent.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions,
                         ent2 => ent2.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division));
-                }), Task.FromResult(false), currentUser);
+                }), currentUser);
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -231,7 +231,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _presences.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<PresenceViewModel>(), Task.FromResult(false));
+                item => item.Map<PresenceViewModel>());
 
             if (result?.Items?.Any() != true)
                 return result;
@@ -244,7 +244,7 @@ namespace RealEstate.Services.ServiceLayer
             var models = _leaves.AsQueryable();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<LeaveViewModel>(), Task.FromResult(false));
+                item => item.Map<LeaveViewModel>());
 
             if (result?.Items?.Any() != true)
                 return result;

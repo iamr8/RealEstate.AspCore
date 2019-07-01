@@ -302,7 +302,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<PropertyViewModel>(), Task.FromResult(false));
+                item => item.Map<PropertyViewModel>());
 
             return result;
         }

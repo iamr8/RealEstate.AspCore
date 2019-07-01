@@ -62,7 +62,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
-            Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null, int pageSize = 10)
+            CurrentUserViewModel currentUser = null, int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
@@ -91,7 +91,8 @@ namespace RealEstate.Services.ServiceLayer.Base
             _accessor = accessor;
         }
 
-        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel, Task<bool> hasDuplicate, CurrentUserViewModel currentUser = null, int pageSize = 10)
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel,
+            Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null, int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
             var output = new PaginationViewModel<TOutput>();
@@ -122,8 +123,8 @@ namespace RealEstate.Services.ServiceLayer.Base
                 page = 1;
 
             var pagingQuery = page > 1
-            ? query.Skip(pageSize * (page - 1))
-            : query;
+                ? query.Skip(pageSize * (page - 1))
+                : query;
             pagingQuery = pagingQuery.Take(pageSize);
 
             var entities = await pagingQuery
@@ -142,7 +143,6 @@ namespace RealEstate.Services.ServiceLayer.Base
             output.CurrentPage = page;
             output.Pages = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
             output.Items = viewList;
-            output.HasDuplicates = await hasDuplicate;
             output.Rows = rowCount;
 
             return output;

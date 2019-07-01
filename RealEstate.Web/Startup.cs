@@ -62,27 +62,29 @@ namespace RealEstate.Web
                     .Build());
 
             var connectionString = Configuration.GetConnectionString("DefaultConnection");
-            if (connectionString.Contains("{{CFG}}"))
+            if (connectionString.Contains("{{CFG}}", StringComparison.CurrentCulture))
             {
                 // D:\\RSDB\\RSDB.mdf
                 var config = Assembly.GetEntryAssembly().ReadConfiguration();
                 if (config == null)
                     return;
 
-                connectionString = connectionString.Replace("{{CFG}}", config.DbPath);
+                connectionString = connectionString.Replace("{{CFG}}", config.DbPath, StringComparison.CurrentCulture);
             }
             Console.WriteLine(connectionString);
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseLazyLoadingProxies();
+
                 options.UseSqlServer(connectionString,
-                    optionsBuilder =>
-                    {
-                        optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
-                        optionsBuilder.UseNetTopologySuite();
-                        optionsBuilder.EnableRetryOnFailure();
-                        optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
-                    });
+                        optionsBuilder =>
+                        {
+                            optionsBuilder.MigrationsAssembly($"{nameof(RealEstate)}.{nameof(RealEstate.Web)}");
+                            optionsBuilder.UseNetTopologySuite();
+                            optionsBuilder.EnableRetryOnFailure();
+                            optionsBuilder.CommandTimeout((int)TimeSpan.FromMinutes(3).TotalSeconds);
+                            optionsBuilder.UseRowNumberForPaging();
+                        });
                 options.ConfigureWarnings(config =>
                 {
                     config.Log(CoreEventId.IncludeIgnoredWarning);

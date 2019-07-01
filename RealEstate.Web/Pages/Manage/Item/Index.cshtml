@@ -52,7 +52,7 @@
 
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            @if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
+            @if (User.IsInRole(Role.SuperAdmin.ToString()))
             {
                 <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
             }

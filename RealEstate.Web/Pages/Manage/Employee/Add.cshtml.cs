@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
-using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
@@ -12,9 +9,8 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Employee
 {
-    [Authorize(Roles = "Admin,SuperAdmin")]
     [NavBarHelper(typeof(IndexModel))]
-    public class AddModel : PageModel
+    public class AddModel : AddPageModel
     {
         private readonly IEmployeeService _employeeService;
         private readonly IStringLocalizer<SharedResource> _localizer;
@@ -31,48 +27,22 @@ namespace RealEstate.Web.Pages.Manage.Employee
         [BindProperty]
         public EmployeeInputViewModel NewEmployee { get; set; }
 
-        [ViewData]
-        public string PageTitle { get; set; }
-
-        public string Status { get; set; }
-
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
-            if (!string.IsNullOrEmpty(id))
-            {
-                if (!User.IsInRole(nameof(Role.SuperAdmin)))
-                    return Forbid();
-
-                var model = await _employeeService.EmployeeInputAsync(id).ConfigureAwait(false);
-                if (model == null)
-                    return RedirectToPage(typeof(IndexModel).Page());
-
-                NewEmployee = model;
-                PageTitle = _localizer[SharedResource.EditEmployee];
-            }
-            else
-            {
-                PageTitle = _localizer[SharedResource.NewEmployee];
-            }
-            Status = !string.IsNullOrEmpty(status)
-                ? status
-                : null;
-            return Page();
+            var result = await this.OnGetHandlerAsync(id, status,
+                identifier => _employeeService.EmployeeInputAsync(identifier),
+                typeof(IndexModel).Page(),
+                true);
+            return result;
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var (status, message) = await ModelState.IsValidAsync(
-                () => _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true)
-            ).ConfigureAwait(false);
-
-            return RedirectToPage(status != StatusEnum.Success
-                ? typeof(AddModel).Page()
-                : typeof(IndexModel).Page(), new
-                {
-                    status = message,
-                    id = status != StatusEnum.Success ? NewEmployee?.Id : null
-                });
+            var result = await this.OnPostHandlerAsync(
+                () => _employeeService.AddOrUpdateAsync(NewEmployee, !NewEmployee.IsNew, true),
+                typeof(IndexModel).Page(),
+                typeof(AddModel).Page());
+            return result;
         }
     }
 }

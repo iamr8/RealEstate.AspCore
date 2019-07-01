@@ -120,7 +120,7 @@ namespace RealEstate.Services.ServiceLayer
             var query = _deals.AsQueryable();
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DealViewModel>(), Task.FromResult(false));
+                item => item.Map<DealViewModel>());
             return result;
         }
 

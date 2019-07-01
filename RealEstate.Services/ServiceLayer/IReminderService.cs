@@ -139,7 +139,7 @@ namespace RealEstate.Services.ServiceLayer
                 models = models.IgnoreQueryFilters();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<ReminderViewModel>(), Task.FromResult(false));
+                item => item.Map<ReminderViewModel>());
 
             return result;
         }

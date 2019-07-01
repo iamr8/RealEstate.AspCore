@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -16,28 +15,22 @@ namespace RealEstate.Web.Pages.Manage.User
 {
     [Authorize(Roles = "Admin,SuperAdmin")]
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly IUserService _userService;
-        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
             IUserService userService,
             IStringLocalizer<SharedResource> sharedLocalizer)
         {
             _userService = userService;
-            _localizer = sharedLocalizer;
+            PageTitle = sharedLocalizer[SharedResource.Users];
         }
 
         [BindProperty]
         public UserSearchViewModel SearchInput { get; set; }
 
         public PaginationViewModel<UserViewModel> List { get; set; }
-
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Users];
-
-        public string Status { get; set; }
 
         public async Task OnGetAsync(string pageNo, string status, string userName, string userId, Role? userRole, bool deleted, string dateFrom, string dateTo, string creatorId)
         {

@@ -72,7 +72,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DistrictViewModel>(), Task.FromResult(false), currentUser);
+                item => item.Map<DistrictViewModel>(), currentUser);
 
             return result;
         }

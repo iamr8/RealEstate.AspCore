@@ -73,7 +73,8 @@ namespace RealEstate.Services.Extensions
             return new ModelStateValidation(state, message);
         }
 
-        public static Task<ModelStateValidation> IsValidAsync<T>(this ModelStateDictionary modelState, Func<Task<MethodStatus<T>>> action, string specificModel = null) where T : class
+        public static Task<ModelStateValidation> IsValidAsync<TModel>(this ModelStateDictionary modelState, Func<Task<MethodStatus<TModel>>> action,
+            string specificModel = null) where TModel : class
         {
             return modelState.IsValidAsync(async () => (await action().ConfigureAwait(false)).Status, specificModel);
         }

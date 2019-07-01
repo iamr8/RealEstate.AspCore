@@ -88,7 +88,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DivisionViewModel>(), Task.FromResult(false));
+                item => item.Map<DivisionViewModel>());
 
             return result;
         }

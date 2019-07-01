@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -17,11 +16,10 @@ namespace RealEstate.Web.Pages.Manage.Category
 {
     [Authorize(Roles = "Admin,SuperAdmin")]
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly IFeatureService _featureService;
         private readonly IBaseService _baseService;
-        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
             IFeatureService featureService,
@@ -30,18 +28,13 @@ namespace RealEstate.Web.Pages.Manage.Category
         {
             _featureService = featureService;
             _baseService = baseService;
-            _localizer = sharedLocalizer;
+            PageTitle = sharedLocalizer[SharedResource.Categories];
         }
 
         [BindProperty]
         public CategorySearchViewModel SearchInput { get; set; }
 
         public PaginationViewModel<CategoryViewModel> List { get; set; }
-
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Categories];
-
-        public string Status { get; set; }
 
         public async Task OnGetAsync(string pageNo, string categoryId, string categoryName, CategoryTypeEnum? type, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {

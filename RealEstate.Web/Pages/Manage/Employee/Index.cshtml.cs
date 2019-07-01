@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -12,27 +12,24 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Employee
 {
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly IEmployeeService _employeeService;
-        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
             IEmployeeService employeeService,
             IStringLocalizer<SharedResource> sharedLocalizer)
         {
             _employeeService = employeeService;
-            _localizer = sharedLocalizer;
+            PageTitle = sharedLocalizer[SharedResource.Employees];
         }
 
         [BindProperty]
         public EmployeeSearchViewModel SearchInput { get; set; }
 
         public PaginationViewModel<EmployeeViewModel> List { get; set; }
-
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Employees];
 
         public string Status { get; set; }
 

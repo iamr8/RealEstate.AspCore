@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -13,26 +12,22 @@ using System.Threading.Tasks;
 namespace RealEstate.Web.Pages.Manage.Customer
 {
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly ICustomerService _customerService;
-        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
             ICustomerService customerService,
             IStringLocalizer<SharedResource> sharedLocalizer)
         {
             _customerService = customerService;
-            _localizer = sharedLocalizer;
+            PageTitle = sharedLocalizer[SharedResource.Customers];
         }
 
         [BindProperty]
         public CustomerSearchViewModel SearchInput { get; set; }
 
         public PaginationViewModel<CustomerViewModel> List { get; set; }
-
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Customers];
 
         public string Status { get; set; }
 

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -12,29 +12,24 @@ using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.District
 {
+    [Authorize(Roles = "Admin,SuperAdmin")]
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly ILocationService _locationService;
-        private readonly IStringLocalizer<SharedResource> _localizer;
 
         public IndexModel(
             ILocationService locationService,
             IStringLocalizer<SharedResource> sharedLocalizer)
         {
             _locationService = locationService;
-            _localizer = sharedLocalizer;
+            PageTitle = sharedLocalizer[SharedResource.Districts];
         }
 
         [BindProperty]
         public DistrictSearchViewModel SearchInput { get; set; }
 
         public PaginationViewModel<DistrictViewModel> List { get; set; }
-
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Districts];
-
-        public string Status { get; set; }
 
         public async Task OnGetAsync(string pageNo, string districtName, bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
