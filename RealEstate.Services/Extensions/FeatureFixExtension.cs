@@ -161,7 +161,7 @@ namespace RealEstate.Services.Extensions
                     var currentYear = new PersianCalendar().GetYear(DateTime.Now);
                     var finalYear = currentYear - processedYear;
 
-                    var term = finalYear == 0 ? "نوساز" : $"{finalYear} سال ساخت";
+                    var term = finalYear == 0 ? "نوساز" : $"{finalYear} سال";
                     return new ValueTuple<string, string>(featureName, $"{term}");
 
                 case "متراژ":

@@ -150,9 +150,24 @@
             }
 
             @*@if (User.IsInRole(nameof(Role.Admin)) || User.IsInRole(nameof(Role.SuperAdmin)))
-            {
-                <vc:log logs="@item.Logs" cat="Item" id="@item.Id" />
-            }*@
+                {
+                    <vc:log logs="@item.Logs" cat="Item" id="@item.Id" />
+                }*@
         </div>
     </div>
+    @if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))
+    {
+        var log = Model.Log.Last;
+        var dt = new PersianDateTime(log.DateTime)
+        {
+            ShowTime = true
+        };
+        var tooltipTitle = $"{dt.DayOfWeekPersian} {dt.ToString(true)}";
+        <div class="modal-footer bg-dark text-white justify-content-start">
+            <b>@SharedLocalizer[log.Type.GetDisplayName()]:</b>
+            <a data-toggle="tooltip" class="btn-sm" data-placement="bottom" title="@tooltipTitle">@dt.ToRelativeString()</a>
+            @SharedLocalizer[SharedResource.By]
+            <a asp-page="@typeof(RealEstate.Web.Pages.Manage.User.IndexModel).Page()" class="btn-sm text-white" asp-route-userId="@log.UserId" target="_blank">@log.UserFullName</a>
+        </div>
+    }
 }

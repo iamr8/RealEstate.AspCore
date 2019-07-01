@@ -382,7 +382,7 @@
             const detailModal = "#itemDetailModal";
 
             $(detailModal).on('show.bs.modal',
-                function(event) {
+                function (event) {
                     const button = $(event.relatedTarget); // Button that triggered the modal
                     const itemId = button.data('item-id'); // Extract info from data-* attributes
                     const modal = $(this);

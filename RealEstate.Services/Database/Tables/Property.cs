@@ -1,5 +1,7 @@
 ﻿using GeoAPI.Geometries;
+using RealEstate.Base;
 using RealEstate.Services.Database.Base;
+using RealEstate.Services.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -27,32 +29,57 @@ namespace RealEstate.Services.Database.Tables
         public IPoint Geolocation { get; set; }
         public virtual Category Category { get; set; }
 
-        private string HtmlizeValue(object value)
-        {
-            return $"<button class=\"btn-sm\">{value}</button>";
-        }
-
         [NotMapped]
-        public string AddressHtmlStyled
+        private string StreetNormalized
         {
             get
             {
-                var finalString = new StringBuilder();
-                finalString.Append("خیابان ").Append(HtmlizeValue(Street));
+                if (string.IsNullOrEmpty(Street))
+                    return Street;
 
-                if (!string.IsNullOrEmpty(Number))
-                    finalString.Append("پلاک ").Append(HtmlizeValue(Number));
+                var stPrefixed = new[]
+                {
+                    "خیابان خ", "خیابان  خ", "خ"
+                };
+                var prefixes = new[]
+                {
+                    "خیابان", "اتوبان", "سمت", "کوی", "بلوار", "پاساژ", "نبش", "فاز", "روبروی", "سه راه", "بازارچه"
+                };
+                if (string.IsNullOrEmpty(Street))
+                    return default;
 
-                if (!string.IsNullOrEmpty(BuildingName))
-                    finalString.Append("ساختمان ").Append(HtmlizeValue(BuildingName));
+                var street = Street.Trim();
+                street = street.Replace(new[]
+                {
+                    "روبه روی ", "روبه رو ", "روبه رویه "
+                }, "روبروی ");
+                street = street.Replace(" بارک ", " پارک ");
+                street = street.Replace(" سراه ", " سه راه ");
 
-                if (Floor > 0)
-                    finalString.Append("طبقه ").Append(HtmlizeValue(Floor));
+                var concatPrefixes = prefixes.Concat(stPrefixed).ToList();
+                if (concatPrefixes?.Any(x => street.StartsWith($"{x} ")) == true)
+                {
+                    foreach (var prefix in concatPrefixes)
+                    {
+                        var term = $"{prefix} ";
+                        var timmedStreet = street.Trim();
+                        if (!timmedStreet.StartsWith(term, StringComparison.CurrentCultureIgnoreCase))
+                            continue;
 
-                if (Flat > 0)
-                    finalString.Append("واحد ").Append(HtmlizeValue(Flat));
+                        var pref = stPrefixed.Any(x => x == prefix)
+                            ? "خیابان "
+                            : term;
+                        var tempStreet = $"{pref}{timmedStreet.Split(term)[1]}";
+                        street = tempStreet;
+                    }
+                }
+                else
+                {
+                    street = $"خیابان {street}";
+                }
 
-                return finalString.ToString();
+                street = street.Replace(" خ ", " خیابان ");
+                return street.FixPersian();
             }
         }
 
@@ -62,13 +89,7 @@ namespace RealEstate.Services.Database.Tables
             get
             {
                 var finalString = new StringBuilder();
-
-                Street = Street?.StartsWith("خیابان ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("خیابان ")[1] : Street;
-                Street = Street?.StartsWith("خ ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("خ ")[1] : Street;
-
-//                Street = Street?.StartsWith("اتوبان ", StringComparison.CurrentCultureIgnoreCase) == true ? Street.Split("اتوبان ")[1] : Street;
-
-                finalString.Append("خیابان ").Append(Street);
+                finalString.Append(StreetNormalized);
 
                 if (!string.IsNullOrEmpty(Number))
                     finalString.Append("، ").Append("پلاک ").Append(Number);

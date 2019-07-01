@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using RealEstate.Services.BaseLog;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.Json
@@ -22,5 +23,8 @@ namespace RealEstate.Services.ViewModels.Json
 
         [JsonProperty("id")]
         public string Id { get; set; }
+
+        [JsonProperty("l")]
+        public LogViewModel Log { get; set; }
     }
 }

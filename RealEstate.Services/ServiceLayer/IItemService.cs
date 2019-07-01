@@ -260,7 +260,10 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.Property.PropertyOwnerships)
                 .ThenInclude(x => x.Ownerships)
                 .ThenInclude(x => x.Customer)
-                .FirstOrDefaultAsync(x => x.Id == id);
+                .Where(x => x.Id == id)
+                .Cacheable()
+                .FirstOrDefaultAsync();
+
             var viewModel = entity?.Map<ItemViewModel>(ent =>
             {
                 ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
@@ -283,6 +286,10 @@ namespace RealEstate.Services.ServiceLayer
             if (viewModel == null)
                 return default;
 
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return default;
+
             var result = new ItemOutJsonViewModel
             {
                 Id = viewModel.Id,
@@ -290,26 +297,27 @@ namespace RealEstate.Services.ServiceLayer
                 IsNegotiable = viewModel.IsNegotiable,
                 Category = viewModel.Category?.Name,
                 Description = viewModel.Description,
-                Property = viewModel.Property != null ?
-                new PropertyOutJsonViewModel
-                {
-                    Id = viewModel.Property.Id,
-                    Pictures = viewModel.Property.Pictures?.Select(x => x.File).ToList(),
-                    Category = viewModel.Property.Category?.Name,
-                    Address = viewModel.Property.Address,
-                    District = viewModel.Property.District?.Name,
-                    Facilities = viewModel.Property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                    Features = viewModel.Property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
-                    Ownership = viewModel.Property.CurrentPropertyOwnership?.Ownership != null ?
-                new OwnershipOutJsonViewModel
-                {
-                    Id = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
-                    Name = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                    Mobile = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
-                } :
-                default
-                } :
-                default
+                Property = viewModel.Property != null
+                    ? new PropertyOutJsonViewModel
+                    {
+                        Id = viewModel.Property.Id,
+                        Pictures = viewModel.Property.Pictures?.Select(x => x.File).ToList(),
+                        Category = viewModel.Property.Category?.Name,
+                        Address = viewModel.Property.Address,
+                        District = viewModel.Property.District?.Name,
+                        Facilities = viewModel.Property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                        Features = viewModel.Property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
+                        Ownership = viewModel.Property.CurrentPropertyOwnership?.Ownership != null
+                            ? new OwnershipOutJsonViewModel
+                            {
+                                Id = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
+                                Name = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                Mobile = viewModel.Property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
+                            }
+                            : default
+                    }
+                    : default,
+                Log = currentUser.Role == Role.SuperAdmin || currentUser.Role == Role.Admin ? entity.Audits.Render() : default
             };
             return result;
         }

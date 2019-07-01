@@ -1,10 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using System;
-using System.Threading.Tasks;
 using RealEstate.Base;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.Extensions
 {
+    public static class StringExtensions
+    {
+        public static string Replace(this string str, IEnumerable<string> oldValues, string newValue)
+        {
+            return oldValues?.Any() != true
+                ? str
+                : oldValues.Aggregate(str, (current, oldValue) => current.Replace(oldValue, newValue));
+        }
+    }
+
     public class StringModelBinderProvider : IModelBinderProvider
     {
         public IModelBinder GetBinder(ModelBinderProviderContext context)
