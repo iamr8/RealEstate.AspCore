@@ -386,7 +386,7 @@ namespace RealEstate.Services.ServiceLayer
                     Value = x.Value
                 }).ToList(),
                 Number = viewModel.Number,
-                Street = viewModel.Street,
+                Address = viewModel.Street,
                 Flat = viewModel.Flat,
                 DistrictId = viewModel.District?.Id,
                 Alley = viewModel.Alley,
@@ -436,7 +436,7 @@ namespace RealEstate.Services.ServiceLayer
                     Value = x.Value
                 }).ToList(),
                 Number = viewModel.Number,
-                Street = viewModel.Street,
+                Address = viewModel.Street,
                 Flat = viewModel.Flat,
                 DistrictId = viewModel.District?.Id,
                 Alley = viewModel.Alley,
@@ -450,7 +450,7 @@ namespace RealEstate.Services.ServiceLayer
         private async Task<MethodStatus<Property>> HasDuplicateAsync(PropertyComplexInputViewModel model)
         {
             var property = await _properties.FirstOrDefaultAsync(x =>
-                x.Street == model.Street
+                x.Street == model.Address
                 && x.CategoryId == model.CategoryId
                 && x.DistrictId == model.DistrictId
                 && x.Flat == model.Flat
@@ -474,7 +474,7 @@ namespace RealEstate.Services.ServiceLayer
         private async Task<bool> HasDuplicateAsync(PropertyInputViewModel model)
         {
             var duplicate = await _properties.FirstOrDefaultAsync(x =>
-                x.Street == model.Street
+                x.Street == model.Address
                 && x.CategoryId == model.CategoryId
                 && x.DistrictId == model.DistrictId
                 && x.Flat == model.Flat
@@ -516,7 +516,7 @@ namespace RealEstate.Services.ServiceLayer
                 Flat = model.Flat,
                 Floor = model.Floor,
                 Number = model.Number,
-                Street = model.Street,
+                Street = model.Address,
                 //                Geolocation = model.Latitude > 0 && model.Longitude > 0 ? new Point(model.Longitude, model.Latitude) : default,
             }, null, false);
 
@@ -554,7 +554,7 @@ namespace RealEstate.Services.ServiceLayer
                 Flat = model.Flat,
                 Floor = model.Floor,
                 Number = model.Number,
-                Street = model.Street,
+                Street = model.Address,
                 //                Geolocation = model.Latitude > 0 && model.Longitude > 0 ? new Point(model.Longitude, model.Latitude) : default,
             }, null, false);
 
@@ -772,7 +772,7 @@ namespace RealEstate.Services.ServiceLayer
                     entity.Flat = model.Flat;
                     entity.Floor = model.Floor;
                     entity.Number = model.Number;
-                    entity.Street = model.Street;
+                    entity.Street = model.Address;
                 }, null, false, StatusEnum.PropertyIsNull);
 
             if (updatedProperty == null)
@@ -812,7 +812,7 @@ namespace RealEstate.Services.ServiceLayer
                     entity.Flat = model.Flat;
                     entity.Floor = model.Floor;
                     entity.Number = model.Number;
-                    entity.Street = model.Street;
+                    entity.Street = model.Address;
                 }, null, false, StatusEnum.PropertyIsNull);
 
             if (updatedProperty == null)

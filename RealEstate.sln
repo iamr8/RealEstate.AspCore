@@ -15,10 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstate.Runner", "RealEs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RealEstate.Configuration", "RealEstate.Configuration\RealEstate.Configuration.csproj", "{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstate.Droid", "RealEstate.Droid\RealEstate.Droid.csproj", "{C401ADDC-E1EA-4617-BA37-B99B4D767499}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealEstate.Services.Test", "RealEstate.Services.Test\RealEstate.Services.Test.csproj", "{43FAC31F-A6AB-40C7-9E6D-AECA00517116}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,16 +45,6 @@ Global
 		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F8D2299-BF7B-4266-9ADD-FA15BA085C71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C401ADDC-E1EA-4617-BA37-B99B4D767499}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{43FAC31F-A6AB-40C7-9E6D-AECA00517116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43FAC31F-A6AB-40C7-9E6D-AECA00517116}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43FAC31F-A6AB-40C7-9E6D-AECA00517116}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43FAC31F-A6AB-40C7-9E6D-AECA00517116}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

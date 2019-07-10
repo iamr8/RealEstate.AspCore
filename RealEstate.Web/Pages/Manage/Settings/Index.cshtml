@@ -1,5 +1,30 @@
 ﻿@page
 @model RealEstate.Web.Pages.Manage.Settings.IndexModel
-@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
+
+<div class="col-12">
+  <div class="widget">
+    <widget-header title="@Model.PageTitle" />
+    <section class="container-fluid">
+      <div class="row justify-content-center align-items-center">
+        <div class="col-12">
+          <a asp-controller="Fix" asp-action="FixBuildYears" class="btn btn-sm btn-secondary">حل مشکل سال ساخت</a>
+        </div>
+      </div>
+      <div class="row justify-content-center align-items-center">
+        <div class="col-12">
+          <a asp-controller="Fix" asp-action="FixAddress" class="btn btn-sm btn-secondary">حل مشکل آدرس</a>
+        </div>
+      </div>
+      <div class="row justify-content-center align-items-center">
+        <div class="col-12">
+          <a asp-controller="Fix" asp-action="FixFinalPrice" class="btn btn-sm btn-secondary">حل مشکل قیمت نهایی</a>
+        </div>
+      </div>
+      <div class="row justify-content-center align-items-center">
+        <div class="col-12">
+          <a asp-controller="Fix" asp-action="FixLoanPrice" class="btn btn-sm btn-secondary">حل مشکل وام</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

@@ -104,7 +104,7 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.ItemFeatures)
                 .Include(x => x.PropertyFeatures);
 
-            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync();
             var viewModel = entity.Map<FeatureViewModel>();
             if (viewModel == null)
                 return default;
@@ -126,7 +126,7 @@ namespace RealEstate.Services.ServiceLayer
             var query = _facilities.Where(x => x.Id == id)
                 .Include(x => x.PropertyFacilities);
 
-            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync();
             var viewModel = entity.Map<FacilityViewModel>();
             if (viewModel == null)
                 return default;
@@ -145,7 +145,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id)) return default;
 
             var query = _categories.Where(x => x.Id == id);
-            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync();
             var viewModel = entity.Map<CategoryViewModel>();
             if (viewModel == null)
                 return default;
@@ -165,7 +165,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _facilities.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _facilities.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -174,7 +174,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _features.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _features.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -183,7 +183,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _categories.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _categories.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -192,13 +192,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _facilities.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _facilities.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -208,13 +208,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _features.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _features.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -224,13 +224,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _categories.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _categories.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -243,7 +243,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Feature>(StatusEnum.IdIsNull, null);
 
-            var entity = await FeatureEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await FeatureEntityAsync(model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -252,7 +252,7 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
@@ -264,13 +264,13 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Facility>(StatusEnum.IdIsNull, null);
 
-            var entity = await FacilityEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await FacilityEntityAsync(model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ => entity.Name = model.Name,
                 new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
@@ -282,7 +282,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Category>(StatusEnum.IdIsNull, null);
 
-            var entity = await CategoryEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await CategoryEntityAsync(model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -291,7 +291,7 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
@@ -327,7 +327,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -343,7 +343,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -352,7 +352,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model == null)
                 return new MethodStatus<Category>(StatusEnum.ModelIsNull, null);
 
-            var category = await _categories.FirstOrDefaultAsync(x => x.Name.Equals(model.Name)).ConfigureAwait(false);
+            var category = await _categories.FirstOrDefaultAsync(x => x.Name.Equals(model.Name));
             if (category != null)
                 return new MethodStatus<Category>(StatusEnum.AlreadyExists, null);
 
@@ -363,7 +363,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -417,7 +417,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var models = await (from feature in _features
                                 where feature.Type == type
-                                select feature).ToListAsync().ConfigureAwait(false);
+                                select feature).ToListAsync();
             if (models?.Any() != true)
                 return default;
 
@@ -432,17 +432,18 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<FacilityViewModel>> FacilityListAsync()
         {
-            var facilities = await _facilities.Cacheable().ToListAsync().ConfigureAwait(false);
+            var facilities = await _facilities.Cacheable().ToListAsync();
             return facilities.Map<Facility, FacilityViewModel>();
         }
 
         public async Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] types)
         {
             var query = _features.AsQueryable();
+
             if (types?.Any() == true)
                 query = query.Where(x => types.Contains(x.Type));
 
-            var features = await query.Cacheable().ToListAsync().ConfigureAwait(false);
+            var features = await query.Cacheable().ToListAsync();
             return features.Map<Feature, FeatureViewModel>();
         }
 
@@ -476,7 +477,7 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<List<CategoryViewModel>> CategoryListAsync()
         {
             var query = _categories.IgnoreQueryFilters();
-            var categories = await query.ToListAsync().ConfigureAwait(false);
+            var categories = await query.ToListAsync();
             return categories.Map<Category, CategoryViewModel>();
         }
 
@@ -510,7 +511,7 @@ namespace RealEstate.Services.ServiceLayer
             var categories = await query
                 .Cacheable()
                 .ToListAsync()
-                .ConfigureAwait(false);
+                ;
             return categories.Map<Category, CategoryViewModel>();
         }
     }

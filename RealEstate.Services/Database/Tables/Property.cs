@@ -1,8 +1,6 @@
 ﻿using GeoAPI.Geometries;
-using RealEstate.Base;
 using RealEstate.Services.Database.Base;
-using RealEstate.Services.Extensions;
-using System;
+using RealEstate.Services.ServiceLayer;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -30,58 +28,7 @@ namespace RealEstate.Services.Database.Tables
         public virtual Category Category { get; set; }
 
         [NotMapped]
-        private string StreetNormalized
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(Street))
-                    return Street;
-
-                var stPrefixed = new[]
-                {
-                    "خیابان خ", "خیابان  خ", "خ"
-                };
-                var prefixes = new[]
-                {
-                    "خیابان", "اتوبان", "سمت", "کوی", "بلوار", "پاساژ", "نبش", "فاز", "روبروی", "سه راه", "بازارچه"
-                };
-                if (string.IsNullOrEmpty(Street))
-                    return default;
-
-                var street = Street.Trim();
-                street = street.Replace(new[]
-                {
-                    "روبه روی ", "روبه رو ", "روبه رویه "
-                }, "روبروی ");
-                street = street.Replace(" بارک ", " پارک ");
-                street = street.Replace(" سراه ", " سه راه ");
-
-                var concatPrefixes = prefixes.Concat(stPrefixed).ToList();
-                if (concatPrefixes?.Any(x => street.StartsWith($"{x} ")) == true)
-                {
-                    foreach (var prefix in concatPrefixes)
-                    {
-                        var term = $"{prefix} ";
-                        var timmedStreet = street.Trim();
-                        if (!timmedStreet.StartsWith(term, StringComparison.CurrentCultureIgnoreCase))
-                            continue;
-
-                        var pref = stPrefixed.Any(x => x == prefix)
-                            ? "خیابان "
-                            : term;
-                        var tempStreet = $"{pref}{timmedStreet.Split(term)[1]}";
-                        street = tempStreet;
-                    }
-                }
-                else
-                {
-                    street = $"خیابان {street}";
-                }
-
-                street = street.Replace(" خ ", " خیابان ");
-                return street.FixPersian();
-            }
-        }
+        private string StreetNormalized => GlobalService.FixAddress(Street);
 
         [NotMapped]
         public string Address

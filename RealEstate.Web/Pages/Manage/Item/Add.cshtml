@@ -76,9 +76,9 @@
                 </div>
                 <div class="col-12 col-lg">
                     <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Street"></label>
-                        <input asp-for="NewItem.Property.Street" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Street"></span>
+                        <label class="control-label" asp-for="NewItem.Property.Address"></label>
+                        <input asp-for="NewItem.Property.Address" class="form-control"/>
+                        <span class="text-danger" asp-validation-for="NewItem.Property.Address"></span>
                     </div>
                 </div>
                 @*<div class="col-xs-12 col-lg-2">
@@ -291,7 +291,7 @@
             const propertyDistrictId =
                 $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.DistrictId)");
             const propertyStreet =
-                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.Street)");
+                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.Address)");
 
             $(checkProperty).click(function(e) {
                 if ($(form)[0].checkValidity()) {

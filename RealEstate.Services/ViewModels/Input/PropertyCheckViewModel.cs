@@ -13,8 +13,8 @@ namespace RealEstate.Services.ViewModels.Input
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         public string Category { get; set; }
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Street")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Address")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
-        public string Street { get; set; }
+        public string Address { get; set; }
     }
 }

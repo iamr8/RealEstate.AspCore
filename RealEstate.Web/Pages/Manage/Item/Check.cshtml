@@ -38,9 +38,9 @@
                 </div>
                 <div class="col-xs-12 col-lg">
                     <div class="input-wrapper">
-                        <label class="control-label" asp-for="PropertyCheck.Street"></label>
-                        <input asp-for="PropertyCheck.Street" class="form-control" />
-                        <span class="text-danger" asp-validation-for="PropertyCheck.Street"></span>
+                        <label class="control-label" asp-for="PropertyCheck.Address"></label>
+                        <input asp-for="PropertyCheck.Address" class="form-control" />
+                        <span class="text-danger" asp-validation-for="PropertyCheck.Address"></span>
                     </div>
                 </div>
                 <div class="col-12">
@@ -82,7 +82,7 @@
             const similars = $("#property_similar");
             const items = $(".items", similars);
 
-            const streetInput = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.Street)");
+            const streetInput = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.Address)");
             const districtIdSelect = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.District)");
             const categoryIdSelect = $("#@nameof(Model.PropertyCheck)_@nameof(Model.PropertyCheck.Category)");
 

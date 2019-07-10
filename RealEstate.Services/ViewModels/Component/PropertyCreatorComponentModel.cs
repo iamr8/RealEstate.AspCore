@@ -24,7 +24,7 @@ namespace RealEstate.Services.ViewModels.Component
         public HtmlTagViewModel<PropertyInputViewModel> Id => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.Id);
 
         public HtmlTagViewModel<PropertyInputViewModel> DistrictId => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.DistrictId);
-        public HtmlTagViewModel<PropertyInputViewModel> Street => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.Street);
+        public HtmlTagViewModel<PropertyInputViewModel> Street => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.Address);
         public HtmlTagViewModel<PropertyInputViewModel> Alley => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.Alley);
         public HtmlTagViewModel<PropertyInputViewModel> Number => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.Number);
         public HtmlTagViewModel<PropertyInputViewModel> BuildingName => new HtmlTagViewModel<PropertyInputViewModel>(ModelName, x => x.BuildingName);

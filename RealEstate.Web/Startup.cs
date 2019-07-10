@@ -31,6 +31,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using WebMarkupMin.AspNetCore2;
 using WebMarkupMin.Core;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -90,9 +91,9 @@ namespace RealEstate.Web
                     config.Log(CoreEventId.IncludeIgnoredWarning);
                     config.Log(CoreEventId.NavigationIncluded);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
-                    config.Throw(RelationalEventId.QueryClientEvaluationWarning);
-                    config.Throw(CoreEventId.LazyLoadOnDisposedContextWarning);
-                    config.Throw(CoreEventId.NavigationLazyLoading);
+//                    config.Throw(RelationalEventId.QueryClientEvaluationWarning);
+//                    config.Throw(CoreEventId.LazyLoadOnDisposedContextWarning);
+//                    config.Throw(CoreEventId.NavigationLazyLoading);
                 });
                 options.EnableSensitiveDataLogging();
             });
@@ -160,6 +161,11 @@ namespace RealEstate.Web
                         options.SerializerSettings.PreserveReferencesHandling = settings.PreserveReferencesHandling;
                     }
                 );
+
+            services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+            });
 
             EntityFrameworkProfiler.Initialize();
             services.AddHealthChecks()

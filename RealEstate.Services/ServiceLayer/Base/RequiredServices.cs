@@ -12,6 +12,9 @@ namespace RealEstate.Services.ServiceLayer.Base
             service.AddScoped<IFileHandler, FileHandler>();
             service.AddScoped<IGlobalService, GlobalService>();
 
+            // App
+            service.AddScoped<IAppService, AppService>();
+
             // Sms Provider
             service.AddScoped<IKavehNegarProvider, KavehNegarProvider>();
 

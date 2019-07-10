@@ -10,8 +10,6 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels;
-using RealEstate.Services.ViewModels.Api.Request;
-using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -39,8 +37,6 @@ namespace RealEstate.Services.ServiceLayer
         Task<ItemComplexInputViewModel> ItemInputAsync(string id);
 
         Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save);
-
-        Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model);
 
         Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street);
 
@@ -322,131 +318,6 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<Response<ItemOutJsonViewModel>> ItemListAsync(ItemRequest model)
-        {
-            if (model == null)
-                return new Response<ItemOutJsonViewModel>
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName(),
-                    BaseUrl = _userService.BaseUrl
-                };
-            var tokenState = await _userService.ValidateToken(model?.Token);
-            if (!tokenState.Success)
-                return new Response<ItemOutJsonViewModel>
-                {
-                    Message = tokenState.Message,
-                    Success = tokenState.Success,
-                    BaseUrl = tokenState.BaseUrl
-                };
-
-            if (string.IsNullOrEmpty(model.ItemCategory))
-                return new Response<ItemOutJsonViewModel>
-                {
-                    Success = false,
-                    Message = "دسته بندی مورد را پر کنید",
-                    BaseUrl = tokenState.BaseUrl
-                };
-
-            if (string.IsNullOrEmpty(model.PropertyCategory))
-                return new Response<ItemOutJsonViewModel>
-                {
-                    Success = false,
-                    Message = "دسته بندی ملک را پر کنید",
-                    BaseUrl = tokenState.BaseUrl
-                };
-
-            var query = _items.AsQueryable();
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Category);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.District);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Pictures);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
-            query = query.Include(x => x.Category);
-            query = query.Include(x => x.DealRequests);
-            query = query.Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Applicants)
-                .ThenInclude(x => x.Customer);
-
-            query = query.Where(x => x.Category.Name == model.ItemCategory);
-            query = query.Where(x => x.Property.Category.Name == model.PropertyCategory);
-            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == tokenState.UserId));
-            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == tokenState.UserId));
-
-            var items = await query.Cacheable().ToListAsync();
-            if (items?.Any() != true)
-                return new Response<ItemOutJsonViewModel>
-                {
-                    Message = _localizer[SharedResource.NoItemToShow],
-                    Success = true,
-                    BaseUrl = tokenState.BaseUrl
-                };
-
-            var result = from item in items
-                         let converted = item.Map<ItemViewModel>(ent =>
-                         {
-                             ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 =>
-                             {
-                                 ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
-                                 ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
-                                 ent2.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
-                                     ent3 => ent3.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
-                                 ent2.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
-                                     ent3 => ent3.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                                 ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships,
-                                     ent3 => ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships,
-                                         ent4 => ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
-                             });
-                             ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
-                             ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
-                                 ent2 => ent2.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                         })
-                         where converted != null
-                         let property = converted.Property
-                         where property != null
-                         select new ItemOutJsonViewModel
-                         {
-                             Property = new PropertyOutJsonViewModel
-                             {
-                                 Address = property.Address,
-                                 Category = property.Category?.Name,
-                                 District = property.District?.Name,
-                                 Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null ?
-                             new OwnershipOutJsonViewModel
-                             {
-                                 Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                                 Id = property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
-                                 Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
-                             } :
-                             default,
-                                 Features = property.PropertyFeatures.ToDictionary(x => x.Feature?.Name, x => x.Value),
-                             },
-                             Category = converted.Category?.Name,
-                             Features = converted.ItemFeatures.ToDictionary(x => x.Feature?.Name, x => x.Value.CurrencyToWords())
-                         };
-
-            return new Response<ItemOutJsonViewModel>
-            {
-                Message = StatusEnum.Success.GetDisplayName(),
-                Success = true,
-                Result = result.ToList(),
-                BaseUrl = tokenState.BaseUrl
-            };
-        }
-
         public async Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street)
         {
             if (string.IsNullOrEmpty(district) || string.IsNullOrEmpty(category) || string.IsNullOrEmpty(street))
@@ -484,7 +355,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model == null)
                 return false;
 
-            if (string.IsNullOrEmpty(model.District) || string.IsNullOrEmpty(model.Category) || string.IsNullOrEmpty(model.Street))
+            if (string.IsNullOrEmpty(model.District) || string.IsNullOrEmpty(model.Category) || string.IsNullOrEmpty(model.Address))
                 return false;
 
             var currentUser = _baseService.CurrentUser();
@@ -502,8 +373,8 @@ namespace RealEstate.Services.ServiceLayer
                            userItemCategory.UserId == currentUser.Id && userItemCategory.CategoryId == itemCategory.Id)
                         where propertyCategory.UserPropertyCategories.Any(userPropertyCategory =>
                            userPropertyCategory.UserId == currentUser.Id && userPropertyCategory.CategoryId == propertyCategory.Id)
-                        where (EF.Functions.Like(item.Property.Street, model.Street.Like()) ||
-                                EF.Functions.Like(item.Property.Alley, model.Street.Like())) &&
+                        where (EF.Functions.Like(item.Property.Street, model.Address.Like()) ||
+                                EF.Functions.Like(item.Property.Alley, model.Address.Like())) &&
                             item.Property.District.Name == model.District &&
                             item.Property.Category.Name == model.Category
                         select item;
@@ -903,7 +774,7 @@ namespace RealEstate.Services.ServiceLayer
                         Value = x.OriginalValue
                     }).ToList(),
                     Number = viewModel.Property?.Number,
-                    Street = viewModel.Property?.Street,
+                    Address = viewModel.Property?.Street,
                     Flat = viewModel.Property?.Flat ?? 0,
                     DistrictId = viewModel.Property?.District?.Id,
                     Alley = viewModel.Property?.Alley,

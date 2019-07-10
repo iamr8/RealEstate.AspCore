@@ -2,16 +2,12 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer.Base;
-using RealEstate.Services.ViewModels.Api;
-using RealEstate.Services.ViewModels.Api.Request;
-using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -19,10 +15,8 @@ using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
@@ -31,15 +25,11 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<UserInputViewModel> FindInputAsync(string id);
 
-        Task<TokenValidation> ValidateToken(string token);
-
         Task<MethodStatus<User>> AddOrUpdateAsync(UserInputViewModel model, bool update, bool save);
 
         Task<List<BeneficiaryJsonViewModel>> ListJsonAsync(bool includeDeleted = false, bool exceptAdmin = true);
 
         string BaseUrl { get; }
-
-        Task<Response<SignInResponse>> SignInAsync(SignInRequest model);
 
         Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
 
@@ -115,71 +105,6 @@ namespace RealEstate.Services.ServiceLayer
                          };
 
             return result.ToList();
-        }
-
-        public async Task<TokenValidation> ValidateToken(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-            {
-                return new TokenValidation
-                {
-                    Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false,
-                    BaseUrl = BaseUrl
-                };
-            }
-
-            var handler = new JwtSecurityTokenHandler();
-            if (!(handler.ReadToken(token) is JwtSecurityToken jwtSecurityToken))
-                return new TokenValidation
-                {
-                    Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false,
-                    BaseUrl = BaseUrl
-                };
-
-            var claims = jwtSecurityToken.Claims.ToList();
-            if (claims?.Any() != true)
-                return new TokenValidation
-                {
-                    Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false,
-                    BaseUrl = BaseUrl
-                };
-
-            var id = claims.FirstOrDefault(x => x.Type.Equals("Id", StringComparison.CurrentCulture))?.Value;
-            var userName = claims.FirstOrDefault(x => x.Type.Equals("Username", StringComparison.CurrentCulture))?.Value;
-            var password = claims.FirstOrDefault(x => x.Type.Equals("Password", StringComparison.CurrentCulture))?.Value;
-
-            if (string.IsNullOrEmpty(id)
-                || string.IsNullOrEmpty(userName)
-                || string.IsNullOrEmpty(password))
-                return new TokenValidation
-                {
-                    Message = StatusEnum.Forbidden.GetDisplayName(),
-                    Success = false,
-                    BaseUrl = BaseUrl
-                };
-
-            var isUserValid = await _users.AnyAsync(x =>
-                x.Id == id
-                && x.Username == userName
-                && x.Password == password);
-            if (!isUserValid)
-                return new TokenValidation
-                {
-                    Message = StatusEnum.UserNotFound.GetDisplayName(),
-                    Success = false,
-                    BaseUrl = BaseUrl
-                };
-
-            return new TokenValidation
-            {
-                Message = StatusEnum.Success.GetDisplayName(),
-                Success = true,
-                UserId = id,
-                BaseUrl = BaseUrl
-            };
         }
 
         public async Task<UserInputViewModel> FindInputAsync(string id)
@@ -419,160 +344,10 @@ namespace RealEstate.Services.ServiceLayer
 
         public string BaseUrl => $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Host}:{HttpContext.Request.Host.Port}/";
 
-        public async Task<Response<SignInResponse>> SignInAsync(SignInRequest model)
-        {
-            var query = _users.IgnoreQueryFilters()
-                .Include(x => x.Employee)
-                .ThenInclude(x => x.EmployeeDivisions)
-                .ThenInclude(x => x.Division)
-                .Include(x => x.UserItemCategories)
-                .ThenInclude(x => x.Category)
-                .Include(x => x.UserPropertyCategories)
-                .ThenInclude(x => x.Category)
-                .Where(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase))
-                .Select(x => new
-                {
-                    Id = x.Id,
-                    MobileNumber = x.Employee.Mobile,
-                    Password = x.Password,
-                    Role = x.Role,
-                    EmployeeId = x.EmployeeId,
-                    FirstName = x.Employee.FirstName,
-                    LastName = x.Employee.LastName,
-                    Audits = x.Audits,
-                    UserItemCategories = x.UserItemCategories.Select(c => new
-                    {
-                        c.Category.Name
-                    }).ToList(),
-                    UserPropertyCategories = x.UserPropertyCategories.Select(c => new
-                    {
-                        c.Category.Name
-                    }).ToList(),
-                    EmployeeDivisions = x.Employee.EmployeeDivisions.Select(c => new
-                    {
-                        c.Division.Name
-                    }).ToList()
-                });
-
-            var sql = query.ToSql();
-            var userDb = await query.Cacheable().FirstOrDefaultAsync();
-            if (userDb == null)
-                return new Response<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.UserNotFound.GetDisplayName(),
-                    BaseUrl = BaseUrl
-                };
-            try
-            {
-                var decryptedPasswordInDb = userDb.Password.Cipher(CryptologyExtension.CypherMode.Decryption);
-                if (decryptedPasswordInDb != model.Password)
-                    return new Response<SignInResponse>
-                    {
-                        Success = false,
-                        Message = StatusEnum.WrongPassword.GetDisplayName(),
-                        BaseUrl = BaseUrl
-                    };
-            }
-            catch
-            {
-                return new Response<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.WrongPassword.GetDisplayName(),
-                    BaseUrl = BaseUrl
-                };
-            }
-
-            if (userDb.Audits.LastOrDefault()?.Type == LogTypeEnum.Delete)
-                return new Response<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.Deactivated.GetDisplayName(),
-                    BaseUrl = BaseUrl
-                };
-
-            var itemCategories = userDb.UserItemCategories.Select(x => x.Name).ToList();
-            var propertyCategories = userDb.UserPropertyCategories.Select(x => x.Name).ToList();
-            var employeeDivisions = userDb.EmployeeDivisions.Select(x => x.Name).ToList();
-
-            var id = userDb.Id;
-            var mobileNumber = userDb.MobileNumber;
-            var encryptedPassword = userDb.Password;
-            var firstname = userDb.FirstName;
-            var lastname = userDb.LastName;
-            var employeeId = userDb.Id;
-            var role = userDb.Role.GetDisplayName();
-
-            var claims = new List<Claim>
-            {
-                new Claim("Id", id),
-                new Claim("Username", model.Username),
-                new Claim("Password", encryptedPassword),
-            };
-            var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);
-
-            const string privateKey = PrivateKeyConstant.PrivateKey;
-            var now = DateTime.UtcNow;
-            var symmetricKey = Encoding.UTF8.GetBytes(privateKey);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = identity,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(symmetricKey),
-                    SecurityAlgorithms.HmacSha256Signature),
-                Expires = now.AddDays(1),
-                Issuer = "http://localhost/",
-                Audience = "Any",
-                NotBefore = now,
-            };
-            var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-
-            if (string.IsNullOrEmpty(token))
-                return new Response<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.TokenIsNull.GetDisplayName(),
-                    BaseUrl = BaseUrl
-                };
-
-            try
-            {
-                return new Response<SignInResponse>
-                {
-                    Success = true,
-                    Message = StatusEnum.SignedIn.GetDisplayName(),
-                    BaseUrl = BaseUrl,
-                    Result = new List<SignInResponse>
-                    {
-                        new SignInResponse
-                        {
-                            FirstName = firstname,
-                            LastName = lastname,
-                            UserItemCategories = itemCategories,
-                            UserPropertyCategories = propertyCategories,
-                            EmployeeDivisions = employeeDivisions,
-                            Role = role,
-                            MobileNumber = mobileNumber,
-                            Token = token
-                        }
-                    }
-                };
-            }
-            catch
-            {
-                return new Response<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName()
-                };
-            }
-        }
-
         public async Task<StatusEnum> SignInAsync(UserLoginViewModel model)
         {
             var lowerUsername = model.Username.ToLower(CultureInfo.CurrentCulture);
-            var userDb = await _users.IgnoreQueryFilters()
+            var query = _users.IgnoreQueryFilters()
                 .AsNoTracking()
                 .Include(x => x.Employee)
                 .Include(x => x.UserItemCategories)
@@ -581,7 +356,47 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Category)
                 .Include(x => x.Employee.EmployeeDivisions)
                 .ThenInclude(x => x.Division)
-                .FirstOrDefaultAsync(x => x.Username.ToLower() == lowerUsername);
+                .AsQueryable();
+
+            var query2 = from user in query
+                         let employee = user.Employee
+                         let userItemCategories = from uic in user.UserItemCategories
+                                                  select new
+                                                  {
+                                                      uic.CategoryId,
+                                                      uic.Category.Name
+                                                  }
+                         let userPropertyCategories = from upc in user.UserPropertyCategories
+                                                      select new
+                                                      {
+                                                          upc.CategoryId,
+                                                          upc.Category.Name
+                                                      }
+                         let employeeDivisions = from ed in employee.EmployeeDivisions
+                                                 select new
+                                                 {
+                                                     ed.DivisionId,
+                                                     ed.Division.Name
+                                                 }
+                         where user.Username.ToLower() == lowerUsername
+                         select new
+                         {
+                             Password = user.Password,
+                             UserAudits = user.Audits,
+                             EmployeeAudits = employee.Audits,
+                             UserItemCategories = userItemCategories.ToList(),
+                             UserPropertyCategories = userPropertyCategories.ToList(),
+                             EmployeeDivisions = employeeDivisions.ToList(),
+                             Id = user.Id,
+                             Username = user.Username,
+                             Mobile = employee.Mobile,
+                             FirstName = employee.FirstName,
+                             LastName = employee.LastName,
+                             EmployeeId = employee.Id,
+                             Role = user.Role
+                         };
+
+            var userDb = await query2.Cacheable().FirstOrDefaultAsync();
             if (userDb == null) return StatusEnum.UserNotFound;
             try
             {
@@ -594,48 +409,36 @@ namespace RealEstate.Services.ServiceLayer
                 return StatusEnum.WrongPassword;
             }
 
-            if (userDb.IsDeleted)
+            if (userDb.UserAudits.Render().Last.Type == LogTypeEnum.Delete)
                 return StatusEnum.Deactivated;
 
-            var viewModel = userDb.Map<UserViewModel>(ent =>
-            {
-                ent.IncludeAs<User, UserItemCategory, UserItemCategoryViewModel>(_unitOfWork, x => x.UserItemCategories, ent2 =>
-                    ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
-                ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories, ent2 =>
-                    ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
-                ent.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee, ent2 =>
-                    ent2.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions, ent3 =>
-                        ent3.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division)));
-            });
-
-            var employeeDeleted = viewModel.Employee?.IsDeleted == true;
-            if (employeeDeleted)
+            if (userDb.EmployeeAudits.Render().Last.Type == LogTypeEnum.Delete)
                 return StatusEnum.EmployeeIsNull;
 
-            var itemCategoriesJson = viewModel.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
+            var itemCategoriesJson = userDb.UserItemCategories.JsonConversion(category => new CategoryJsonViewModel
             {
-                CategoryId = category.Category?.Id,
-                Name = category.Category?.Name,
+                CategoryId = category.CategoryId,
+                Name = category.Name,
             });
-            var propertyCategoriesJson = viewModel.UserPropertyCategories.JsonConversion(category => new CategoryJsonViewModel
+            var propertyCategoriesJson = userDb.UserPropertyCategories.JsonConversion(category => new CategoryJsonViewModel
             {
-                CategoryId = category.Category?.Id,
-                Name = category.Category?.Name
+                CategoryId = category.CategoryId,
+                Name = category.Name,
             });
-            var employeeDivisionsJson = viewModel.Employee?.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
+            var employeeDivisionsJson = userDb.EmployeeDivisions?.JsonConversion(division => new DivisionJsonViewModel
             {
-                DivisionId = division.Division?.Id,
-                Name = division.Division?.Name
+                DivisionId = division.DivisionId,
+                Name = division.Name
             });
 
-            var id = viewModel.Id;
-            var username = viewModel.Username;
-            var mobilePhone = viewModel.Employee?.Mobile;
-            var password = viewModel.EncryptedPassword;
-            var firstname = viewModel.Employee?.FirstName;
-            var lastname = viewModel.Employee?.LastName;
-            var employeeId = viewModel.Employee?.Id;
-            var role = viewModel.Role.ToString();
+            var id = userDb.Id;
+            var username = userDb.Username;
+            var mobilePhone = userDb.Mobile;
+            var password = userDb.Password;
+            var firstname = userDb.FirstName;
+            var lastname = userDb.LastName;
+            var employeeId = userDb.EmployeeId;
+            var role = userDb.Role.ToString();
             itemCategoriesJson = string.IsNullOrEmpty(itemCategoriesJson) ? "[]" : itemCategoriesJson;
             propertyCategoriesJson = string.IsNullOrEmpty(propertyCategoriesJson) ? "[]" : propertyCategoriesJson;
             employeeDivisionsJson = string.IsNullOrEmpty(employeeDivisionsJson) ? "[]" : employeeDivisionsJson;

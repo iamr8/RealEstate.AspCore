@@ -30,7 +30,7 @@
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.165" />
     <PackageReference Include="RestSharp" Version="106.6.9" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.17" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.18" />
   </ItemGroup>
 
   <ItemGroup>

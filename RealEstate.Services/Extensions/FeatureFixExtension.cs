@@ -1,5 +1,6 @@
 ﻿using RealEstate.Base;
 using RealEstate.Services.BaseLog;
+using RealEstate.Services.ServiceLayer;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -78,46 +79,20 @@ namespace RealEstate.Services.Extensions
             switch (featureName)
             {
                 case "سال ساخت":
-                    if (!int.TryParse(featureValue, out var year))
+
+                    var normalizedYear = GlobalService.FixBuildYear(featureValue);
+                    if (normalizedYear == featureValue)
                         return new NormalizeFeatureStatus(featureValue, featureValue, true);
 
-                    var normalizedYear = year < 100
-                        ? year <= 30
-                            ? new PersianCalendar().GetYear(DateTime.Now) - year
-                            : int.Parse($"13{year}")
-                        : year;
-
-                    return new NormalizeFeatureStatus(normalizedYear.ToString(), featureValue, normalizedYear != year);
+                    return new NormalizeFeatureStatus(normalizedYear, featureValue, normalizedYear != featureValue);
 
                 case "وام":
-                    featureValue = featureValue.CleanNumberDividers();
-                    if (!long.TryParse(featureValue, out var loan))
-                        return new NormalizeFeatureStatus(featureValue, featureValue, true);
-
-                    var num = int.Parse(featureValue.Split('0')[0]);
-                    var loanNormalized = loan > 999999999
-                        ? $"{num:#########}"
-                        : loan < 15000
-                            ? $"{num:######}"
-                            : featureValue;
-
-                    var loanOriginalToWords = featureValue.CurrencyToWords();
-                    var loanNormalizedToWords = loanNormalized.CurrencyToWords();
-                    return new NormalizeFeatureStatus(loanNormalized, featureValue, featureValue != loanNormalized);
+                    var normalizedLoanPrice = GlobalService.FixLoanPrice(featureValue);
+                    return new NormalizeFeatureStatus(normalizedLoanPrice, featureValue, featureValue != normalizedLoanPrice);
 
                 case "قیمت نهایی":
-                    featureValue = featureValue.CleanNumberDividers();
-                    if (!long.TryParse(featureValue, out var finalPrice))
-                        return new NormalizeFeatureStatus(featureValue, featureValue, true);
-
-                    var finalPriceLength = finalPrice > 1000000000 ? 10 : 9;
-                    var finalPriceNormalized = featureValue.PadRight(finalPriceLength, '0');
-                    finalPrice = long.TryParse(finalPriceNormalized, out var finalPriceTemp) && finalPriceTemp > 3000000000 ? finalPriceTemp / 10 : finalPriceTemp;
-                    finalPriceNormalized = finalPrice.ToString();
-
-                    var finalPriceOriginalToWords = featureValue.CurrencyToWords();
-                    var finalPriceNormalizedToWords = finalPriceNormalized.CurrencyToWords();
-                    return new NormalizeFeatureStatus(finalPriceNormalized, featureValue, featureValue != finalPriceNormalized);
+                    var normalizedFinalPrice = GlobalService.FixFinalPrice(featureValue);
+                    return new NormalizeFeatureStatus(normalizedFinalPrice, featureValue, featureValue != normalizedFinalPrice);
 
                 case "پیش پرداخت":
                 case "اجاره":

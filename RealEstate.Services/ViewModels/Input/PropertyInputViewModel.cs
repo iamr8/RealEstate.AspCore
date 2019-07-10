@@ -15,10 +15,10 @@ namespace RealEstate.Services.ViewModels.Input
         private string _propertyFeaturesJson;
         private string _propertyFacilitiesJson;
 
-        [Display(ResourceType = typeof(SharedResource), Name = "Street")]
+        [Display(ResourceType = typeof(SharedResource), Name = "Address")]
         [Required(AllowEmptyStrings = false, ErrorMessageResourceType = typeof(SharedResource), ErrorMessageResourceName = "FieldRequired")]
         [ValueValidation(RegexPatterns.SafeText)]
-        public string Street { get; set; }
+        public string Address { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Alley")]
         [ValueValidation(RegexPatterns.SafeText)]

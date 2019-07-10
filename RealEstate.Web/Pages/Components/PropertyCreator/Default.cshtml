@@ -33,8 +33,8 @@
         <span class="text-danger" data-valmsg-for="@Model.DistrictId.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-4 margin-bottomed">
-        <label for="@Model.Street.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Street))</label>
-        <input asp-for="@Model.Model.Street" id="@Model.Street.Id" name="@Model.Street.Name" class="form-control" value="@Model.Model.Street" />
+        <label for="@Model.Street.Id" class="control-label">@(PropertyExtensions.GetDisplayName<PropertyInputViewModel>(x => x.Address))</label>
+        <input asp-for="@Model.Model.Address" id="@Model.Street.Id" name="@Model.Street.Name" class="form-control" value="@Model.Model.Address" />
         <span class="text-danger" data-valmsg-for="@Model.Street.Name" data-valmsg-replace="true"></span>
     </div>
     <div class="col-12 col-md-4 margin-bottomed">
@@ -141,7 +141,7 @@
 
                 if ($(newForm)[0].checkValidity()) {
                     const model = {
-                        @(nameof(Model.Model.Street)): street,
+                        @(nameof(Model.Model.Address)): street,
                         @(nameof(Model.Model.Alley)): alley,
                         @(nameof(Model.Model.BuildingName)): buildingNumber,
                         @(nameof(Model.Model.Number)): number,
