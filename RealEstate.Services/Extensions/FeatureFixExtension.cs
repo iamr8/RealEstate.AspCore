@@ -80,11 +80,8 @@ namespace RealEstate.Services.Extensions
             {
                 case "سال ساخت":
 
-                    var normalizedYear = GlobalService.FixBuildYear(featureValue);
-                    if (normalizedYear == featureValue)
-                        return new NormalizeFeatureStatus(featureValue, featureValue, true);
-
-                    return new NormalizeFeatureStatus(normalizedYear, featureValue, normalizedYear != featureValue);
+                    return new NormalizeFeatureStatus(GlobalService.FixBuildYear(featureValue), featureValue,
+                        !Regex.IsMatch(featureValue, RegexPatterns.IranYear.GetDisplayName()));
 
                 case "وام":
                     var normalizedLoanPrice = GlobalService.FixLoanPrice(featureValue);

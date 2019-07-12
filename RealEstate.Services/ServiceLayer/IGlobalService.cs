@@ -280,6 +280,16 @@ namespace RealEstate.Services.ServiceLayer
         public static string FixBuildYear(string value)
         {
             var featureValue = value;
+            try
+            {
+                if (value.Contains(".", StringComparison.CurrentCulture) && !value.StartsWith(".", StringComparison.CurrentCulture))
+                    featureValue = featureValue.Split(".")[0];
+            }
+            catch
+            {
+                // ignored
+            }
+
             if (!int.TryParse(featureValue, out var year))
                 return value;
 
@@ -294,11 +304,11 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task FixBuildYearAsync()
         {
-            var query = _propertyFeatures
+            var propertyFeatures = await _propertyFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == "cdb97926-b3b1-48ec-bdd6-389a0431007c" && x.Value.Length == 2);
-
-            var propertyFeatures = await query.ToListAsync();
+                .Where(x => x.FeatureId == "cdb97926-b3b1-48ec-bdd6-389a0431007c"
+                            && x.Value.Length != 4)
+                .ToListAsync();
             if (propertyFeatures?.Any() != true)
                 return;
 
@@ -372,7 +382,8 @@ namespace RealEstate.Services.ServiceLayer
 
             var viewModels = monthQuery?.Select(item => item.Map<ItemViewModel>(ent =>
             {
-                ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 => ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
+                ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property,
+                    ent2 => ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
                 ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
             })).ToList();
             if (viewModels?.Any() != true)

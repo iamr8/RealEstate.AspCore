@@ -68,5 +68,9 @@ namespace RealEstate.Base
         [Description("فقط قالب JSON")]
         [Display(Name = "^[a-zA-Z]+$")]
         Json,
+
+        [Description("قالب سال ایرانی: 1398")]
+        [Display(Name = "^1(3|4)[0-9]{2}")]
+        IranYear
     }
 }
