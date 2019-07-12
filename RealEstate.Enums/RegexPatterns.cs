@@ -5,7 +5,7 @@ namespace RealEstate.Base
 {
     public enum RegexPatterns
     {
-        [Description("فقط حروف فارسی و خط فاصله.")]
+        [Description("فقط حروف فارسی و فاصله")]
         [Display(Name = "^[\u0600-\u06FF ]+$")]
         PersianText,
 
@@ -13,7 +13,7 @@ namespace RealEstate.Base
         [Display(Name = "(09|۰۹)([0-9]|[۰-۹]){9}")]
         Mobile,
 
-        [Description("فقط حروف و اعداد فارسی و انگلیسی و خط فاصله مجاز است")]
+        [Description("فقط حروف و اعداد فارسی و انگلیسی و فاصله مجاز است")]
         [Display(Name = @"^[\u0600-\u06FF\da-zA-Z ]+$")]
         SafeString,
 
@@ -21,7 +21,7 @@ namespace RealEstate.Base
         [Display(Name = @"[\u0600-\u06FF\d\w_\-.]+")]
         SafeFilename,
 
-        [Description("فقط حروف و اعداد فارسی و انگلیسی، نقطه، کاما و خط فاصله.")]
+        [Description("فقط حروف و اعداد فارسی و انگلیسی، نقطه، کاما، خط تیره و فاصله")]
         [Display(Name = @"^[\u0600-\u06FF\da-zA-Z0-9() .،-]+$")]
         SafeText,
 
@@ -37,7 +37,7 @@ namespace RealEstate.Base
         [Display(Name = "[0-9]{1,}-[1-8]([0-9]){7}")]
         Phone,
 
-        [Description("فقط از اعداد و حروف مجاز در نام اکانتهای شبکه های اجتماعی، مجاز است.  ")]
+        [Description("فقط از اعداد و حروف مجاز در نام اکانتهای شبکه های اجتماعی، مجاز است")]
         [Display(Name = @"[\d\w@._-]+")]
         SocialAccount,
 
@@ -49,7 +49,7 @@ namespace RealEstate.Base
         [Display(Name = "13[0-9]{2}(/)((0([1-9]))|(1([0-2])))(/)((0[1-9])|([1-2][0-9])|(3[0-1]))")]
         IranDate,
 
-        [Description("فقط حروف و اعداد فارسی و انگلیسی و خط تیره مجاز است.")]
+        [Description("فقط حروف و اعداد فارسی و انگلیسی و خط تیره مجاز است")]
         [Display(Name = @"^[\u0600-\u06FF\da-zA-Z0-9-]+$")]
         SafeTextSecured,
 

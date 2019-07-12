@@ -23,6 +23,8 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<List<LogDetailViewModel>> Logs(string entityName, string entityId);
 
+        Task FixPricePerMeterAsync();
+
         Task FixFinalPriceAsync();
 
         Task FixLoanPriceAsync();
@@ -42,6 +44,7 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<Item> _items;
         private readonly DbSet<PropertyFeature> _propertyFeatures;
         private readonly DbSet<Property> _properties;
+        private readonly DbSet<ItemFeature> _itemFeatures;
 
         public GlobalService(
             IBaseService baseService,
@@ -53,11 +56,17 @@ namespace RealEstate.Services.ServiceLayer
             _baseService = baseService;
             _applicationDbContext = applicationDbContext;
             _items = _unitOfWork.Set<Item>();
+            _itemFeatures = _unitOfWork.Set<ItemFeature>();
             _properties = _unitOfWork.Set<Property>();
             _propertyFeatures = _unitOfWork.Set<PropertyFeature>();
         }
 
-        private List<StatisticsDetailViewModel> Map(List<ItemViewModel> item)
+        private const string FeaturePricePerMeter = "01cb6a1d-959d-4abb-8488-f10ab09bd8a8";
+        private const string FeatureLoadPrice = "736ad605-78ea-41e1-bdeb-8d2811db2dec";
+        private const string FeatureBuildYear = "cdb97926-b3b1-48ec-bdd6-389a0431007c";
+        private const string FeatureFinalPrice = "54a0b920-c17f-4ff2-9c51-f9551159026a";
+
+        private static List<StatisticsDetailViewModel> Map(IReadOnlyCollection<ItemViewModel> item)
         {
             if (item?.Any() != true)
                 return default;
@@ -132,15 +141,62 @@ namespace RealEstate.Services.ServiceLayer
             return loanNormalized;
         }
 
+        public static string FixPricePerMeter(string value, bool isStore)
+        {
+            value = value.CleanNumberDividers();
+            if (!long.TryParse(value, out var pricePerMeter))
+                return value;
+
+            string normalized;
+            if (isStore)
+            {
+                // 550 000 000 : 9
+                // 55 000 000 : 8
+                // 5 500 000 : 7
+                // 5 : <= 2
+                if (pricePerMeter <= 10000000)
+                    pricePerMeter *= 10;
+
+                if (value.Length == 9)
+                    pricePerMeter /= 10;
+                else if (value.Length <= 2)
+                    pricePerMeter *= 1000000;
+
+                normalized = pricePerMeter.ToString();
+            }
+            else
+            {
+                // 550 000 000 : 9
+                // 55 000 000 : 8
+                // 5 500 000 : 7
+                // 5 : <= 2
+
+                if (pricePerMeter >= 20000000)
+                    pricePerMeter /= 10;
+
+                value = pricePerMeter.ToString();
+
+                if (value.Length == 9)
+                    pricePerMeter /= 10;
+                else if (value.Length <= 2)
+                    pricePerMeter *= 1000000;
+
+                normalized = pricePerMeter.ToString();
+            }
+
+            return normalized;
+        }
+
         public static string FixFinalPrice(string value)
         {
             value = CleanNumberDividers(value);
             if (!long.TryParse(value, out var finalPrice))
                 return value;
 
-            var finalPriceLength = finalPrice > 1000000000 ? 10 : 9;
-            var finalPriceNormalized = value.PadRight(finalPriceLength, '0');
-            finalPrice = long.TryParse(finalPriceNormalized, out var finalPriceTemp) && finalPriceTemp > 3000000000 ? finalPriceTemp / 10 : finalPriceTemp;
+            var finalPriceNormalized = value.PadRight(finalPrice > 1000000000 ? 10 : 9, '0');
+            finalPrice = long.TryParse(finalPriceNormalized, out var finalPriceTemp) && finalPriceTemp > 3000000000
+                ? finalPriceTemp / 10
+                : finalPriceTemp;
             finalPriceNormalized = finalPrice.ToString();
 
             return finalPriceNormalized;
@@ -148,23 +204,77 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task FixLoanPriceAsync()
         {
-            var query = _propertyFeatures
+            var itemFeatures = await _propertyFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == "736ad605-78ea-41e1-bdeb-8d2811db2dec");
-
-            var propertyFeatures = await query.ToListAsync();
-            if (propertyFeatures?.Any() != true)
+                .Where(x => x.FeatureId == FeatureLoadPrice)
+                .ToListAsync();
+            if (itemFeatures?.Any() != true)
                 return;
 
             var updatedIndicator = 0;
-            foreach (var propertyFeature in propertyFeatures)
+            foreach (var itemFeature in itemFeatures)
             {
-                var normalized = FixLoanPrice(propertyFeature.Value);
-                if (normalized.Equals(propertyFeature.Value, StringComparison.CurrentCultureIgnoreCase))
+                var normalized = FixLoanPrice(itemFeature.Value);
+                if (normalized.Equals(itemFeature.Value, StringComparison.CurrentCultureIgnoreCase))
                     continue;
 
-                var (updateStatus, updatedPf) = await _baseService.UpdateAsync(propertyFeature,
-                    currentUser => propertyFeature.Value = normalized.ToString(),
+                var (updateStatus, updatedPf) = await _baseService.UpdateAsync(itemFeature,
+                    currentUser => itemFeature.Value = normalized.ToString(),
+                    null, false, StatusEnum.Failed);
+                if (updateStatus == StatusEnum.Success)
+                    updatedIndicator++;
+            }
+
+            if (updatedIndicator > 0)
+                await _baseService.SaveChangesAsync();
+        }
+
+        public async Task FixPricePerMeterAsync()
+        {
+            var itemFeatures = await _itemFeatures
+                .Include(x => x.Feature)
+                .Where(x => x.FeatureId == FeaturePricePerMeter)
+                .ToListAsync();
+            if (itemFeatures?.Any() != true)
+                return;
+
+            var updatedIndicator = 0;
+            foreach (var itemFeature in itemFeatures)
+            {
+                var value = itemFeature.Value.CleanNumberDividers();
+                if (!long.TryParse(value, out var num))
+                    continue;
+
+                var isStore = itemFeature.Item.Property.CategoryId == "29dfac27-765c-4839-b77b-0afc7b6450e3";
+                string normalized;
+                var featureId = string.Empty;
+                if (isStore)
+                {
+                    normalized = FixPricePerMeter(value, true);
+                }
+                else
+                {
+                    if (num >= 100000000)
+                    {
+                        normalized = FixFinalPrice(value);
+                        featureId = FeatureFinalPrice;
+                    }
+                    else
+                    {
+                        normalized = FixPricePerMeter(value, false);
+                    }
+                }
+
+                if (normalized.Equals(itemFeature.Value, StringComparison.CurrentCultureIgnoreCase))
+                    continue;
+                var (updateStatus, updatedPf) = await _baseService.UpdateAsync(itemFeature,
+                    currentUser =>
+                    {
+                        if (!string.IsNullOrEmpty(featureId))
+                            itemFeature.FeatureId = featureId;
+
+                        itemFeature.Value = normalized;
+                    },
                     null, false, StatusEnum.Failed);
                 if (updateStatus == StatusEnum.Success)
                     updatedIndicator++;
@@ -176,23 +286,22 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task FixFinalPriceAsync()
         {
-            var query = _propertyFeatures
+            var itemFeatures = await _itemFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == "54a0b920-c17f-4ff2-9c51-f9551159026a");
-
-            var propertyFeatures = await query.ToListAsync();
-            if (propertyFeatures?.Any() != true)
+                .Where(x => x.FeatureId == FeatureFinalPrice)
+                .ToListAsync();
+            if (itemFeatures?.Any() != true)
                 return;
 
             var updatedIndicator = 0;
-            foreach (var propertyFeature in propertyFeatures)
+            foreach (var itemFeature in itemFeatures)
             {
-                var normalized = FixFinalPrice(propertyFeature.Value);
-                if (normalized.Equals(propertyFeature.Value, StringComparison.CurrentCultureIgnoreCase))
+                var normalized = FixFinalPrice(itemFeature.Value);
+                if (normalized.Equals(itemFeature.Value, StringComparison.CurrentCultureIgnoreCase))
                     continue;
 
-                var (updateStatus, updatedPf) = await _baseService.UpdateAsync(propertyFeature,
-                    currentUser => propertyFeature.Value = normalized.ToString(),
+                var (updateStatus, updatedPf) = await _baseService.UpdateAsync(itemFeature,
+                    currentUser => itemFeature.Value = normalized.ToString(),
                     null, false, StatusEnum.Failed);
                 if (updateStatus == StatusEnum.Success)
                     updatedIndicator++;
@@ -204,17 +313,14 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task FixAddressAsync()
         {
-            var query = _properties.AsQueryable();
-
-            var properties = await query.ToListAsync();
+            var properties = await _properties.ToListAsync();
             if (properties?.Any() != true)
                 return;
 
             var updatedIndicator = 0;
             foreach (var property in properties)
             {
-                var street = property.Street;
-                var normalized = FixAddress(street);
+                var normalized = FixAddress(property.Street);
 
                 var (updateStatus, updatedPf) = await _baseService.UpdateAsync(property,
                     currentUser => property.Street = normalized,
@@ -306,7 +412,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var propertyFeatures = await _propertyFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == "cdb97926-b3b1-48ec-bdd6-389a0431007c"
+                .Where(x => x.FeatureId == FeatureBuildYear
                             && x.Value.Length != 4)
                 .ToListAsync();
             if (propertyFeatures?.Any() != true)

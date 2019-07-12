@@ -1081,7 +1081,7 @@ textarea {
         border-color: red !important;
     }
 
-    &[data-val-required] {
+    /*&[data-val-required] {
         &:not(.input-validation-error) {
             @include transition(all, 0.3s, ease-in-out);
             -webkit-box-shadow: 0 2px 0 $sidebarheader-color;
@@ -1092,7 +1092,7 @@ textarea {
                 box-shadow: 0 2px 0 $sidebarheader-color !important;
             }
         }
-    }
+    }*/
 }
 
 .custom-select {
@@ -1936,5 +1936,14 @@ button {
         font-size: 10pt;
         border-bottom: none;
         margin-bottom: 0;
+    }
+}
+
+label[required] {
+    &:not(.custom-control-label) {
+        &:after {
+            content: "*";
+            color: red;
+        }
     }
 }

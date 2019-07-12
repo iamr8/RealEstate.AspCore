@@ -67,7 +67,7 @@
                         <ul class="info-breadcrumb text-dark">
                             @foreach (var (featureName, featureValue) in Model.Property.Features.OrderBy(x => x.Key))
                             {
-                                var (key, value) = featureName.NormalizeFeature(featureValue, null);
+                                var (key, value, hasDate) = featureName.NormalizeUiFeature(featureValue);
 
                                 <li>
                                     @*@if (!string.IsNullOrEmpty(key))
@@ -107,7 +107,7 @@
                         <ul class="info-breadcrumb text-dark">
                             @foreach (var (featureName, featureValue) in Model.Features.OrderBy(x => x.Key))
                             {
-                                var (key, value) = featureName.NormalizeFeature(featureValue, null);
+                                var (key, value, hasDate) = featureName.NormalizeUiFeature(featureValue);
 
                                 <li>
                                     @if (!string.IsNullOrEmpty(key))

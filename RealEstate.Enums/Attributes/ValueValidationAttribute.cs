@@ -14,15 +14,20 @@ namespace RealEstate.Base.Attributes
         public ValueValidationAttribute(RegexPatterns pattern) : base(() => pattern.GetDescription())
         {
             RegularExpression = pattern.GetDisplayName();
+            this.ErrorMessage = ErrorMessageString;
         }
 
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             if (value == null) return ValidationResult.Success;
 
-            return !Regex.Match(value.ToString(), RegularExpression).Success
-                ? new ValidationResult(ErrorMessageString)
-                : ValidationResult.Success;
+            ValidationResult result;
+            if (!Regex.Match(value.ToString(), RegularExpression).Success)
+                result = new ValidationResult(ErrorMessageString);
+            else
+                result = ValidationResult.Success;
+
+            return result;
         }
 
         public void AddValidation(ClientModelValidationContext context)

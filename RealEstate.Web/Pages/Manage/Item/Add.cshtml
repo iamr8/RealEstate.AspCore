@@ -44,226 +44,208 @@
     }).SelectFirstItem();
 }
 
-<form method="post" class="col-12">
+<form method="post" class="col-12" id="myForm">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
-    <section class="container-fluid">
-    <div class="col-12">
-        <ol class="text-right">
-            <li>تمامی مبالغ را اکیداً عددی، کامل، بصورت تومان و همچنین بدون کاما یا خط تیره وارد کنید. ( مثل 380000000 )</li>
-            <li>سال ساخت را، حتما به صورت عدد چهار رقمی ( مثلا 1398 ) وارد کنید.</li>
-            <li>قسمت مستاجر به این صورت وارد کنید: شبه 09364091209</li>
-        </ol>
-    </div>
-    <hr subject="@SharedLocalizer[SharedResource.Property]"/>
-    <div class="row justify-content-center align-items-center r8-panel">
-        <div class="container-fluid">
-            <div class="row justify-content-center align-items-center">
-                <input asp-for="NewItem.Property.Id" type="hidden"/>
-                <div class="col-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.CategoryId"></label>
-                        <select asp-for="NewItem.Property.CategoryId" asp-items="propertyCategoriesList" class="custom-select"></select>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.CategoryId"></span>
+        <section class="container-fluid">
+            @*<div class="col-12">
+                <ol class="text-right">
+                    <li>تمامی مبالغ را اکیداً عددی، کامل، بصورت تومان و همچنین بدون کاما یا خط تیره وارد کنید. ( مثل 380000000 )</li>
+                    <li>سال ساخت را، حتما به صورت عدد چهار رقمی ( مثلا 1398 ) وارد کنید.</li>
+                    <li>قسمت مستاجر به این صورت وارد کنید: رضایی 09361231234</li>
+                </ol>
+            </div>*@
+            <hr subject="@SharedLocalizer[SharedResource.Property]" />
+            <div class="row justify-content-center align-items-center r8-panel">
+                <div class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="NewItem.Property.Id" type="hidden" />
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.CategoryId"></label>
+                                <select asp-for="NewItem.Property.CategoryId" asp-items="propertyCategoriesList" class="custom-select"></select>
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.CategoryId"></span> *@
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.DistrictId"></label>
+                                <select asp-for="NewItem.Property.DistrictId" asp-items="districtsList" class="custom-select"></select>
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.DistrictId"></span> *@
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Address"></label>
+                                <input asp-for="NewItem.Property.Address" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.Address"></span> *@
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.DistrictId"></label>
-                        <select asp-for="NewItem.Property.DistrictId" asp-items="districtsList" class="custom-select"></select>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.DistrictId"></span>
+                    <div class="row justify-content-center align-items-center margin-bottomed hidden" id="property_similar">
+                        <div class="col-12">
+                            @SharedLocalizer[SharedResource.SimilarItems]
+                            <div class="items"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Address"></label>
-                        <input asp-for="NewItem.Property.Address" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Address"></span>
+                    <div class="row justify-content-center align-items-center">
+                        <input asp-for="NewItem.Property.Alley" type="hidden" />
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Number"></label>
+                                <input asp-for="NewItem.Property.Number" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.Number"></span> *@
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.BuildingName"></label>
+                                <input asp-for="NewItem.Property.BuildingName" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.BuildingName"></span> *@
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Floor"></label>
+                                <input asp-for="NewItem.Property.Floor" class="form-control" />
+                                <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Flat"></label>
+                                <input asp-for="NewItem.Property.Flat" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span> *@
+                            </div>
+                        </div>
                     </div>
-                </div>
-                @*<div class="col-xs-12 col-lg-2">
+
+                    @if (propertyFeatures?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="property-features-wrapper">
                                 <div class="input-wrapper">
-                                    <input type="button" id="NewItem_Property_Check" class="btn btn-sm btn-warning btn-block" value="@SharedLocalizer[SharedResource.Check]" />
+                                    <input asp-for="NewItem.Property.PropertyFeaturesJson" />
+                                    <label class="control-label" asp-for="NewItem.Property.PropertyFeaturesJson"></label>
+                                    <select id="propertyFeatures-select" class="custom-select">
+                                        @if (propertyFeaturesList?.Any() == true)
+                                        {
+                                            foreach (var item in propertyFeaturesList)
+                                            {
+                                                var featureException = FeaturesExceptions.GetException(item.Text);
+                                                <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                    <input class="form-control" id="propertyFeatureValue" />
+                                    <span id="propertyFeatureCurrentUnit" class="mr-md-1"></span>
+                                    <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                                 </div>
-                            </div>*@
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                    @if (propertyFacilities?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="property-facilities-wrapper">
+                                <div class="input-wrapper">
+                                    <input asp-for="NewItem.Property.PropertyFacilitiesJson" />
+                                    <label class="control-label" asp-for="NewItem.Property.PropertyFacilitiesJson"></label>
+                                    <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
+                                    <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="row justify-content-center align-items-center margin-bottomed hidden" id="property_similar">
+            <hr subject="@SharedLocalizer[SharedResource.Owner]" class="mt-4" />
+            <div class="row justify-content-center align-content-center r8-panel">
+                <input asp-for="NewItem.Property.Ownership.Dong" value="6" type="hidden" />
+                <input asp-for="NewItem.Property.Ownership.Id" type="hidden" />
+
+                <div class="container-fluid">
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-lg">
+                            <div class="input-wrapper">
+
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Name"></label>
+                                <input asp-for="NewItem.Property.Ownership.Name" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Name"></span> *@
+                            </div>
+                        </div>
+                        <div class="col-lg">
+                            <div class="input-wrapper">
+                                <label class="control-label" asp-for="NewItem.Property.Ownership.Mobile"></label>
+                                <input asp-for="NewItem.Property.Ownership.Mobile" class="form-control" />
+                                @* <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Mobile"></span> *@
+                            </div>
+                        </div>
+                    </div>
+                    <input asp-for="NewItem.Property.Ownership.Phone" type="hidden" />
+                    <input asp-for="NewItem.Property.Ownership.Address" type="hidden" />
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.Item]" class="mt-4" />
+            <div class="row justify-content-center align-items-center r8-panel">
+                <input asp-for="NewItem.Id" />
                 <div class="col-12">
-                    @SharedLocalizer[SharedResource.SimilarItems]
-                    <div class="items"></div>
-                </div>
-            </div>
-            <div class="row justify-content-center align-items-center">
-                <input asp-for="NewItem.Property.Alley" type="hidden"/>
-                @*<div class="col-xs-12 col-lg">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="NewItem.Property.Alley"></label>
-                                <input asp-for="NewItem.Property.Alley" class="form-control"/>
-                                <span class="text-danger" asp-validation-for="NewItem.Property.Alley"></span>
-                            </div>
-                        </div>*@
-                <div class="col-xs-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Number"></label>
-                        <input asp-for="NewItem.Property.Number" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Number"></span>
-                    </div>
-                </div>
-                <div class="col-xs-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.BuildingName"></label>
-                        <input asp-for="NewItem.Property.BuildingName" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.BuildingName"></span>
-                    </div>
-                </div>
-                <div class="col-xs-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Floor"></label>
-                        <input asp-for="NewItem.Property.Floor" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
-                    </div>
-                </div>
-                <div class="col-xs-12 col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Flat"></label>
-                        <input asp-for="NewItem.Property.Flat" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Floor"></span>
-                    </div>
-                </div>
-            </div>
-
-            @if (propertyFeatures?.Any() == true)
-            {
-                <div class="row justify-content-center align-items-center itemShow adder">
-                    <div class="col-12" id="property-features-wrapper">
-                        <div class="input-wrapper">
-                            <input asp-for="NewItem.Property.PropertyFeaturesJson"/>
-                            <label class="control-label" asp-for="NewItem.Property.PropertyFeaturesJson"></label>
-                            <select asp-items="propertyFeaturesList" id="propertyFeatures-select" class="custom-select"></select>
-                            <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                            <input class="form-control" id="propertyFeatureValue"/>
-                            <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]"/>
-                        </div>
-                        <div class="items hidden"></div>
-                    </div>
-                </div>
-            }
-            @if (propertyFacilities?.Any() == true)
-            {
-                <div class="row justify-content-center align-items-center itemShow adder">
-                    <div class="col-12" id="property-facilities-wrapper">
-                        <div class="input-wrapper">
-                            <input asp-for="NewItem.Property.PropertyFacilitiesJson"/>
-                            <label class="control-label" asp-for="NewItem.Property.PropertyFacilitiesJson"></label>
-                            <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
-                            <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]"/>
-                        </div>
-                        <div class="items hidden"></div>
-                    </div>
-                </div>
-            }
-            @*<div class="row justify-content-center align-items-center">
-                        <div class="col-xs-12 col-lg">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="NewItem.Property.Description"></label>
-                                <textarea asp-for="NewItem.Property.Description" rows="3" class="form-control"></textarea>
-                                <span class="text-danger" asp-validation-for="NewItem.Property.Description"></span>
-                            </div>
-                        </div>
-                    </div>*@
-        </div>
-    </div>
-    <hr subject="@SharedLocalizer[SharedResource.Owner]" class="mt-4"/>
-    <div class="row justify-content-center align-content-center r8-panel">
-        <input asp-for="NewItem.Property.Ownership.Dong" value="6" type="hidden"/>
-        <input asp-for="NewItem.Property.Ownership.Id" type="hidden"/>
-
-        <div class="container-fluid">
-            <div class="row justify-content-center align-items-center">
-                <div class="col-lg">
-                    <div class="input-wrapper">
-
-                        <label class="control-label" asp-for="NewItem.Property.Ownership.Name"></label>
-                        <input asp-for="NewItem.Property.Ownership.Name" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Name"></span>
-                    </div>
-                </div>
-                <div class="col-lg">
-                    <div class="input-wrapper">
-                        <label class="control-label" asp-for="NewItem.Property.Ownership.Mobile"></label>
-                        <input asp-for="NewItem.Property.Ownership.Mobile" class="form-control"/>
-                        <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Mobile"></span>
-                    </div>
-                </div>
-            </div>
-            <input asp-for="NewItem.Property.Ownership.Phone" type="hidden"/>
-            <input asp-for="NewItem.Property.Ownership.Address" type="hidden"/>
-
-            @*<div class="row justify-content-center align-items-center">
+                    <div class="row justify-content-center align-items-center">
                         <div class="col-12 col-lg">
                             <div class="input-wrapper">
-                                <label class="control-label" asp-for="NewItem.Property.Ownership.Phone"></label>
-                                <input asp-for="NewItem.Property.Ownership.Phone" class="form-control" />
-                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Phone"></span>
+                                <label asp-for="NewItem.CategoryId" class="control-label"></label>
+                                <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="custom-select"></select>
+                                @* <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span> *@
                             </div>
                         </div>
                         <div class="col-12 col-lg">
-                            <div class="input-wrapper">
-                                <label class="control-label" asp-for="NewItem.Property.Ownership.Address"></label>
-                                <input asp-for="NewItem.Property.Ownership.Address" class="form-control" />
-                                <span class="text-danger" asp-validation-for="NewItem.Property.Ownership.Address"></span>
+                            <div class="custom-control custom-switch" dir="rtl">
+                                <input type="checkbox" class="custom-control-input" asp-for="@Model.NewItem.IsNegotiable" />
+                                <label class="custom-control-label" asp-for="@Model.NewItem.IsNegotiable"></label>
                             </div>
                         </div>
-                    </div>*@
-        </div>
-    </div>
-    <hr subject="@SharedLocalizer[SharedResource.Item]" class="mt-4"/>
-    <div class="row justify-content-center align-items-center r8-panel">
-        <input asp-for="NewItem.Id"/>
-        <div class="col-12">
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12 col-lg">
-                    <div class="input-wrapper">
-                        <label asp-for="NewItem.CategoryId" class="control-label"></label>
-                        <select asp-items="itemCategoriesList" asp-for="NewItem.CategoryId" class="custom-select"></select>
-                        <span asp-validation-for="NewItem.CategoryId" class="text-danger"></span>
                     </div>
-                </div>
-                <div class="col-12 col-lg">
-                    <div class="custom-control custom-switch" dir="rtl">
-                        <input type="checkbox" class="custom-control-input" asp-for="@Model.NewItem.IsNegotiable"/>
-                        <label class="custom-control-label" asp-for="@Model.NewItem.IsNegotiable"></label>
-                    </div>
-                </div>
-            </div>
-            @if (itemFeatures?.Any() == true)
-            {
-                <div class="row justify-content-center align-items-center itemShow adder">
-                    <div class="col-12" id="features-wrapper">
-                        <div class="input-wrapper">
-                            <input asp-for="NewItem.ItemFeaturesJson"/>
-                            <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
-                            <select asp-items="itemFeaturesSelect" id="features-select" class="custom-select"></select>
-                            <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                            <input class="form-control" id="featureValue"/>
-                            <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]"/>
+                    @if (itemFeatures?.Any() == true)
+                    {
+                        <div class="row justify-content-center align-items-center itemShow adder">
+                            <div class="col-12" id="features-wrapper">
+                                <div class="input-wrapper">
+                                    <input asp-for="NewItem.ItemFeaturesJson" />
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
+                                    <select id="features-select" class="custom-select">
+                                        @if (itemFeaturesSelect?.Any() == true)
+                                        {
+                                            foreach (var item in itemFeaturesSelect)
+                                            {
+                                                var featureException = FeaturesExceptions.GetException(item.Text);
+                                                <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                    <input class="form-control" name="NewItem.ItemFeatureValue" id="NewItem_ItemFeatureValue" />
+                                    <span id="itemFeatureCurrentUnit" class="mr-md-1"></span>
+                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                                </div>
+                                <div class="items hidden"></div>
+                            </div>
                         </div>
-                        <div class="items hidden"></div>
-                    </div>
-                </div>
-            }
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
-                    <div class="input-wrapper">
-                        <label asp-for="NewItem.Description" class="control-label"></label>
-                        <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
-                        <span asp-validation-for="NewItem.Description" class="text-danger"></span>
+                    }
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <div class="input-wrapper">
+                                <label asp-for="NewItem.Description" class="control-label"></label>
+                                <textarea asp-for="NewItem.Description" class="form-control" rows="3"></textarea>
+                                @* <span asp-validation-for="NewItem.Description" class="text-danger"></span> *@
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    </section>
+        </section>
         <footer>
             <submit full-width="true" />
             <status>
@@ -367,12 +349,43 @@
     <script>
         $(document).ready(function() {
 
-            const jsonInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFeaturesJson)");
+            const jsonInput =
+                $(
+                    "#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFeaturesJson)");
             const selectInput = $("#propertyFeatures-select");
             const wrapperClass = $("#property-features-wrapper");
             const submitInput = $("#addNewPropertyFeature");
             const valueInput = $("#propertyFeatureValue");
             const itemSelector = "property-feature-item";
+            const unit = $("#propertyFeatureCurrentUnit");
+
+            $(valueInput).on("change paste keyup input propertychange",
+                function(e) {
+                    const pattern = $(this).attr("regex-pattern");
+                    const regex = new RegExp(pattern);
+                    const text = $(this).val();
+                    const matches = text !== "" && text !== undefined && regex.test(text);
+                    if (!matches) {
+                        $(this).addClass("input-validation-error");
+                        $(this).removeClass("valid");
+                    } else {
+                        $(this).removeClass("input-validation-error");
+                        $(this).addClass("valid");
+                    }
+                });
+
+            $(selectInput).on("change",
+                function(e) {
+                    const optionSelected = $("option:selected", this);
+                    $(unit).text(optionSelected.attr("data-unit"));
+                    const message = optionSelected.attr("data-message");
+                    $(valueInput).attr("data-original-title", message);
+                    $(valueInput).attr("title", message);
+                    $(valueInput).attr("data-placement", "bottom");
+                    $(valueInput).attr("regex-pattern", optionSelected.attr("data-regex"));
+                    $(valueInput).tooltip();
+                    $(valueInput).trigger("change");
+                });
 
             $(jsonInput).change(function() {
 
@@ -398,19 +411,22 @@
                         const id = item.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id));
                         const name = item
                             .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name));
-                        const value = item
+                        var value = item
                             .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value));
 
                         const anchor = document.createElement("a");
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", id);
+                        $(anchor).attr("data-original-value", value);
                         $(anchor).addClass(itemSelector);
 
                         const nameElement = document.createElement("span");
+                        const dataunit = $(`option[value="${id}"]`, selectInput)[0];
+                        console.log(dataunit);
+                        const unittt = $(dataunit).attr("data-unit");
                         var finalName = `${name}: `;
-
                         if (value != null && value !== "")
-                            finalName = `${finalName}${value}`;
+                            finalName = `<b class="text-black-50">${finalName}</b>${value} ${unittt}`;
 
                         $(nameElement).html(finalName);
 
@@ -449,9 +465,20 @@
                 if (selected === undefined || selected === null) {
                     selected = $(selectInput).find('option:eq(0)')[0];
                 }
+
+                $(valueInput).trigger("change");
+
                 const keyId = $(selected).attr("value");
                 const keyName = $(selected).text();
                 const value = $(valueInput).val();
+                const matches = $(valueInput).hasClass("valid");
+
+                if (!matches) {
+                    $(valueInput).focus();
+                    $(valueInput).trigger("change");
+                    console.log(value);
+                    return;
+                }
 
                 if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
                     return;
@@ -474,6 +501,7 @@
                     newItem.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)));
 
                 $(valueInput).val("");
+                $(selectInput).trigger("change");
 
             });
 
@@ -494,19 +522,28 @@
                             keyId);
                     console.log("Index", index);
 
+                    const featureId = $(this).attr("data-id");
+                    const featureValue = $(this).attr("data-original-value");
                     removeJson(jsonInput, index);
                     $(this).remove();
+                    if ($(valueInput).val().length === 0) {
+                        $(valueInput).val(featureValue);
+                        $(`option[value='${featureId}']`, selectInput).prop('selected', true);
+                        $(selectInput).trigger("change");
+                    }
                     console.log("Button Triggered to Remove Item", this);
                 });
 
             $(jsonInput).trigger("change");
+            $(selectInput).trigger("change");
 
         });
     </script>
     <script>
         $(document).ready(function() {
 
-            const jsonInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFacilitiesJson)");
+            const jsonInput =
+                $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.Property)_@nameof(Model.NewItem.Property.PropertyFacilitiesJson)");
             const selectInput = $("#propertyFacility-select");
             const wrapperClass = $("#property-facilities-wrapper");
             const submitInput = $("#addNewPropertyFacility");
@@ -633,8 +670,37 @@
             const selectInput = $("#features-select");
             const wrapperClass = $("#features-wrapper");
             const submitInput = $("#addNewFeature");
-            const valueInput = $("#featureValue");
+            const valueInput = $("#NewItem_ItemFeatureValue");
             const itemSelector = "feature-item";
+            const unit = $("#itemFeatureCurrentUnit");
+
+            $(valueInput).on("change paste keyup input propertychange",
+                function(e) {
+                    const pattern = $(this).attr("regex-pattern");
+                    const regex = new RegExp(pattern);
+                    const text = $(this).val();
+                    const matches = text !== "" && text !== undefined && regex.test(text);
+                    if (!matches) {
+                        $(this).addClass("input-validation-error");
+                        $(this).removeClass("valid");
+                    } else {
+                        $(this).removeClass("input-validation-error");
+                        $(this).addClass("valid");
+                    }
+                });
+
+            $(selectInput).on("change",
+                function(e) {
+                    const optionSelected = $("option:selected", this);
+                    $(unit).text(optionSelected.attr("data-unit"));
+                    const message = optionSelected.attr("data-message");
+                    $(valueInput).attr("data-original-title", message);
+                    $(valueInput).attr("title", message);
+                    $(valueInput).attr("data-placement", "bottom");
+                    $(valueInput).attr("regex-pattern", optionSelected.attr("data-regex"));
+                    $(valueInput).tooltip();
+                    $(valueInput).trigger("change");
+                });
 
             $(jsonInput).change(function() {
 
@@ -660,19 +726,27 @@
                         const id = item.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id));
                         const name = item
                             .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name));
-                        const value = item
+                        var value = item
                             .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value));
 
                         const anchor = document.createElement("a");
                         $(anchor).attr("href", "#");
                         $(anchor).attr("data-id", id);
+                        $(anchor).attr("data-original-value", value);
                         $(anchor).addClass(itemSelector);
 
                         const nameElement = document.createElement("span");
-                        var finalName = `${name}: `;
+                        const dataunit = $(`option[value="${id}"]`, selectInput)[0];
+                        console.log(dataunit);
+                        const unittt = $(dataunit).attr("data-unit");
+                        if (unittt === "تومان") {
+//                            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                            value = wordifyfa(parseFloat(value), 0);
 
+                        }
+                        var finalName = `${name}: `;
                         if (value != null && value !== "")
-                            finalName = `${finalName}${value}`;
+                            finalName = `<b class="text-black-50">${finalName}</b>${value} ${unittt}`;
 
                         $(nameElement).html(finalName);
 
@@ -711,9 +785,20 @@
                 if (selected === undefined || selected === null) {
                     selected = $(selectInput).find('option:eq(0)')[0];
                 }
+
+                $(valueInput).trigger("change");
+
                 const keyId = $(selected).attr("value");
                 const keyName = $(selected).text();
                 const value = $(valueInput).val();
+                const matches = $(valueInput).hasClass("valid");
+
+                if (!matches) {
+                    $(valueInput).focus();
+                    $(valueInput).trigger("change");
+                    console.log(value);
+                    return;
+                }
 
                 if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
                     return;
@@ -736,7 +821,7 @@
                     newItem.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)));
 
                 $(valueInput).val("");
-
+                $(selectInput).trigger("change");
             });
 
             $(document).on("click",
@@ -756,13 +841,21 @@
                             keyId);
                     console.log("Index", index);
 
+                    const featureId = $(this).attr("data-id");
+                    const featureValue = $(this).attr("data-original-value");
                     removeJson(jsonInput, index);
                     $(this).remove();
+                    if ($(valueInput).val().length === 0) {
+                        $(valueInput).val(featureValue);
+                        $(`option[value='${featureId}']`, selectInput).prop('selected', true);
+                        $(selectInput).trigger("change");
+                    }
+
                     console.log("Button Triggered to Remove Item", this);
                 });
 
             $(jsonInput).trigger("change");
-
+            $(selectInput).trigger("change");
         });
     </script>
 }

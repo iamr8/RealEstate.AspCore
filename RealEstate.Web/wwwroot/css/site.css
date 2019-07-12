@@ -921,7 +921,19 @@ textarea {
   -webkit-border-radius: 0 !important;
   -moz-border-radius: 0 !important;
   -ms-border-radius: 0 !important;
-  -o-border-radius: 0 !important; }
+  -o-border-radius: 0 !important;
+  /*&[data-val-required] {
+        &:not(.input-validation-error) {
+            @include transition(all, 0.3s, ease-in-out);
+            -webkit-box-shadow: 0 2px 0 $sidebarheader-color;
+            box-shadow: 0 2px 0 $sidebarheader-color;
+
+            &:focus {
+                -webkit-box-shadow: 0 2px 0 $sidebarheader-color !important;
+                box-shadow: 0 2px 0 $sidebarheader-color !important;
+            }
+        }
+    }*/ }
   input:focus,
   select:focus,
   textarea:focus {
@@ -932,18 +944,6 @@ textarea {
   select.input-validation-error,
   textarea.input-validation-error {
     border-color: red !important; }
-  input[data-val-required]:not(.input-validation-error),
-  select[data-val-required]:not(.input-validation-error),
-  textarea[data-val-required]:not(.input-validation-error) {
-    -webkit-transition: all 0.3s ease-in-out;
-    transition: all 0.3s ease-in-out;
-    -webkit-box-shadow: 0 2px 0 black;
-    box-shadow: 0 2px 0 black; }
-    input[data-val-required]:not(.input-validation-error):focus,
-    select[data-val-required]:not(.input-validation-error):focus,
-    textarea[data-val-required]:not(.input-validation-error):focus {
-      -webkit-box-shadow: 0 2px 0 black !important;
-      box-shadow: 0 2px 0 black !important; }
 
 .custom-select {
   font-size: 9pt !important;
@@ -1616,3 +1616,7 @@ button > i.fa {
   font-size: 10pt;
   border-bottom: none;
   margin-bottom: 0; }
+
+label[required]:not(.custom-control-label):after {
+  content: "*";
+  color: red; }

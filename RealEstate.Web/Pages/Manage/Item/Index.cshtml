@@ -151,7 +151,7 @@
                                         @{
                                             var neededFeatures = new List
                                                 <string>
-                                                                                                    {
+                                                                                                                                                            {
                                                 "قیمت نهایی",
                                                 "قیمت هر متر",
                                                 "پیش پرداخت",
@@ -163,16 +163,19 @@
                                         {
                                             foreach (var wFeature in workingFeatures)
                                             {
-                                                var (key, value) = wFeature.Feature.Name.NormalizeFeature(wFeature.Value, wFeature.Logs);
-                                                var hasError = wFeature.HasErrorInValue;
-                                                var originalValue = wFeature.OriginalValue.CurrencyToWords();
+                                                var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
+                                                var originalValue = wFeature.OriginalValue;
 
                                                 <li class="@(key?.Equals(" قیمت نهایی", StringComparison.CurrentCultureIgnoreCase) == true ? "feature-important" : "" )">
                                                     @if (!string.IsNullOrEmpty(key))
                                                     {
                                                         <b>@key</b>
                                                     }
-                                                    <span>@Html.Raw(value)</span> @Html.Raw(hasError ? $"<b class=\"text-danger\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"مقدار ثبت شده: {originalValue}\">(خطا)</b>" : "")
+                                                    <span>@Html.Raw(value)</span>
+                                                    @if (hasDate)
+                                                    {
+                                                        <span class="text-black-50">تا تاریخ @wFeature.Logs.Last.DateTime.GregorianToPersian(true)</span>
+                                                    }
                                                 </li>
                                             }
                                         }
@@ -180,10 +183,7 @@
                                 </a>
                                 <ul class="featureCards mt-auto">
                                     @{
-                                        var neededFeatures2 = new List
-                                        <string>
-                                            ()
-                                                                                                                    {
+                                        var neededFeatures2 = new List<string>(){
                                         "متراژ",
                                         "تعداد خواب",
                                         "سال ساخت"
@@ -194,9 +194,8 @@
                                     {
                                         foreach (var wFeature in workingFeatures2)
                                         {
-                                            var (key, value) = wFeature.Feature.Name.NormalizeFeature(wFeature.Value, wFeature.Logs);
-                                            var hasError = wFeature.HasErrorInValue;
-                                            var originalValue = wFeature.OriginalValue.CurrencyToWords();
+                                            var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
+                                            var originalValue = wFeature.OriginalValue;
 
                                             var icon = string.Empty;
                                             switch (key)
@@ -206,13 +205,14 @@
                                                     break;
                                                 case "سال ساخت":
                                                     icon = "hashtag";
+                                                    value = value.Replace(" ساخت", "");
                                                     break;
 
                                                 case "متراژ":
                                                     icon = "ruler";
                                                     break;
                                             }
-                                            <li @(@Html.Raw(hasError ? $"class=\"text-danger\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"مقدار ثبت شده: {originalValue}\"" : ""))>
+                                            <li>
                                                 <i class="fa fa-@icon"></i>
                                                 <span>@Html.Raw(value)</span>
                                             </li>
@@ -241,7 +241,6 @@
                                         </li>
                                     }
                                 </ul>
-                                
                             </div>
                         </div>
                     }

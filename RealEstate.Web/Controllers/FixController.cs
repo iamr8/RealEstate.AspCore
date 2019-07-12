@@ -36,6 +36,20 @@ namespace RealEstate.Web.Controllers
             return RedirectToPage(typeof(IndexModel).Page());
         }
 
+        [Route("settings/fixpricepermeter")]
+        public async Task<IActionResult> FixPricePerMeter()
+        {
+            await _globalService.FixPricePerMeterAsync();
+            return RedirectToPage(typeof(IndexModel).Page());
+        }
+
+        [Route("settings/removeduplicates")]
+        public async Task<IActionResult> RemoveDuplicateItems()
+        {
+            //            await _globalService.FixLoanPriceAsync();
+            return RedirectToPage(typeof(IndexModel).Page());
+        }
+
         [Route("settings/fixloanprice")]
         public async Task<IActionResult> FixLoanPrice()
         {

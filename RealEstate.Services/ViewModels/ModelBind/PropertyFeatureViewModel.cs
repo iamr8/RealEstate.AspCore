@@ -23,10 +23,9 @@ namespace RealEstate.Services.ViewModels.ModelBind
 
         private FeatureFixExtension.NormalizeFeatureStatus Normalized => Feature != null
             ? Entity?.Value.FixPersian().NormalizeFeature(Feature.Name)
-            : new FeatureFixExtension.NormalizeFeatureStatus(Entity?.Value.FixPersian(), Entity?.Value.FixPersian(), false);
+            : new FeatureFixExtension.NormalizeFeatureStatus(Entity?.Value.FixPersian(), Entity?.Value.FixPersian());
 
         public string Value => Normalized.Value;
-        public bool HasErrorInValue => Normalized.HasError;
         public string OriginalValue => Normalized.OriginalValue;
         public PropertyViewModel Property { get; set; }
 

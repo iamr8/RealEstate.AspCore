@@ -72,7 +72,7 @@ namespace RealEstate.Web
 
                 connectionString = connectionString.Replace("{{CFG}}", config.DbPath, StringComparison.CurrentCulture);
             }
-            Console.WriteLine(connectionString);
+//            Console.WriteLine(connectionString);
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseLazyLoadingProxies();

@@ -1,31 +1,32 @@
 ﻿function delayOnRun(func, delay) {
   var timer = null;
-  return function () {
+  return function() {
     var context = this,
       args = arguments;
     clearTimeout(timer);
-    timer = window.setTimeout(function () {
+    timer = window.setTimeout(function() {
       func.apply(context, args);
     }, delay || 1000);
   };
 }
 
-$(document).ready(function () {
-  $("a.sectiongoto").on("click", function (event) {
+$(document).ready(function() {
+  $("a.sectiongoto").on("click", function(event) {
     if (this.hash !== "") {
       event.preventDefault();
       const hash = this.hash;
-      $("html, body").animate({
+      $("html, body").animate(
+        {
           scrollTop: $(hash).offset().top
         },
         800,
-        function () {
+        function() {
           window.location.hash = hash;
         }
       );
     }
   });
-  $(document).on("click", "[data-confirm]", function (e) {
+  $(document).on("click", "[data-confirm]", function(e) {
     if (!confirm($(this).attr("data-confirm"))) {
       e.preventDefault();
       e.stopPropagation();
@@ -36,11 +37,11 @@ $(document).ready(function () {
   $(".lazy").lazy({
     effect: "fadeIn",
     visibleOnly: true,
-    onError: function (element) {
+    onError: function(element) {
       console.log(`error loading ${element.data("src")}`);
     }
   });
-  $(".no-enter").keypress(function (e) {
+  $(".no-enter").keypress(function(e) {
     const code = e.keyCode ? e.keyCode : e.which;
     if (code === 13) {
       e.preventDefault();
@@ -50,12 +51,12 @@ $(document).ready(function () {
 
   $('[data-toggle="tooltip"]').tooltip();
 });
-$("#mainNavBar > .navbar-toggler").click(function (e) {
+$("#mainNavBar > .navbar-toggler").click(function(e) {
   $(".backdrop").toggleClass("in");
   $("#navbarNavDropdown").toggleClass("in");
 });
 
-$(".backdrop").click(function (e) {
+$(".backdrop").click(function(e) {
   if ($(this).hasClass("in")) {
     $(".backdrop").removeClass("in");
     $("#navbarNavDropdown").removeClass("in");
@@ -63,7 +64,7 @@ $(".backdrop").click(function (e) {
   }
 });
 
-$(".sidenav.in").on("swiperight", function (e) {
+$(".sidenav.in").on("swiperight", function(e) {
   console.log("sidenav clicked");
   $(".backdrop").trigger("click");
 });
@@ -142,4 +143,104 @@ function addJson(jsonElement, item, uniqueCheck) {
   $(jsonElement)
     .val(restringJson)
     .trigger("change");
+}
+
+var wordifyfa = function(num, level) {
+  "use strict";
+  if (num === null) {
+    return "";
+  }
+  if (num === 0) {
+    if (level === 0) {
+      return "صفر";
+    } else {
+      return "";
+    }
+  }
+  var result = "",
+    yekan = [
+      " یک ",
+      " دو ",
+      " سه ",
+      " چهار ",
+      " پنج ",
+      " شش ",
+      " هفت ",
+      " هشت ",
+      " نه "
+    ],
+    dahgan = [
+      " بیست ",
+      " سی ",
+      " چهل ",
+      " پنجاه ",
+      " شصت ",
+      " هفتاد ",
+      " هشتاد ",
+      " نود "
+    ],
+    sadgan = [
+      " یکصد ",
+      " دویست ",
+      " سیصد ",
+      " چهارصد ",
+      " پانصد ",
+      " ششصد ",
+      " هفتصد ",
+      " هشتصد ",
+      " نهصد "
+    ],
+    dah = [
+      " ده ",
+      " یازده ",
+      " دوازده ",
+      " سیزده ",
+      " چهارده ",
+      " پانزده ",
+      " شانزده ",
+      " هفده ",
+      " هیجده ",
+      " نوزده "
+    ];
+  if (level > 0) {
+    result += " و ";
+    level -= 1;
+  }
+
+  if (num < 10) {
+    result += yekan[num - 1];
+  } else if (num < 20) {
+    result += dah[num - 10];
+  } else if (num < 100) {
+    result +=
+      dahgan[parseInt(num / 10, 10) - 2] + wordifyfa(num % 10, level + 1);
+  } else if (num < 1000) {
+    result +=
+      sadgan[parseInt(num / 100, 10) - 1] + wordifyfa(num % 100, level + 1);
+  } else if (num < 1000000) {
+    result +=
+      wordifyfa(parseInt(num / 1000, 10), level) +
+      " هزار " +
+      wordifyfa(num % 1000, level + 1);
+  } else if (num < 1000000000) {
+    result +=
+      wordifyfa(parseInt(num / 1000000, 10), level) +
+      " میلیون " +
+      wordifyfa(num % 1000000, level + 1);
+  } else if (num < 1000000000000) {
+    result +=
+      wordifyfa(parseInt(num / 1000000000, 10), level) +
+      " میلیارد " +
+      wordifyfa(num % 1000000000, level + 1);
+  } else if (num < 1000000000000000) {
+    result +=
+      wordifyfa(parseInt(num / 1000000000000, 10), level) +
+      " تریلیارد " +
+      wordifyfa(num % 1000000000000, level + 1);
+  }
+  return result;
+};
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports.wordifyfa = wordifyfa;
 }

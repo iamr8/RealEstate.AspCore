@@ -1,9 +1,7 @@
 ﻿using RealEstate.Base;
-using RealEstate.Services.BaseLog;
 using RealEstate.Services.ServiceLayer;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace RealEstate.Services.Extensions
@@ -47,9 +45,13 @@ namespace RealEstate.Services.Extensions
             return new Regex(pattern, RegexOptions.Singleline);
         }
 
-        private static string CleanNumberDividers(this string num)
+        public static string CleanNumberDividers(this string num)
         {
-            var featureValue = num.Replace(",", "").Replace("/", "").Replace(".", "").Replace("،", "");
+            var featureValue = num
+                .Replace(",", "")
+                .Replace("/", "")
+                .Replace(".", "")
+                .Replace("،", "");
             return featureValue;
         }
 
@@ -59,89 +61,79 @@ namespace RealEstate.Services.Extensions
             {
             }
 
-            public NormalizeFeatureStatus(string value, string originalValue, bool hasError)
+            public void Deconstruct(out string value, out string originalValue)
+            {
+                value = Value;
+                originalValue = OriginalValue;
+            }
+
+            public NormalizeFeatureStatus(string value, string originalValue)
             {
                 Value = value;
-                HasError = hasError;
                 OriginalValue = originalValue;
             }
 
             public string Value { get; set; }
-            public bool HasError { get; set; }
             public string OriginalValue { get; set; }
         }
 
         public static NormalizeFeatureStatus NormalizeFeature(this string featureValue, string featureName)
         {
             if (string.IsNullOrEmpty(featureName) || string.IsNullOrEmpty(featureValue))
-                return new NormalizeFeatureStatus(featureValue, featureValue, false);
+                return new NormalizeFeatureStatus(featureValue, featureValue);
 
             switch (featureName)
             {
                 case "سال ساخت":
-
-                    return new NormalizeFeatureStatus(GlobalService.FixBuildYear(featureValue), featureValue,
-                        !Regex.IsMatch(featureValue, RegexPatterns.IranYear.GetDisplayName()));
+                    var fixBuildYear = GlobalService.FixBuildYear(featureValue);
+                    return new NormalizeFeatureStatus(fixBuildYear, featureValue);
 
                 case "وام":
-                    var normalizedLoanPrice = GlobalService.FixLoanPrice(featureValue);
-                    return new NormalizeFeatureStatus(normalizedLoanPrice, featureValue, featureValue != normalizedLoanPrice);
-
                 case "قیمت نهایی":
-                    var normalizedFinalPrice = GlobalService.FixFinalPrice(featureValue);
-                    return new NormalizeFeatureStatus(normalizedFinalPrice, featureValue, featureValue != normalizedFinalPrice);
-
                 case "پیش پرداخت":
                 case "اجاره":
-                    featureValue = featureValue.CleanNumberDividers();
-                    return new NormalizeFeatureStatus(featureValue, featureValue, false);
-
                 case "قیمت هر متر":
-                    featureValue = featureValue.CleanNumberDividers();
-                    var pricePerMeterNormalized = long.TryParse(featureValue, out var pricePerMeter) && pricePerMeter > 30000000
-                        ? $"{featureValue.Split('0')[0]}00000"
-                        : featureValue;
-
-                    return new NormalizeFeatureStatus(pricePerMeterNormalized, featureValue, featureValue != pricePerMeterNormalized);
+                    var pricePerMeterNormalized = featureValue.CleanNumberDividers();
+                    return new NormalizeFeatureStatus(pricePerMeterNormalized, featureValue);
 
                 default:
-                    return new NormalizeFeatureStatus(featureValue, featureValue, false);
+                    return new NormalizeFeatureStatus(featureValue, featureValue);
             }
         }
 
-        public static (string, string) NormalizeFeature(this string featureName, string featureValue, LogViewModel log, bool addDate = true)
+        public static (string, string, bool) NormalizeUiFeature(this string featureName, string featureValue)
         {
             if (string.IsNullOrEmpty(featureName) || string.IsNullOrEmpty(featureValue))
                 return default;
 
-            var date = string.Empty;
-            if (log != null)
-            {
-                var lastAudit = log?.Modifies?.Any() == true ? log.Modifies.LastOrDefault()?.DateTime : log.Create.DateTime;
-                if (lastAudit != null)
-                {
-                    date = $" — تا {((DateTime)lastAudit).GregorianToPersian(true)}";
-                }
-            }
+            //var date = string.Empty;
+            //if (log != null)
+            //{
+            //    var lastAudit = log?.Modifies?.Any() == true ? log.Modifies.LastOrDefault()?.DateTime : log.Create.DateTime;
+            //    if (lastAudit != null)
+            //    {
+            //        date = $" — تا {((DateTime)lastAudit).GregorianToPersian(true)}";
+            //    }
+            //}
 
             switch (featureName)
             {
                 case "سال ساخت":
                     if (!int.TryParse(featureValue, out var processedYear))
-                        return new ValueTuple<string, string>(featureName, featureValue);
+                        return new ValueTuple<string, string, bool>(featureName, featureValue, false);
 
                     var currentYear = new PersianCalendar().GetYear(DateTime.Now);
                     var finalYear = currentYear - processedYear;
 
-                    var term = finalYear == 0 ? "نوساز" : $"{finalYear} سال";
-                    return new ValueTuple<string, string>(featureName, $"{term}");
+                    var term = finalYear == 0 ? "نوساز" : $"{finalYear} سال ساخت";
+                    return new ValueTuple<string, string, bool>(featureName, $"{term}", false);
 
                 case "متراژ":
                     var isMeter = int.TryParse(featureValue, out var priceByMeter);
-                    return new ValueTuple<string, string>(featureName, isMeter ? $"{priceByMeter} متری" : featureValue);
+                    return new ValueTuple<string, string, bool>(featureName, isMeter ? $"{priceByMeter} متری" : featureValue, false);
 
                 case "بر زمین":
-                    return new ValueTuple<string, string>(featureName, $"{featureValue} متر");
+                    return new ValueTuple<string, string, bool>(featureName, $"{featureValue} متر", false);
 
                 case "پیش پرداخت":
                 case "اجاره":
@@ -150,20 +142,20 @@ namespace RealEstate.Services.Extensions
                     var words1 = featureValue.CurrencyToWords();
 
                     featureName = featureName.Equals("قیمت نهایی", StringComparison.CurrentCultureIgnoreCase) ? "قیمت" : featureName;
-                    return new ValueTuple<string, string>(featureName, $"{words1} تومان{(addDate ? date : "")}");
+                    return new ValueTuple<string, string, bool>(featureName, $"{words1} تومان", true);
 
                 case "قیمت هر متر":
                     var words2 = featureValue.CurrencyToWords();
-                    return new ValueTuple<string, string>(null, $"متری {words2} تومان{(addDate ? date : "")}");
+                    return new ValueTuple<string, string, bool>(null, $"متری {words2} تومان", true);
 
                 case "تعداد واحدهای مجتمع":
-                    return new ValueTuple<string, string>(featureName, $"{featureValue} واحده");
+                    return new ValueTuple<string, string, bool>(featureName, $"{featureValue} واحده", false);
 
                 case "تعداد خواب":
-                    return new ValueTuple<string, string>(featureName, $"{(featureValue == "1" ? "تک" : featureValue)} خوابه");
+                    return new ValueTuple<string, string, bool>(featureName, $"{(featureValue == "1" ? "تک" : featureValue)} خوابه", false);
 
                 default:
-                    return new ValueTuple<string, string>(featureName, featureValue);
+                    return new ValueTuple<string, string, bool>(featureName, featureValue, false);
             }
         }
     }
