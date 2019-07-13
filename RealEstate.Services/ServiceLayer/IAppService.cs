@@ -28,9 +28,9 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<ResponseWrapper<SignInResponse>> SignInAsync(SignInRequest model);
 
-        Task<ResponseWrapper<ConfigResponse>> ConfigAsync(RequestWrapper model);
+        Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string token, string version);
 
-        Task<ResponseWrapper<ItemResponse>> ItemListAsync(ItemRequest model);
+        Task<ResponseWrapper<ItemResponse>> ItemListAsync(string token, string version, ItemRequest model);
     }
 
     public class AppService : IAppService
@@ -59,9 +59,9 @@ namespace RealEstate.Services.ServiceLayer
             _items = _unitOfWork.Set<Item>();
         }
 
-        public async Task<ResponseWrapper<ItemResponse>> ItemListAsync(ItemRequest model)
+        public async Task<ResponseWrapper<ItemResponse>> ItemListAsync(string token, string version, ItemRequest model)
         {
-            var tokenState = await TokenCheckAsync(model);
+            var tokenState = await TokenCheckAsync(token, version);
             if (!tokenState.Success)
                 return TokenCheckToResponse<ItemResponse>(tokenState);
 
@@ -146,18 +146,30 @@ namespace RealEstate.Services.ServiceLayer
                                  Category = property.Category?.Name,
                                  District = property.District?.Name,
                                  Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null ?
-                             new OwnershipResponse
-                             {
-                                 Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                                 Id = property.CurrentPropertyOwnership?.Ownership.Customer?.Id,
-                                 Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile
-                             } :
-                             default,
-                                 Features = property.PropertyFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value),
+                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null
+                                     ? new OwnershipResponse
+                                     {
+                                         Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                         Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile,
+                                     }
+                                     : default,
+                                 Features = property.PropertyFeatures?.Select(x => new FeatureResponse
+                                 {
+                                     Name = x.Feature?.Name,
+                                     Value = x.Value
+                                 }).ToList(),
+                                 Id = property.Id,
+                                 Pictures = property.Pictures?.Select(x => x.File).ToList()
                              },
                              Category = converted.Category?.Name,
-                             Features = converted.ItemFeatures?.ToDictionary(x => x.Feature?.Name, x => x.Value.CurrencyToWords())
+                             Features = converted.ItemFeatures?.Select(x => new FeatureResponse
+                             {
+                                 Name = x.Feature?.Name,
+                                 Value = x.Value
+                             }).ToList(),
+                             Id = converted.Id,
+                             Description = converted.Description,
+                             IsNegotiable = converted.IsNegotiable
                          };
 
             return new ResponseWrapper<ItemResponse>
@@ -185,9 +197,9 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync(RequestWrapper model)
+        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string token, string version)
         {
-            var tokenState = await TokenCheckAsync(model);
+            var tokenState = await TokenCheckAsync(token, version);
             if (!tokenState.Success)
                 return TokenCheckToResponse<ConfigResponse>(tokenState);
 
@@ -235,24 +247,22 @@ namespace RealEstate.Services.ServiceLayer
             };
         }
 
-        private async Task<TokenCheck> TokenCheckAsync<T>(T model) where T : RequestWrapper
+        private async Task<TokenCheck> TokenCheckAsync(string token, string version)
         {
-            if (model == null)
-                return new TokenCheck
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName(),
-                };
-
             var result = new TokenCheck
             {
                 Message = StatusEnum.Forbidden.GetDisplayName(),
                 Success = false
             };
 
-            var token = model.Token;
             if (string.IsNullOrEmpty(token))
                 return result;
+
+            if (string.IsNullOrEmpty(version))
+            {
+                result.Message = "نگارش اپلیکیشن را وارد کنید.";
+                return result;
+            }
 
             List<Claim> claims;
             try
@@ -285,6 +295,7 @@ namespace RealEstate.Services.ServiceLayer
                 x.Id == id
                 && x.Username == userName
                 && x.Password == password)
+                .Cacheable()
                 .Select(x => new
                 {
                     x.Id,

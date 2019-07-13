@@ -3,7 +3,7 @@ using Newtonsoft.Json.Serialization;
 
 namespace RealEstate.Services.ViewModels.Api.Request
 {
-    public class ItemRequest : RequestWrapper
+    public class ItemRequest
     {
         public string ItemCategory { get; set; }
 

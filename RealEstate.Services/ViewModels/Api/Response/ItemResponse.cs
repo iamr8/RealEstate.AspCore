@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RealEstate.Services.BaseLog;
 using System.Collections.Generic;
 
 namespace RealEstate.Services.ViewModels.Api.Response
@@ -13,7 +12,7 @@ namespace RealEstate.Services.ViewModels.Api.Response
         public string Category { get; set; }
 
         [JsonProperty("ftr")]
-        public Dictionary<string, string> Features { get; set; }
+        public List<FeatureResponse> Features { get; set; }
 
         [JsonProperty("neg")]
         public bool IsNegotiable { get; set; }
@@ -23,10 +22,6 @@ namespace RealEstate.Services.ViewModels.Api.Response
 
         [JsonProperty("id")]
         public string Id { get; set; }
-
-        [JsonIgnore]
-        [JsonProperty("l")]
-        public LogViewModel Log { get; set; }
     }
 
     public class PropertyResponse
@@ -47,7 +42,7 @@ namespace RealEstate.Services.ViewModels.Api.Response
         public OwnershipResponse Ownership { get; set; }
 
         [JsonProperty("ftr")]
-        public Dictionary<string, string> Features { get; set; }
+        public List<FeatureResponse> Features { get; set; }
 
         [JsonProperty("fcl")]
         public List<string> Facilities { get; set; }
@@ -58,9 +53,6 @@ namespace RealEstate.Services.ViewModels.Api.Response
 
     public class OwnershipResponse
     {
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
         [JsonProperty("own")]
         public string Name { get; set; }
 
