@@ -204,7 +204,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task FixLoanPriceAsync()
         {
-            var itemFeatures = await _propertyFeatures
+            var itemFeatures = await _itemFeatures
                 .Include(x => x.Feature)
                 .Where(x => x.FeatureId == FeatureLoadPrice)
                 .ToListAsync();

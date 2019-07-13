@@ -9,6 +9,7 @@ using RealEstate.Services.Database.Base;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -126,14 +127,26 @@ namespace RealEstate.Services.Extensions
             if (modelIdProp == null)
                 throw new NullReferenceException($"{nameof(inputModel)} must have Id property");
 
-            var modelId = modelIdProp.GetValue(inputModel);
-            return page.RedirectToPage(status != StatusEnum.Success
-                ? pageRedirectOnFailure
-                : pageRedirectOnSuccess, new
+            var modelId = (string)modelIdProp.GetValue(inputModel);
+            var isNew = string.IsNullOrEmpty(modelId);
+
+            var routeDatas = new Dictionary<string, object>()
+            {
                 {
-                    status = message,
-                    id = status != StatusEnum.Success ? modelId : null
-                });
+                    "status", message
+                },
+                {
+                    "id", modelId
+                }
+            };
+            if (!isNew)
+                return page.RedirectToPage(pageRedirectOnFailure, routeDatas);
+
+            if (status != StatusEnum.Success)
+                return page.RedirectToPage(pageRedirectOnFailure, routeDatas);
+
+            routeDatas.Remove("id");
+            return page.RedirectToPage(pageRedirectOnSuccess, routeDatas);
         }
 
         private static IStringLocalizer<SharedResource> FindLocalizer<TPage>(this TPage page) where TPage : PageModel
@@ -147,32 +160,6 @@ namespace RealEstate.Services.Extensions
             return localizer;
         }
 
-        private static TModel Deserialize<TModel>(this TModel model, string identifier, string serializedModel) where TModel : BaseInputViewModel
-        {
-            if (string.IsNullOrEmpty(serializedModel))
-                return model;
-
-            var passModel = JsonConvert.DeserializeObject<TModel>(serializedModel);
-            if (passModel == null)
-                return model;
-
-            TModel result;
-            if (!string.IsNullOrEmpty(identifier))
-            {
-                result = model != null
-                    ? passModel?.Id == model.Id
-                        ? passModel
-                        : model
-                    : default;
-            }
-            else
-            {
-                result = passModel;
-            }
-
-            return result;
-        }
-
         public static async Task<IActionResult> OnGetHandlerAsync<TPage, TInputModel>(this TPage page,
             string identifier,
             string status,
@@ -182,7 +169,10 @@ namespace RealEstate.Services.Extensions
             Func<Task<TInputModel>> actionOnIdentifierNull = null)
             where TInputModel : BaseInputViewModel where TPage : PageModel
         {
-            TInputModel tempModel = null;
+            var passedJsonProperty = page.FindSerializedModel();
+            var passedJson = (string)passedJsonProperty.GetValue(page);
+
+            TInputModel finalModel = null;
             if (!string.IsNullOrEmpty(identifier))
             {
                 if (considerPermissions)
@@ -191,23 +181,36 @@ namespace RealEstate.Services.Extensions
                         return page.Forbid();
                 }
 
-                tempModel = await model.Invoke(identifier);
+                var fromMemory = false;
+                TInputModel passedModel = null;
+                try
+                {
+                    if (!string.IsNullOrEmpty(passedJson))
+                    {
+                        passedModel = JsonConvert.DeserializeObject<TInputModel>(passedJson);
+                        if (passedModel != null
+                            && !string.IsNullOrEmpty(passedModel.Id)
+                            && passedModel.Id.Equals(identifier, StringComparison.CurrentCulture)
+                            && page.Request.Method == HttpMethod.Post.Method)
+                        {
+                            fromMemory = true;
+                        }
+                    }
+                }
+                finally
+                {
+                    finalModel = fromMemory ? passedModel : await model.Invoke(identifier);
+                }
             }
             else
             {
                 if (actionOnIdentifierNull != null)
-                    tempModel = await actionOnIdentifierNull.Invoke();
+                    finalModel = await actionOnIdentifierNull.Invoke();
             }
 
-            var serializedProp = page.FindSerializedModel();
-            var serializedModel = (string)serializedProp.GetValue(page);
-
             var inputProp = page.FindInputModel();
-            var deserializedModel = tempModel.Deserialize(identifier, serializedModel);
-            inputProp.SetValue(page, deserializedModel);
-            var inputModel = inputProp.GetValue(page) as TInputModel;
-
-            serializedProp.SetValue(page, default);
+            inputProp.SetValue(page, finalModel);
+            passedJsonProperty.SetValue(page, default);
 
             #region PageStatus
 
@@ -220,7 +223,7 @@ namespace RealEstate.Services.Extensions
             #region PageTitle
 
             var pageTitleProp = page.FindPageTitle();
-            var titleKey = $"{(inputModel == null ? "New" : "Edit")}{page.GetType().Namespaces().Last()}";
+            var titleKey = $"{(finalModel == null ? "New" : "Edit")}{page.GetType().Namespaces().Last()}";
 
             var localizer = page.FindLocalizer();
             var title = localizer[titleKey].ToString();
@@ -228,7 +231,7 @@ namespace RealEstate.Services.Extensions
 
             #endregion PageTitle
 
-            if (!string.IsNullOrEmpty(identifier) && inputModel == null)
+            if (!string.IsNullOrEmpty(identifier) && finalModel == null)
                 return page.RedirectToPage(pageRedirectOnFailure);
 
             return page.Page();

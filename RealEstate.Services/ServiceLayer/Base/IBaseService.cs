@@ -336,8 +336,9 @@ namespace RealEstate.Services.ServiceLayer.Base
             }
 
             if (newList?.Any() != true)
-                return await SaveChangesAsync();
+                return StatusEnum.Success;
 
+            var changesIndicator = 0;
             foreach (var model in newList)
             {
                 var source = currentListEntities?.FirstOrDefault(ent => idValidator.Compile().Invoke(ent, model));
@@ -345,6 +346,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 {
                     var newItem = newEntity.Invoke(model, currentUser);
                     await AddAsync(newItem, allowedRoles, false);
+                    changesIndicator++;
                 }
                 else
                 {
@@ -357,10 +359,14 @@ namespace RealEstate.Services.ServiceLayer.Base
 
                     onUpdate.Invoke(source, model);
                     _unitOfWork.Update(source, currentUser);
+                    changesIndicator++;
                 }
             }
 
-            return await SaveChangesAsync();
+            if (changesIndicator > 0)
+                return await SaveChangesAsync();
+
+            return StatusEnum.Success;
         }
 
         //public async Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,

@@ -571,19 +571,23 @@ namespace RealEstate.Services.ServiceLayer
 
         private async Task<StatusEnum> PropertyComplexSyncAsync(Property property, PropertyComplexInputViewModel model, PropertyOwnership newPropertyOwnership, Customer newCustomer, bool save)
         {
-            var syncOwnership = new List<OwnershipJsonViewModel>
-            {
-                new OwnershipJsonViewModel
-                {
-                    Dong = 6,
-                    Mobile = newCustomer.MobileNumber,
-                    Name = newCustomer.Name,
-                    CustomerId = newCustomer.Id
-                }
-            };
+            if (model == null)
+                throw new ArgumentNullException($"{nameof(model)} cannot be null");
 
-            await _baseService.SyncAsync(
-                newPropertyOwnership.Ownerships.ToList(),
+            if (newPropertyOwnership != null)
+            {
+                var syncOwnership = new List<OwnershipJsonViewModel>
+                {
+                    new OwnershipJsonViewModel
+                    {
+                        Dong = 6,
+                        Mobile = newCustomer.MobileNumber,
+                        Name = newCustomer.Name,
+                        CustomerId = newCustomer.Id
+                    }
+                };
+                await _baseService.SyncAsync(
+                newPropertyOwnership.Ownerships?.ToList(),
                 syncOwnership,
                 (ownership, currentUser) => new Ownership
                 {
@@ -604,40 +608,45 @@ namespace RealEstate.Services.ServiceLayer
                     inDb.Dong = inModel.Dong;
                 },
                 null);
+            }
 
-            await _baseService.SyncAsync(
-                property.PropertyFeatures.ToList(),
-                model.PropertyFeatures,
-                (feature, currentUser) => new PropertyFeature
-                {
-                    PropertyId = property.Id,
-                    FeatureId = feature.Id,
-                    Value = feature.Value,
-                },
-                inDb => new
-                {
-                    inDb.FeatureId,
-                    inDb.Value
-                },
-                (inDb, inModel) => inDb.FeatureId == inModel.Id,
-                (inDb, inModel) => inDb.Value == inModel.Value,
-                (inDb, inModel) => inDb.Value = inModel.Value,
-                null);
+            if (property != null)
+            {
+                await _baseService.SyncAsync(
+                    property.PropertyFeatures?.ToList(),
+                    model.PropertyFeatures,
+                    (feature, currentUser) => new PropertyFeature
+                    {
+                        PropertyId = property.Id,
+                        FeatureId = feature.Id,
+                        Value = feature.Value,
+                    },
+                    inDb => new
+                    {
+                        inDb.FeatureId,
+                        inDb.Value
+                    },
+                    (inDb, inModel) => inDb.FeatureId == inModel.Id,
+                    (inDb, inModel) => inDb.Value == inModel.Value,
+                    (inDb, inModel) => inDb.Value = inModel.Value,
+                    null);
 
-            await _baseService.SyncAsync(
-                property.PropertyFacilities.ToList(),
-                model.PropertyFacilities,
-                (facility, currentUser) => new PropertyFacility
-                {
-                    PropertyId = property.Id,
-                    FacilityId = facility.Id
-                },
-                inDb => inDb.FacilityId,
-                (inDb, inModel) => inDb.FacilityId == inModel.Id,
-                null,
-                null,
-                null);
-            return await _baseService.SaveChangesAsync();
+                await _baseService.SyncAsync(
+                    property.PropertyFacilities?.ToList(),
+                    model.PropertyFacilities,
+                    (facility, currentUser) => new PropertyFacility
+                    {
+                        PropertyId = property.Id,
+                        FacilityId = facility.Id
+                    },
+                    inDb => inDb.FacilityId,
+                    (inDb, inModel) => inDb.FacilityId == inModel.Id,
+                    null,
+                    null,
+                    null);
+            }
+
+            return StatusEnum.Success;
         }
 
         private async Task<StatusEnum> PropertySyncAsync(Property property, PropertyOwnership propertyOwnership, PropertyInputViewModel model, bool save)
