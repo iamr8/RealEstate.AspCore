@@ -4,35 +4,29 @@
 <div class="col-12">
   <div class="widget">
     <widget-header title="@Model.PageTitle" />
-    <section class="container-fluid">
-      <div class="row justify-content-center align-items-center">
+    <section class="container-fluid  text-right">
+      <div class="row justify-content-center align-items-center margin-bottomed">
         <div class="col-12">
           <a asp-controller="Fix" asp-action="FixBuildYears" class="btn btn-sm btn-secondary">حل مشکل سال ساخت</a>
+          <span class="text-black-50">
+            این دکمه، زمانی عملکرد درست دارد که سال ساخت در موارد اشتباه ثبت شده است.
+          </span>
         </div>
       </div>
-      <div class="row justify-content-center align-items-center">
+      <div class="row justify-content-center align-items-center margin-bottomed">
         <div class="col-12">
           <a asp-controller="Fix" asp-action="FixAddress" class="btn btn-sm btn-secondary">حل مشکل آدرس</a>
+          <span class="text-black-50">
+            این دکمه، زمانی عملکرد درست دارد که در قیمت آدرس مورد، از حروف نامرتبط استفاده شده است.
+          </span>
         </div>
       </div>
-      <div class="row justify-content-center align-items-center">
-        <div class="col-12">
-          <a asp-controller="Fix" asp-action="FixFinalPrice" class="btn btn-sm btn-secondary">حل مشکل قیمت نهایی</a>
-        </div>
-      </div>
-      <div class="row justify-content-center align-items-center">
-        <div class="col-12">
-          <a asp-controller="Fix" asp-action="FixPricePerMeter" class="btn btn-sm btn-secondary">حل مشکل قیمت هر متر</a>
-        </div>
-      </div>
-      <div class="row justify-content-center align-items-center">
-        <div class="col-12">
-          <a asp-controller="Fix" asp-action="FixLoanPrice" class="btn btn-sm btn-secondary">حل مشکل وام</a>
-        </div>
-      </div>
-      <div class="row justify-content-center align-items-center">
+      <div class="row justify-content-center align-items-center margin-botommed">
         <div class="col-12">
           <a asp-controller="Fix" asp-action="RemoveDuplicateItems" class="btn btn-sm btn-secondary">حذف موارد مشابه ( فایل ها )</a>
+          <span class="text-black-50">
+            این دکمه، زمانی عملکرد درست دارد که موارد تکراری در موارد ایجاد شده است.
+          </span>
         </div>
       </div>
     </section>
