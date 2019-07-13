@@ -29,10 +29,8 @@ namespace RealEstate.Web.Pages.Manage.Customer
 
         public PaginationViewModel<CustomerViewModel> List { get; set; }
 
-        public string Status { get; set; }
-
         public async Task OnGetAsync(string pageNo, string customerName, string customerId, string customerAddress, string customerPhone, string customerMobile,
-            bool deleted, string dateFrom, string dateTo, string creatorId, string status, bool? removeDuplicates)
+            bool deleted, string dateFrom, string dateTo, string creatorId, string status)
         {
             SearchInput = new CustomerSearchViewModel
             {
@@ -51,7 +49,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _customerService.CustomerListAsync(SearchInput, removeDuplicates ?? false);
+            List = await _customerService.CustomerListAsync(SearchInput);
         }
 
         public IActionResult OnPost()
