@@ -641,17 +641,15 @@
 
             $(document).on("click",
                 `.${itemSelector}`,
-                function(e) {
+                function (e) {
+                    e.preventDefault();
                     const keyId = $(this).attr("data-id");
                     console.log("KeyId", keyId);
 
                     const jsonValue = $.parseJSON($(jsonInput).val());
                     console.log("JsonValue", jsonValue);
 
-                    const index =
-                        jsonValue.findIndex(prop => prop
-                            .@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Name)) ===
-                            keyId);
+                    const index = jsonValue.findIndex(prop => prop.@(PropertyExtensions.GetJsonProperty<FacilityJsonViewModel>(x => x.Id)) === keyId);
                     console.log("Index", index);
 
                     removeJson(jsonInput, index);
