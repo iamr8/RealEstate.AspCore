@@ -26,8 +26,6 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<PropertyJsonViewModel>> PropertyListAsync(string searchTerm);
 
-        Task CleanDuplicatesAsync();
-
         Task<MethodStatus<Property>> PropertyComplexAddAsync(PropertyComplexInputViewModel model, bool save);
 
         Task<PropertyComplexInputViewModel> PropertyComplexInputAsync(string id);
@@ -121,117 +119,6 @@ namespace RealEstate.Services.ServiceLayer
 
             var result = MapJson(entity);
             return result;
-        }
-
-        public async Task CleanDuplicatesAsync()
-        {
-            var groups = await _properties.IgnoreQueryFilters()
-               .OrderDescendingByCreationDateTime()
-               .GroupBy(x => new
-               {
-                   x.Street,
-                   x.CategoryId,
-                   x.DistrictId,
-                   x.Flat,
-                   x.Alley,
-                   x.Floor,
-                   x.Number,
-                   x.BuildingName
-               }).Where(x => x.Count() > 1).ToListAsync();
-            if (groups?.Any() == true)
-            {
-                foreach (var groupedProperty in groups)
-                {
-                    var cnt = groupedProperty.Count();
-                    var propertyBest = groupedProperty.Any(x => x.PropertyFacilities.Any() || x.PropertyFeatures.Any())
-                        ? groupedProperty.FirstOrDefault(x => x.PropertyFacilities.Any() || x.PropertyFeatures.Any())
-                        : groupedProperty.FirstOrDefault();
-                    if (propertyBest == null)
-                        continue;
-
-                    var validProperties = groupedProperty.Except(new[]
-                    {
-                    propertyBest
-                }).ToList();
-                    foreach (var property in validProperties)
-                    {
-                        var currentPropertyId = property.Id;
-
-                        var propertyInDb = await _properties.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == currentPropertyId);
-                        if (propertyInDb == null)
-                            continue;
-
-                        var items = await _items.IgnoreQueryFilters().Where(x => x.PropertyId == currentPropertyId).ToListAsync();
-                        if (items?.Any() == true)
-                        {
-                            foreach (var item in items)
-                            {
-                                var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
-                                if (itemInDb == null)
-                                    continue;
-
-                                var itemFeatures = await _itemFeatures.IgnoreQueryFilters().Where(x => x.ItemId == itemInDb.Id).ToListAsync();
-                                if (itemFeatures?.Any() == true)
-                                {
-                                    foreach (var itemFeature in itemFeatures)
-                                    {
-                                        var itemFeatureInDb = await _itemFeatures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
-                                        await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
-                                    }
-                                }
-
-                                await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
-                            }
-                        }
-
-                        var propertyOwnerships = await _propertyOwnerships.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
-                        if (propertyOwnerships?.Any() == true)
-                        {
-                            foreach (var propertyOwnership in propertyOwnerships)
-                            {
-                                var ownerships = await _ownerships.IgnoreQueryFilters().Where(x => x.PropertyOwnershipId == propertyOwnership.Id).ToListAsync();
-                                if (ownerships?.Any() == true)
-                                    foreach (var ownership in ownerships)
-                                    {
-                                        var ownershipInDb = await _ownerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == ownership.Id);
-                                        await _baseService.RemoveAsync(ownershipInDb, null, DeleteEnum.Delete, false);
-                                    }
-
-                                var propertyOwnershipInDb = await _propertyOwnerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyOwnership.Id);
-                                await _baseService.RemoveAsync(propertyOwnershipInDb, null, DeleteEnum.Delete, false);
-                            }
-                        }
-
-                        var propertyFeatures = await _propertyFeatures.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
-                        if (propertyFeatures?.Any() == true)
-                            foreach (var propertyFeature in propertyFeatures)
-                            {
-                                var propertyFeatureInDb = await _propertyFeatures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyFeature.Id);
-                                await _baseService.RemoveAsync(propertyFeatureInDb, null, DeleteEnum.Delete, false);
-                            }
-
-                        var propertyFacilities = await _propertyFacilities.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
-                        if (propertyFacilities?.Any() == true)
-                            foreach (var propertyFacility in propertyFacilities)
-                            {
-                                var propertyFacilityInDb = await _propertyFacilities.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyFacility.Id);
-                                await _baseService.RemoveAsync(propertyFacilityInDb, null, DeleteEnum.Delete, false);
-                            }
-
-                        var pictures = await _pictures.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
-                        if (pictures?.Any() == true)
-                            foreach (var picture in pictures)
-                            {
-                                var pictureInDb = await _pictures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == picture.Id);
-                                await _baseService.RemoveAsync(pictureInDb, null, DeleteEnum.Delete, false);
-                            }
-
-                        await _baseService.RemoveAsync(propertyInDb, null, DeleteEnum.Delete, false);
-                    }
-                }
-            }
-
-            await _baseService.SaveChangesAsync();
         }
 
         public async Task<bool> PropertyValidate(string id)
@@ -492,8 +379,7 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Property>(StatusEnum.ModelIsNull, null);
 
             var (hasDuplicate, similarProperty) = await HasDuplicateAsync(model);
-            if (hasDuplicate == StatusEnum.Success)
-                return new MethodStatus<Property>(hasDuplicate, similarProperty);
+            return new MethodStatus<Property>(hasDuplicate, similarProperty);
 
             var (customerAddStatus, newOwner) = await _customerService.OwnershipAddOrUpdateAsync(new OwnershipInputViewModel
             {

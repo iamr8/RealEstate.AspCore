@@ -27,6 +27,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task FixFinalPriceAsync();
 
+        Task CleanComplexDuplicatesAsync();
+
         Task FixLoanPriceAsync();
 
         Task FixBuildYearAsync();
@@ -45,6 +47,11 @@ namespace RealEstate.Services.ServiceLayer
         private readonly DbSet<PropertyFeature> _propertyFeatures;
         private readonly DbSet<Property> _properties;
         private readonly DbSet<ItemFeature> _itemFeatures;
+        private readonly DbSet<PropertyOwnership> _propertyOwnerships;
+        private readonly DbSet<Ownership> _ownerships;
+        private readonly DbSet<PropertyFacility> _propertyFacilities;
+        private readonly DbSet<Picture> _pictures;
+        private readonly DbSet<Customer> _customers;
 
         public GlobalService(
             IBaseService baseService,
@@ -56,8 +63,13 @@ namespace RealEstate.Services.ServiceLayer
             _baseService = baseService;
             _applicationDbContext = applicationDbContext;
             _items = _unitOfWork.Set<Item>();
+            _propertyOwnerships = _unitOfWork.Set<PropertyOwnership>();
+            _ownerships = _unitOfWork.Set<Ownership>();
+            _propertyFacilities = _unitOfWork.Set<PropertyFacility>();
             _itemFeatures = _unitOfWork.Set<ItemFeature>();
+            _customers = _unitOfWork.Set<Customer>();
             _properties = _unitOfWork.Set<Property>();
+            _pictures = _unitOfWork.Set<Picture>();
             _propertyFeatures = _unitOfWork.Set<PropertyFeature>();
         }
 
@@ -65,6 +77,211 @@ namespace RealEstate.Services.ServiceLayer
         private const string FeatureLoadPrice = "736ad605-78ea-41e1-bdeb-8d2811db2dec";
         private const string FeatureBuildYear = "cdb97926-b3b1-48ec-bdd6-389a0431007c";
         private const string FeatureFinalPrice = "54a0b920-c17f-4ff2-9c51-f9551159026a";
+
+        private async Task CleanPropertyDuplicatesAsync()
+        {
+            var groups = await _properties.IgnoreQueryFilters()
+               .GroupBy(x => new
+               {
+                   x.Street,
+                   x.CategoryId,
+                   x.DistrictId,
+                   x.Flat,
+                   x.Alley,
+                   x.Floor,
+                   x.Number,
+                   x.BuildingName
+               }).Where(x => x.Count() > 1).ToListAsync();
+            if (groups?.Any() == true)
+            {
+                foreach (var groupedProperty in groups)
+                {
+                    var cnt = groupedProperty.Count();
+                    var propertyBest = groupedProperty.Any(x => x.PropertyFacilities.Any() || x.PropertyFeatures.Any())
+                        ? groupedProperty.FirstOrDefault(x => x.PropertyFacilities.Any() || x.PropertyFeatures.Any())
+                        : groupedProperty.FirstOrDefault();
+                    if (propertyBest == null)
+                        continue;
+
+                    var validProperties = groupedProperty.Except(new[]
+                    {
+                        propertyBest
+                    }).ToList();
+                    foreach (var property in validProperties)
+                    {
+                        var currentPropertyId = property.Id;
+
+                        var propertyInDb = await _properties.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == currentPropertyId);
+                        if (propertyInDb == null)
+                            continue;
+
+                        var items = await _items.IgnoreQueryFilters().Where(x => x.PropertyId == currentPropertyId).ToListAsync();
+                        if (items?.Any() == true)
+                        {
+                            foreach (var item in items)
+                            {
+                                var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
+                                if (itemInDb == null)
+                                    continue;
+
+                                var itemFeatures = await _itemFeatures.IgnoreQueryFilters().Where(x => x.ItemId == itemInDb.Id).ToListAsync();
+                                if (itemFeatures?.Any() == true)
+                                {
+                                    foreach (var itemFeature in itemFeatures)
+                                    {
+                                        var itemFeatureInDb = await _itemFeatures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
+                                        await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
+                                    }
+                                }
+
+                                await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
+                            }
+                        }
+
+                        var propertyOwnerships = await _propertyOwnerships.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
+                        if (propertyOwnerships?.Any() == true)
+                        {
+                            foreach (var propertyOwnership in propertyOwnerships)
+                            {
+                                var ownerships = await _ownerships.IgnoreQueryFilters().Where(x => x.PropertyOwnershipId == propertyOwnership.Id).ToListAsync();
+                                if (ownerships?.Any() == true)
+                                    foreach (var ownership in ownerships)
+                                    {
+                                        var ownershipInDb = await _ownerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == ownership.Id);
+                                        await _baseService.RemoveAsync(ownershipInDb, null, DeleteEnum.Delete, false);
+                                    }
+
+                                var propertyOwnershipInDb = await _propertyOwnerships.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyOwnership.Id);
+                                await _baseService.RemoveAsync(propertyOwnershipInDb, null, DeleteEnum.Delete, false);
+                            }
+                        }
+
+                        var propertyFeatures = await _propertyFeatures.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
+                        if (propertyFeatures?.Any() == true)
+                            foreach (var propertyFeature in propertyFeatures)
+                            {
+                                var propertyFeatureInDb = await _propertyFeatures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyFeature.Id);
+                                await _baseService.RemoveAsync(propertyFeatureInDb, null, DeleteEnum.Delete, false);
+                            }
+
+                        var propertyFacilities = await _propertyFacilities.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
+                        if (propertyFacilities?.Any() == true)
+                            foreach (var propertyFacility in propertyFacilities)
+                            {
+                                var propertyFacilityInDb = await _propertyFacilities.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == propertyFacility.Id);
+                                await _baseService.RemoveAsync(propertyFacilityInDb, null, DeleteEnum.Delete, false);
+                            }
+
+                        var pictures = await _pictures.IgnoreQueryFilters().Where(x => x.PropertyId == propertyInDb.Id).ToListAsync();
+                        if (pictures?.Any() == true)
+                            foreach (var picture in pictures)
+                            {
+                                var pictureInDb = await _pictures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == picture.Id);
+                                await _baseService.RemoveAsync(pictureInDb, null, DeleteEnum.Delete, false);
+                            }
+
+                        await _baseService.RemoveAsync(propertyInDb, null, DeleteEnum.Delete, false);
+                    }
+                }
+            }
+
+            await _baseService.SaveChangesAsync();
+        }
+
+        public async Task CleanComplexDuplicatesAsync()
+        {
+            await CleanPropertyDuplicatesAsync();
+            await CleanItemDuplicatesAsync();
+            await CleanCustomerDuplicatesAsync();
+        }
+
+        private async Task CleanCustomerDuplicatesAsync()
+        {
+            var groups = await _customers.IgnoreQueryFilters()
+                .GroupBy(x => new
+                {
+                    x.MobileNumber
+                }).Where(x => x.Count() > 1).ToListAsync();
+            if (groups?.Any() != true)
+                return;
+
+            foreach (var groupedCustomer in groups)
+            {
+                var cnt = groupedCustomer.Count();
+                var customerBest = groupedCustomer.Any(x => x.Name != "مالک")
+                    ? groupedCustomer.FirstOrDefault(x => x.Name != "مالک")
+                    : groupedCustomer.FirstOrDefault();
+                if (customerBest == null)
+                    continue;
+
+                var customers = groupedCustomer.Except(new[]
+                {
+                    customerBest
+                }).ToList();
+                var customerId = customerBest.Id;
+                foreach (var customer in customers)
+                {
+                    var ownerships = customer.Ownerships;
+                    if (ownerships?.Any() == true)
+                    {
+                        foreach (var ownership in ownerships)
+                        {
+                            var ownershipInDb = await _ownerships.FirstOrDefaultAsync(x => x.Id == ownership.Id);
+                            await _baseService.UpdateAsync(ownershipInDb,
+                                currentUser =>
+                                {
+                                    ownershipInDb.CustomerId = customerId;
+                                }, null, false, StatusEnum.OwnershipIsNull);
+                        }
+                    }
+
+                    var customerInDb = await _customers.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == customer.Id);
+                    if (customerInDb == null)
+                        continue;
+
+                    await _baseService.RemoveAsync(customerInDb, null, DeleteEnum.Delete, false);
+                }
+            }
+
+            await _baseService.SaveChangesAsync();
+        }
+
+        private async Task CleanItemDuplicatesAsync()
+        {
+            var groups = await _items.IgnoreQueryFilters()
+                .Include(x => x.Property)
+                .GroupBy(x => new
+                {
+                    x.CategoryId,
+                    x.Property
+                }).Where(x => x.Count() > 1).ToListAsync();
+            if (groups?.Any() == true)
+            {
+                foreach (var groupedItem in groups)
+                {
+                    foreach (var item in groupedItem.Skip(1))
+                    {
+                        var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
+                        if (itemInDb == null)
+                            continue;
+
+                        var itemFeatures = await _itemFeatures.Where(x => x.ItemId == itemInDb.Id).ToListAsync();
+                        if (itemFeatures?.Any() == true)
+                        {
+                            foreach (var itemFeature in itemFeatures)
+                            {
+                                var itemFeatureInDb = await _itemFeatures.FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
+                                await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
+                            }
+                        }
+
+                        await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
+                    }
+                }
+            }
+
+            await _baseService.SaveChangesAsync();
+        }
 
         private static List<StatisticsDetailViewModel> Map(IReadOnlyCollection<ItemViewModel> item)
         {
@@ -88,13 +305,13 @@ namespace RealEstate.Services.ServiceLayer
                 return default;
 
             var result = new List<LogJsonEntity>();
-            Applicant testModel;
             foreach (var row in model)
             {
                 var properties = entityType.GetProperties(BindingFlags.Public | BindingFlags.Instance).ToList();
                 if (properties?.Any() != true)
                     continue;
 
+                Applicant testModel;
                 var idProperty = row.GetProperty(nameof(testModel.Id));
                 if (idProperty == null || !(idProperty.GetValue(row) is string id))
                     continue;

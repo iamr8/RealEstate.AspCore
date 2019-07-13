@@ -57,7 +57,7 @@ namespace RealEstate.Web.Pages.Manage.Item
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _itemService.ItemListAsync(SearchInput, removeDuplicates ?? false).ConfigureAwait(false);
+            List = await _itemService.ItemListAsync(SearchInput).ConfigureAwait(false);
         }
 
         public IActionResult OnPost()

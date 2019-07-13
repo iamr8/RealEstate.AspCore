@@ -24,7 +24,7 @@ namespace RealEstate.Services.ServiceLayer
 {
     public interface IItemService
     {
-        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false);
+        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel);
 
         Task<ItemOutJsonViewModel> ItemJsonAsync(string id);
 
@@ -386,68 +386,8 @@ namespace RealEstate.Services.ServiceLayer
             return false;
         }
 
-        private async Task<bool> CheckDuplicatesAsync()
+        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
-            var groups = await _items.IgnoreQueryFilters()
-                .Include(x => x.Property)
-                .GroupBy(x => new
-                {
-                    x.CategoryId,
-                    x.Property
-                }).Where(x => x.Count() > 1).AnyAsync();
-            return groups;
-        }
-
-        private async Task CleanComplexDuplicatesAsync()
-        {
-            await _propertyService.CleanDuplicatesAsync();
-            await CleanDuplicatesAsync();
-            await _customerService.CleanDuplicatesAsync();
-        }
-
-        private async Task CleanDuplicatesAsync()
-        {
-            var groups = await _items.IgnoreQueryFilters()
-                .OrderDescendingByCreationDateTime()
-                .Include(x => x.Property)
-                .GroupBy(x => new
-                {
-                    x.CategoryId,
-                    x.Property
-                }).Where(x => x.Count() > 1).ToListAsync();
-            if (groups?.Any() == true)
-            {
-                foreach (var groupedItem in groups)
-                {
-                    foreach (var item in groupedItem.Skip(1))
-                    {
-                        var itemInDb = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == item.Id);
-                        if (itemInDb == null)
-                            continue;
-
-                        var itemFeatures = await _itemFeatures.Where(x => x.ItemId == itemInDb.Id).ToListAsync();
-                        if (itemFeatures?.Any() == true)
-                        {
-                            foreach (var itemFeature in itemFeatures)
-                            {
-                                var itemFeatureInDb = await _itemFeatures.FirstOrDefaultAsync(x => x.Id == itemFeature.Id);
-                                await _baseService.RemoveAsync(itemFeatureInDb, null, DeleteEnum.Delete, false);
-                            }
-                        }
-
-                        await _baseService.RemoveAsync(itemInDb, null, DeleteEnum.Delete, false);
-                    }
-                }
-            }
-
-            await _baseService.SaveChangesAsync();
-        }
-
-        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool cleanDuplicates = false)
-        {
-            if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
-                await CleanComplexDuplicatesAsync();
-
             var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();

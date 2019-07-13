@@ -46,7 +46,7 @@ namespace RealEstate.Web.Controllers
         [Route("settings/removeduplicates")]
         public async Task<IActionResult> RemoveDuplicateItems()
         {
-            //            await _globalService.FixLoanPriceAsync();
+            await _globalService.CleanComplexDuplicatesAsync();
             return RedirectToPage(typeof(IndexModel).Page());
         }
 

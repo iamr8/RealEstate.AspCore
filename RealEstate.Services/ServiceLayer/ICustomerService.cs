@@ -32,8 +32,6 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
-        Task CleanDuplicatesAsync();
-
         Task<OwnershipJsonViewModel> OwnershipJsonAsync(string id);
 
         Task<MethodStatus<Customer>> CustomerAddOrUpdateAsync(CustomerInputViewModel model, bool update, bool save);
@@ -42,7 +40,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<Ownership>> OwnershipAddAsync(Ownership model, bool save);
 
-        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool cleanDuplicates = false);
+        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel);
 
         Task<MethodStatus<Ownership>> OwnershipAddAsync(OwnershipInputViewModel model, bool save);
 
@@ -445,62 +443,8 @@ namespace RealEstate.Services.ServiceLayer
             return groups;
         }
 
-        public async Task CleanDuplicatesAsync()
+        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
         {
-            var groups = await _customers.IgnoreQueryFilters()
-                .GroupBy(x => new
-                {
-                    x.MobileNumber
-                }).Where(x => x.Count() > 1).ToListAsync();
-            if (groups?.Any() != true)
-                return;
-
-            foreach (var groupedCustomer in groups)
-            {
-                var cnt = groupedCustomer.Count();
-                var customerBest = groupedCustomer.Any(x => x.Name != "مالک")
-                    ? groupedCustomer.FirstOrDefault(x => x.Name != "مالک")
-                    : groupedCustomer.FirstOrDefault();
-                if (customerBest == null)
-                    continue;
-
-                var customers = groupedCustomer.Except(new[]
-                {
-                    customerBest
-                }).ToList();
-                var customerId = customerBest.Id;
-                foreach (var customer in customers)
-                {
-                    var ownerships = customer.Ownerships;
-                    if (ownerships?.Any() == true)
-                    {
-                        foreach (var ownership in ownerships)
-                        {
-                            var ownershipInDb = await _ownerships.FirstOrDefaultAsync(x => x.Id == ownership.Id);
-                            await _baseService.UpdateAsync(ownershipInDb,
-                                currentUser =>
-                                {
-                                    ownershipInDb.CustomerId = customerId;
-                                }, null, false, StatusEnum.OwnershipIsNull);
-                        }
-                    }
-
-                    var customerInDb = await _customers.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == customer.Id);
-                    if (customerInDb == null)
-                        continue;
-
-                    await _baseService.RemoveAsync(customerInDb, null, DeleteEnum.Delete, false);
-                }
-            }
-
-            await _baseService.SaveChangesAsync();
-        }
-
-        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool cleanDuplicates = false)
-        {
-            if (cleanDuplicates && _baseService.IsAllowed(Role.SuperAdmin))
-                await CleanDuplicatesAsync();
-
             var query = _baseService.CheckDeletedItemsPrevillege(_customers, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<CustomerViewModel>();
