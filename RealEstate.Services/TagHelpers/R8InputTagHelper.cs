@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,12 +30,12 @@ namespace RealEstate.Services.TagHelpers
                 .FirstOrDefault();
             if (validation == null)
                 return;
-
             if (!output.IsContentModified)
             {
                 output.Attributes.Add("data-toggle", "tooltip");
                 output.Attributes.Add("data-placement", "bottom");
                 output.Attributes.Add("title", validation.ErrorMessage);
+                output.Attributes.Add("placeholder", validation.Pattern.GetDescription());
             }
         }
     }

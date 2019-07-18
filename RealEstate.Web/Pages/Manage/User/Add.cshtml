@@ -35,7 +35,7 @@
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {
-                    <div class="col-xs-12 col-md">
+                    <div class="col-12 col-md">
                         <div class="input-wrapper">
                             @if (employees?.Any() != true)
                             {
@@ -60,7 +60,7 @@
                 }
                 @if (Model.NewUser?.Username != User.Identity.Name)
                 {
-                    <div class="col-xs-12 col-md">
+                    <div class="col-12 col-md">
                         <div class="input-wrapper">
                             <label asp-for="NewUser.Role" class="control-label"></label>
                             <select asp-for="NewUser.Role" asp-items="roles" class="custom-select"></select>
@@ -77,7 +77,7 @@
             <div class="row justify-content-center align-items-center">
                 @if (Model.NewUser == null)
                 {
-                    <div class="col-xs-12 col-md">
+                    <div class="col-12 col-md">
                         <div class="input-wrapper">
                             <label asp-for="NewUser.Username" class="control-label"></label>
                             <input asp-for="NewUser.Username" class="form-control" />
@@ -89,7 +89,7 @@
                 {
                     <input asp-for="NewUser.Username" type="hidden" />
                 }
-                <div class="col-xs-12 col-md">
+                <div class="col-12 col-md">
                     <div class="input-wrapper">
                         <label asp-for="NewUser.Password" class="control-label"></label>
                         <input asp-for="NewUser.Password" class="form-control" />
@@ -176,7 +176,7 @@
         <footer>
             <submit full-width="true" />
             <status>
-                @Model.Status
+                @Html.Raw(Model.Status)
             </status>
         </footer>
     </div>

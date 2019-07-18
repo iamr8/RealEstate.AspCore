@@ -1071,4 +1071,13 @@
   <data name="HasPicture" xml:space="preserve">
     <value>عکسدار</value>
   </data>
+  <data name="CheckBank" xml:space="preserve">
+    <value>بانک چک</value>
+  </data>
+  <data name="CheckMoney" xml:space="preserve">
+    <value>چک</value>
+  </data>
+  <data name="RememberDeadline" xml:space="preserve">
+    <value>موعد یادآوری</value>
+  </data>
 </root>

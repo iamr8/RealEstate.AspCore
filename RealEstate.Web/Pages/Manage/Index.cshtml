@@ -16,8 +16,10 @@
         Selected = Model.SearchInput.CreatorId == x.UserId
     }).ToList()).AddNone();
 }
+    <status>
+        @Model.Status
+    </status>
 <div class="col-12">
-
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">

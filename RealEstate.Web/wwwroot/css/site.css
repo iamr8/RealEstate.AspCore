@@ -1367,16 +1367,18 @@ button > i.fa {
   background-color: #f5f5f5 !important; }
 
 .nav-link.btn-secondary {
-  border: none !important;
   background-color: #b9bdc1;
-  color: black;
+  color: black; }
+  .nav-link.btn-secondary.active {
+    color: white !important; }
+
+.nav-link.btn-sm {
+  border: none !important;
   border-radius: 0;
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   -ms-border-radius: 0;
   -o-border-radius: 0; }
-  .nav-link.btn-secondary.active {
-    color: white !important; }
 
 .element-item > .detail button.btn-sm,
 .element-item > .tracker button.btn-sm {

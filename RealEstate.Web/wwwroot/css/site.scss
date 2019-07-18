@@ -1080,7 +1080,6 @@ textarea {
     &.input-validation-error {
         border-color: red !important;
     }
-
     /*&[data-val-required] {
         &:not(.input-validation-error) {
             @include transition(all, 0.3s, ease-in-out);
@@ -1648,14 +1647,17 @@ button {
 
 .nav-link {
     &.btn-secondary {
-        border: none !important;
         background-color: #b9bdc1;
         color: black;
-        @include border-radius(0);
 
         &.active {
             color: white !important;
         }
+    }
+
+    &.btn-sm {
+        border: none !important;
+        @include border-radius(0);
     }
 }
 

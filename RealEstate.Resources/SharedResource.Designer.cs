@@ -376,11 +376,29 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to بانک چک.
+        /// </summary>
+        public static string CheckBank {
+            get {
+                return ResourceManager.GetString("CheckBank", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to در حال بررسی.
         /// </summary>
         public static string Checking {
             get {
                 return ResourceManager.GetString("Checking", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to چک.
+        /// </summary>
+        public static string CheckMoney {
+            get {
+                return ResourceManager.GetString("CheckMoney", resourceCulture);
             }
         }
         
@@ -2100,6 +2118,15 @@ namespace RealEstate.Resources {
         public static string Remain {
             get {
                 return ResourceManager.GetString("Remain", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to موعد یادآوری.
+        /// </summary>
+        public static string RememberDeadline {
+            get {
+                return ResourceManager.GetString("RememberDeadline", resourceCulture);
             }
         }
         

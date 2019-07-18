@@ -25,7 +25,7 @@ namespace RealEstate.Services.ViewModels.ModelBind
         public DateTime Date => Entity?.Date ?? DateTime.Now;
         public string CheckBank => Entity?.CheckBank;
         public string CheckNumber => Entity?.CheckNumber;
-        public double Price => (double)(Entity?.Price ?? 0);
+        public decimal Price => Entity?.Price ?? 0;
 
         public DealViewModel Deal { get; set; }
 

@@ -1,13 +1,13 @@
 ﻿@page
 @model IndexModel
 
+<status>
+    @Model.Status
+</status>
 <div class="col-12">
-    <status>
-        @Model.Status
-    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewReminder"]</a>
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewReminder]</a>
         </widget-header>
         <section class="container-fluid">
             <item-viewer model="@Model.List.Items">
@@ -20,37 +20,85 @@
                             <div class="info">
                                 <span>
                                     <b class="title">
-                                        @if (item.IsCheck)
-                                        {
-                                            <text>
-                                                @SharedLocalizer["Bank"]: @item.CheckBank
-                                                <br/>
-                                                @SharedLocalizer["CheckNumber"]: @item.CheckNumber
-                                                <br/>
-                                                @SharedLocalizer["Price"]: @item.Price.ToString("#,###") تومان
-                                            </text>
-                                        }
-                                        else
-                                        {
-                                            @item.Description
-                                        }
+                                        @item.Description
                                     </b>
-                                    <span class="badge badge-primary">@item.Date.GregorianToPersian(true)</span>
+                                    <span class="badge badge-primary">@SharedLocalizer[SharedResource.RememberDeadline]: @item.Date.GregorianToPersian(true)</span>
                                 </span>
+                                @if (item.Price > 0)
+                                {
+                                    var price = Convert.ToDouble(item.Price);
+                                    <span>
+                                        @SharedLocalizer[SharedResource.Price] :
+                                        <ul class="info-breadcrumb">
+                                            <li>@price.ToString(CultureInfo.CurrentCulture).CurrencyToWords() تومان</li>
+                                        </ul>
+                                    </span>
+                                }
+                                @if (item.IsCheck)
+                                {
+                                    <span>
+                                        مشخصات چک:
+                                        <ul class="info-breadcrumb">
+                                            @if (!string.IsNullOrEmpty(item.CheckBank))
+                                            {
+                                                <li>@SharedLocalizer[SharedResource.CheckBank]: @item.CheckBank</li>
+                                            }
+
+                                            @if (!string.IsNullOrEmpty(item.CheckNumber))
+                                            {
+                                                <li>@SharedLocalizer[SharedResource.CheckNumber]: @item.CheckNumber</li>
+                                            }
+                                        </ul>
+                                    </span>
+                                }
+                                @if (item.Pictures?.Any() == true)
+                                {
+                                    <span>
+                                        @SharedLocalizer[SharedResource.Photos]:
+                                        <ul class="info-breadcrumb gallery no-image">
+                                            @for (var index = 0; index < item.Pictures.Count; index++)
+                                            {
+                                                var picture = item.Pictures[index];
+                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{picture.File}");
+
+                                                <li>
+                                                    <img class="hidden" src="@imgPath" alt="@picture.Text"/>
+                                                    @SharedLocalizer[SharedResource.Picture] @(index + 1)
+                                                </li>
+                                            }
+                                        </ul>
+                                    </span>
+                                }
                             </div>
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
                                 {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
                                     <a asp-controller="Remove" asp-action="ReminderAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
                             </div>
                         </div>
-                        <vc:log logs="@item.Logs" cat="Reminder" id="@item.Id"/>
+                        <vc:log logs="@item.Logs" cat="Reminder" id="@item.Id" />
                     </div>
                 }
             </item-viewer>
-            <vc:pagination model="@Model.List"></vc:pagination>
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>
+
+@section Styles
+{
+    <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />
+}
+@section Scripts
+{
+    <script src="~/js/jquery.bsPhotoGallery-min.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            $('.gallery').bsPhotoGallery({
+                "classes": "",
+                "hasModal": true
+            });
+        });
+    </script>
+}

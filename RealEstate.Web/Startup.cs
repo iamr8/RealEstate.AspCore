@@ -301,13 +301,6 @@ namespace RealEstate.Web
                 app.UseWebMarkupMin();
             }
 
-            if (!env.IsDevelopment())
-            {
-                app.UseResponseCaching();
-                app.UseResponseCompression();
-                app.UseWebMarkupMin();
-            }
-
             if (env.IsDevelopment())
                 app.UseMiniProfiler();
 

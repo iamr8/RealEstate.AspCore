@@ -99,7 +99,6 @@ namespace RealEstate.Services.TagHelpers
             {
                 var clearSearch = new TagBuilder("li");
                 clearSearch.AddCssClass("nav-item");
-                clearSearch.AddCssClass("mr-auto");
 
                 var clearSearchAnchor = new TagBuilder("a");
                 clearSearchAnchor.AddCssClass("nav-link");
@@ -127,10 +126,10 @@ namespace RealEstate.Services.TagHelpers
             var rowCount = new TagBuilder("li");
             rowCount.AddCssClass("nav-item");
 
-            var buttonRowCount = new TagBuilder("button");
+            var buttonRowCount = new TagBuilder("a");
+            buttonRowCount.Attributes.Add("href", "#");
             buttonRowCount.AddCssClass("nav-link");
             buttonRowCount.AddCssClass("btn-sm");
-            buttonRowCount.Attributes.Add("type", "button");
             buttonRowCount.InnerHtml.AppendHtml(Rows.ToString()).AppendHtml(" آیتم");
 
             rowCount.InnerHtml.AppendHtml(buttonRowCount);

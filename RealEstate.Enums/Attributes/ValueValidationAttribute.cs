@@ -10,10 +10,12 @@ namespace RealEstate.Base.Attributes
     public class ValueValidationAttribute : ValidationAttribute, IClientModelValidator
     {
         public string RegularExpression { get; set; }
+        public RegexPatterns Pattern { get; set; }
 
         public ValueValidationAttribute(RegexPatterns pattern) : base(() => pattern.GetDescription())
         {
             RegularExpression = pattern.GetDisplayName();
+            this.Pattern = pattern;
             this.ErrorMessage = ErrorMessageString;
         }
 

@@ -145,7 +145,7 @@ function addJson(jsonElement, item, uniqueCheck) {
     .trigger("change");
 }
 
-var wordifyfa = function(num, level) {
+function wordifyfa(num, level) {
   "use strict";
   if (num === null) {
     return "";
@@ -239,8 +239,4 @@ var wordifyfa = function(num, level) {
       wordifyfa(num % 1000000000000, level + 1);
   }
   return result;
-};
-
-if (typeof module !== "undefined" && module.exports) {
-  module.exports.wordifyfa = wordifyfa;
 }

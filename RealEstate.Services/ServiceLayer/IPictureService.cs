@@ -4,12 +4,11 @@ using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
-using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.ModelBind;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using RealEstate.Services.ServiceLayer.Base;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -44,7 +43,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<PictureViewModel>> PropertyPicturesAsync(string id)
         {
-            var query = await _pictures.Where(x => x.PropertyId == id).ToListAsync().ConfigureAwait(false);
+            var query = await _pictures.Where(x => x.PropertyId == id).ToListAsync();
             if (query?.Any() != true)
                 return default;
 
@@ -57,13 +56,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(pictureId))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _pictures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == pictureId).ConfigureAwait(false);
+            var entity = await _pictures.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == pictureId);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -73,7 +72,7 @@ namespace RealEstate.Services.ServiceLayer
             if (pictures?.Any() != true)
                 return StatusEnum.Success;
 
-            var files = await _fileHandler.SaveAsync(pictures).ConfigureAwait(false);
+            var files = await _fileHandler.SaveAsync(pictures);
             if (files?.Any() != true)
                 return StatusEnum.FileIsNull;
 
@@ -89,7 +88,7 @@ namespace RealEstate.Services.ServiceLayer
                     ReminderId = !string.IsNullOrEmpty(reminderId) ? reminderId : null,
                     Text = text,
                     File = picture,
-                }, null, save).ConfigureAwait(false);
+                }, null, save);
                 results.Add(newStatus);
             }
 

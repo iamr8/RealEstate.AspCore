@@ -27,5 +27,10 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<Picture> Pictures { get; set; }
         public virtual User User { get; set; }
         public virtual Deal Deal { get; set; }
+
+        public override string ToString()
+        {
+            return Description;
+        }
     }
 }

@@ -3,13 +3,15 @@
 @{
     var roles = SelectItemExtensions.ToSelectList<Role>().AddNone();
 }
+
+<status>
+    @Model.Status
+</status>
 <div class="col-12">
-    <status>
-        @Model.Status
-    </status>
+
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewUser"]</a>
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewUser]</a>
         </widget-header>
         <section class="container-fluid">
             <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
@@ -22,7 +24,7 @@
                     }
 
                     var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Activate"] : SharedLocalizer["Deactivate"];
+                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
@@ -30,11 +32,11 @@
                                     <b class="title">
                                         @item.Username
                                     </b>
-                                    <span class="badge badge-warning"><b>@SharedLocalizer["Password"]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
-                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-userRole="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer["Role"]:</b> @item.Role.GetDisplayName()</a>
+                                    <span class="badge badge-warning"><b>@SharedLocalizer[SharedResource.Password]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
+                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-userRole="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer[SharedResource.Role]:</b> @item.Role.GetDisplayName()</a>
                                 </span>
                                 <span>
-                                    @SharedLocalizer["Employee"] :
+                                    @SharedLocalizer[SharedResource.Employee] :
                                     <ul class="info-breadcrumb">
                                         @if (item.Employee != null)
                                         {
@@ -61,7 +63,7 @@
                                 @if (item.UserItemCategories?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["UserItemCategories"] :
+                                        @SharedLocalizer[SharedResource.UserItemCategories] :
                                         <ul class="info-breadcrumb">
                                             @foreach (var feature in item.UserItemCategories)
                                             {
@@ -76,7 +78,7 @@
                                 @if (item.UserPropertyCategories?.Any() == true)
                                 {
                                     <span>
-                                        @SharedLocalizer["UserPropertyCategories"] :
+                                        @SharedLocalizer[SharedResource.UserPropertyCategories] :
                                         <ul class="info-breadcrumb">
                                             @foreach (var feature in item.UserPropertyCategories)
                                             {
@@ -106,7 +108,7 @@
                     </div>
                 }
             </item-viewer>
-            <vc:pagination model="@Model.List"></vc:pagination>
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>

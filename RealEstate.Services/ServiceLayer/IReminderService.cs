@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -10,12 +8,16 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
     public interface IReminderService
     {
         Task<ReminderInputViewModel> ReminderInputAsync(string id);
+
+        Task<MethodStatus<Reminder>> ReminderAddAsync(ReminderInputViewModel model, bool save);
 
         Task<StatusEnum> ReminderRemoveAsync(string id);
 
@@ -28,15 +30,21 @@ namespace RealEstate.Services.ServiceLayer
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
+        private readonly IPictureService _pictureService;
+        private readonly IFileHandler _fileHandler;
         private readonly DbSet<Reminder> _reminders;
 
         public ReminderService(
             IUnitOfWork unitOfWork,
-            IBaseService baseService
+            IBaseService baseService,
+            IFileHandler fileHandler,
+            IPictureService pictureService
             )
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
+            _fileHandler = fileHandler;
+            _pictureService = pictureService;
 
             _reminders = _unitOfWork.Set<Reminder>();
         }
@@ -45,7 +53,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = entity.Map<ReminderViewModel>();
             if (viewModel == null)
                 return default;
@@ -72,13 +80,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await _reminders.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var user = await _reminders.FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -92,16 +100,20 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return new MethodStatus<Reminder>(StatusEnum.UserIsNull, null);
 
-            var addStatus = await _baseService.AddAsync(new Reminder
+            var (addStatus, addedReminder) = await _baseService.AddAsync(new Reminder
             {
                 Date = model.Date.PersianToGregorian(),
                 Description = model.Description,
                 UserId = currentUser.Id,
-            }, new[]
-            {
-                Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
-            return addStatus;
+                CheckBank = model.CheckBank,
+                CheckNumber = model.CheckNumber,
+                Price = model.Price != null && model.Price > 0 ? (decimal)model.Price : 0,
+            }, null, save);
+            if (addStatus != StatusEnum.Success)
+                return new MethodStatus<Reminder>(addStatus, null);
+
+            await _pictureService.PictureAddAsync(model.Pictures, null, null, null, null, null, addedReminder.Id, true);
+            return new MethodStatus<Reminder>(StatusEnum.Success, addedReminder);
         }
 
         public async Task<MethodStatus<Reminder>> ReminderUpdateAsync(ReminderInputViewModel model, bool save)
@@ -112,7 +124,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Reminder>(StatusEnum.IdIsNull, null);
 
-            var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _reminders.FirstOrDefaultAsync(x => x.Id == model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -121,25 +133,28 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
         public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel)
         {
-            var models = _reminders.AsQueryable();
-
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)
                 return default;
 
-            models = models.Where(x => x.UserId == currentUser.Id);
+            var models = _reminders
+                .Include(x => x.Pictures)
+                .Where(x => x.UserId == currentUser.Id);
 
-            if (currentUser?.Role == Role.SuperAdmin)
-                models = models.IgnoreQueryFilters();
+//            if (currentUser?.Role == Role.SuperAdmin)
+//                models = models.IgnoreQueryFilters();
 
             var result = await _baseService.PaginateAsync(models, searchModel,
-                item => item.Map<ReminderViewModel>());
+                item => item.Map<ReminderViewModel>(act =>
+                {
+                    act.IncludeAs<Reminder, Picture, PictureViewModel>(_unitOfWork, x => x.Pictures);
+                }));
 
             return result;
         }

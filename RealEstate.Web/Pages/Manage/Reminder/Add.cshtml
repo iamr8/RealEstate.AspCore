@@ -1,28 +1,68 @@
 ﻿@page
 @model AddModel
 
-<form method="post" class="col-12">
+<form method="post" class="col-12" enctype="multipart/form-data">
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>
         <input asp-for="NewReminder.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-xs-12 col-6 margin-bottomed">
-                    <label asp-for="NewReminder.Description" class="control-label"></label>
-                    <input asp-for="NewReminder.Description" class="form-control" />
-                    <span asp-validation-for="NewReminder.Description" class="text-danger"></span>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewReminder.Description" class="control-label"></label>
+                        <input asp-for="NewReminder.Description" class="form-control" />
+                        <span asp-validation-for="NewReminder.Description" class="text-danger"></span>
+                    </div>
                 </div>
-                <div class="col-xs-12 col-6 margin-bottomed">
-                    <label asp-for="NewReminder.Date" class="control-label"></label>
-                    <input asp-for="NewReminder.Date" class="form-control" />
-                    <span asp-validation-for="NewReminder.Date" class="text-danger"></span>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewReminder.Date" class="control-label"></label>
+                        <input asp-for="NewReminder.Date" class="form-control" />
+                        <span asp-validation-for="NewReminder.Date" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.CheckMoney]" />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewReminder.CheckBank" class="control-label"></label>
+                        <input asp-for="NewReminder.CheckBank" class="form-control" />
+                        <span asp-validation-for="NewReminder.CheckBank" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewReminder.CheckNumber" class="control-label"></label>
+                        <input asp-for="NewReminder.CheckNumber" class="form-control" />
+                        <span asp-validation-for="NewReminder.CheckNumber" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewReminder.Price" class="control-label"></label>
+                        <input asp-for="NewReminder.Price" class="form-control" placeholder="به تومان" />
+                        <span asp-validation-for="NewReminder.Price" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12">
+                    <div class="input-wrapper">
+                        <div class="input-wrapper">
+                            <label asp-for="NewReminder.Pictures" class="control-label"></label>
+                            <input type="file" asp-for="NewReminder.Pictures" class="form-control-file" multiple />
+                            <span asp-validation-for="NewReminder.Pictures" class="text-danger"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
         <footer>
             <submit full-width="true" />
             <status>
-                @Model.Status
+                @Html.Raw(Model.Status)
             </status>
         </footer>
     </div>

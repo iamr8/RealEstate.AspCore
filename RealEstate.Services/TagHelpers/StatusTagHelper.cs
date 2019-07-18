@@ -11,9 +11,10 @@ namespace RealEstate.Services.TagHelpers
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var contentContext = await output.GetChildContentAsync().ConfigureAwait(false);
-            var content = contentContext.GetContent().Replace("\r\n","").Trim();
+            var content = contentContext.GetContent().Replace("\r\n", "").Trim();
 
             output.AddClass("status-message", HtmlEncoder.Default);
+            output.AddClass("text-right", HtmlEncoder.Default);
 
             if (string.IsNullOrEmpty(content))
                 output.AddClass("hidden", HtmlEncoder.Default);

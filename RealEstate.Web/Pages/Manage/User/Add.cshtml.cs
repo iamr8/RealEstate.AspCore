@@ -41,10 +41,12 @@ namespace RealEstate.Web.Pages.Manage.User
                  () =>
                 {
                     if (!User.IsInRole(nameof(Role.User)))
-                        return null;
+                        return Task.FromResult<UserInputViewModel>(null);
 
                     var currentUser = _baseService.CurrentUser();
-                    return currentUser != null ? _userService.FindInputAsync(currentUser.Id) : null;
+                    return currentUser != null
+                        ? _userService.FindInputAsync(currentUser.Id)
+                        : Task.FromResult<UserInputViewModel>(null);
                 });
             return result;
         }

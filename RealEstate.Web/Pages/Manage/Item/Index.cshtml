@@ -60,7 +60,7 @@
         </widget-header>
         <section class="container-fluid">
             <search-nav rows="@Model.List.Rows" searchModel="@Model.SearchInput">
-                <li class="nav-item dropdown">
+                @*<li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
                     <div class="dropdown-menu">
                         <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
@@ -111,7 +111,7 @@
                         <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
                         <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
                     </div>
-                </li>
+                </li>*@
             </search-nav>
         </section>
         <section class="container-fluid grid">
@@ -130,7 +130,7 @@
                         var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures?.SelectRandom()?.File}");
                         var hasImage = item.Property?.Pictures?.Any() == true;
 
-                        <div class="col-12 col-md-3 items--item-wrapper element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString(" s", new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
+                        <div class="col-12 col-sm-6 col-xl-3 items--item-wrapper element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString(" s", new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
                             <div class="items--item">
                                 <a href="#" data-toggle="modal" data-target="#itemDetailModal" data-item-id="@item.Id">
                                     <div class="picture @(!hasImage ? " no-img" : "" )" @(Html.Raw(hasImage ? $"style=\"background-image: url('{Url.Content(imgPath)}')\"" : ""))>
