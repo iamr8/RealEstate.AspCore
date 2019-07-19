@@ -1,10 +1,17 @@
 ﻿@page
 @model IndexModel
-
+@{
+    var usersList = await UserService.ListJsonAsync(false, false);
+    var users = (usersList?.Select(x => new SelectListItem
+    {
+        Value = x.UserId,
+        Text = x.UserFullName
+    }).ToList()).AddNone();
+}
+<status>
+    @Model.Status
+</status>
 <div class="col-12">
-    <status>
-        @Model.Status
-    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewApplicant]</a>
@@ -15,9 +22,13 @@
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
+
                     <div class="row justify-content-center itemShow @disabledClass">
                         <div class="col-12 detail">
                             <div class="info">
+                                <ul class="info-breadcrumb">
+                                    <li>دارنده فعلی: @item.User?.Employee?.FirstName @item.User?.Employee?.LastName</li>
+                                </ul>
                                 <span>
                                     <a class="title" asp-page="@typeof(Customer.IndexModel).Page()" asp-route-customerId="@item.Customer?.Id" target="_blank">
                                         @item.Customer?.Name
@@ -54,8 +65,10 @@
                                 }
                             </div>
                             <div class="button">
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                                @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
+                                    var owner = $"{item.User?.Employee?.FirstName} {item.User?.Employee?.LastName}";
+                                    <a href="#" data-toggle="modal" data-applicant-name="@item.Customer?.Name" data-applicant-mobile="@item.Customer?.Mobile" data-owner="@owner" data-applicant-id="@item.Id" data-target="#transModal" class="btn btn-sm btn-primary">انتقال</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
                                     <a asp-controller="Remove" asp-action="ApplicantAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
                                 }
@@ -69,3 +82,73 @@
         </section>
     </div>
 </div>
+<div class="modal fade animate" id="transModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <form method="post" asp-page-handler="Trans" class="modal-content animate-bottom">
+            <input asp-for="TransInput.ApplicantId" />
+            <div class="modal-header">
+                <h4 class="modal-title">انتقال متقاضی به کاربر دیگر</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-right">
+                <div class="container-fluid">
+                    <hr subject="@SharedLocalizer[SharedResource.Applicant]"/>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12">
+                            <b id="applicant"></b>
+                        </div>
+                    </div>
+                    <hr subject="انتقال"/>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-12 col-md">
+                            <label class="control-label">@SharedLocalizer[SharedResource.From]</label>
+                            <b id="owner"></b>
+                        </div>
+                        <div class="col-12 col-md">
+                            <div class="input-wrapper">
+                                <label asp-for="TransInput.NewUserId" class="control-label"></label>
+                                <select asp-for="TransInput.NewUserId" asp-items="users" class="custom-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-dark text-white justify-content-end">
+                <button type="button" class="btn btn-sm btn-danger" data-dismiss="modal">@SharedLocalizer[SharedResource.Cancel]</button>
+                <button type="submit" class="btn btn-sm btn-primary mr-2">@SharedLocalizer[SharedResource.Submit]</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+
+            const applicantIdElement = "#@(nameof(Model.TransInput))_@(nameof(Model.TransInput.ApplicantId))";
+            $('#transModal').on('show.bs.modal',
+                function(event) {
+                    const button = $(event.relatedTarget);
+                    const applicantId = button.data('applicant-id');
+                    const owner = button.data('owner');
+                    const applicantName = button.data('applicant-name');
+                    const applicantMobile = button.data('applicant-mobile');
+
+                    const modal = $(this);
+                    modal.find(applicantIdElement).val(applicantId);
+                    modal.find('#owner').html(owner);
+                    modal.find('#applicant').html(`${applicantName} &mdash; ${applicantMobile}`);
+                });
+
+            $('#transModal').on('hide.bs.modal',
+                function(event) {
+                    const modal = $(this);
+                    modal.find(applicantIdElement).val("");
+                    modal.find('#owner').html("");
+                    modal.find('#applicant').html();
+
+                });
+        });
+    </script>
+}

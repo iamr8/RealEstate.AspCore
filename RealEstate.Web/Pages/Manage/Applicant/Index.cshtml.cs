@@ -6,6 +6,7 @@ using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System.Threading.Tasks;
@@ -29,6 +30,9 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         [BindProperty]
         public ApplicantSearchViewModel SearchInput { get; set; }
 
+        [BindProperty]
+        public TransApplicantViewModel TransInput { get; set; }
+
         public PaginationViewModel<ApplicantViewModel> List { get; set; }
 
         public string Status { get; set; }
@@ -48,6 +52,14 @@ namespace RealEstate.Web.Pages.Manage.Applicant
 
         public IActionResult OnPost()
         {
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+        }
+
+        public async Task<IActionResult> OnPostTransAsync()
+        {
+            var (status, message) = await ModelState.IsValidAsync(
+                () => _customerService.TransApplicantAsync(TransInput),
+                nameof(TransInput));
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }
     }

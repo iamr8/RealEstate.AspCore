@@ -51,10 +51,10 @@ namespace RealEstate.Web.Pages.Manage.Deal
                 if (!User.IsInRole(nameof(Role.SuperAdmin)) && !User.IsInRole(nameof(Role.Admin)))
                     return Forbid();
 
-                var model = await _dealService.DealInputAsync(id).ConfigureAwait(false);
+                var model = await _dealService.DealInputAsync(id);
                 NewDeal = model;
 
-                var info = await _itemService.ItemAsync(id, null).ConfigureAwait(false);
+                var info = await _itemService.ItemAsync(id, null);
                 if (info == null)
                     return RedirectToPage(typeof(Deal.IndexModel).Page());
 
@@ -72,7 +72,7 @@ namespace RealEstate.Web.Pages.Manage.Deal
         {
             var (status, message) = await ModelState.IsValidAsync(
                 () => _dealService.AddOrUpdateAsync(NewDeal, !NewDeal.IsNew, true)
-            ).ConfigureAwait(false);
+            );
 
             return RedirectToPage(status != StatusEnum.Success
                 ? typeof(AddModel).Page()

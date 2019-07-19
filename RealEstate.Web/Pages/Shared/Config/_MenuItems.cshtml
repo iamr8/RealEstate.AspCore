@@ -37,7 +37,7 @@
 
     <nav-button icon="~/icons/persons.svg" subject="@SharedLocalizer[SharedResource.Customers]">
         <nav-button page="@typeof(Manage.Customer.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer[SharedResource.List]"></nav-button>
-        @*<nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer["Applicants"]"></nav-button>*@
+        <nav-button page="@typeof(Manage.Applicant.IndexModel).Page()" icon="~/icons/persons.svg" subject="@SharedLocalizer[SharedResource.Applicants]"></nav-button>
     </nav-button>
 
     if (User.IsInRole(Role.Admin.ToString()) || User.IsInRole(Role.SuperAdmin.ToString()))

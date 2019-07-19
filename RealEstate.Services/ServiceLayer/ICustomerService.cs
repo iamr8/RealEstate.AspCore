@@ -6,6 +6,7 @@ using RealEstate.Services.Database;
 using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer.Base;
+using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
@@ -27,6 +28,8 @@ namespace RealEstate.Services.ServiceLayer
         Task<MethodStatus<Applicant>> ApplicantUpdateAsync(ApplicantInputViewModel model, bool save);
 
         Task<OwnershipInputViewModel> OwnershipInputAsync(string customerId);
+
+        Task<StatusEnum> TransApplicantAsync(TransApplicantViewModel model);
 
         Task<MethodStatus<Ownership>> OwnershipAddOrUpdateAsync(OwnershipInputViewModel model, bool update, bool save);
 
@@ -114,6 +117,23 @@ namespace RealEstate.Services.ServiceLayer
                 Phone = customer.PhoneNumber,
             };
             return result;
+        }
+
+        public async Task<StatusEnum> TransApplicantAsync(TransApplicantViewModel model)
+        {
+            if (model == null)
+                return StatusEnum.ModelIsNull;
+
+            var query = await _applicants.FirstOrDefaultAsync(x => x.Id == model.ApplicantId);
+            if (query == null)
+                return StatusEnum.ApplicantIsNull;
+
+            var status = await _baseService.UpdateAsync(query,
+                currentUser => query.UserId = model.NewUserId,
+                null,
+                true,
+                StatusEnum.ApplicantIsNull);
+            return StatusEnum.Success;
         }
 
         public async Task<OwnershipInputViewModel> OwnershipInputAsync(string customerId)
@@ -425,10 +445,20 @@ namespace RealEstate.Services.ServiceLayer
                 return new PaginationViewModel<ApplicantViewModel>();
 
             query = query
-                .Where(x => x.UserId == currentUser.Id)
-                .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
+                .Include(x => x.Customer)
+                .Include(x => x.User)
+                .ThenInclude(x => x.Employee);
 
-            var result = await _baseService.PaginateAsync(query, searchModel, item => item.Map<ApplicantViewModel>().ShowBasedOn(x => x.Customer));
+            if (currentUser.Role != Role.SuperAdmin)
+                query = query.Where(x => x.UserId == currentUser.Id);
+            //                .Where(x => x.Item.DealRequests.All(c => c.DealId == null));
+
+            var result = await _baseService.PaginateAsync(query, searchModel, item => item.Map<ApplicantViewModel>(act =>
+            {
+                act.IncludeAs<Applicant, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer);
+                act.IncludeAs<Applicant, User, UserViewModel>(_unitOfWork, x => x.User,
+                    act2 => act2.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee));
+            }).ShowBasedOn(x => x.Customer));
 
             return result;
         }

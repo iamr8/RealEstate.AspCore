@@ -1,9 +1,9 @@
 ﻿@page
 @model IndexModel
+<status>
+    @Model.Status
+</status>
 <div class="col-12">
-    <status>
-        @Model.Status
-    </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewEmployee]</a>
@@ -96,7 +96,7 @@
                             <div class="button">
                                 @if (User.IsInRole(Role.SuperAdmin.ToString()))
                                 {
-                                    @*<a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>*@
+                                    <a asp-page="@typeof(DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>
                                     <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
 
                                     if (User.Identity.Name != item.CurrentUser?.Username)
@@ -117,19 +117,19 @@
 
 <search-modal searchModel="@Model.SearchInput">
     <div class="row justify-content-center align-items-center">
-        <div class="col-xs-12 col-md margin-bottomed">
+        <div class="col-12 col-md margin-bottomed">
             <div class="input-wrapper">
                 <label class="control-label" asp-for="SearchInput.FirstName"></label>
                 <input asp-for="SearchInput.FirstName" class="form-control" />
             </div>
         </div>
-        <div class="col-xs-12 col-md margin-bottomed">
+        <div class="col-12 col-md margin-bottomed">
             <div class="input-wrapper">
                 <label class="control-label" asp-for="SearchInput.LastName"></label>
                 <input asp-for="SearchInput.LastName" class="form-control" />
             </div>
         </div>
-        <div class="col-xs-12 col-md margin-bottomed">
+        <div class="col-12 col-md margin-bottomed">
             <div class="input-wrapper">
                 <label class="control-label" asp-for="SearchInput.Mobile"></label>
                 <input asp-for="SearchInput.Mobile" class="form-control" />
@@ -137,13 +137,13 @@
         </div>
     </div>
     <div class="row justify-content-center align-items-center">
-        <div class="col-xs-12 col-md-4 margin-bottomed">
+        <div class="col-12 col-md-4 margin-bottomed">
             <div class="input-wrapper">
                 <label class="control-label" asp-for="SearchInput.Phone"></label>
                 <input asp-for="SearchInput.Phone" class="form-control" />
             </div>
         </div>
-        <div class="col-xs-12 col-md margin-bottomed">
+        <div class="col-12 col-md margin-bottomed">
             <div class="input-wrapper">
                 <label class="control-label" asp-for="SearchInput.Address"></label>
                 <input asp-for="SearchInput.Address" class="form-control" />

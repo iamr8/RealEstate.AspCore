@@ -18,7 +18,7 @@ namespace RealEstate.Services.ViewModels.Input
         public ApplicantTypeEnum Type { get; set; }
 
         [HiddenInput]
-        [Required]
+        [Display(ResourceType = typeof(SharedResource), Name = "ApplicantFeatures")]
         public string ApplicantFeaturesJson
         {
             get => _applicantFeaturesJson;

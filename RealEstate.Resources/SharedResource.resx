@@ -1080,4 +1080,7 @@
   <data name="RememberDeadline" xml:space="preserve">
     <value>موعد یادآوری</value>
   </data>
+  <data name="To2" xml:space="preserve">
+    <value>به</value>
+  </data>
 </root>

@@ -95,6 +95,18 @@ namespace RealEstate.Services.ServiceLayer
             _facilities = _unitOfWork.Set<Facility>();
         }
 
+        public const string PricePerMeter = "01cb6a1d-959d-4abb-8488-f10ab09bd8a8";
+        public const string LoanPrice = "736ad605-78ea-41e1-bdeb-8d2811db2dec";
+        public const string BuildYear = "cdb97926-b3b1-48ec-bdd6-389a0431007c";
+        public const string FinalPrice = "54a0b920-c17f-4ff2-9c51-f9551159026a";
+        public const string ComplexUnits = "e75e0fb5-bdcd-470e-9e24-89a022d14490";
+        public const string Tenant = "03fb13b9-9a42-4e0f-a77c-08ed1a3bb179";
+        public const string GroundWidth = "93179c86-a0db-40cf-a0e2-d26c70a8de45";
+        public const string BedRooms = "b35f4bef-925e-415b-b8f1-19f6df02e6ac";
+        public const string Meterage = "15bf9d15-07bc-4f3c-8339-8192c8fd0c18";
+        public const string DepositPrice = "22f68cda-29f2-4cc0-bb0f-e578defb85d1";
+        public const string RentPrice = "02cbebcc-610a-4bd2-8e27-e2d50b13587f";
+
         public async Task<FeatureInputViewModel> FeatureInputAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;

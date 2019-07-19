@@ -2761,6 +2761,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to به.
+        /// </summary>
+        public static string To2 {
+            get {
+                return ResourceManager.GetString("To2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to تا تاریخ.
         /// </summary>
         public static string ToDate {

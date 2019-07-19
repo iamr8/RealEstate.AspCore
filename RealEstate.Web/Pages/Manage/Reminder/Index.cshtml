@@ -10,12 +10,24 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewReminder]</a>
         </widget-header>
         <section class="container-fluid">
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
+            <div class="row justify-content-center align-items-center text-right margin-bottomed">
+                <div class="col-12">
+                    <h6>رنگ زرد: فردا</h6>
+                    <h6>رنگ سبز: امروز</h6>
+                </div>
+            </div>
+
             <item-viewer model="@Model.List.Items">
                 @foreach (var item in Model.List.Items)
                 {
                     var disabledClass = item.IsDeleted ? "disabled" : "";
                     var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-                    <div class="row justify-content-center itemShow @disabledClass">
+
+                    var isToday = item.Date.Date == DateTime.Today;
+                    var isTomorrow = item.Date.Date == DateTime.Today.AddDays(1);
+
+                    <div class="row justify-content-center itemShow @disabledClass @(isToday ? "today": "") @(isTomorrow ? "tomorrow" : "")">
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
@@ -62,7 +74,7 @@
                                                 var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{picture.File}");
 
                                                 <li>
-                                                    <img class="hidden" src="@imgPath" alt="@picture.Text"/>
+                                                    <img class="hidden" src="@imgPath" alt="@picture.Text" />
                                                     @SharedLocalizer[SharedResource.Picture] @(index + 1)
                                                 </li>
                                             }
@@ -85,7 +97,48 @@
         </section>
     </div>
 </div>
-
+<search-modal searchModel="@Model.SearchInput">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Subject"></label>
+                <input asp-for="SearchInput.Subject" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.CheckBank"></label>
+                <input asp-for="SearchInput.CheckBank" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.CheckNumber"></label>
+                <input asp-for="SearchInput.CheckNumber" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center align-items-center">
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.Price"></label>
+                <input type="tel" asp-for="SearchInput.Price" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.FromDate"></label>
+                <input asp-for="SearchInput.FromDate" placeholder="@DateTime.Now.GregorianToPersian(true)" class="form-control" />
+            </div>
+        </div>
+        <div class="col-12 col-md margin-bottomed">
+            <div class="input-wrapper">
+                <label class="control-label" asp-for="SearchInput.ToDate"></label>
+                <input asp-for="SearchInput.ToDate" placeholder="@DateTime.Now.GregorianToPersian(true)" class="form-control" />
+            </div>
+        </div>
+    </div>
+</search-modal>
 @section Styles
 {
     <link rel="stylesheet" href="~/css/jquery.bsPhotoGallery-min.css" asp-append-version="true" />

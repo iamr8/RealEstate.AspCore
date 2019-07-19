@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -13,7 +12,7 @@ using System.Threading.Tasks;
 namespace RealEstate.Web.Pages.Manage.Reminder
 {
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly IReminderService _reminderService;
         private readonly IStringLocalizer<SharedResource> _localizer;
@@ -31,16 +30,21 @@ namespace RealEstate.Web.Pages.Manage.Reminder
 
         public PaginationViewModel<ReminderViewModel> List { get; set; }
 
-        [ViewData]
-        public string PageTitle => _localizer[SharedResource.Reminders];
-
-        public string Status { get; set; }
-
-        public async Task OnGetAsync(string pageNo, string status)
+        public async Task OnGetAsync(string pageNo, string status, bool deleted, string dateFrom, string dateTo, string creatorId, decimal? prc, string chkb, string chkn, string subj, string from, string to)
         {
             SearchInput = new ReminderSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
+                IncludeDeletedItems = deleted,
+                CreatorId = creatorId,
+                CreationDateFrom = dateFrom,
+                CreationDateTo = dateTo,
+                Price = prc,
+                CheckBank = chkb,
+                CheckNumber = chkn,
+                Subject = subj,
+                FromDate = from,
+                ToDate = to
             };
 
             Status = !string.IsNullOrEmpty(status)

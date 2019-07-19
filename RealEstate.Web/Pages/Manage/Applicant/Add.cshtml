@@ -2,30 +2,12 @@
 @model AddModel
 @{
     var applicantTypes = SelectItemExtensions.ToSelectList(ApplicantTypeEnum.Applicant);
-    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Applicant).ConfigureAwait(false);
-    var applicantFeatures = new JsonSelectorComponentModel
+    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Applicant);
+    var featuresSelectList = features?.Select(x => new SelectListItem
     {
-        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
-        ValueProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value),
-        ModelName = nameof(Model.NewApplicant),
-        ItemName = nameof(Model.NewApplicant.ApplicantFeatures),
-        Json = nameof(Model.NewApplicant.ApplicantFeaturesJson),
-        Title = SharedLocalizer["ApplicantFeatures"],
-        ScriptKey = "applicantFeatureScript",
-        SelectListItems = features?.Select(x => new SelectListItem
-        {
-            Text = x.Name,
-            Value = x.Id,
-        }).SelectFirstItem(),
-    };
-
-    var personCreator = new PersonCreatorComponentModel
-    {
-        ModelName = nameof(Model.NewApplicant),
-        ScriptKey = "applicantCreatorScript",
-
-    };
+        Value = x.Id,
+        Text = x.Name,
+    }).SelectFirstItem();
 }
 <form method="post" class="col-12">
     <div class="widget">
@@ -33,34 +15,282 @@
         <input asp-for="NewApplicant.Id" />
         <section class="container-fluid">
             <div class="row justify-content-center align-items-center">
-                <div class="col-12">
+                <div class="col-12 col-md">
                     <div class="input-wrapper">
                         <label asp-for="NewApplicant.Type" class="control-label"></label>
-                        <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="form-control"></select>
+                        <select asp-for="NewApplicant.Type" asp-items="applicantTypes" class="custom-select"></select>
                         <span asp-validation-for="NewApplicant.Type" class="text-danger"></span>
                     </div>
                 </div>
-            </div>
-            <hr />
-            <vc:person-creator model="@personCreator" />
-            <div class="row justify-content-center align-items-center">
-                <div class="col-12">
+                <div class="col-12 col-md">
                     <div class="input-wrapper">
-                        <input asp-for="NewApplicant.ApplicantFeaturesJson" />
-                        <vc:json-selector model="@applicantFeatures" />
+                        <label asp-for="NewApplicant.Name" class="control-label"></label>
+                        <input asp-for="NewApplicant.Name" class="form-control" />
+                        <span asp-validation-for="NewApplicant.Name" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <hr subject="@SharedLocalizer[SharedResource.ContactWay]" />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewApplicant.Mobile" class="control-label"></label>
+                        <input asp-for="NewApplicant.Mobile" class="form-control" />
+                        <span asp-validation-for="NewApplicant.Mobile" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewApplicant.Phone" class="control-label"></label>
+                        <input asp-for="NewApplicant.Phone" class="form-control" />
+                        <span asp-validation-for="NewApplicant.Phone" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewApplicant.Address" class="control-label"></label>
+                        <input asp-for="NewApplicant.Address" class="form-control" />
+                        <span asp-validation-for="NewApplicant.Address" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            @if (features?.Any() == true)
+            {
+                <div class="row justify-content-center align-items-center itemShow adder">
+                    <div class="col-12" id="applicant-features-wrapper">
+                        <div class="input-wrapper">
+                            <input asp-for="NewApplicant.ApplicantFeaturesJson" />
+                            <label class="control-label" asp-for="NewApplicant.ApplicantFeaturesJson"></label>
+                            <select id="applicantFeatures-select" class="custom-select">
+                                @if (featuresSelectList?.Any() == true)
+                                {
+                                    foreach (var item in featuresSelectList)
+                                    {
+                                        var featureException = FeaturesExceptions.GetException(item.Text);
+                                        <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
+                                    }
+                                }
+                            </select>
+                            <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                            <input class="form-control" id="applicantFeatureValue" />
+                            <span id="applicantFeatureCurrentUnit" class="mr-md-1"></span>
+                            <input type="button" id="addNewApplicantFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
+                        </div>
+                        <div class="items hidden"></div>
+                    </div>
+                </div>
+            }
+            <hr />
+            <div class="row justify-content-center align-items-center">
+                <div class="col-12 col-md">
+                    <div class="input-wrapper">
+                        <label asp-for="NewApplicant.Description" class="control-label"></label>
+                        <textarea asp-for="NewApplicant.Description" rows="3" class="form-control"></textarea>
+                        <span asp-validation-for="NewApplicant.Description" class="text-danger"></span>
                     </div>
                 </div>
             </div>
         </section>
         <footer>
-            <submit />
+            <submit full-width="true" />
             <status>
-                @Model.Status
+                @Html.Raw(Model.Status)
             </status>
         </footer>
     </div>
 </form>
+
 @section Scripts
-    {
-    <script asp-paste-key="@applicantFeatures.ScriptKey"></script>
+{
+    <script>
+        $(document).ready(function() {
+
+            const jsonInput = $("#@nameof(Model.NewApplicant)_@nameof(Model.NewApplicant.ApplicantFeaturesJson)");
+            const selectInput = $("#applicantFeatures-select");
+            const wrapperClass = $("#applicant-features-wrapper");
+            const submitInput = $("#addNewApplicantFeature");
+            const valueInput = $("#applicantFeatureValue");
+            const itemSelector = "applicant-feature-item";
+            const unit = $("#applicantFeatureCurrentUnit");
+
+            $(valueInput).on("change paste keyup input propertychange",
+                function(e) {
+                    const pattern = $(this).attr("regex-pattern");
+                    const regex = new RegExp(pattern);
+                    const text = $(this).val();
+                    const matches = text !== "" && text !== undefined && regex.test(text);
+                    if (!matches) {
+                        $(this).addClass("input-validation-error");
+                        $(this).removeClass("valid");
+                    } else {
+                        $(this).removeClass("input-validation-error");
+                        $(this).addClass("valid");
+                    }
+                });
+
+            $(selectInput).on("change",
+                function(e) {
+                    const optionSelected = $("option:selected", this);
+                    $(unit).text(optionSelected.attr("data-unit"));
+                    const message = optionSelected.attr("data-message");
+                    $(valueInput).attr("data-original-title", message);
+                    $(valueInput).attr("title", message);
+                    $(valueInput).attr("data-placement", "bottom");
+                    $(valueInput).attr("regex-pattern", optionSelected.attr("data-regex"));
+                    $(valueInput).tooltip();
+                    $(valueInput).trigger("change");
+                });
+
+            $(jsonInput).change(function() {
+
+                const adder = $("> .adder", wrapperClass);
+                const items = $("> .items", wrapperClass);
+                $(items).empty();
+
+                const json = $(jsonInput).val();
+                if (json === "" || json === null) {
+                    $(jsonInput).val("[]");
+                }
+                const jsonObject = $.parseJSON(json === "" ? "[]" : json);
+
+                if (jsonObject.length > 0) {
+                    $(items).removeClass("hidden");
+                } else {
+                    $(items).addClass("hidden");
+                }
+
+                $.each(jsonObject,
+                    (index, item) => {
+
+                        const id = item.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id));
+                        const name = item
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name));
+                        var value = item
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value));
+
+                        const anchor = document.createElement("a");
+                        $(anchor).attr("href", "#");
+                        $(anchor).attr("data-id", id);
+                        $(anchor).attr("data-original-value", value);
+                        $(anchor).addClass(itemSelector);
+
+                        const nameElement = document.createElement("span");
+                        const dataunit = $(`option[value="${id}"]`, selectInput)[0];
+                        console.log(dataunit);
+                        const unittt = $(dataunit).attr("data-unit");
+                        var finalName = `${name}: `;
+                        if (value != null && value !== "")
+                            finalName = `<b class="text-black-50">${finalName}</b>${value} ${unittt}`;
+
+                        $(nameElement).html(finalName);
+
+                        $(anchor).append(nameElement);
+                        $(items).append(anchor);
+
+                    });
+
+                $.each(selectInput.children(":not([value='---'])"),
+                    (index, item) => {
+                        const id = $(item).val();
+                        const i = jsonObject.findIndex(
+                            obj => obj.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                            id);
+                        if (i >= 0) {
+                            $(item).addClass("hidden");
+                        } else {
+                            $(item).removeClass("hidden");
+                        }
+
+                    });
+
+                const availableItems = $('option:not(.hidden):not([value=""])', selectInput);
+                console.log("Available items", availableItems);
+                if ($(availableItems).length > 0) {
+                    $('option:not(.hidden):eq(0)', selectInput).prop('selected', true);
+                    $(adder).fadeIn("slow");
+                } else {
+                    $(adder).fadeOut("slow");
+                }
+
+            });
+
+            $(submitInput).click(function(e) {
+                let selected = $(selectInput).find('option:selected:eq(0)')[0];
+                if (selected === undefined || selected === null) {
+                    selected = $(selectInput).find('option:eq(0)')[0];
+                }
+
+                $(valueInput).trigger("change");
+
+                const keyId = $(selected).attr("value");
+                const keyName = $(selected).text();
+                const value = $(valueInput).val();
+                const matches = $(valueInput).hasClass("valid");
+
+                if (!matches) {
+                    $(valueInput).focus();
+                    $(valueInput).trigger("change");
+                    console.log(value);
+                    return;
+                }
+
+                if (keyName === "---" || keyName === undefined || keyName === null || keyName === "")
+                    return;
+
+                if (keyId === undefined || keyId === null || keyId === "")
+                    return;
+
+                if ((value === undefined || value === null || value === "" || value === "0"))
+                    return;
+
+                const newItem = {
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)): keyId,
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name)): keyName,
+                    @(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Value)): value
+                };
+
+                addJson(jsonInput,
+                    newItem,
+                    obj => obj.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                    newItem.@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)));
+
+                $(valueInput).val("");
+                $(selectInput).trigger("change");
+
+            });
+
+            $(document).on("click",
+                `.${itemSelector}`,
+                function(e) {
+                    e.preventDefault();
+
+                    const keyId = $(this).attr("data-id");
+                    console.log("KeyId", keyId);
+
+                    const jsonValue = $.parseJSON($(jsonInput).val());
+                    console.log("JsonValue", jsonValue);
+
+                    const index =
+                        jsonValue.findIndex(prop => prop
+                            .@(PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id)) ===
+                            keyId);
+                    console.log("Index", index);
+
+                    const featureId = $(this).attr("data-id");
+                    const featureValue = $(this).attr("data-original-value");
+                    removeJson(jsonInput, index);
+                    $(this).remove();
+                    if ($(valueInput).val().length === 0) {
+                        $(valueInput).val(featureValue);
+                        $(`option[value='${featureId}']`, selectInput).prop('selected', true);
+                        $(selectInput).trigger("change");
+                    }
+                    console.log("Button Triggered to Remove Item", this);
+                });
+
+            $(jsonInput).trigger("change");
+            $(selectInput).trigger("change");
+
+        });
+    </script>
 }

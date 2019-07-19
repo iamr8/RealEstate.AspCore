@@ -5,10 +5,10 @@
     ViewData["Title"] = title;
 
 }
+<status>
+    @Html.Raw(Model.Status)
+</status>
 <form method="post" class="col-12">
-    <div class="status-message @(Model.Status == StatusEnum.Ready ? "hidden" : "")" asp-validation-summary="All">
-        @Model.Status.GetDisplayName()
-    </div>
     <div class="widget">
         <input asp-for="Input.ReturnUrl" />
         <widget-header title="@title"></widget-header>

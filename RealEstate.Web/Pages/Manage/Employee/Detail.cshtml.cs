@@ -44,7 +44,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
             if (string.IsNullOrEmpty(id))
                 return RedirectToPage(typeof(IndexModel).Page());
 
-            var model = await _employeeService.DetailAsync(id).ConfigureAwait(false);
+            var model = await _employeeService.DetailAsync(id);
             if (model == null)
                 return RedirectToPage(typeof(IndexModel).Page());
 
@@ -63,7 +63,7 @@ namespace RealEstate.Web.Pages.Manage.Employee
         {
             var (status, message) = await ModelState.IsValidAsync(
                 () => _paymentService.PaymentAddAsync(NewPayment, true),
-                nameof(NewPayment)).ConfigureAwait(false);
+                nameof(NewPayment));
 
             return RedirectToPage(typeof(DetailModel).Page(), new
             {

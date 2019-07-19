@@ -1,17 +1,22 @@
 ﻿function delayOnRun(func, delay) {
   var timer = null;
-  return function() {
+  return function () {
     var context = this,
       args = arguments;
     clearTimeout(timer);
-    timer = window.setTimeout(function() {
+    timer = window.setTimeout(function () {
       func.apply(context, args);
     }, delay || 1000);
   };
 }
 
-$(document).ready(function() {
-  $("a.sectiongoto").on("click", function(event) {
+$(document).ready(function () {
+  $("#pageSTATUS .close").on("click",
+    function (e) {
+      $("#pageSTATUS").remove();
+    });
+
+  $("a.sectiongoto").on("click", function (event) {
     if (this.hash !== "") {
       event.preventDefault();
       const hash = this.hash;
@@ -20,13 +25,13 @@ $(document).ready(function() {
           scrollTop: $(hash).offset().top
         },
         800,
-        function() {
+        function () {
           window.location.hash = hash;
         }
       );
     }
   });
-  $(document).on("click", "[data-confirm]", function(e) {
+  $(document).on("click", "[data-confirm]", function (e) {
     if (!confirm($(this).attr("data-confirm"))) {
       e.preventDefault();
       e.stopPropagation();
@@ -37,11 +42,11 @@ $(document).ready(function() {
   $(".lazy").lazy({
     effect: "fadeIn",
     visibleOnly: true,
-    onError: function(element) {
+    onError: function (element) {
       console.log(`error loading ${element.data("src")}`);
     }
   });
-  $(".no-enter").keypress(function(e) {
+  $(".no-enter").keypress(function (e) {
     const code = e.keyCode ? e.keyCode : e.which;
     if (code === 13) {
       e.preventDefault();
@@ -51,12 +56,12 @@ $(document).ready(function() {
 
   $('[data-toggle="tooltip"]').tooltip();
 });
-$("#mainNavBar > .navbar-toggler").click(function(e) {
+$("#mainNavBar > .navbar-toggler").click(function (e) {
   $(".backdrop").toggleClass("in");
   $("#navbarNavDropdown").toggleClass("in");
 });
 
-$(".backdrop").click(function(e) {
+$(".backdrop").click(function (e) {
   if ($(this).hasClass("in")) {
     $(".backdrop").removeClass("in");
     $("#navbarNavDropdown").removeClass("in");
@@ -64,7 +69,7 @@ $(".backdrop").click(function(e) {
   }
 });
 
-$(".sidenav.in").on("swiperight", function(e) {
+$(".sidenav.in").on("swiperight", function (e) {
   console.log("sidenav clicked");
   $(".backdrop").trigger("click");
 });

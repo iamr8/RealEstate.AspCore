@@ -128,6 +128,7 @@ namespace RealEstate.Services.TagHelpers
 
             var buttonRowCount = new TagBuilder("a");
             buttonRowCount.Attributes.Add("href", "#");
+            buttonRowCount.AddCssClass("item-count");
             buttonRowCount.AddCssClass("nav-link");
             buttonRowCount.AddCssClass("btn-sm");
             buttonRowCount.InnerHtml.AppendHtml(Rows.ToString()).AppendHtml(" آیتم");

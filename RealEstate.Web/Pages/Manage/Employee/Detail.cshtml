@@ -1,15 +1,18 @@
 ﻿@page
 @model DetailModel
 @{
-  var payments = SelectItemExtensions.ToSelectList<PaymentTypeEnum>
-  ().Where(x => x.Text != PaymentTypeEnum.FixedSalary.GetDisplayName() && x.Text != PaymentTypeEnum.Beneficiary.GetDisplayName()).SelectFirstItem();
+  var payments = SelectItemExtensions
+    .ToSelectList<PaymentTypeEnum>()
+    .Where(x => x.Text != PaymentTypeEnum.FixedSalary.GetDisplayName())
+    .Where(x => x.Text != PaymentTypeEnum.Beneficiary.GetDisplayName())
+    .Where(x => x.Text != PaymentTypeEnum.Remain.GetDisplayName())
+    .SelectFirstItem();
   var currentObliStatus = Model.Detail.Payments.Status == ObligStatusEnum.None ? "secondary" : Model.Detail.Payments?.Status == ObligStatusEnum.Obligee ? "success" : "danger";
 }
+<status>
+  @Html.Raw(Model.Status)
+</status>
 <div class="col-12">
-  <div class="status-message @(string.IsNullOrEmpty(Model.Status) ? " hidden" : "" )" asp-validation-summary="All">
-    <span>@Model.Status</span>
-    <a href="#" class="close-status" onclick=""><i class="fa fa-times"></i></a>
-  </div>
   <div class="widget">
     <widget-header title="@Model.PageTitle" />
     <section class="container-fluid">
@@ -23,13 +26,13 @@
             </div>
             <div id="financial" class="collapse show" data-parent="#accordion">
               <div class="card-body">
-                <div class="row justify-content-center align-content-center margin-bottomed">
+                @*<div class="row justify-content-center align-content-center margin-bottomed">
                   <h3 class="col-md text-center">
                     <span>@((Model.Detail.Payments?.Current ?? 0).ToString().CurrencyToWords()) تومان</span>
                     <span class="badge badge-@currentObliStatus">@Model.Detail.Payments?.Status.GetDisplayName()</span>
                   </h3>
                 </div>
-                <hr />
+                <hr />*@
                 <form method="post" enctype="multipart/form-data" asp-page-handler="Payment" class="row justify-content-center align-content-center">
                   <input asp-for="NewPayment.EmployeeId" />
                   <div class="col-12 col-md">

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -8,6 +9,7 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,6 +20,8 @@ namespace RealEstate.Services.ServiceLayer
         Task<ReminderInputViewModel> ReminderInputAsync(string id);
 
         Task<MethodStatus<Reminder>> ReminderAddAsync(ReminderInputViewModel model, bool save);
+
+        Task<bool> HasNotificationAsync();
 
         Task<StatusEnum> ReminderRemoveAsync(string id);
 
@@ -47,6 +51,20 @@ namespace RealEstate.Services.ServiceLayer
             _pictureService = pictureService;
 
             _reminders = _unitOfWork.Set<Reminder>();
+        }
+
+        public async Task<bool> HasNotificationAsync()
+        {
+            var currentUser = _baseService.CurrentUser();
+            if (currentUser == null)
+                return false;
+
+            var query = await _reminders
+                .Where(x => x.Date.Date == DateTime.Today || x.Date.Date == DateTime.Today.AddDays(1))
+                .Where(x => x.UserId == currentUser.Id)
+                .Cacheable()
+                .AnyAsync();
+            return query;
         }
 
         public async Task<ReminderInputViewModel> ReminderInputAsync(string id)
@@ -143,14 +161,43 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return default;
 
-            var models = _reminders
+            var query = _reminders
                 .Include(x => x.Pictures)
                 .Where(x => x.UserId == currentUser.Id);
 
-//            if (currentUser?.Role == Role.SuperAdmin)
-//                models = models.IgnoreQueryFilters();
+            if (searchModel != null)
+            {
+                if (!string.IsNullOrEmpty(searchModel.CheckBank))
+                    query = query.Where(x => EF.Functions.Like(x.CheckBank, searchModel.CheckBank.Like()));
 
-            var result = await _baseService.PaginateAsync(models, searchModel,
+                if (!string.IsNullOrEmpty(searchModel.CheckNumber))
+                    query = query.Where(x => EF.Functions.Like(x.CheckNumber, searchModel.CheckNumber.Like()));
+
+                if (!string.IsNullOrEmpty(searchModel.Subject))
+                    query = query.Where(x => EF.Functions.Like(x.Description, searchModel.Subject.Like()));
+
+                if (searchModel.Price != null && searchModel.Price > 0)
+                    query = query.Where(x => x.Price == searchModel.Price);
+
+                if (!string.IsNullOrEmpty(searchModel.FromDate))
+                {
+                    var dateTime = searchModel.FromDate.PersianToGregorian();
+                    query = query.Where(x => EF.Functions.DateDiffHour(dateTime, x.Date) <= 0);
+                }
+
+                if (!string.IsNullOrEmpty(searchModel.ToDate))
+                {
+                    var dateTime = searchModel.FromDate.PersianToGregorian();
+                    query = query.Where(x => EF.Functions.DateDiffHour(dateTime, x.Date) >= 0);
+                }
+
+                query = _baseService.AdminSeachConditions(query, searchModel);
+            }
+
+            //            if (currentUser?.Role == Role.SuperAdmin)
+            //                models = models.IgnoreQueryFilters();
+
+            var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<ReminderViewModel>(act =>
                 {
                     act.IncludeAs<Reminder, Picture, PictureViewModel>(_unitOfWork, x => x.Pictures);

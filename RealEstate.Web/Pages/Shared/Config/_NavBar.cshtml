@@ -3,10 +3,9 @@
 		<span class="navbar-toggler-icon"></span>
 	</button>
 	<a class="navbar-brand" asp-page="/Index">
-		@SharedLocalizer["AppName"]
+		@SharedLocalizer[SharedResource.AppName]
 	</a>
-
-	<vc:notification />
+	<partial name="Shared/Config/_Notification" />
 </nav>
 <div id="navbarNavDropdown" class="sidenav">
 	<partial name="Shared/Config/_MenuHeader" />

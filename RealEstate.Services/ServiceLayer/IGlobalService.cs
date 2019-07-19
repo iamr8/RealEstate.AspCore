@@ -73,11 +73,6 @@ namespace RealEstate.Services.ServiceLayer
             _propertyFeatures = _unitOfWork.Set<PropertyFeature>();
         }
 
-        private const string FeaturePricePerMeter = "01cb6a1d-959d-4abb-8488-f10ab09bd8a8";
-        private const string FeatureLoadPrice = "736ad605-78ea-41e1-bdeb-8d2811db2dec";
-        private const string FeatureBuildYear = "cdb97926-b3b1-48ec-bdd6-389a0431007c";
-        private const string FeatureFinalPrice = "54a0b920-c17f-4ff2-9c51-f9551159026a";
-
         private async Task CleanPropertyDuplicatesAsync()
         {
             var groups = await _properties.IgnoreQueryFilters()
@@ -423,7 +418,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var itemFeatures = await _itemFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == FeatureLoadPrice)
+                .Where(x => x.FeatureId == FeatureService.LoanPrice)
                 .ToListAsync();
             if (itemFeatures?.Any() != true)
                 return;
@@ -450,7 +445,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var itemFeatures = await _itemFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == FeaturePricePerMeter)
+                .Where(x => x.FeatureId == FeatureService.PricePerMeter)
                 .ToListAsync();
             if (itemFeatures?.Any() != true)
                 return;
@@ -474,7 +469,7 @@ namespace RealEstate.Services.ServiceLayer
                     if (num >= 100000000)
                     {
                         normalized = FixFinalPrice(value);
-                        featureId = FeatureFinalPrice;
+                        featureId = FeatureService.FinalPrice;
                     }
                     else
                     {
@@ -505,7 +500,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var itemFeatures = await _itemFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == FeatureFinalPrice)
+                .Where(x => x.FeatureId == FeatureService.FinalPrice)
                 .ToListAsync();
             if (itemFeatures?.Any() != true)
                 return;
@@ -629,7 +624,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var propertyFeatures = await _propertyFeatures
                 .Include(x => x.Feature)
-                .Where(x => x.FeatureId == FeatureBuildYear
+                .Where(x => x.FeatureId == FeatureService.BuildYear
                             && x.Value.Length != 4)
                 .ToListAsync();
             if (propertyFeatures?.Any() != true)

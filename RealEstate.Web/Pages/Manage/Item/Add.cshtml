@@ -122,43 +122,43 @@
 
                     @if (propertyFeatures?.Any() == true)
                     {
-                        <div class="row justify-content-center align-items-center itemShow adder">
-                            <div class="col-12" id="property-features-wrapper">
-                                <div class="input-wrapper">
-                                    <input asp-for="NewItem.Property.PropertyFeaturesJson" />
-                                    <label class="control-label" asp-for="NewItem.Property.PropertyFeaturesJson"></label>
-                                    <select id="propertyFeatures-select" class="custom-select">
-                                        @if (propertyFeaturesList?.Any() == true)
-                                        {
-                                            foreach (var item in propertyFeaturesList)
-                                            {
-                                                var featureException = FeaturesExceptions.GetException(item.Text);
-                                                <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
-                                            }
-                                        }
-                                    </select>
-                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                                    <input class="form-control" id="propertyFeatureValue" />
-                                    <span id="propertyFeatureCurrentUnit" class="mr-md-1"></span>
-                                    <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                </div>
-                                <div class="items hidden"></div>
+                    <div class="row justify-content-center align-items-center itemShow adder">
+                        <div class="col-12" id="property-features-wrapper">
+                            <div class="input-wrapper">
+                                <input asp-for="NewItem.Property.PropertyFeaturesJson" />
+                                <label class="control-label" asp-for="NewItem.Property.PropertyFeaturesJson"></label>
+                                <select id="propertyFeatures-select" class="custom-select">
+                                    @if (propertyFeaturesList?.Any() == true)
+                                    {
+                                    foreach (var item in propertyFeaturesList)
+                                    {
+                                    var featureException = FeaturesExceptions.GetException(item.Text);
+                                    <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
+                                    }
+                                    }
+                                </select>
+                                <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                <input class="form-control" id="propertyFeatureValue" />
+                                <span id="propertyFeatureCurrentUnit" class="mr-md-1"></span>
+                                <input type="button" id="addNewPropertyFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                             </div>
+                            <div class="items hidden"></div>
                         </div>
+                    </div>
                     }
                     @if (propertyFacilities?.Any() == true)
                     {
-                        <div class="row justify-content-center align-items-center itemShow adder">
-                            <div class="col-12" id="property-facilities-wrapper">
-                                <div class="input-wrapper">
-                                    <input asp-for="NewItem.Property.PropertyFacilitiesJson" />
-                                    <label class="control-label" asp-for="NewItem.Property.PropertyFacilitiesJson"></label>
-                                    <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
-                                    <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                </div>
-                                <div class="items hidden"></div>
+                    <div class="row justify-content-center align-items-center itemShow adder">
+                        <div class="col-12" id="property-facilities-wrapper">
+                            <div class="input-wrapper">
+                                <input asp-for="NewItem.Property.PropertyFacilitiesJson" />
+                                <label class="control-label" asp-for="NewItem.Property.PropertyFacilitiesJson"></label>
+                                <select asp-items="propertyFacilitiesList" id="propertyFacility-select" class="custom-select"></select>
+                                <input type="button" id="addNewPropertyFacility" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                             </div>
+                            <div class="items hidden"></div>
                         </div>
+                    </div>
                     }
                 </div>
             </div>
@@ -210,29 +210,29 @@
                     </div>
                     @if (itemFeatures?.Any() == true)
                     {
-                        <div class="row justify-content-center align-items-center itemShow adder">
-                            <div class="col-12" id="features-wrapper">
-                                <div class="input-wrapper">
-                                    <input asp-for="NewItem.ItemFeaturesJson" />
-                                    <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
-                                    <select id="features-select" class="custom-select">
-                                        @if (itemFeaturesSelect?.Any() == true)
-                                        {
-                                            foreach (var item in itemFeaturesSelect)
-                                            {
-                                                var featureException = FeaturesExceptions.GetException(item.Text);
-                                                <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
-                                            }
-                                        }
-                                    </select>
-                                    <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
-                                    <input class="form-control" name="NewItem.ItemFeatureValue" id="NewItem_ItemFeatureValue" />
-                                    <span id="itemFeatureCurrentUnit" class="mr-md-1"></span>
-                                    <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
-                                </div>
-                                <div class="items hidden"></div>
+                    <div class="row justify-content-center align-items-center itemShow adder">
+                        <div class="col-12" id="features-wrapper">
+                            <div class="input-wrapper">
+                                <input asp-for="NewItem.ItemFeaturesJson" />
+                                <label class="control-label">@SharedLocalizer[SharedResource.Features]</label>
+                                <select id="features-select" class="custom-select">
+                                    @if (itemFeaturesSelect?.Any() == true)
+                                    {
+                                    foreach (var item in itemFeaturesSelect)
+                                    {
+                                    var featureException = FeaturesExceptions.GetException(item.Text);
+                                    <option value="@item.Value" data-message="@featureException?.Message" data-regex="@featureException?.RegularExpression" data-unit="@featureException?.Unit">@item.Text</option>
+                                    }
+                                    }
+                                </select>
+                                <label class="control-label">@SharedLocalizer[SharedResource.Value]</label>
+                                <input class="form-control" name="NewItem.ItemFeatureValue" id="NewItem_ItemFeatureValue" />
+                                <span id="itemFeatureCurrentUnit" class="mr-md-1"></span>
+                                <input type="button" id="addNewFeature" class="btn btn-warning btn-sm" value="@SharedLocalizer[SharedResource.Add]" />
                             </div>
+                            <div class="items hidden"></div>
                         </div>
+                    </div>
                     }
                     <div class="row justify-content-center align-items-center">
                         <div class="col-12">
@@ -257,7 +257,7 @@
 
 @section Scripts
 {
-    <script>
+<script>
 
         var propertyChanged = true;
 
@@ -345,8 +345,8 @@
             });
 
         });
-    </script>
-    <script>
+</script>
+<script>
         $(document).ready(function() {
 
             const jsonInput =
@@ -538,8 +538,8 @@
             $(selectInput).trigger("change");
 
         });
-    </script>
-    <script>
+</script>
+<script>
         $(document).ready(function() {
 
             const jsonInput =
@@ -660,8 +660,8 @@
             $(jsonInput).trigger("change");
 
         });
-    </script>
-    <script>
+</script>
+<script>
         $(document).ready(function() {
 
             const jsonInput = $("#@nameof(Model.NewItem)_@nameof(Model.NewItem.ItemFeaturesJson)");
@@ -855,5 +855,5 @@
             $(jsonInput).trigger("change");
             $(selectInput).trigger("change");
         });
-    </script>
+</script>
 }
