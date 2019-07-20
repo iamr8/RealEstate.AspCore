@@ -10,10 +10,50 @@
   };
 }
 
+function removeURLParameter(url, parameter) {
+  //prefer to use l.search if you have a location/link object
+  const urlparts = url.split("?");
+  if (urlparts.length >= 2) {
+    const prefix = encodeURIComponent(parameter) + "=";
+    const pars = urlparts[1].split(/[&;]/g);
+
+    //reverse iteration as may be destructive
+    for (let i = pars.length; i-- > 0;) {
+      //idiom for string.startsWith
+      if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+        pars.splice(i, 1);
+      }
+    }
+
+    url = urlparts[0] + "?" + pars.join("&");
+    return url;
+  } else {
+    return url;
+  }
+}
+
 $(document).ready(function () {
   $("#pageSTATUS .close").on("click",
     function (e) {
-      $("#pageSTATUS").remove();
+      if (location.href.includes("?")) {
+        const splitUrl = location.href.split("?");
+        const [url, queryString] = splitUrl;
+        const params = queryString.split("&");
+        var newParams = [];
+        var indicator = 0;
+        $.each(params,
+          (index, param) => {
+            const [key, value] = param.split("=");
+            if (key !== "status") {
+              newParams[indicator] = `${key}=${value}`;
+              indicator++;
+            }
+          });
+        const newQueryString = newParams.join("&");
+        console.log("Array: ", newParams, "QueryString: ", newQueryString);
+        history.pushState({}, document.title, `?${newQueryString}`);
+        $("#pageSTATUS").remove();
+      }
     });
 
   $("a.sectiongoto").on("click", function (event) {

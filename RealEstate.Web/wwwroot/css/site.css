@@ -540,6 +540,14 @@ button {
     user-select: none;
     cursor: default !important;
     background-color: lightgray; }
+    .itemShow.disabled.today {
+      background-color: rgba(144, 238, 144, 0.4); }
+    .itemShow.disabled.tomorrow {
+      background-color: lightyellow; }
+  .itemShow.today {
+    background-color: rgba(144, 238, 144, 0.4); }
+  .itemShow.tomorrow {
+    background-color: lightyellow; }
   .itemShow > .tracker {
     font-size: 9pt;
     border-top: 1px dashed lightgray;
@@ -1801,12 +1809,6 @@ label[required]:not(.custom-control-label):after {
     transform: rotate(0); }
   100% {
     transform: rotate(0); } }
-
-.today {
-  background-color: rgba(144, 238, 144, 0.4); }
-
-.tomorrow {
-  background-color: lightyellow; }
 
 .dropdown-toggle:after {
   margin-right: 5px; }

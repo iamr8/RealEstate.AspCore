@@ -537,6 +537,22 @@ button {
         @include user-select(none);
         cursor: default !important;
         background-color: lightgray;
+
+        &.today {
+            background-color: mix(transparent, lightgreen,60);
+        }
+
+        &.tomorrow {
+            background-color: lightyellow;
+        }
+    }
+
+    &.today {
+        background-color: mix(transparent, lightgreen,60);
+    }
+
+    &.tomorrow {
+        background-color: lightyellow;
     }
 
     > .tracker {
@@ -2282,14 +2298,6 @@ label[required] {
     100% {
         transform: rotate(0);
     }
-}
-
-.today {
-    background-color: mix(transparent, lightgreen,60);
-}
-
-.tomorrow {
-    background-color: lightyellow;
 }
 
 .dropdown-toggle {
