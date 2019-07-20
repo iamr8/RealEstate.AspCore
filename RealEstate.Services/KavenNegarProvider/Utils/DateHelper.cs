@@ -15,12 +15,11 @@ namespace RealEstate.Services.KavenNegarProvider.Utils
         {
             try
             {
-                dateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour,
-                    dateTime.Minute, dateTime.Second);
+                dateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second);
                 var unixTimeSpan = (dateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Local).ToLocalTime());
                 return long.Parse(unixTimeSpan.TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
-            catch (Exception ex)
+            catch
             {
                 return 0;
             }
