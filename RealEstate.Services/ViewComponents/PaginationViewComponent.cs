@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RealEstate.Base;
 using RealEstate.Services.BaseLog;
 using RestSharp.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace RealEstate.Services.ViewComponents
 {
@@ -42,18 +42,23 @@ namespace RealEstate.Services.ViewComponents
             var currentUrlRoutes = currentUrlData.Values.Values;
 
             var final = new List<PaginationPassModel>();
-            var queryString = ViewContext.HttpContext.Request.QueryString.Value;
             var routeTemplate = new Dictionary<string, string>();
-            if (!string.IsNullOrEmpty(queryString))
+            try
             {
-                queryString = queryString.Substring(queryString.StartsWith("?") ? 1 : 0);
+                var queryString = ViewContext.HttpContext.Request.QueryString.Value;
                 if (!string.IsNullOrEmpty(queryString))
                 {
-                    routeTemplate = queryString.Split("&").Where(x => x.Split("=")[0] != "pageNo")
-                        .ToDictionary(x => x.Split("=")[0], x => x.Split("=")[1].UrlDecode());
+                    queryString = queryString.Substring(queryString.StartsWith("?") ? 1 : 0);
+                    if (!string.IsNullOrEmpty(queryString))
+                    {
+                        routeTemplate = queryString.Split("&").Where(x => x.Split("=")[0] != "pageNo")
+                            .ToDictionary(x => x.Split("=")[0], x => x.Split("=")[1].UrlDecode());
+                    }
                 }
             }
-
+            catch
+            {
+            }
             for (var x = 0; x < pages; x++)
             {
                 var page = x + 1;

@@ -198,9 +198,8 @@ namespace RealEstate.Services.ServiceLayer.Base
                 $"SELECT * FROM [{tableName}] I CROSS APPLY ( SELECT TOP(1) JSON_VALUE(value, '$.d') ActivityDate, JSON_VALUE(value, '$.t') ActivityType FROM OPENJSON(I.Audit, '$') J ORDER BY [key] DESC ) J2 ";
 
             if (!isAdmin)
-            {
                 rawQuery += $"WHERE ActivityType != {(int)LogTypeEnum.Delete}";
-            }
+
             //else
             //{
             //            query = query.IgnoreQueryFilters();

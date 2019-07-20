@@ -13,6 +13,5 @@ namespace RealEstate.Services.Extensions
 
         [DbFunction("ISNUMERIC", "")]
         public static int IsNumeric(string str) => throw new NotSupportedException();
-
     }
 }

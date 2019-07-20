@@ -59,12 +59,17 @@ namespace RealEstate.Services.ServiceLayer
             if (currentUser == null)
                 return false;
 
-            var query = await _reminders
+            var query = _reminders.WhereNotDeleted();
+
+            //if (currentUser.Role == Role.Admin || currentUser.Role == Role.SuperAdmin)
+            //    query = query.IgnoreQueryFilters();
+
+            query = query
                 .Where(x => x.Date.Date == DateTime.Today || x.Date.Date == DateTime.Today.AddDays(1))
-                .Where(x => x.UserId == currentUser.Id)
-                .Cacheable()
-                .AnyAsync();
-            return query;
+                .Where(x => x.UserId == currentUser.Id);
+
+            var models = await query.Cacheable().AnyAsync();
+            return models;
         }
 
         public async Task<ReminderInputViewModel> ReminderInputAsync(string id)

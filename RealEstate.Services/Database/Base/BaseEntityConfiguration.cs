@@ -1,9 +1,8 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using RealEstate.Base.Enums;
-using System.Linq;
 using RealEstate.Services.Extensions;
+using System;
 
 namespace RealEstate.Services.Database.Base
 {

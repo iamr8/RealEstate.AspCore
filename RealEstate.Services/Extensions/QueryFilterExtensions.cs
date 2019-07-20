@@ -1,8 +1,10 @@
 ﻿using EFSecondLevelCache.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,6 +18,11 @@ namespace RealEstate.Services.Extensions
                          orderby CustomDbFunctions.JsonValue(que.Audit, "$[0].d") descending
                          select que;
             return source;
+        }
+
+        public static string Like(this string searchString)
+        {
+            return $"%{string.Join("%", searchString.Split(' ').ToArray())}%";
         }
 
         public static string ToSql<TSource>(this IQueryable<TSource> query)
@@ -57,12 +64,24 @@ namespace RealEstate.Services.Extensions
             return result;
         }
 
+        public static IQueryable<TEntity> WhereNotDeleted<TEntity>(this IQueryable<TEntity> query) where TEntity : BaseEntity
+        {
+            var tableName = query.ElementType.Name;
+            var rawQuery =
+                $"SELECT * FROM [{tableName}] I "
+                + "CROSS APPLY ( SELECT TOP(1) JSON_VALUE(value, '$.d') ActivityDate, JSON_VALUE(value, '$.t') ActivityType FROM OPENJSON(I.Audit, '$') J ORDER BY [key] DESC ) J2 "
+                + $"WHERE ActivityType != {(int)LogTypeEnum.Delete}";
+
+            query = query.FromSql(rawQuery);
+            return query;
+        }
+
         public static IList<TEntity> WhereNotDeleted<TEntity>(this ICollection<TEntity> entities) where TEntity : BaseEntity
         {
             if (entities?.Any() != true)
                 return default;
 
-            var result = entities.Where(entity => string.IsNullOrEmpty(entity.Audit)
+            var result = entities.Where(entity => String.IsNullOrEmpty(entity.Audit)
                                                   || entity.Audits.OrderByDescending(x => x.DateTime).FirstOrDefault().Type != LogTypeEnum.Delete);
             return result.ToList();
         }

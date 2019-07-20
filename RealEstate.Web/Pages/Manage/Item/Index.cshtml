@@ -52,10 +52,6 @@
 
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            @if (User.IsInRole(Role.SuperAdmin.ToString()))
-            {
-                <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
-            }
             <a asp-page="@typeof(CheckModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
