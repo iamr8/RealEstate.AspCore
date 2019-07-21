@@ -2,7 +2,7 @@
 
 namespace RealEstate.Services.ViewModels.Api
 {
-    public class TokenCheck : ResponseWrapper
+    public class TokenCheck : ResponseStatus
     {
         public UserResponse User { get; set; }
     }

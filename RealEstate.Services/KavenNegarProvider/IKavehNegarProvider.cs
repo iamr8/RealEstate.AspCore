@@ -7,27 +7,28 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace RealEstate.Services.KavenNegarProvider
 {
     public interface IKavehNegarProvider
     {
-        Response<List<Send>> Send(List<string> receptors, string message, DateTime? scheduledDateTime = null);
+        Task<Response<List<Send>>> SendAsync(List<string> receptors, string message, DateTime? scheduledDateTime = null);
 
-        Response<AccountConfig> AccountConfig(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed);
+        Task<Response<AccountConfig>> AccountConfigAsync(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed);
 
-        List<Send> Select(params string[] messageIds);
+        Task<List<Send>> Select(params string[] messageIds);
 
-        Response<List<Status>> Status(params string[] messageIds);
+        Task<Response<List<Status>>> Status(params string[] messageIds);
 
-        Response<List<Send>> LatestOutbox(long pageSize, string sender = null);
+        Task<Response<List<Send>>> LatestOutbox(long pageSize, string sender = null);
 
-        Response<List<Status>> Cancel(params string[] messageIds);
+        Task<Response<List<Status>>> Cancel(params string[] messageIds);
 
-        Response<AccountInfo> AccountInfo();
+        Task<Response<AccountInfo>> AccountInfoAsync();
 
-        Response<List<Send>> VerifyLookup(string receptor, string template, string token, string token2 = null, string token3 = null, string token10 = null,
+        Task<Response<List<Send>>> VerifyLookupAsync(string receptor, string template, string token, string token2 = null, string token3 = null, string token10 = null,
             string token20 = null);
     }
 
@@ -46,7 +47,7 @@ namespace RealEstate.Services.KavenNegarProvider
             return $"https://api.kavenegar.com/v1/{ApiKey}/{_base}/{method}.json";
         }
 
-        private static TResponse Execute<TResponse>(string path, Dictionary<string, object> _params) where TResponse : class
+        private static async Task<TResponse> ExecuteAsync<TResponse>(string path, Dictionary<string, object> _params) where TResponse : class
         {
             var postData = "";
             postData = _params.Keys.Aggregate(postData,
@@ -60,15 +61,24 @@ namespace RealEstate.Services.KavenNegarProvider
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             request.AddParameter("application/x-www-form-urlencoded", postData, ParameterType.RequestBody);
 
-            var response = client.Execute(request);
-            if (response == null)
+            var response = await client.ExecuteTaskAsync(request);
+            if (string.IsNullOrEmpty(response.Content) || !response.IsSuccessful)
                 return default;
 
-            var objJson = JsonConvert.DeserializeObject<TResponse>(response.Content);
+            TResponse objJson;
+            try
+            {
+                objJson = JsonConvert.DeserializeObject<TResponse>(response.Content);
+            }
+            catch
+            {
+                objJson = default;
+            }
+
             return objJson;
         }
 
-        public Response<List<Send>> Send(List<string> receptors, string message, DateTime? scheduledDateTime = null)
+        public async Task<Response<List<Send>>> SendAsync(List<string> receptors, string message, DateTime? scheduledDateTime = null)
         {
             var param = new Dictionary<string, object>
             {
@@ -80,11 +90,11 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("sms", "send");
-            var response = Execute<Response<List<Send>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Send>>>(path, param);
             return response;
         }
 
-        public Response<AccountConfig> AccountConfig(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed)
+        public async Task<Response<AccountConfig>> AccountConfigAsync(string apiLogs, string dailyReport, string debugMode, int? minCreditAlarm, string resendFailed)
         {
             var param = new Dictionary<string, object>
             {
@@ -97,11 +107,11 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("account", "config");
-            var response = Execute<Response<AccountConfig>>(path, param);
+            var response = await ExecuteAsync<Response<AccountConfig>>(path, param);
             return response;
         }
 
-        public List<Send> Select(params string[] messageIds)
+        public async Task<List<Send>> Select(params string[] messageIds)
         {
             var param = new Dictionary<string, object>
             {
@@ -109,11 +119,11 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("sms", "select");
-            var response = Execute<Response<List<Send>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Send>>>(path, param);
             return response.Result;
         }
 
-        public Response<List<Status>> Status(params string[] messageIds)
+        public async Task<Response<List<Status>>> Status(params string[] messageIds)
         {
             var param = new Dictionary<string, object>
             {
@@ -121,11 +131,11 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("sms", "status");
-            var response = Execute<Response<List<Status>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Status>>>(path, param);
             return response;
         }
 
-        public Response<List<Send>> LatestOutbox(long pageSize, string sender = null)
+        public async Task<Response<List<Send>>> LatestOutbox(long pageSize, string sender = null)
         {
             var param = new Dictionary<string, object>
             {
@@ -134,11 +144,11 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("sms", "latestoutbox");
-            var response = Execute<Response<List<Send>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Send>>>(path, param);
             return response;
         }
 
-        public Response<List<Status>> Cancel(params string[] messageIds)
+        public async Task<Response<List<Status>>> Cancel(params string[] messageIds)
         {
             var param = new Dictionary<string, object>
             {
@@ -146,18 +156,19 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("sms", "cancel");
-            var response = Execute<Response<List<Status>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Status>>>(path, param);
             return response;
         }
 
-        public Response<AccountInfo> AccountInfo()
+        public async Task<Response<AccountInfo>> AccountInfoAsync()
         {
             var path = GetApiPath("account", "info");
-            var response = Execute<Response<AccountInfo>>(path, null);
+            var response = await ExecuteAsync<Response<AccountInfo>>(path, null);
             return response;
         }
 
-        public Response<List<Send>> VerifyLookup(string receptor, string template, string token, string token2 = null, string token3 = null, string token10 = null, string token20 = null)
+        public async Task<Response<List<Send>>> VerifyLookupAsync(string receptor, string template, string token, string token2 = null, string token3 = null,
+            string token10 = null, string token20 = null)
         {
             var param = new Dictionary<string, object>
             {
@@ -172,7 +183,7 @@ namespace RealEstate.Services.KavenNegarProvider
             };
 
             var path = GetApiPath("verify", "lookup");
-            var response = Execute<Response<List<Send>>>(path, param);
+            var response = await ExecuteAsync<Response<List<Send>>>(path, param);
             return response;
         }
     }

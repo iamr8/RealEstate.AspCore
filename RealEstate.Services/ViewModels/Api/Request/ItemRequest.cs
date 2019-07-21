@@ -1,9 +1,6 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-
-namespace RealEstate.Services.ViewModels.Api.Request
+﻿namespace RealEstate.Services.ViewModels.Api.Request
 {
-    public class ItemRequest
+    public class ItemRequest : PaginatedRequest
     {
         public string ItemCategory { get; set; }
 

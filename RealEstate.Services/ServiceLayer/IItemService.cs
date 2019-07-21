@@ -30,6 +30,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
+        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10);
+
         Task<StatusEnum> ItemRemoveAsync(string id);
 
         Task<bool> ItemCheckAsync(PropertyCheckViewModel model);
@@ -392,6 +394,14 @@ namespace RealEstate.Services.ServiceLayer
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
 
+            return await ItemListAsync(searchModel, query, currentUser.Id, 12);
+        }
+
+        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10)
+        {
+            if (query == null)
+                query = _items.AsQueryable();
+
             query = query.Include(x => x.Property.Category)
                 .Include(x => x.Property.District)
                 .Include(x => x.Property.Pictures)
@@ -403,11 +413,11 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Ownerships)
                 .ThenInclude(x => x.Customer)
                 .Include(x => x.Category)
-                .Include(x => x.DealRequests)
+//                .Include(x => x.DealRequests)
                 .Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature)
-                .Include(x => x.Applicants)
-                .ThenInclude(x => x.Customer);
+                .ThenInclude(x => x.Feature);
+//                .Include(x => x.Applicants)
+//                .ThenInclude(x => x.Customer);
 
             //query = from item in query
             //        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
@@ -570,7 +580,7 @@ namespace RealEstate.Services.ServiceLayer
                     }
                 }
                 if (searchModel.IsNegotiable)
-                    query = query.Where(x => x.Description.Contains("قابل مذاکره"));
+                    query = query.Where(x => x.Description.Contains(_localizer[SharedResource.Negotitable]));
 
                 if (searchModel.HasPicture)
                     query = query.Where(x => x.Property.Pictures.Any());
@@ -578,8 +588,8 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
 
-            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == currentUser.Id));
-            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == currentUser.Id));
+            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == currentUserId));
+            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == currentUserId));
 
             var result = await _baseService.PaginateAsync(query, searchModel,
                 item => item.Map<ItemViewModel>(act =>
@@ -603,7 +613,7 @@ namespace RealEstate.Services.ServiceLayer
                     act.IncludeAs<Item, DealRequest, DealRequestViewModel>(_unitOfWork, x => x.DealRequests);
                     act.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
                         ent => ent.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                }), currentUser, 12);
+                }), pageSize);
 
             return result;
         }

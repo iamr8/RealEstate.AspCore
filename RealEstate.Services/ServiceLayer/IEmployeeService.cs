@@ -218,7 +218,7 @@ namespace RealEstate.Services.ServiceLayer
                     ent.IncludeAs<Employee, User, UserViewModel>(_unitOfWork, x => x.Users);
                     ent.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions,
                         ent2 => ent2.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division));
-                }), currentUser);
+                }));
 
             if (result?.Items?.Any() != true)
                 return result;

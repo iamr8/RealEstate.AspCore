@@ -500,7 +500,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CustomerViewModel>(), currentUser);
+                item => item.Map<CustomerViewModel>());
 
             return result;
         }

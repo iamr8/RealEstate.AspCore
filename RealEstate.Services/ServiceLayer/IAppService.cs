@@ -1,4 +1,5 @@
 ﻿using EFSecondLevelCache.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Localization;
@@ -13,7 +14,7 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Api;
 using RealEstate.Services.ViewModels.Api.Request;
 using RealEstate.Services.ViewModels.Api.Response;
-using RealEstate.Services.ViewModels.ModelBind;
+using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -28,9 +29,13 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<ResponseWrapper<SignInResponse>> SignInAsync(SignInRequest model);
 
-        Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string token, string version);
+        Task<ResponseWrapper<ConfigResponse>> ConfigAsync();
 
-        Task<ResponseWrapper<ItemResponse>> ItemListAsync(string token, string version, ItemRequest model);
+        Task<ResponseWrapper<PaginatedResponse<ReminderResponse>>> RemindersAsync(ReminderRequest model);
+
+        Task<ResponsesWrapper<ZoonkanResponse>> ZoonkansAsync();
+
+        Task<ResponseWrapper<PaginatedResponse<ItemResponse>>> ItemListAsync(ItemRequest model);
     }
 
     public class AppService : IAppService
@@ -38,141 +43,81 @@ namespace RealEstate.Services.ServiceLayer
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseService _baseService;
         private readonly IUserService _userService;
+        private readonly IReminderService _reminderService;
         private readonly IItemService _itemService;
         private readonly IStringLocalizer<SharedResource> _localizer;
+        private readonly IHttpContextAccessor _accessor;
+
         private readonly DbSet<User> _users;
         private readonly DbSet<Item> _items;
+        private HttpContext HttpContext => _accessor.HttpContext;
+        private string Token => HttpContext.Request.Headers["RealEstate-Token"];
+
+        private VersionCheck Version
+        {
+            get
+            {
+                try
+                {
+                    var vrs = HttpContext.Request.Headers["RealEstate-Version"].ToString();
+                    if (string.IsNullOrEmpty(vrs))
+                        return new VersionCheck(0, 0, 0);
+
+                    var version = vrs.Split(".");
+                    return new VersionCheck(int.Parse(version[0]), int.Parse(version[1]), int.Parse(version[2]));
+                }
+                catch
+                {
+                    return new VersionCheck(0, 0, 0);
+                }
+            }
+        }
+
+        private string Os => HttpContext.Request.Headers["RealEstate-OS"];
+        private string Device => HttpContext.Request.Headers["RealEstate-Device"];
 
         public AppService(
             IUnitOfWork unitOfWork,
             IBaseService baseService,
             IUserService userService,
+            IReminderService reminderService,
             IItemService itemService,
+            IHttpContextAccessor accessor,
             IStringLocalizer<SharedResource> localizer)
         {
             _unitOfWork = unitOfWork;
             _baseService = baseService;
             _itemService = itemService;
             _userService = userService;
+            _reminderService = reminderService;
             _localizer = localizer;
+            _accessor = accessor;
             _users = _unitOfWork.Set<User>();
             _items = _unitOfWork.Set<Item>();
         }
 
-        public async Task<ResponseWrapper<ItemResponse>> ItemListAsync(string token, string version, ItemRequest model)
+        public async Task<ResponsesWrapper<ZoonkanResponse>> ZoonkansAsync()
         {
-            var tokenState = await TokenCheckAsync(token, version);
+            var tokenState = await TokenCheckAsync(Token);
             if (!tokenState.Success)
-                return TokenCheckToResponse<ItemResponse>(tokenState);
+                return TokenCheckToResponses<ZoonkanResponse>(tokenState);
 
-            if (string.IsNullOrEmpty(model.ItemCategory))
-                return new ResponseWrapper<ItemResponse>
+            var zoos = await _itemService.ZoonkansAsync();
+            if (zoos?.Any() != true)
+                return new ResponsesWrapper<ZoonkanResponse>
                 {
-                    Success = false,
-                    Message = "دسته بندی مورد را پر کنید",
-                };
-
-            if (string.IsNullOrEmpty(model.PropertyCategory))
-                return new ResponseWrapper<ItemResponse>
-                {
-                    Success = false,
-                    Message = "دسته بندی ملک را پر کنید",
-                };
-
-            var query = _items.AsQueryable();
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Category);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.District);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.Pictures);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFacilities)
-                .ThenInclude(x => x.Facility);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyFeatures)
-                .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Property)
-                .ThenInclude(x => x.PropertyOwnerships)
-                .ThenInclude(x => x.Ownerships)
-                .ThenInclude(x => x.Customer);
-            query = query.Include(x => x.Category);
-            query = query.Include(x => x.DealRequests);
-            query = query.Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature);
-            query = query.Include(x => x.Applicants)
-                .ThenInclude(x => x.Customer);
-
-            query = query.Where(x => x.Category.Name == model.ItemCategory);
-            query = query.Where(x => x.Property.Category.Name == model.PropertyCategory);
-            query = query.Where(x => x.Category.UserItemCategories.Any(c => c.UserId == tokenState.User.UserId));
-            query = query.Where(x => x.Property.Category.UserPropertyCategories.Any(c => c.UserId == tokenState.User.UserId));
-
-            var items = await query.Cacheable().ToListAsync();
-            if (items?.Any() != true)
-                return new ResponseWrapper<ItemResponse>
-                {
-                    Message = _localizer[SharedResource.NoItemToShow],
                     Success = true,
+                    Message = _localizer[SharedResource.NoItemToShow],
                 };
 
-            var result = from item in items
-                         let converted = item.Map<ItemViewModel>(ent =>
-                         {
-                             ent.IncludeAs<Item, Property, PropertyViewModel>(_unitOfWork, x => x.Property, ent2 =>
-                             {
-                                 ent2.IncludeAs<Property, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
-                                 ent2.IncludeAs<Property, District, DistrictViewModel>(_unitOfWork, x => x.District);
-                                 ent2.IncludeAs<Property, PropertyFacility, PropertyFacilityViewModel>(_unitOfWork, x => x.PropertyFacilities,
-                                     ent3 => ent3.IncludeAs<PropertyFacility, Facility, FacilityViewModel>(_unitOfWork, x => x.Facility));
-                                 ent2.IncludeAs<Property, PropertyFeature, PropertyFeatureViewModel>(_unitOfWork, x => x.PropertyFeatures,
-                                     ent3 => ent3.IncludeAs<PropertyFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                                 ent2.IncludeAs<Property, PropertyOwnership, PropertyOwnershipViewModel>(_unitOfWork, x => x.PropertyOwnerships,
-                                     ent3 => ent3.IncludeAs<PropertyOwnership, Ownership, OwnershipViewModel>(_unitOfWork, x => x.Ownerships,
-                                         ent4 => ent4.IncludeAs<Ownership, Customer, CustomerViewModel>(_unitOfWork, x => x.Customer)));
-                             });
-                             ent.IncludeAs<Item, Category, CategoryViewModel>(_unitOfWork, x => x.Category);
-                             ent.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
-                                 ent2 => ent2.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                         })
-                         where converted != null
-                         let property = converted.Property
-                         where property != null
-                         select new ItemResponse
-                         {
-                             Property = new PropertyResponse
-                             {
-                                 Address = property.Address,
-                                 Category = property.Category?.Name,
-                                 District = property.District?.Name,
-                                 Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
-                                 Ownership = property.CurrentPropertyOwnership?.Ownership != null
-                                     ? new OwnershipResponse
-                                     {
-                                         Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
-                                         Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile,
-                                     }
-                                     : default,
-                                 Features = property.PropertyFeatures?.Select(x => new FeatureResponse
-                                 {
-                                     Name = x.Feature?.Name,
-                                     Value = x.Value
-                                 }).ToList(),
-                                 Id = property.Id,
-                                 Pictures = property.Pictures?.Select(x => x.File).ToList()
-                             },
-                             Category = converted.Category?.Name,
-                             Features = converted.ItemFeatures?.Select(x => new FeatureResponse
-                             {
-                                 Name = x.Feature?.Name,
-                                 Value = x.Value
-                             }).ToList(),
-                             Id = converted.Id,
-                             Description = converted.Description,
-                             IsNegotiable = converted.IsNegotiable
-                         };
-
-            return new ResponseWrapper<ItemResponse>
+            var result = zoos.Select(x => new ZoonkanResponse
+            {
+                PropertyCategory = x.PropertyCategory,
+                Picture = x.Picture,
+                Count = x.Count,
+                ItemCategory = x.ItemCategory
+            }).ToList();
+            return new ResponsesWrapper<ZoonkanResponse>
             {
                 Message = StatusEnum.Success.GetDisplayName(),
                 Success = true,
@@ -180,7 +125,137 @@ namespace RealEstate.Services.ServiceLayer
             };
         }
 
-        private ResponseWrapper<T> TokenCheckToResponse<T>(ResponseWrapper model) where T : class
+        public async Task<ResponseWrapper<PaginatedResponse<ReminderResponse>>> RemindersAsync(ReminderRequest model)
+        {
+            var tokenState = await TokenCheckAsync(Token);
+            if (!tokenState.Success)
+                return TokenCheckToResponse<PaginatedResponse<ReminderResponse>>(tokenState);
+
+            var searchModel = new ReminderSearchViewModel
+            {
+                PageNo = model.Page,
+            };
+
+            var paginatedResult = await _reminderService.ReminderListAsync(searchModel, tokenState.User.UserId);
+            var result = (from reminder in paginatedResult.Items
+                          select new ReminderResponse()).ToList();
+
+            var response = new PaginatedResponse<ReminderResponse>
+            {
+                Items = result,
+                Pages = paginatedResult.Pages,
+                PageNumber = paginatedResult.CurrentPage
+            };
+            return new ResponseWrapper<PaginatedResponse<ReminderResponse>>
+            {
+                Message = StatusEnum.Success.GetDisplayName(),
+                Success = true,
+                Result = response,
+            };
+        }
+
+        public async Task<ResponseWrapper<PaginatedResponse<ItemResponse>>> ItemListAsync(ItemRequest model)
+        {
+            var (major, minor) = Version;
+            switch (major)
+            {
+                case 0:
+                    return new ResponseWrapper<PaginatedResponse<ItemResponse>>
+                    {
+                        Success = false,
+                        Message = "برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید",
+                    };
+
+                case 1 when minor == 0:
+                default:
+                    break;
+            }
+
+            var tokenState = await TokenCheckAsync(Token);
+            if (!tokenState.Success)
+                return TokenCheckToResponse<PaginatedResponse<ItemResponse>>(tokenState);
+
+            var searchModel = new ItemSearchViewModel
+            {
+                PageNo = model.Page
+            };
+            var paginatedResult = await _itemService.ItemListAsync(searchModel, null, tokenState.User.UserId);
+            if (paginatedResult?.Items?.Any() != true)
+                return new ResponseWrapper<PaginatedResponse<ItemResponse>>
+                {
+                    Message = _localizer[SharedResource.NoItemToShow],
+                    Success = true,
+                };
+
+            var result = (from item in paginatedResult.Items
+                          let property = item.Property
+                          where property != null
+                          select new ItemResponse
+                          {
+                              Property = new PropertyResponse
+                              {
+                                  Address = property.Address,
+                                  Category = property.Category?.Name,
+                                  District = property.District?.Name,
+                                  Facilities = property.PropertyFacilities?.Select(x => x.Facility?.Name).ToList(),
+                                  Ownership = property.CurrentPropertyOwnership?.Ownership != null
+                                      ? new OwnershipResponse
+                                      {
+                                          Name = property.CurrentPropertyOwnership?.Ownership.Customer?.Name,
+                                          Mobile = property.CurrentPropertyOwnership?.Ownership.Customer?.Mobile,
+                                      }
+                                      : default,
+                                  Features = property.PropertyFeatures?.Select(x => new FeatureResponse
+                                  {
+                                      Name = x.Feature?.Name,
+                                      Value = x.Value
+                                  }).ToList(),
+                                  Id = property.Id,
+                                  Pictures = property.Pictures?.Select(x => x.File).ToList()
+                              },
+                              Category = item.Category?.Name,
+                              Features = item.ItemFeatures?.Select(x => new FeatureResponse
+                              {
+                                  Name = x.Feature?.Name,
+                                  Value = x.Value
+                              }).ToList(),
+                              Id = item.Id,
+                              Description = item.Description,
+                              IsNegotiable = item.IsNegotiable
+                          }).ToList();
+
+            var response = new PaginatedResponse<ItemResponse>
+            {
+                Items = result,
+                Pages = paginatedResult.Pages,
+                PageNumber = paginatedResult.CurrentPage
+            };
+            return new ResponseWrapper<PaginatedResponse<ItemResponse>>
+            {
+                Message = StatusEnum.Success.GetDisplayName(),
+                Success = true,
+                Result = response,
+            };
+        }
+
+        private ResponsesWrapper<T> TokenCheckToResponses<T>(ResponseStatus model) where T : class
+        {
+            if (model == null)
+                return new ResponsesWrapper<T>
+                {
+                    Success = false,
+                    Message = StatusEnum.Failed.GetDisplayName()
+                };
+
+            var result = new ResponsesWrapper<T>
+            {
+                Success = model.Success,
+                Message = model.Message
+            };
+            return result;
+        }
+
+        private ResponseWrapper<T> TokenCheckToResponse<T>(ResponseStatus model) where T : class
         {
             if (model == null)
                 return new ResponseWrapper<T>
@@ -197,9 +272,9 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string token, string version)
+        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync()
         {
-            var tokenState = await TokenCheckAsync(token, version);
+            var tokenState = await TokenCheckAsync(Token);
             if (!tokenState.Success)
                 return TokenCheckToResponse<ConfigResponse>(tokenState);
 
@@ -229,25 +304,22 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Success = true,
                 Message = StatusEnum.Success.GetDisplayName(),
-                Result = new List<ConfigResponse>
+                Result = new ConfigResponse
                 {
-                    new ConfigResponse
-                    {
-                        Role = tokenState.User.Role,
-                        FirstName = tokenState.User.FirstName,
-                        LastName = tokenState.User.LastName,
-                        MobileNumber = tokenState.User.MobileNumber,
-                        UserId = tokenState.User.UserId,
-                        Username = tokenState.User.Username,
-                        UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
-                        UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
-                        EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()
-                    }
+                    Role = tokenState.User.Role,
+                    FirstName = tokenState.User.FirstName,
+                    LastName = tokenState.User.LastName,
+                    MobileNumber = tokenState.User.MobileNumber,
+                    UserId = tokenState.User.UserId,
+                    Username = tokenState.User.Username,
+                    UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
+                    UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
+                    EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()
                 }
             };
         }
 
-        private async Task<TokenCheck> TokenCheckAsync(string token, string version)
+        private async Task<TokenCheck> TokenCheckAsync(string token)
         {
             var result = new TokenCheck
             {
@@ -257,12 +329,6 @@ namespace RealEstate.Services.ServiceLayer
 
             if (string.IsNullOrEmpty(token))
                 return result;
-
-            if (string.IsNullOrEmpty(version))
-            {
-                result.Message = "نگارش اپلیکیشن را وارد کنید.";
-                return result;
-            }
 
             List<Claim> claims;
             try
@@ -292,9 +358,9 @@ namespace RealEstate.Services.ServiceLayer
                 .AsNoTracking()
                 .Include(x => x.Employee)
                 .Where(x =>
-                x.Id == id
-                && x.Username == userName
-                && x.Password == password)
+                    x.Id == id
+                    && x.Username == userName
+                    && x.Password == password)
                 .Cacheable()
                 .Select(x => new
                 {
@@ -400,7 +466,6 @@ namespace RealEstate.Services.ServiceLayer
                 };
 
             var itemCategories = userDb.UserItemCategories.Select(x => x.Name).ToList();
-            var propertyCategories = userDb.UserPropertyCategories.Select(x => x.Name).ToList();
             var employeeDivisions = userDb.EmployeeDivisions.Select(x => x.Name).ToList();
 
             var id = userDb.Id;
@@ -448,12 +513,9 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Success = true,
                     Message = StatusEnum.SignedIn.GetDisplayName(),
-                    Result = new List<SignInResponse>
+                    Result = new SignInResponse
                     {
-                        new SignInResponse
-                        {
-                            Token = token
-                        }
+                        Token = token
                     }
                 };
             }

@@ -29,8 +29,8 @@ namespace RealEstate.Web.Pages.Manage.Reminder
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
-            var result = await this.OnGetHandlerAsync(id, status,
-                identifier => _reminderService.ReminderInputAsync(identifier),
+            var result = await this.OnGetHandlerAsync<AddPageModel, ReminderInputViewModel>(id, status,
+                null,
                 typeof(IndexModel).Page(),
                 true);
             return result;

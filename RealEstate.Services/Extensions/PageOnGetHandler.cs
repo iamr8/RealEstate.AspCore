@@ -199,7 +199,8 @@ namespace RealEstate.Services.Extensions
                 }
                 finally
                 {
-                    finalModel = fromMemory ? passedModel : await model.Invoke(identifier);
+                    var modelTemp = model == null ? null : await model.Invoke(identifier);
+                    finalModel = fromMemory ? passedModel : modelTemp;
                 }
             }
             else

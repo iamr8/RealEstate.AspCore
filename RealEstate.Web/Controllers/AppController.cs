@@ -15,8 +15,6 @@ namespace RealEstate.Web.Controllers
         private readonly IAppService _appService;
 
         private readonly JsonSerializerSettings _settings;
-        private string Token => Request.Headers["RealEstate-Token"];
-        private string Version => Request.Headers["RealEstate-Version"];
 
         public AppController(
             IAppService appService
@@ -40,15 +38,31 @@ namespace RealEstate.Web.Controllers
         [HttpPost, MapToApiVersion("1")]
         public async Task<IActionResult> ConfigAsync()
         {
-            var response = await _appService.ConfigAsync(Token, Version);
+            var response = await _appService.ConfigAsync();
             return new JsonResult(response, _settings);
         }
 
-        [Route("items"), HttpPost]
+        [Route("items")]
         [HttpPost, MapToApiVersion("1")]
         public async Task<IActionResult> ItemsAsync([FromForm] ItemRequest model)
         {
-            var response = await _appService.ItemListAsync(Token, Version, model);
+            var response = await _appService.ItemListAsync(model);
+            return new JsonResult(response, _settings);
+        }
+
+        [Route("reminders")]
+        [HttpPost, MapToApiVersion("1")]
+        public async Task<IActionResult> RemindersAsync([FromForm] ReminderRequest model)
+        {
+            var response = await _appService.RemindersAsync(model);
+            return new JsonResult(response, _settings);
+        }
+
+        [Route("zoonkans")]
+        [HttpPost, MapToApiVersion("1")]
+        public async Task<IActionResult> ZoonkansAsync()
+        {
+            var response = await _appService.ZoonkansAsync();
             return new JsonResult(response, _settings);
         }
     }

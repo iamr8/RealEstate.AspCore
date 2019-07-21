@@ -37,6 +37,10 @@ namespace RealEstate.Services.ServiceLayer.Base
         Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
             where TEntity : BaseEntity;
 
+        Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, string cacheKeysJson,
+            Func<TQuery, TOutput> viewModel, int pageSize = 10)
+            where TQuery : BaseEntity where TOutput : BaseLogViewModel;
+
         IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel;
 
         IQueryable<TSource> QueryByRole<TSource>(IQueryable<TSource> source, params Role[] allowedRolesToShowDeletedItems) where TSource : class;
@@ -62,7 +66,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
-            CurrentUserViewModel currentUser = null, int pageSize = 10)
+            int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
@@ -92,23 +96,27 @@ namespace RealEstate.Services.ServiceLayer.Base
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel,
-            Func<TQuery, TOutput> viewModel, CurrentUserViewModel currentUser = null, int pageSize = 10)
+            Func<TQuery, TOutput> viewModel, int pageSize = 10)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
-            var output = new PaginationViewModel<TOutput>();
-
-            currentUser = currentUser ?? CurrentUser();
-            if (currentUser == null)
-                return output;
-
-            var page = searchModel?.PageNo ?? 1;
-            page = page <= 1 ? 1 : page;
-
             var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
             {
                 NullValueHandling = NullValueHandling.Ignore
             });
-            var efPolicy = new EFCachePolicy(CacheExpirationMode.Absolute, TimeSpan.FromDays(1), efCacheKey);
+            var page = searchModel?.PageNo ?? 1;
+
+            var result = await PaginateAsync(query, page, efCacheKey, viewModel, pageSize);
+            return result;
+        }
+
+        public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, string cacheKeysJson,
+          Func<TQuery, TOutput> viewModel, int pageSize = 10)
+          where TQuery : BaseEntity where TOutput : BaseLogViewModel
+        {
+            var output = new PaginationViewModel<TOutput>();
+
+            page = page <= 1 ? 1 : page;
+            var efPolicy = new EFCachePolicy(CacheExpirationMode.Absolute, TimeSpan.FromDays(1), cacheKeysJson);
             var efDebug = new EFCacheDebugInfo();
 
             query = query.OrderDescendingByCreationDateTime();
@@ -140,11 +148,10 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (viewList == null)
                 return output;
 
+            output.Items = viewList;
             output.CurrentPage = page;
             output.Pages = NumberProcessorExtensions.RoundToUp((double)rowCount / pageSize);
-            output.Items = viewList;
             output.Rows = rowCount;
-
             return output;
         }
 

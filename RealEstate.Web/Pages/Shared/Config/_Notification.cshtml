@@ -1,6 +1,6 @@
 ﻿@if (User.Identity.IsAuthenticated)
 {
-  var hasNotification = await ReminderService.HasNotificationAsync();
+  var hasNotification = await ReminderService.HasReminderAsync();
 
   <a asp-page="@typeof(Manage.Reminder.IndexModel).Page()" class="mr-auto notification @(hasNotification ? "hasBadge" : "")">
     <i class="fa fa-bell"></i>

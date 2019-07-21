@@ -67,7 +67,7 @@ namespace RealEstate.Services.ServiceLayer
             if (recipients?.Any() != true)
                 return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.RecipientIsNull, default);
 
-            var status = _kavehNegarProvider.Send(recipients, message);
+            var status = await _kavehNegarProvider.SendAsync(recipients, message);
             if (status?.Result?.Any() != true)
                 return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.UnexpectedError, default);
 
@@ -104,7 +104,7 @@ namespace RealEstate.Services.ServiceLayer
                 var token1 = tokens[0];
                 var token2 = tokens.Length > 1 ? tokens[1] : null;
                 var token3 = tokens.Length > 2 ? tokens[2] : null;
-                status = _kavehNegarProvider.VerifyLookup(recipient, token1, token2, token3, templateEnum.GetDisplayName());
+                status = await _kavehNegarProvider.VerifyLookupAsync(recipient, token1, token2, token3, templateEnum.GetDisplayName());
             }
 
             if (status?.Result?.Any() != true)
