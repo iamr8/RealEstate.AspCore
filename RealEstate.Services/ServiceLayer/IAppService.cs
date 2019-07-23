@@ -29,7 +29,7 @@ namespace RealEstate.Services.ServiceLayer
     {
         Task<ResponseWrapper<SignInResponse>> SignInAsync(SignInRequest model);
 
-        Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string userId, string username, string role, string firstName, string lastName, string mobileNo);
+        Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string userId);
 
         Task<ResponseWrapper<PaginatedResponse<ReminderResponse>>> RemindersAsync(ReminderRequest model, string userId);
 
@@ -192,7 +192,7 @@ namespace RealEstate.Services.ServiceLayer
             };
         }
 
-        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string userId, string username, string role, string firstName, string lastName, string mobileNo)
+        public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync(string userId)
         {
             var user = await _users
                 .AsNoTracking()
@@ -200,13 +200,13 @@ namespace RealEstate.Services.ServiceLayer
                 .Include(x => x.UserItemCategories).ThenInclude(x => x.Category)
                 .Include(x => x.UserPropertyCategories).ThenInclude(x => x.Category)
                 .Where(x => x.Id == userId)
-                .Where(x => x.Username.Equals(username))
-                .Where(x => x.Role.ToString().Equals(role))
-                .Where(x => x.Employee.FirstName.Equals(firstName))
-                .Where(x => x.Employee.LastName.Equals(lastName))
-                .Where(x => x.Employee.Mobile.Equals(mobileNo))
                 .Select(x => new
                 {
+                    x.Role,
+                    x.Employee.FirstName,
+                    x.Employee.LastName,
+                    x.Employee.Mobile,
+                    x.Username,
                     UserItemCategories = x.UserItemCategories.Select(c => new
                     {
                         c.Category.Name
@@ -227,12 +227,12 @@ namespace RealEstate.Services.ServiceLayer
                 Message = StatusEnum.Success.GetDisplayName(),
                 Result = new ConfigResponse
                 {
-                    Role = role,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    MobileNumber = mobileNo,
+                    Role = user.Role.GetDisplayName(),
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    MobileNumber = user.Mobile,
                     UserId = userId,
-                    Username = username,
+                    Username = user.Username,
                     UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
                     UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
                     EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()

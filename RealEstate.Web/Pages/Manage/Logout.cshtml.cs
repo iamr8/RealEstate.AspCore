@@ -7,7 +7,7 @@ using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Pages.Manage
 {
-    [Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class LogoutModel : PageModel
     {
         private readonly IUserService _userService;

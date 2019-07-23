@@ -19,7 +19,7 @@ using JsonExtensions = RealEstate.Base.JsonExtensions;
 namespace RealEstate.Services
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class AuthorizeApiAttribute : Attribute, IAsyncActionFilter
+    public class AuthorizeAttribute : Attribute, IAsyncActionFilter
     {
         public bool AllowAnonymous { get; }
         public double MinimumAppVersion { get; }
@@ -28,7 +28,7 @@ namespace RealEstate.Services
         public ResponseStatus ResponseStatus { get; }
         public UserResponse UserResponse { get; private set; }
 
-        public AuthorizeApiAttribute(double minAppVersion, bool allowAnonymous)
+        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous)
         {
             AllowAnonymous = allowAnonymous;
             MinimumAppVersion = minAppVersion;

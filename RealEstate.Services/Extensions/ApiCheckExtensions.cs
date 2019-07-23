@@ -10,7 +10,7 @@ namespace RealEstate.Services.Extensions
         {
             try
             {
-                if (!(endpoints?.FirstOrDefault(x => x.GetType() == typeof(AuthorizeApiAttribute)) is AuthorizeApiAttribute permission))
+                if (!(endpoints?.FirstOrDefault(x => x.GetType() == typeof(AuthorizeAttribute)) is AuthorizeAttribute permission))
                     return default;
 
                 return permission.UserResponse;
