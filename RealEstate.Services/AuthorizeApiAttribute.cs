@@ -19,18 +19,18 @@ using JsonExtensions = RealEstate.Base.JsonExtensions;
 namespace RealEstate.Services
 {
     [AttributeUsage(AttributeTargets.Method)]
-    public class CheckPermissionAttribute : Attribute, IAsyncActionFilter
+    public class AuthorizeApiAttribute : Attribute, IAsyncActionFilter
     {
-        public bool NeedToken { get; }
+        public bool AllowAnonymous { get; }
         public double MinimumAppVersion { get; }
 
         public VersionCheck VersionCheck { get; private set; }
         public ResponseStatus ResponseStatus { get; }
         public UserResponse UserResponse { get; private set; }
 
-        public CheckPermissionAttribute(double minAppVersion, bool needToken = false)
+        public AuthorizeApiAttribute(double minAppVersion, bool allowAnonymous)
         {
-            NeedToken = needToken;
+            AllowAnonymous = allowAnonymous;
             MinimumAppVersion = minAppVersion;
 
             ResponseStatus = new ResponseStatus
@@ -65,6 +65,7 @@ namespace RealEstate.Services
             jsonSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
 
             // Process
+
             #region Version
 
             try
@@ -119,7 +120,7 @@ namespace RealEstate.Services
 
             #region Token
 
-            if (NeedToken)
+            if (!AllowAnonymous)
             {
                 List<Claim> claims;
                 try

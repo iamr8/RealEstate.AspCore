@@ -27,7 +27,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("signin"), HttpPost]
-        [MapToApiVersion("1"), CheckPermission(1.0)]
+        [MapToApiVersion("1"), AuthorizeApi(1.0, true)]
         public async Task<IActionResult> SignInAsync([FromForm] SignInRequest model)
         {
             var response = await _appService.SignInAsync(model);
@@ -35,7 +35,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("config"), HttpPost]
-        [MapToApiVersion("1"), CheckPermission(1.0, true)]
+        [MapToApiVersion("1"), AuthorizeApi(1.0, false)]
         public async Task<IActionResult> ConfigAsync()
         {
             var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
@@ -44,7 +44,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("items"), HttpPost]
-        [MapToApiVersion("1"), CheckPermission(1.0, true)]
+        [MapToApiVersion("1"), AuthorizeApi(1.0, false)]
         public async Task<IActionResult> ItemsAsync([FromForm] ItemRequest model)
         {
             var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
@@ -53,7 +53,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("reminders"), HttpPost]
-        [MapToApiVersion("1"), CheckPermission(1.0, true)]
+        [MapToApiVersion("1"), AuthorizeApi(1.0, false)]
         public async Task<IActionResult> RemindersAsync([FromForm] ReminderRequest model)
         {
             var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
@@ -62,7 +62,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("zoonkans"), HttpPost]
-        [MapToApiVersion("1"), CheckPermission(1.0, true)]
+        [MapToApiVersion("1"), AuthorizeApi(1.0, false)]
         public async Task<IActionResult> ZoonkansAsync()
         {
             var response = await _appService.ZoonkansAsync();
