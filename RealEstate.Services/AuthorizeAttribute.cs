@@ -22,29 +22,28 @@ namespace RealEstate.Services
     [AttributeUsage(AttributeTargets.Method)]
     public class AuthorizeAttribute : Attribute, IAsyncActionFilter
     {
-        public bool AllowAnonymous { get; }
-        public double MinimumAppVersion { get; }
+        private bool AllowAnonymous { get; }
+        private double MinimumAppVersion { get; }
+        private string[] AllowedOsVersions { get; set; }
+        private string AllowedOs { get; set; }
+        private ResponseStatus Response { get; }
+        public UserResponse User { get; private set; }
+        public Version Version { get; private set; }
+        public OS UserOs { get; private set; }
+        public Device Device { get; private set; }
 
-        public VersionCheck VersionCheck { get; private set; }
-        public ResponseStatus ResponseStatus { get; }
-        public UserResponse UserResponse { get; private set; }
-
-        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous)
+        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous, string os = null, params string[] allowedOsVersions)
         {
             AllowAnonymous = allowAnonymous;
             MinimumAppVersion = minAppVersion;
 
-            ResponseStatus = new ResponseStatus
+            AllowedOs = os;
+            AllowedOsVersions = allowedOsVersions.Where(x => !string.IsNullOrEmpty(x)).ToArray();
+
+            Response = new ResponseStatus
             {
                 Message = StatusEnum.Forbidden.GetDisplayName(),
                 Success = false
-            };
-
-            VersionCheck = new VersionCheck
-            {
-                Bugfixes = 0,
-                Major = 0,
-                Minor = 0
             };
         }
 
@@ -65,57 +64,71 @@ namespace RealEstate.Services
             var jsonSettings = JsonExtensions.JsonNetSetting;
             jsonSettings.PreserveReferencesHandling = PreserveReferencesHandling.None;
 
-            // Process
+            #region Os
+
+            if (!string.IsNullOrEmpty(os))
+            {
+                var osArray = os.Split(" - ");
+                if (osArray?.Any() == true)
+                {
+                    UserOs = new OS
+                    {
+                        Name = osArray[0],
+                        Version = osArray[1]
+                    };
+                    if (AllowedOsVersions != null && !AllowedOsVersions.Any(x => x.Equals(UserOs.Version, StringComparison.CurrentCultureIgnoreCase)))
+                        goto REJECT_NOTALLOWED_OS_VERSION;
+
+                    if (AllowedOs != null && AllowedOs != UserOs.Name)
+                        goto REJECT_NOTALLOWED_OS;
+                }
+            }
+
+            #endregion Os
+
+            #region Device
+
+            if (!string.IsNullOrEmpty(device))
+            {
+                try
+                {
+                    var deviceArray = device.Split(", ");
+                    if (deviceArray?.Any() == true)
+                    {
+                        Device = new Device
+                        {
+                            Manufacturer = deviceArray[0],
+                            Model = deviceArray[1]
+                        };
+                    }
+                }
+                catch (Exception e)
+                {
+                    Device = default;
+                }
+            }
+
+            #endregion Device
 
             #region Version
-
-            try
-            {
-                if (string.IsNullOrEmpty(version))
-                {
-                    ResponseStatus.Message = sharedLocalizer[SharedResource.UpdateApplicationToUse];
-                    ResponseStatus.Success = false;
-                    UserResponse = null;
-                    context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                    return;
-                }
-
-                var versionArray = version.Split(".");
-                VersionCheck = new VersionCheck
-                {
-                    Major = int.Parse(versionArray[0]),
-                    Minor = int.Parse(versionArray[1]),
-                    Bugfixes = int.Parse(versionArray[2])
-                };
-            }
-            catch
-            {
-                VersionCheck = new VersionCheck
-                {
-                    Bugfixes = 0,
-                    Minor = 0,
-                    Major = 0
-                };
-            }
 
             double currentAppVersion;
             try
             {
-                currentAppVersion = double.Parse($"{VersionCheck.Major}.{VersionCheck.Minor}");
+                if (string.IsNullOrEmpty(version))
+                    goto REJECT_NO_VERSION;
+
+                var versionArray = version.Split(".");
+                Version = new Version(int.Parse(versionArray[0]), int.Parse(versionArray[1]), int.Parse(versionArray[2]));
+                currentAppVersion = double.Parse($"{Version.Major}.{Version.Minor}");
             }
             catch
             {
-                currentAppVersion = 1.0;
+                goto REJECT_NO_VERSION;
             }
 
             if (currentAppVersion < MinimumAppVersion)
-            {
-                ResponseStatus.Message = sharedLocalizer[SharedResource.UpdateApplicationToUse];
-                ResponseStatus.Success = false;
-                UserResponse = null;
-                context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                return;
-            }
+                goto REJECT_NO_VERSION;
 
             #endregion Version
 
@@ -128,32 +141,17 @@ namespace RealEstate.Services
                 {
                     var handler = new JwtSecurityTokenHandler();
                     if (!(handler.ReadToken(token) is JwtSecurityToken jwtSecurityToken))
-                    {
-                        ResponseStatus.Message = StatusEnum.Forbidden.GetDisplayName();
-                        ResponseStatus.Success = false;
-                        UserResponse = null;
-                        context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                        return;
-                    }
+                        goto REJECT_NO_TOKEN;
+
                     claims = jwtSecurityToken.Claims.ToList();
                 }
                 catch
                 {
-                    ResponseStatus.Message = StatusEnum.Forbidden.GetDisplayName();
-                    ResponseStatus.Success = false;
-                    UserResponse = null;
-                    context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                    return;
+                    goto REJECT_NO_TOKEN;
                 }
 
                 if (claims?.Any() != true)
-                {
-                    ResponseStatus.Message = StatusEnum.Forbidden.GetDisplayName();
-                    ResponseStatus.Success = false;
-                    UserResponse = null;
-                    context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                    return;
-                }
+                    goto REJECT_NO_TOKEN;
 
                 // ReSharper disable once LocalNameCapturedOnly
                 UserViewModel template;
@@ -162,38 +160,48 @@ namespace RealEstate.Services
                 var password = claims.FirstOrDefault(x => x.Type.Equals(nameof(template.Password), StringComparison.CurrentCulture))?.Value;
 
                 if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
-                {
-                    ResponseStatus.Message = StatusEnum.Forbidden.GetDisplayName();
-                    ResponseStatus.Success = false;
-                    UserResponse = null;
-                    context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                    return;
-                }
+                    goto REJECT_NO_TOKEN;
 
                 var user = await appService.FindUserAsync(id, userName, password);
                 if (user == null)
-                {
-                    ResponseStatus.Message = StatusEnum.UserNotFound.GetDisplayName();
-                    ResponseStatus.Success = false;
-                    UserResponse = null;
-                    context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                    return;
-                }
+                    goto REJECT_NO_USER;
 
-                ResponseStatus.Message = StatusEnum.Success.GetDisplayName();
-                ResponseStatus.Success = true;
-                UserResponse = user;
+                Response.Message = StatusEnum.Success.GetDisplayName();
+                Response.Success = true;
+                User = user;
             }
 
             #endregion Token
 
-            if (!ResponseStatus.Success)
-            {
-                context.Result = new JsonResult(ResponseStatus, jsonSettings);
-                return;
-            }
+            if (!Response.Success)
+                goto REJECT_RESPONSE;
 
             await next();
+
+            REJECT_NO_TOKEN:
+            Response.Message = StatusEnum.Forbidden.GetDisplayName();
+            goto REJECT_RESPONSE;
+
+            REJECT_NO_USER:
+            Response.Message = StatusEnum.UserNotFound.GetDisplayName();
+            goto REJECT_RESPONSE;
+
+            REJECT_NO_VERSION:
+            Response.Message = sharedLocalizer[SharedResource.UpdateApplicationToUse];
+            goto REJECT_RESPONSE;
+
+            REJECT_NOTALLOWED_OS_VERSION:
+            Response.Message = sharedLocalizer[SharedResource.OSVersionNotSupported];
+            goto REJECT_RESPONSE;
+
+            REJECT_NOTALLOWED_OS:
+            Response.Message = sharedLocalizer[SharedResource.OSNotSupported];
+            goto REJECT_RESPONSE;
+
+            REJECT_RESPONSE:
+            Response.Success = false;
+            User = null;
+            context.Result = new JsonResult(Response, jsonSettings);
         }
     }
 }

@@ -38,16 +38,16 @@ namespace RealEstate.Web.Controllers
         [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> ConfigAsync()
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
+            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
             var response = await _appService.ConfigAsync(user.UserId);
             return new JsonResult(response, _settings);
         }
 
         [Route("items"), HttpPost]
-        [MapToApiVersion("1"), Authorize(1.0, false)]
+        [MapToApiVersion("1"), Authorize(1.0, false, "4.1", "4.4")]
         public async Task<IActionResult> ItemsAsync([FromForm] ItemRequest model)
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
+            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
             var response = await _appService.ItemListAsync(model, user.UserId);
             return new JsonResult(response, _settings);
         }
@@ -56,7 +56,7 @@ namespace RealEstate.Web.Controllers
         [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> RemindersAsync([FromForm] ReminderRequest model)
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetUserOfToken();
+            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
             var response = await _appService.RemindersAsync(model, user.UserId);
             return new JsonResult(response, _settings);
         }

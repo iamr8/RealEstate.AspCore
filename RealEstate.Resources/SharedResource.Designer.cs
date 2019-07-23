@@ -1771,6 +1771,24 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to این سیستم عامل پشتیبانی نمی شود.
+        /// </summary>
+        public static string OSNotSupported {
+            get {
+                return ResourceManager.GetString("OSNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to این نسخه سیستم عامل پشتیبانی نمی شود.
+        /// </summary>
+        public static string OSVersionNotSupported {
+            get {
+                return ResourceManager.GetString("OSVersionNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to مالک.
         /// </summary>
         public static string Owner {

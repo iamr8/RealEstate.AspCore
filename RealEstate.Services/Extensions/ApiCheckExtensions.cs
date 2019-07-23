@@ -6,14 +6,14 @@ namespace RealEstate.Services.Extensions
 {
     public static class ApiCheckExtensions
     {
-        public static UserResponse GetUserOfToken(this IEnumerable<object> endpoints)
+        public static UserResponse GetIdentifierHeaders(this IEnumerable<object> endpoints)
         {
             try
             {
                 if (!(endpoints?.FirstOrDefault(x => x.GetType() == typeof(AuthorizeAttribute)) is AuthorizeAttribute permission))
                     return default;
 
-                return permission.UserResponse;
+                return permission.User;
             }
             catch
             {

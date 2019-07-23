@@ -333,7 +333,6 @@ namespace RealEstate.Services.ServiceLayer
             var id = userDb.Id;
             var encryptedPassword = userDb.Password;
 
-            // ReSharper disable once LocalNameCapturedOnly
             UserViewModel template;
             var claims = new List<Claim>
             {
@@ -341,7 +340,7 @@ namespace RealEstate.Services.ServiceLayer
                 new Claim(nameof(template.Username), model.Username),
                 new Claim(nameof(template.Password), encryptedPassword),
             };
-            var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);
+            var identity = new ClaimsIdentity(claims, AuthenticationScheme.Scheme);
 
             const string privateKey = PrivateKeyConstant.PrivateKey;
             var now = DateTime.UtcNow;

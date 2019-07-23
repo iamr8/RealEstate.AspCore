@@ -1086,4 +1086,10 @@
   <data name="UpdateApplicationToUse" xml:space="preserve">
     <value>برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید</value>
   </data>
+  <data name="OSVersionNotSupported" xml:space="preserve">
+    <value>این نسخه سیستم عامل پشتیبانی نمی شود</value>
+  </data>
+  <data name="OSNotSupported" xml:space="preserve">
+    <value>این سیستم عامل پشتیبانی نمی شود</value>
+  </data>
 </root>
