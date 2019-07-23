@@ -1,5 +1,6 @@
 using RealEstate.Base;
 using System;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.KavenNegarProvider.Response.ResultModels
 {
