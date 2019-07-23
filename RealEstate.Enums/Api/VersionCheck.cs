@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RealEstate.Services.ViewModels.Api
+namespace RealEstate.Base.Api
 {
     public class VersionCheck
     {

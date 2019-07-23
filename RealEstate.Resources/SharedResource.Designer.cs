@@ -2824,6 +2824,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید.
+        /// </summary>
+        public static string UpdateApplicationToUse {
+            get {
+                return ResourceManager.GetString("UpdateApplicationToUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to درخواست شده.
         /// </summary>
         public static string UpdatedDealStatus {

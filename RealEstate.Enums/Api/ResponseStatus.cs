@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace RealEstate.Services.ViewModels.Api
+namespace RealEstate.Base.Api
 {
     public class ResponsesWrapper<T> : ResponseStatus
     {

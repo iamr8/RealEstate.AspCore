@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace RealEstate.Services.ViewModels.Api.Response
+namespace RealEstate.Base.Api
 {
     public class UserResponse
     {

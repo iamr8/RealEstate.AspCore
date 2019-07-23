@@ -1,4 +1,4 @@
-﻿namespace RealEstate.Services.ViewModels.Api
+﻿namespace RealEstate.Base.Api
 {
     public abstract class BaseAppResponse
     {

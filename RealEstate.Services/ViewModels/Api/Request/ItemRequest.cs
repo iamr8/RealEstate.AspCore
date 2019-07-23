@@ -1,4 +1,6 @@
-﻿namespace RealEstate.Services.ViewModels.Api.Request
+﻿using RealEstate.Base.Api;
+
+namespace RealEstate.Services.ViewModels.Api.Request
 {
     public class ItemRequest : PaginatedRequest
     {

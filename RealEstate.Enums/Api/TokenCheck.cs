@@ -1,6 +1,4 @@
-﻿using RealEstate.Services.ViewModels.Api.Response;
-
-namespace RealEstate.Services.ViewModels.Api
+﻿namespace RealEstate.Base.Api
 {
     public class TokenCheck : ResponseStatus
     {

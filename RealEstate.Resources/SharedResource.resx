@@ -1083,4 +1083,7 @@
   <data name="To2" xml:space="preserve">
     <value>به</value>
   </data>
+  <data name="UpdateApplicationToUse" xml:space="preserve">
+    <value>برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید</value>
+  </data>
 </root>

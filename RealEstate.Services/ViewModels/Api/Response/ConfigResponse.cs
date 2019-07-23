@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using RealEstate.Base.Api;
 
 namespace RealEstate.Services.ViewModels.Api.Response
 {
