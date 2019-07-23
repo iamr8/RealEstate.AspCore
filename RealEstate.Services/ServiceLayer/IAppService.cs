@@ -13,6 +13,7 @@ using RealEstate.Services.Database.Tables;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels.Api.Request;
 using RealEstate.Services.ViewModels.Api.Response;
+using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
@@ -332,11 +333,13 @@ namespace RealEstate.Services.ServiceLayer
             var id = userDb.Id;
             var encryptedPassword = userDb.Password;
 
+            // ReSharper disable once LocalNameCapturedOnly
+            UserViewModel template;
             var claims = new List<Claim>
             {
-                new Claim("Id", id),
-                new Claim("Username", model.Username),
-                new Claim("Password", encryptedPassword),
+                new Claim(nameof(template.Id), id),
+                new Claim(nameof(template.Username), model.Username),
+                new Claim(nameof(template.Password), encryptedPassword),
             };
             var identity = new ClaimsIdentity(claims, Extensions.AuthenticationScheme.Scheme);
 

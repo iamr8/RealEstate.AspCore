@@ -8,6 +8,7 @@ using RealEstate.Base.Api;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewModels.ModelBind;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -154,9 +155,11 @@ namespace RealEstate.Services
                     return;
                 }
 
-                var id = claims.FirstOrDefault(x => x.Type.Equals("Id", StringComparison.CurrentCulture))?.Value;
-                var userName = claims.FirstOrDefault(x => x.Type.Equals("Username", StringComparison.CurrentCulture))?.Value;
-                var password = claims.FirstOrDefault(x => x.Type.Equals("Password", StringComparison.CurrentCulture))?.Value;
+                // ReSharper disable once LocalNameCapturedOnly
+                UserViewModel template;
+                var id = claims.FirstOrDefault(x => x.Type.Equals(nameof(template.Id), StringComparison.CurrentCulture))?.Value;
+                var userName = claims.FirstOrDefault(x => x.Type.Equals(nameof(template.Username), StringComparison.CurrentCulture))?.Value;
+                var password = claims.FirstOrDefault(x => x.Type.Equals(nameof(template.Password), StringComparison.CurrentCulture))?.Value;
 
                 if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password))
                 {
