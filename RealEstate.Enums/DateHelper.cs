@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Globalization;
 
-namespace RealEstate.Services.KavenNegarProvider.Utils
+namespace RealEstate.Base
 {
-    public class DateHelper
+    public static class DateHelper
     {
-        public static DateTime UnixTimestampToDateTime(long unixTimeStamp)
+        public static DateTime ToDateTime(this long unixTimeStamp)
         {
             var dateTimeOffset = DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp);
             return dateTimeOffset.UtcDateTime;
         }
 
-        public static long DateTimeToUnixTimestamp(DateTime dateTime)
+        public static long ToUnixTimestamp(this DateTime dateTime)
         {
             try
             {

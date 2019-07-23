@@ -1,5 +1,5 @@
+using RealEstate.Base;
 using System;
-using RealEstate.Services.KavenNegarProvider.Utils;
 
 namespace RealEstate.Services.KavenNegarProvider.Response.ResultModels
 {
@@ -11,8 +11,8 @@ namespace RealEstate.Services.KavenNegarProvider.Response.ResultModels
 
         public DateTime GregorianDate
         {
-            get => DateHelper.UnixTimestampToDateTime(Date);
-            set => Date = DateHelper.DateTimeToUnixTimestamp(value);
+            get => Date.ToDateTime();
+            set => Date = value.ToUnixTimestamp();
         }
 
         public long Date { get; set; }

@@ -1,5 +1,5 @@
 using System;
-using RealEstate.Services.KavenNegarProvider.Utils;
+using RealEstate.Base;
 
 namespace RealEstate.Services.KavenNegarProvider.Response.ResultModels
 {
@@ -8,7 +8,7 @@ namespace RealEstate.Services.KavenNegarProvider.Response.ResultModels
         public long RemainCredit { get; set; }
         public long ExpireDate { get; set; }
 
-        public DateTime GregorianExpireDate => DateHelper.UnixTimestampToDateTime(ExpireDate);
+        public DateTime GregorianExpireDate => ExpireDate.ToDateTime();
 
         public string Type { get; set; }
     }

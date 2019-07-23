@@ -2,13 +2,13 @@
 using RealEstate.Services.KavenNegarProvider.Enums;
 using RealEstate.Services.KavenNegarProvider.Response;
 using RealEstate.Services.KavenNegarProvider.Response.ResultModels;
-using RealEstate.Services.KavenNegarProvider.Utils;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using RealEstate.Base;
 
 namespace RealEstate.Services.KavenNegarProvider
 {
@@ -86,7 +86,7 @@ namespace RealEstate.Services.KavenNegarProvider
                 {"receptor", HttpUtility.UrlEncode(string.Join(",", receptors.ToArray()))},
                 {"message", HttpUtility.UrlEncode(message)},
                 {"type", (int)MessageType.MobileMemory},
-                {"date", scheduledDateTime == null ? 0 : DateHelper.DateTimeToUnixTimestamp((DateTime)scheduledDateTime)}
+                {"date", scheduledDateTime?.ToUnixTimestamp() ?? 0}
             };
 
             var path = GetApiPath("sms", "send");
