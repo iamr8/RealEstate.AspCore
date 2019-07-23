@@ -22,5 +22,25 @@ namespace RealEstate.Services.ViewModels.Api
 
         [JsonProperty("s")]
         public bool Success { get; set; }
+
+        public ResponsesWrapper<T> ToResponsesWrapperOf<T>() where T : class
+        {
+            var result = new ResponsesWrapper<T>
+            {
+                Success = this.Success,
+                Message = this.Message
+            };
+            return result;
+        }
+
+        public ResponseWrapper<T> ToResponseWrapperOf<T>() where T : class
+        {
+            var result = new ResponseWrapper<T>
+            {
+                Success = this.Success,
+                Message = this.Message
+            };
+            return result;
+        }
     }
 }
