@@ -18,6 +18,7 @@ using RealEstate.Services.ViewModels.Search;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -75,6 +76,12 @@ namespace RealEstate.Services.ServiceLayer
 
         private string Os => HttpContext.Request.Headers["RealEstate-OS"];
         private string Device => HttpContext.Request.Headers["RealEstate-Device"];
+        private string BaseUrl => $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host.Host}:{HttpContext.Request.Host.Port}/";
+        private const double ZoonkanMinimumVersion = 1.0;
+        private const double ReminderMinimumVersion = 1.0;
+        private const double ItemListMinimumVersion = 1.0;
+        private const double ConfigMinimumVersion = 1.0;
+        private const double SignInMinimumVersion = 1.0;
 
         public AppService(
             IUnitOfWork unitOfWork,
@@ -98,9 +105,9 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<ResponsesWrapper<ZoonkanResponse>> ZoonkansAsync()
         {
-            var tokenState = await TokenCheckAsync(Token);
-            if (!tokenState.Success)
-                return TokenCheckToResponses<ZoonkanResponse>(tokenState);
+            var permission = await PermissionCheckAsync(ZoonkanMinimumVersion);
+            if (!permission.Success)
+                return permission.ToResponsesWrapperOf<ZoonkanResponse>();
 
             var zoos = await _itemService.ZoonkansAsync();
             if (zoos?.Any() != true)
@@ -127,18 +134,26 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<ResponseWrapper<PaginatedResponse<ReminderResponse>>> RemindersAsync(ReminderRequest model)
         {
-            var tokenState = await TokenCheckAsync(Token);
-            if (!tokenState.Success)
-                return TokenCheckToResponse<PaginatedResponse<ReminderResponse>>(tokenState);
+            var permission = await PermissionCheckAsync(ReminderMinimumVersion);
+            if (!permission.Success)
+                return permission.ToResponseWrapperOf<PaginatedResponse<ReminderResponse>>();
 
             var searchModel = new ReminderSearchViewModel
             {
                 PageNo = model.Page,
             };
 
-            var paginatedResult = await _reminderService.ReminderListAsync(searchModel, tokenState.User.UserId);
+            var paginatedResult = await _reminderService.ReminderListAsync(searchModel, permission.User.UserId);
             var result = (from reminder in paginatedResult.Items
-                          select new ReminderResponse()).ToList();
+                          select new ReminderResponse
+                          {
+                              CheckBank = reminder.CheckBank,
+                              CheckNumber = reminder.CheckNumber,
+                              Date = reminder.Date.ToUnixTimestamp(),
+                              Price = (long)reminder.Price,
+                              Subject = reminder.Description,
+                              Pictures = reminder.Pictures?.Select(x => Path.Combine(BaseUrl, $"img/{x.File}")).ToList()
+                          }).ToList();
 
             var response = new PaginatedResponse<ReminderResponse>
             {
@@ -156,30 +171,15 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<ResponseWrapper<PaginatedResponse<ItemResponse>>> ItemListAsync(ItemRequest model)
         {
-            var (major, minor) = Version;
-            switch (major)
-            {
-                case 0:
-                    return new ResponseWrapper<PaginatedResponse<ItemResponse>>
-                    {
-                        Success = false,
-                        Message = "برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید",
-                    };
-
-                case 1 when minor == 0:
-                default:
-                    break;
-            }
-
-            var tokenState = await TokenCheckAsync(Token);
-            if (!tokenState.Success)
-                return TokenCheckToResponse<PaginatedResponse<ItemResponse>>(tokenState);
+            var permission = await PermissionCheckAsync(ItemListMinimumVersion);
+            if (!permission.Success)
+                return permission.ToResponseWrapperOf<PaginatedResponse<ItemResponse>>();
 
             var searchModel = new ItemSearchViewModel
             {
                 PageNo = model.Page
             };
-            var paginatedResult = await _itemService.ItemListAsync(searchModel, null, tokenState.User.UserId);
+            var paginatedResult = await _itemService.ItemListAsync(searchModel, null, permission.User.UserId);
             if (paginatedResult?.Items?.Any() != true)
                 return new ResponseWrapper<PaginatedResponse<ItemResponse>>
                 {
@@ -211,7 +211,7 @@ namespace RealEstate.Services.ServiceLayer
                                       Value = x.Value
                                   }).ToList(),
                                   Id = property.Id,
-                                  Pictures = property.Pictures?.Select(x => x.File).ToList()
+                                  Pictures = property.Pictures?.Select(x => Path.Combine(BaseUrl, $"img/{x.File}")).ToList()
                               },
                               Category = item.Category?.Name,
                               Features = item.ItemFeatures?.Select(x => new FeatureResponse
@@ -238,52 +238,18 @@ namespace RealEstate.Services.ServiceLayer
             };
         }
 
-        private ResponsesWrapper<T> TokenCheckToResponses<T>(ResponseStatus model) where T : class
-        {
-            if (model == null)
-                return new ResponsesWrapper<T>
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName()
-                };
-
-            var result = new ResponsesWrapper<T>
-            {
-                Success = model.Success,
-                Message = model.Message
-            };
-            return result;
-        }
-
-        private ResponseWrapper<T> TokenCheckToResponse<T>(ResponseStatus model) where T : class
-        {
-            if (model == null)
-                return new ResponseWrapper<T>
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName()
-                };
-
-            var result = new ResponseWrapper<T>
-            {
-                Success = model.Success,
-                Message = model.Message
-            };
-            return result;
-        }
-
         public async Task<ResponseWrapper<ConfigResponse>> ConfigAsync()
         {
-            var tokenState = await TokenCheckAsync(Token);
-            if (!tokenState.Success)
-                return TokenCheckToResponse<ConfigResponse>(tokenState);
+            var permission = await PermissionCheckAsync(ConfigMinimumVersion);
+            if (!permission.Success)
+                return permission.ToResponseWrapperOf<ConfigResponse>();
 
             var user = await _users
                 .AsNoTracking()
                 .Include(x => x.Employee.EmployeeDivisions).ThenInclude(x => x.Division)
                 .Include(x => x.UserItemCategories).ThenInclude(x => x.Category)
                 .Include(x => x.UserPropertyCategories).ThenInclude(x => x.Category)
-                .Where(x => x.Id == tokenState.User.UserId)
+                .Where(x => x.Id == permission.User.UserId)
                 .Select(x => new
                 {
                     UserItemCategories = x.UserItemCategories.Select(c => new
@@ -306,12 +272,12 @@ namespace RealEstate.Services.ServiceLayer
                 Message = StatusEnum.Success.GetDisplayName(),
                 Result = new ConfigResponse
                 {
-                    Role = tokenState.User.Role,
-                    FirstName = tokenState.User.FirstName,
-                    LastName = tokenState.User.LastName,
-                    MobileNumber = tokenState.User.MobileNumber,
-                    UserId = tokenState.User.UserId,
-                    Username = tokenState.User.Username,
+                    Role = permission.User.Role,
+                    FirstName = permission.User.FirstName,
+                    LastName = permission.User.LastName,
+                    MobileNumber = permission.User.MobileNumber,
+                    UserId = permission.User.UserId,
+                    Username = permission.User.Username,
                     UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
                     UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
                     EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()
@@ -319,7 +285,31 @@ namespace RealEstate.Services.ServiceLayer
             };
         }
 
-        private async Task<TokenCheck> TokenCheckAsync(string token)
+        private TokenCheck VersionCheck(double minAppVersion)
+        {
+            double currentAppVersion;
+            try
+            {
+                currentAppVersion = double.Parse($"{Version.Major}.{Version.Minor}");
+            }
+            catch
+            {
+                currentAppVersion = 1.0;
+            }
+            if (currentAppVersion < minAppVersion)
+                return new TokenCheck
+                {
+                    Success = false,
+                    Message = "برای استفاده از این بخش، اپلیکیشن خود را بروزرسانی کنید",
+                };
+
+            return new TokenCheck
+            {
+                Success = true,
+            };
+        }
+
+        private async Task<TokenCheck> PermissionCheckAsync(double minAppVersion)
         {
             var result = new TokenCheck
             {
@@ -327,14 +317,18 @@ namespace RealEstate.Services.ServiceLayer
                 Success = false
             };
 
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(Token))
                 return result;
+
+            var versionCheck = VersionCheck(minAppVersion);
+            if (!versionCheck.Success)
+                return versionCheck;
 
             List<Claim> claims;
             try
             {
                 var handler = new JwtSecurityTokenHandler();
-                if (!(handler.ReadToken(token) is JwtSecurityToken jwtSecurityToken))
+                if (!(handler.ReadToken(Token) is JwtSecurityToken jwtSecurityToken))
                     return result;
                 claims = jwtSecurityToken.Claims.ToList();
                 if (claims?.Any() != true)
@@ -398,6 +392,10 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<ResponseWrapper<SignInResponse>> SignInAsync(SignInRequest model)
         {
+            var version = VersionCheck(SignInMinimumVersion);
+            if (!version.Success)
+                return version.ToResponseWrapperOf<SignInResponse>();
+
             var query = _users.IgnoreQueryFilters()
                 .Include(x => x.Employee)
                 .ThenInclude(x => x.EmployeeDivisions)
@@ -409,26 +407,10 @@ namespace RealEstate.Services.ServiceLayer
                 .Where(x => x.Username.Equals(model.Username, StringComparison.CurrentCultureIgnoreCase))
                 .Select(x => new
                 {
-                    Id = x.Id,
-                    MobileNumber = x.Employee.Mobile,
-                    Password = x.Password,
-                    Role = x.Role,
-                    EmployeeId = x.EmployeeId,
-                    FirstName = x.Employee.FirstName,
-                    LastName = x.Employee.LastName,
-                    Audits = x.Audits,
-                    UserItemCategories = x.UserItemCategories.Select(c => new
-                    {
-                        c.Category.Name
-                    }).ToList(),
-                    UserPropertyCategories = x.UserPropertyCategories.Select(c => new
-                    {
-                        c.Category.Name
-                    }).ToList(),
-                    EmployeeDivisions = x.Employee.EmployeeDivisions.Select(c => new
-                    {
-                        c.Division.Name
-                    }).ToList()
+                    x.Id,
+                    x.Password,
+                    x.Role,
+                    x.Audits,
                 });
 
             var sql = query.ToSql();
@@ -465,16 +447,8 @@ namespace RealEstate.Services.ServiceLayer
                     Message = StatusEnum.Deactivated.GetDisplayName(),
                 };
 
-            var itemCategories = userDb.UserItemCategories.Select(x => x.Name).ToList();
-            var employeeDivisions = userDb.EmployeeDivisions.Select(x => x.Name).ToList();
-
             var id = userDb.Id;
-            var mobileNumber = userDb.MobileNumber;
             var encryptedPassword = userDb.Password;
-            var firstname = userDb.FirstName;
-            var lastname = userDb.LastName;
-            var employeeId = userDb.Id;
-            var role = userDb.Role.GetDisplayName();
 
             var claims = new List<Claim>
             {
