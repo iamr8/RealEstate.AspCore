@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using RealEstate.Services;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Web.Controllers
@@ -26,21 +25,21 @@ namespace RealEstate.Web.Controllers
         //[Route("property/search")]
         //public async Task<IActionResult> PropertyAsync(string term)
         //{
-        //    var model = await _propertyService.PropertyListAsync(term).ConfigureAwait(false);
+        //    var model = await _propertyService.PropertyListAsync(term);
         //    return new JsonResult(model);
         //}
 
         [Route("item/search")]
         public async Task<IActionResult> ItemAsync(string district, string category, string street)
         {
-            var model = await _itemService.ItemListAsync(district, category, street).ConfigureAwait(false);
+            var model = await _itemService.ItemListAsync(district, category, street);
             return new JsonResult(model);
         }
 
         [Route("customer/search")]
         public async Task<IActionResult> CustomerAsync(string name, string mobile)
         {
-            var model = await _customerService.CustomerListAsync(name, mobile).ConfigureAwait(false);
+            var model = await _customerService.CustomerListAsync(name, mobile);
             return new JsonResult(model);
         }
     }

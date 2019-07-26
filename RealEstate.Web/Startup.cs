@@ -31,7 +31,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc;
 using WebMarkupMin.AspNetCore2;
 using WebMarkupMin.Core;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
@@ -72,7 +71,7 @@ namespace RealEstate.Web
 
                 connectionString = connectionString.Replace("{{CFG}}", config.DbPath, StringComparison.CurrentCulture);
             }
-//            Console.WriteLine(connectionString);
+            //            Console.WriteLine(connectionString);
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseLazyLoadingProxies();
@@ -91,9 +90,9 @@ namespace RealEstate.Web
                     config.Log(CoreEventId.IncludeIgnoredWarning);
                     config.Log(CoreEventId.NavigationIncluded);
                     config.Log(CoreEventId.LazyLoadOnDisposedContextWarning);
-//                    config.Throw(RelationalEventId.QueryClientEvaluationWarning);
-//                    config.Throw(CoreEventId.LazyLoadOnDisposedContextWarning);
-//                    config.Throw(CoreEventId.NavigationLazyLoading);
+                    //                    config.Throw(RelationalEventId.QueryClientEvaluationWarning);
+                    //                    config.Throw(CoreEventId.LazyLoadOnDisposedContextWarning);
+                    //                    config.Throw(CoreEventId.NavigationLazyLoading);
                 });
                 options.EnableSensitiveDataLogging();
             });
@@ -120,7 +119,7 @@ namespace RealEstate.Web
                         options.Cookie.SameSite = SameSiteMode.Lax;
                     });
 
-            services.AddMvcCore();
+            services.AddMvcCore(options => options.RespectBrowserAcceptHeader = true);
 
             services.AddElmah(options =>
             {

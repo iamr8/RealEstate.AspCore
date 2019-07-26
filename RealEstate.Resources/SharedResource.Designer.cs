@@ -1708,6 +1708,15 @@ namespace RealEstate.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to برای ذخیره در بانک، تغییری ثبت نشده است.
+        /// </summary>
+        public static string NoNeedToSave {
+            get {
+                return ResourceManager.GetString("NoNeedToSave", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to اعلانات.
         /// </summary>
         public static string Notifications {

@@ -230,7 +230,7 @@ namespace RealEstate.Services.ServiceLayer
             if (user.Role == Role.SuperAdmin)
                 await SyncAsync(updatedUser, model, false);
 
-            return await _baseService.SaveChangesAsync(updatedUser, save);
+            return await _baseService.SaveChangesAsync(updatedUser);
         }
 
         public async Task<StatusEnum> SyncAsync(User user, UserInputViewModel model, bool save)
@@ -302,7 +302,7 @@ namespace RealEstate.Services.ServiceLayer
             }, false);
 
             await SyncAsync(newUser, model, false);
-            return await _baseService.SaveChangesAsync(newUser, save);
+            return await _baseService.SaveChangesAsync(newUser);
         }
 
         public async Task<bool> IsUserValidAsync(List<Claim> claims)

@@ -2,28 +2,8 @@
 @model RequestModel
 @{
     var contactsList = await CustomerService.ListJsonAsync(Model.NewDealRequest.Id).ConfigureAwait(false);
-    var contactSelector = new JsonSelectorComponentModel
-    {
-        IdProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Id),
-        NameProperty = PropertyExtensions.GetJsonProperty<FeatureJsonValueViewModel>(x => x.Name),
-        ModelName = nameof(Model.NewDealRequest),
-        ItemName = nameof(Model.NewDealRequest.Customers),
-        Json = nameof(Model.NewDealRequest.CustomerJson),
-        Title = SharedLocalizer["Applicants"],
-        ScriptKey = "propertyFeaturesScript",
-        SelectListItems = contactsList?.Select(x => new SelectListItem
-        {
-            Text = !string.IsNullOrEmpty(x.ApplicantId) ? $"* {x.Name}" : x.Name,
-            Value = x.CustomerId
-        }).SelectFirstItem()
-    };
-
-    var personCreator = new PersonCreatorComponentModel
-    {
-        ModelName = $"{nameof(Model.NewDealRequest)}_NewApplicant",
-    };
 }
-<div class="col-12">
+@*<div class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
@@ -80,4 +60,4 @@
     <script asp-paste-key="@personCreator.ScriptKey"></script>
     <script asp-paste-key="@contactSelector.ScriptKey"></script>
 
-}
+}*@

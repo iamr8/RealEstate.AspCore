@@ -11,6 +11,7 @@ namespace RealEstate.Web.Controllers
 {
     [ApiVersion("1")]
     [Route("api/v{version:apiVersion}")]
+    [Produces("application/json")]
     [ApiController]
     public class AppController : ControllerBase
     {
@@ -34,21 +35,21 @@ namespace RealEstate.Web.Controllers
             return new JsonResult(response, _settings);
         }
 
-        [Route("config"), HttpPost]
+        [Route("config"), HttpGet]
         [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> ConfigAsync()
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
-            var response = await _appService.ConfigAsync(user.UserId);
+            var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
+            var response = await _appService.ConfigAsync(headers.User.UserId);
             return new JsonResult(response, _settings);
         }
 
         [Route("items"), HttpPost]
-        [MapToApiVersion("1"), Authorize(1.0, false, "4.1", "4.4")]
+        [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> ItemsAsync([FromForm] ItemRequest model)
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
-            var response = await _appService.ItemListAsync(model, user.UserId);
+            var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
+            var response = await _appService.ItemListAsync(model, headers.User.UserId);
             return new JsonResult(response, _settings);
         }
 
@@ -56,12 +57,12 @@ namespace RealEstate.Web.Controllers
         [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> RemindersAsync([FromForm] ReminderRequest model)
         {
-            var user = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
-            var response = await _appService.RemindersAsync(model, user.UserId);
+            var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
+            var response = await _appService.RemindersAsync(model, headers.User.UserId);
             return new JsonResult(response, _settings);
         }
 
-        [Route("zoonkans"), HttpPost]
+        [Route("zoonkans"), HttpGet]
         [MapToApiVersion("1"), Authorize(1.0, false)]
         public async Task<IActionResult> ZoonkansAsync()
         {

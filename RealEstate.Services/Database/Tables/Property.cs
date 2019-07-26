@@ -1,11 +1,13 @@
-﻿using GeoAPI.Geometries;
-using RealEstate.Services.Database.Base;
-using RealEstate.Services.ServiceLayer;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using GeoAPI.Geometries;
+using RealEstate.Services.Database.Base;
+using RealEstate.Services.Extensions;
+using RealEstate.Services.ServiceLayer;
 
 namespace RealEstate.Services.Database.Tables
 {
@@ -14,6 +16,7 @@ namespace RealEstate.Services.Database.Tables
         [Required]
         public string Street { get; set; }
 
+        [Obsolete]
         public string Alley { get; set; }
 
         public string BuildingName { get; set; }
@@ -58,7 +61,7 @@ namespace RealEstate.Services.Database.Tables
         public virtual ICollection<PropertyOwnership> PropertyOwnerships { get; set; }
 
         [NotMapped]
-        public PropertyOwnership CurrentOwnership => PropertyOwnerships?.LastOrDefault();
+        public PropertyOwnership CurrentPropertyOwnership => PropertyOwnerships?.OrderDescendingByCreationDateTime().FirstOrDefault();
 
         public virtual ICollection<Item> Items { get; set; }
 

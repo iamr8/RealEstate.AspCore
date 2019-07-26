@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Html;
-using Newtonsoft.Json;
-using RealEstate.Base.Attributes;
-using RealEstate.Resources;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +6,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Resources;
+using Microsoft.AspNetCore.Html;
+using Newtonsoft.Json;
+using RealEstate.Base.Attributes;
+using RealEstate.Resources;
 
 namespace RealEstate.Base
 {

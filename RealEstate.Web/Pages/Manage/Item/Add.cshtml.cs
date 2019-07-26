@@ -25,12 +25,12 @@ namespace RealEstate.Web.Pages.Manage.Item
         }
 
         [BindProperty]
-        public ItemComplexInputViewModel NewItem { get; set; }
+        public ItemInputViewModel NewItem { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             var result = await this.OnGetHandlerAsync(id, status,
-                identifier => _itemService.ItemInputAsync(identifier),
+                identifier => _itemService.ItemAsync(identifier),
                 typeof(IndexModel).Page(),
                 true);
             return result;
@@ -39,7 +39,7 @@ namespace RealEstate.Web.Pages.Manage.Item
         public async Task<IActionResult> OnPostAsync()
         {
             var result = await this.OnPostHandlerAsync(
-                () => _itemService.ItemAddOrUpdateAsync(NewItem, !NewItem.IsNew, true),
+                () => _itemService.ItemAsync(NewItem),
                 typeof(IndexModel).Page(),
                 typeof(AddModel).Page());
             return result;

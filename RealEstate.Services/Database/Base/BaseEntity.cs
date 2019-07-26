@@ -1,10 +1,10 @@
-﻿using RealEstate.Base;
-using RealEstate.Base.Enums;
-using RealEstate.Services.BaseLog;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using RealEstate.Base;
+using RealEstate.Base.Enums;
+using RealEstate.Services.BaseLog;
 
 namespace RealEstate.Services.Database.Base
 {

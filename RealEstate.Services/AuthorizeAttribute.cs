@@ -32,12 +32,12 @@ namespace RealEstate.Services
         public OS UserOs { get; private set; }
         public Device Device { get; private set; }
 
-        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous, string os = null, params string[] allowedOsVersions)
+        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous, OsNames os = OsNames.Everything, params string[] allowedOsVersions)
         {
             AllowAnonymous = allowAnonymous;
             MinimumAppVersion = minAppVersion;
 
-            AllowedOs = os;
+            AllowedOs = os.ToString();
             AllowedOsVersions = allowedOsVersions.Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
             Response = new ResponseStatus
@@ -68,19 +68,30 @@ namespace RealEstate.Services
 
             if (!string.IsNullOrEmpty(os))
             {
-                var osArray = os.Split(" - ");
-                if (osArray?.Any() == true)
+                try
                 {
-                    UserOs = new OS
+                    var osArray = os.Split(" - ");
+                    if (osArray?.Any() == true)
                     {
-                        Name = osArray[0],
-                        Version = osArray[1]
-                    };
-                    if (AllowedOsVersions != null && !AllowedOsVersions.Any(x => x.Equals(UserOs.Version, StringComparison.CurrentCultureIgnoreCase)))
-                        goto REJECT_NOTALLOWED_OS_VERSION;
+                        UserOs = new OS
+                        {
+                            Name = osArray[0],
+                            Version = osArray[1]
+                        };
+                        if (!AllowedOs.Equals(nameof(OsNames.Everything), StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            if (!AllowedOs.Equals(UserOs.Name, StringComparison.CurrentCultureIgnoreCase))
+                                goto REJECT_NOTALLOWED_OS;
 
-                    if (AllowedOs != null && AllowedOs != UserOs.Name)
-                        goto REJECT_NOTALLOWED_OS;
+                            if (AllowedOsVersions != null)
+                                if (!AllowedOsVersions.Any(x => x.Equals(UserOs.Version, StringComparison.CurrentCultureIgnoreCase)))
+                                    goto REJECT_NOTALLOWED_OS_VERSION;
+                        }
+                    }
+                }
+                catch
+                {
+                    goto REJECT_NOTALLOWED_OS;
                 }
             }
 
@@ -173,35 +184,37 @@ namespace RealEstate.Services
 
             #endregion Token
 
-            if (!Response.Success)
-                goto REJECT_RESPONSE;
-
             await next();
+            return;
 
             REJECT_NO_TOKEN:
             Response.Message = StatusEnum.Forbidden.GetDisplayName();
-            goto REJECT_RESPONSE;
+            Response.Success = false;
+            context.Result = new UnauthorizedObjectResult(Response);
+            return;
 
             REJECT_NO_USER:
             Response.Message = StatusEnum.UserNotFound.GetDisplayName();
-            goto REJECT_RESPONSE;
+            Response.Success = false;
+            context.Result = new NotFoundObjectResult(Response);
+            return;
 
             REJECT_NO_VERSION:
             Response.Message = sharedLocalizer[SharedResource.UpdateApplicationToUse];
-            goto REJECT_RESPONSE;
+            goto REJECT_BADREQUEST;
 
             REJECT_NOTALLOWED_OS_VERSION:
             Response.Message = sharedLocalizer[SharedResource.OSVersionNotSupported];
-            goto REJECT_RESPONSE;
+            goto REJECT_BADREQUEST;
 
             REJECT_NOTALLOWED_OS:
             Response.Message = sharedLocalizer[SharedResource.OSNotSupported];
-            goto REJECT_RESPONSE;
+            goto REJECT_BADREQUEST;
 
-            REJECT_RESPONSE:
+            REJECT_BADREQUEST:
             Response.Success = false;
-            User = null;
-            context.Result = new JsonResult(Response, jsonSettings);
+            context.Result = new BadRequestObjectResult(Response);
+            return;
         }
     }
 }

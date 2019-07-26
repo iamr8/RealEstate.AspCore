@@ -7,7 +7,7 @@
     </status>
     <div class="widget">
         <widget-header title="@Model.PageTitle">
-            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewItem"]</a>
+            <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewItem]</a>
         </widget-header>
         <section class="container-fluid">
             <item-viewer model="@Model.List.Items">
@@ -19,11 +19,11 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest?.Item?.Property?.Id" target="_blank">
+                                    @*<a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.DealRequest?.Item?.Property?.Id" target="_blank">
                                         <a asp-page="@typeof(District.IndexModel).Page()" asp-route-id="@item.DealRequest?.Item?.Property?.District?.Id" target="_blank">@item.DealRequest?.Item?.Property?.District?.Name</a> &mdash;
                                     </a>
                                     <span class="badge badge-danger">@item.DealRequest?.Item?.Category?.Name</span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest?.Item?.Property?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>
+                                    <a asp-page="@typeof(Property.IndexModel).Page()" asp-route-propertyId="@item.DealRequest?.Item?.Property?.Id" target="_blank" class="badge badge-warning">@SharedLocalizer["PropertyDetail"]</a>*@
                                 </span>
                                 @if (item.DealRequest?.Item?.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {

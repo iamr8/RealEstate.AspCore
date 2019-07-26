@@ -1092,4 +1092,7 @@
   <data name="OSNotSupported" xml:space="preserve">
     <value>این سیستم عامل پشتیبانی نمی شود</value>
   </data>
+  <data name="NoNeedToSave" xml:space="preserve">
+    <value>برای ذخیره در بانک، تغییری ثبت نشده است</value>
+  </data>
 </root>

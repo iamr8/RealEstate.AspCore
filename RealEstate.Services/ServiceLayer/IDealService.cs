@@ -160,7 +160,7 @@ namespace RealEstate.Services.ServiceLayer
             }, null, false).ConfigureAwait(false);
             await SyncAsync(newDeal, model, true).ConfigureAwait(false);
 
-            return await _baseService.SaveChangesAsync(newDeal, save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newDeal).ConfigureAwait(false);
         }
 
         public async Task<StatusEnum> SyncAsync(Deal deal, DealInputViewModel model, bool save)
@@ -218,7 +218,7 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Deal>(StatusEnum.DealIsNull, null);
 
             await SyncAsync(updatedDeal, model, true).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(updatedDeal, save).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(updatedDeal).ConfigureAwait(false);
         }
 
         public Task<MethodStatus<Deal>> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save)

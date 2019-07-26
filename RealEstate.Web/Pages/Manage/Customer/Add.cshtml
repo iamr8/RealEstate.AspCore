@@ -1,11 +1,6 @@
 ﻿@page
 @model AddModel
-@{
-    var personCreator = new CreatorComponentModel
-    {
-        ModelName = nameof(Model.NewCustomer)
-    };
-}
+
 <form method="post" class="col-12">
     <div class="widget">
         <widget-header title="@Model.PageTitle"></widget-header>

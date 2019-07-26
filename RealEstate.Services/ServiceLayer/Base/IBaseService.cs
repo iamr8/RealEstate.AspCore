@@ -1,6 +1,13 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Linq.Expressions;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using EFSecondLevelCache.Core.Contracts;
-using GeoAPI.Geometries;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -13,16 +20,6 @@ using RealEstate.Services.Database.Base;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer.Base
 {
@@ -71,12 +68,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
         Task<StatusEnum> SaveChangesAsync();
 
-        //Task<StatusEnum> SyncAsync<TSource, TModel>(ICollection<TSource> currentListEntities,
-        //    List<TModel> newList, Func<TModel, CurrentUserViewModel, TSource> newEntity, Expression<Func<TSource, TModel, bool>> indentifier, Role[] allowedRoles,
-        //    bool save)
-        //    where TSource : BaseEntity;
-
-        Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class;
+        Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model) where TModel : class;
 
         CurrentUserViewModel CurrentUser(List<Claim> claims);
     }
@@ -248,7 +240,7 @@ namespace RealEstate.Services.ServiceLayer.Base
 
             var finalEntity = entity.Invoke(currentUser);
             _unitOfWork.Add(finalEntity, currentUser);
-            return await SaveChangesAsync(finalEntity, save);
+            return await SaveChangesAsync(finalEntity);
         }
 
         public async Task<MethodStatus<TSource>> AddAsync<TSource>(TSource entity,
@@ -256,13 +248,17 @@ namespace RealEstate.Services.ServiceLayer.Base
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return new MethodStatus<TSource>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<TSource>(StatusEnum.UserIsNull);
 
             if (!IsAllowed(allowedRoles))
-                return new MethodStatus<TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow, null);
+                return new MethodStatus<TSource>(StatusEnum.ForbiddenAndUnableToUpdateOrShow);
 
             _unitOfWork.Add(entity, currentUser);
-            return await SaveChangesAsync(entity, save);
+
+            if (save)
+                return await SaveChangesAsync(entity);
+
+            return new MethodStatus<TSource>(StatusEnum.Success);
         }
 
         public async Task<StatusEnum> RemoveAsync<TEntity>(TEntity entity, Role[] allowedRoles, DeleteEnum type = DeleteEnum.HideUnhide, bool save = true)
@@ -452,40 +448,22 @@ namespace RealEstate.Services.ServiceLayer.Base
             return roles?.Any() != true || roles.Any(x => x == currentUser.Role);
         }
 
-        private Dictionary<string, object> GetEntityProperties<TSource>(TSource entity) where TSource : BaseEntity
-        {
-            return entity
-                .GetPublicProperties()
-                .Where(x => (x.PropertyType == typeof(string)
-                             || x.PropertyType == typeof(int)
-                             || x.PropertyType == typeof(decimal)
-                             || x.PropertyType == typeof(double)
-                             || x.PropertyType == typeof(IPoint)
-                             || x.PropertyType == typeof(DateTime)
-                             || x.PropertyType == typeof(Enum))
-                            && x.Name != nameof(entity.Id)
-                            && x.Name != nameof(entity.Audit)
-                            && x.GetCustomAttribute<NotMappedAttribute>() == null
-                            && !x.GetGetMethod().IsVirtual)
-                .ToDictionary(x => x.Name, x => x.GetValue(entity));
-        }
-
         public async Task<MethodStatus<TSource>> UpdateAsync<TSource>(TSource entity,
          Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity
         {
             var currentUser = CurrentUser();
             if (currentUser == null)
-                return new MethodStatus<TSource>(StatusEnum.UserIsNull, null);
+                return new MethodStatus<TSource>(StatusEnum.UserIsNull);
 
             if (!IsAllowed(allowedRoles))
-                return new MethodStatus<TSource>(StatusEnum.Forbidden, null);
+                return new MethodStatus<TSource>(StatusEnum.Forbidden);
 
             if (entity == null)
-                return new MethodStatus<TSource>(modelNullStatus, null);
+                return new MethodStatus<TSource>(modelNullStatus);
 
-            var propertiesBeforeChanges = GetEntityProperties(entity);
+            var propertiesBeforeChanges = entity.GetProperties();
             changes.Invoke(currentUser);
-            var propertiesAfterChanges = GetEntityProperties(entity);
+            var propertiesAfterChanges = entity.GetProperties();
             if (propertiesAfterChanges?.Any() != true)
                 return new MethodStatus<TSource>(StatusEnum.Success, entity);
 
@@ -502,25 +480,28 @@ namespace RealEstate.Services.ServiceLayer.Base
             }
 
             if (changesList.Any() != true)
-                return new MethodStatus<TSource>(StatusEnum.Success, entity);
+                return new MethodStatus<TSource>(StatusEnum.NoNeedToSave, entity);
 
             _unitOfWork.Update(entity, currentUser, changesList);
-            return await SaveChangesAsync(entity, save);
+
+            if (save)
+                return await SaveChangesAsync(entity);
+
+            return new MethodStatus<TSource>(StatusEnum.Success, entity);
         }
 
         public async Task<StatusEnum> SaveChangesAsync()
         {
-            await _unitOfWork.SaveChangesAsync();
-            return StatusEnum.Success;
+            var saveStatus = await _unitOfWork.SaveChangesAsync() > 0;
+            return saveStatus
+                ? StatusEnum.Success
+                : StatusEnum.UnableToSave;
         }
 
-        public async Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model, bool save) where TModel : class
+        public async Task<MethodStatus<TModel>> SaveChangesAsync<TModel>(TModel model) where TModel : class
         {
-            if (!save)
-                return new MethodStatus<TModel>(model == null ? StatusEnum.Failed : StatusEnum.Success, model);
-
-            var saveStatus = await _unitOfWork.SaveChangesAsync().ConfigureAwait(false) > 0;
-            return new MethodStatus<TModel>(StatusEnum.Success, model);
+            var saveStatus = await SaveChangesAsync();
+            return new MethodStatus<TModel>(saveStatus, model);
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using RealEstate.Resources;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using RealEstate.Resources;
 
 namespace RealEstate.Base.Enums
 {
@@ -29,6 +29,8 @@ namespace RealEstate.Base.Enums
         CustomerIsNull,
         DistrictIsNull,
         PropertyIsNull,
+
+        [Display(ResourceType = typeof(SharedResource), Name = "NoNeedToSave")]
         NoNeedToSave,
 
         [Display(ResourceType = typeof(SharedResource), Name = "Forbidden")]

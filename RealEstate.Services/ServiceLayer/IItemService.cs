@@ -1,4 +1,9 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Localization;
@@ -14,11 +19,6 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Dynamic.Core;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -28,6 +28,8 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<ItemOutJsonViewModel> ItemJsonAsync(string id);
 
+        Task<MethodStatus<Item>> ItemAsync(ItemInputViewModel model);
+
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
         Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10);
@@ -36,9 +38,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<bool> ItemCheckAsync(PropertyCheckViewModel model);
 
-        Task<ItemComplexInputViewModel> ItemInputAsync(string id);
-
-        Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save);
+        Task<ItemInputViewModel> ItemAsync(string id);
 
         Task<List<PropertyJsonViewModel>> ItemListAsync(string district, string category, string street);
 
@@ -47,8 +47,6 @@ namespace RealEstate.Services.ServiceLayer
         Task<List<ZoonkanViewModel>> ZoonkansAsync();
 
         Task<MethodStatus<Item>> RequestAsync(DealRequestInputViewModel model, bool save);
-
-        Task<Item> ItemEntityAsync(string id);
 
         Task<ItemViewModel> ItemAsync(string id, DealStatusEnum? specificStatus);
     }
@@ -174,66 +172,66 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<StatusEnum> SyncApplicantsAsync(Item item, DealRequestInputViewModel model, bool save)
         {
-            var allowedCustomers = await _customerService.ListJsonAsync(item.Id);
-            if (allowedCustomers?.Any() != true)
-                return StatusEnum.CustomerIsNull;
+            //var allowedCustomers = await _customerService.ListJsonAsync(item.Id);
+            //if (allowedCustomers?.Any() != true)
+            //    return StatusEnum.CustomerIsNull;
 
-            var currentUser = _baseService.CurrentUser();
-            if (currentUser == null) return StatusEnum.UserIsNull;
+            //var currentUser = _baseService.CurrentUser();
+            //if (currentUser == null) return StatusEnum.UserIsNull;
 
-            var mustBeLeft = item.Applicants.Where(ent => model.Customers.Any(mdl => ent.CustomerId == mdl.CustomerId)).ToList();
-            var mustBeRemoved = item.Applicants.Where(x => !mustBeLeft.Contains(x)).ToList();
-            if (mustBeRemoved.Count > 0)
-            {
-                foreach (var redundant in mustBeRemoved)
-                {
-                    await _baseService.UpdateAsync(redundant,
-                        _ => redundant.ItemId = null,
-                        null,
-                        false, StatusEnum.ApplicantIsNull);
-                }
-            }
+            //var mustBeLeft = item.Applicants.Where(ent => model.Customers.Any(mdl => ent.CustomerId == mdl.CustomerId)).ToList();
+            //var mustBeRemoved = item.Applicants.Where(x => !mustBeLeft.Contains(x)).ToList();
+            //if (mustBeRemoved.Count > 0)
+            //{
+            //    foreach (var redundant in mustBeRemoved)
+            //    {
+            //        await _baseService.UpdateAsync(redundant,
+            //            _ => redundant.ItemId = null,
+            //            null,
+            //            false, StatusEnum.ApplicantIsNull);
+            //    }
+            //}
 
-            if (model.Customers?.Any() != true)
-                return await _baseService.SaveChangesAsync();
+            //if (model.Customers?.Any() != true)
+            //    return await _baseService.SaveChangesAsync();
 
-            foreach (var customer in model.Customers)
-            {
-                var source = item.Applicants.FirstOrDefault(ent => ent.CustomerId == customer.CustomerId);
-                if (source == null)
-                {
-                    var appli = await _applicants.FirstOrDefaultAsync(x => x.CustomerId == customer.CustomerId && x.UserId == currentUser.Id);
-                    if (appli != null)
-                    {
-                        await _baseService.UpdateAsync(appli,
-                            _ => appli.ItemId = item.Id,
-                            null,
-                            false, StatusEnum.ApplicantIsNull);
-                    }
-                    else
-                    {
-                        var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customer.CustomerId);
-                        if (cnt == null)
-                            continue;
+            //foreach (var customer in model.Customers)
+            //{
+            //    var source = item.Applicants.FirstOrDefault(ent => ent.CustomerId == customer.CustomerId);
+            //    if (source == null)
+            //    {
+            //        var appli = await _applicants.FirstOrDefaultAsync(x => x.CustomerId == customer.CustomerId && x.UserId == currentUser.Id);
+            //        if (appli != null)
+            //        {
+            //            await _baseService.UpdateAsync(appli,
+            //                _ => appli.ItemId = item.Id,
+            //                null,
+            //                false, StatusEnum.ApplicantIsNull);
+            //        }
+            //        else
+            //        {
+            //            var cnt = await _customers.FirstOrDefaultAsync(x => x.Id == customer.CustomerId);
+            //            if (cnt == null)
+            //                continue;
 
-                        var (addStatus, newApplicant) = await _baseService.AddAsync(_ => new Applicant
-                        {
-                            CustomerId = customer.CustomerId,
-                            UserId = currentUser.Id,
-                            Type = ApplicantTypeEnum.Applicant,
-                            ItemId = item.Id
-                        },
-                            null,
-                            false);
-                    }
-                }
-                else
-                {
-                    var applicant = await _customerService.ApplicantEntityAsync(customer.ApplicantId);
-                    await _baseService.UpdateAsync(applicant,
-                        _ => applicant.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull);
-                }
-            }
+            //            var (addStatus, newApplicant) = await _baseService.AddAsync(_ => new Applicant
+            //            {
+            //                CustomerId = customer.CustomerId,
+            //                UserId = currentUser.Id,
+            //                Type = ApplicantTypeEnum.Applicant,
+            //                ItemId = item.Id
+            //            },
+            //                null,
+            //                false);
+            //        }
+            //    }
+            //    else
+            //    {
+            //        var applicant = await _customerService.ApplicantEntityAsync(customer.ApplicantId);
+            //        await _baseService.UpdateAsync(applicant,
+            //            _ => applicant.ItemId = item.Id, null, false, StatusEnum.ApplicantIsNull);
+            //    }
+            //}
 
             return await _baseService.SaveChangesAsync();
         }
@@ -390,6 +388,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
         {
+            // TODO: Sort latest items first by UPDATE, then by ADD
             var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
@@ -413,11 +412,11 @@ namespace RealEstate.Services.ServiceLayer
                 .ThenInclude(x => x.Ownerships)
                 .ThenInclude(x => x.Customer)
                 .Include(x => x.Category)
-//                .Include(x => x.DealRequests)
+                //                .Include(x => x.DealRequests)
                 .Include(x => x.ItemFeatures)
                 .ThenInclude(x => x.Feature);
-//                .Include(x => x.Applicants)
-//                .ThenInclude(x => x.Customer);
+            //                .Include(x => x.Applicants)
+            //                .ThenInclude(x => x.Customer);
 
             //query = from item in query
             //        let requests = item.DealRequests.OrderByDescending(x => x.Audits.Find(v => v.Type == LogTypeEnum.Create).DateTime)
@@ -648,10 +647,10 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Item>(StatusEnum.DealRequestIsNull, null);
 
             await SyncApplicantsAsync(item, model, false);
-            return await _baseService.SaveChangesAsync(item, save);
+            return await _baseService.SaveChangesAsync(item);
         }
 
-        public async Task<ItemComplexInputViewModel> ItemInputAsync(string id)
+        public async Task<ItemInputViewModel> ItemAsync(string id)
         {
             if (string.IsNullOrEmpty(id)) return default;
 
@@ -696,7 +695,7 @@ namespace RealEstate.Services.ServiceLayer
 
             #endregion Property
 
-            var result = new ItemComplexInputViewModel
+            var result = new ItemInputViewModel
             {
                 Id = viewModel.Id,
                 Description = viewModel.Description,
@@ -707,10 +706,9 @@ namespace RealEstate.Services.ServiceLayer
                     Name = x.Feature?.Name,
                     Value = x.OriginalValue
                 }).ToList(),
-                Property = new PropertyComplexInputViewModel
+                Property = new PropertyInputViewModel
                 {
                     Id = viewModel.Property?.Id,
-                    Description = viewModel.Property?.Description,
                     PropertyFacilities = viewModel.Property?.PropertyFacilities?.Select(x => new FacilityJsonViewModel
                     {
                         Id = x.Facility?.Id,
@@ -727,7 +725,6 @@ namespace RealEstate.Services.ServiceLayer
                     Address = viewModel.Property?.Street,
                     Flat = viewModel.Property?.Flat ?? 0,
                     DistrictId = viewModel.Property?.District?.Id,
-                    Alley = viewModel.Property?.Alley,
                     BuildingName = viewModel.Property?.BuildingName,
                     Floor = viewModel.Property?.Floor ?? 0,
                     Ownership = new OwnershipInputViewModel
@@ -784,15 +781,6 @@ namespace RealEstate.Services.ServiceLayer
             return viewModel;
         }
 
-        public async Task<Item> ItemEntityAsync(string id)
-        {
-            if (string.IsNullOrEmpty(id))
-                return default;
-
-            var entity = await _items.FirstOrDefaultAsync(x => x.Id == id);
-            return entity;
-        }
-
         public async Task<StatusEnum> ItemRemoveAsync(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -807,114 +795,77 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public Task<MethodStatus<Item>> ItemAddOrUpdateAsync(ItemComplexInputViewModel model, bool update, bool save)
+        public async Task<MethodStatus<Item>> ItemAsync(ItemInputViewModel model)
         {
-            return update ?
-                ItemUpdateAsync(model, save) :
-                ItemAddAsync(model, save);
-        }
+            // manipulate
 
-        private async Task<MethodStatus<Item>> ItemUpdateAsync(ItemComplexInputViewModel model, bool save)
-        {
             if (model == null)
-                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
-
-            if (model.IsNew)
-                return new MethodStatus<Item>(StatusEnum.IdIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.ModelIsNull);
 
             if (model.Property == null)
-                return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
+                return new MethodStatus<Item>(StatusEnum.PropertyIsNull);
 
-            var (propertyUpdateStatus, updatedProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true);
-            if (propertyUpdateStatus != StatusEnum.Success && propertyUpdateStatus != StatusEnum.PropertyIsAlreadyExists)
-                return new MethodStatus<Item>(propertyUpdateStatus, null);
+            var (propertyStatus, property, isPropertySuccess) = await _propertyService.PropertyAsync(model.Property);
+            if (isPropertySuccess)
+                return new MethodStatus<Item>(propertyStatus);
 
-            var entity = await _items
-                .IgnoreQueryFilters()
-                .Include(x => x.ItemFeatures)
-                .ThenInclude(x => x.Feature)
-                .FirstOrDefaultAsync(x => x.Id == model.Id);
-            if (model.IsNegotiable)
+            StatusEnum status;
+            Item item;
+            bool isSuccess;
+            var needUpdate = false;
+
+            if (!model.IsNew)
             {
-                if (string.IsNullOrEmpty(model.Description))
-                {
-                    model.Description = "قابل مذاکره";
-                }
-                else
-                {
-                    if (!model.Description.Contains("قابل مذاکره", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        model.Description += " قابل مذاکره";
-                    }
-                }
+                // UPDATE mode
+                item = await _items.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == model.Id);
+                needUpdate = true;
+                status = StatusEnum.Success;
+                isSuccess = true;
             }
             else
             {
-                model.Description = model.Description?.Replace("قابل مذاکره", "", StringComparison.CurrentCultureIgnoreCase);
-            }
-
-            var (updateStatus, updatedItem) = await _baseService.UpdateAsync(entity,
-                _ =>
+                // ADD mode
+                var existingItem = await _items
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(x => x.PropertyId == property.Id && x.CategoryId == model.CategoryId);
+                if (existingItem == null)
                 {
-                    entity.CategoryId = model.CategoryId;
-                    entity.Description = model.Description;
-                    entity.PropertyId = updatedProperty.Id;
-                }, null, false, StatusEnum.PropertyIsNull);
-
-            if (updatedItem == null)
-                return new MethodStatus<Item>(StatusEnum.ItemIsNull, null);
-
-            await ItemSyncAsync(updatedItem, model, false);
-            return await _baseService.SaveChangesAsync(updatedItem, save);
-        }
-
-        private async Task<MethodStatus<Item>> ItemAddAsync(ItemComplexInputViewModel model, bool save)
-        {
-            if (model == null)
-                return new MethodStatus<Item>(StatusEnum.ModelIsNull, null);
-
-            if (model.Property == null)
-                return new MethodStatus<Item>(StatusEnum.PropertyIsNull, null);
-
-            var (propertyAddStatus, newProperty) = await _propertyService.PropertyComplexAddOrUpdateAsync(model.Property, true);
-            if (propertyAddStatus != StatusEnum.Success)
-                return new MethodStatus<Item>(propertyAddStatus, null);
-
-            if (model.IsNegotiable)
-            {
-                if (string.IsNullOrEmpty(model.Description))
-                {
-                    model.Description = "قابل مذاکره";
+                    (status, item, isSuccess) = await _baseService.AddAsync(new Item
+                    {
+                        CategoryId = model.CategoryId,
+                        Description = model.Description,
+                        PropertyId = property.Id,
+                    }, null, true);
                 }
                 else
                 {
-                    if (!model.Description.Contains("قابل مذاکره", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        model.Description += " قابل مذاکره";
-                    }
+                    item = existingItem;
+                    needUpdate = true;
+                    status = StatusEnum.Success;
+                    isSuccess = true;
                 }
             }
-            else
+
+            if (needUpdate)
             {
-                model.Description = model.Description?.Replace("قابل مذاکره", "", StringComparison.CurrentCultureIgnoreCase);
+                (status, item, isSuccess) = await _baseService.UpdateAsync(item,
+                    _ =>
+                    {
+                        item.CategoryId = model.CategoryId;
+                        item.Description = model.Description;
+                        item.PropertyId = property.Id;
+                    }, null, true, StatusEnum.ItemIsNull);
             }
+            if (!isSuccess)
+                return new MethodStatus<Item>(status);
 
-            var (itemAddStatus, newItem) = await _baseService.AddAsync(new Item
-            {
-                CategoryId = model.CategoryId,
-                Description = model.Description,
-                PropertyId = newProperty.Id,
-            }, null, false);
-            if (itemAddStatus != StatusEnum.Success)
-                return new MethodStatus<Item>(itemAddStatus, null);
-
-            await ItemSyncAsync(newItem, model, false);
-            return await _baseService.SaveChangesAsync(newItem, save);
+            await ItemSyncAsync(item, model);
+            return await _baseService.SaveChangesAsync(item);
         }
 
-        private async Task<StatusEnum> ItemSyncAsync(Item newItem, ItemComplexInputViewModel model, bool save)
+        private async Task ItemSyncAsync(Item newItem, ItemInputViewModel model)
         {
-            var syncFeatures = await _baseService.SyncAsync(
+            await _baseService.SyncAsync(
                 newItem.ItemFeatures,
                 model.ItemFeatures,
                 (feature, currentUser) => new ItemFeature
@@ -928,7 +879,6 @@ namespace RealEstate.Services.ServiceLayer
                 (inDb, inModel) => inDb.Value == inModel.Value,
                 (inDb, inModel) => inDb.Value = inModel.Value,
                 null);
-            return syncFeatures;
         }
     }
 }

@@ -295,7 +295,7 @@ namespace RealEstate.Services.ServiceLayer
                 }, false, StatusEnum.UserIsNull);
 
             await SyncAsync(updatedEmployee, model, false);
-            return await _baseService.SaveChangesAsync(updatedEmployee, save);
+            return await _baseService.SaveChangesAsync(updatedEmployee);
         }
 
         public async Task<MethodStatus<Employee>> AddAsync(EmployeeInputViewModel model, bool save)
@@ -319,7 +319,7 @@ namespace RealEstate.Services.ServiceLayer
             }, false);
 
             await SyncAsync(newEmployee, model, false);
-            return await _baseService.SaveChangesAsync(newEmployee, save);
+            return await _baseService.SaveChangesAsync(newEmployee);
         }
 
         public Task<MethodStatus<Presence>> PresenceAddOrUpdateAsync(PresenceInputViewModel model, bool update, bool save)

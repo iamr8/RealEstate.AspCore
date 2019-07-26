@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RealEstate.Base;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Web.Pages.Manage.User;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Controllers
 {
@@ -110,16 +110,6 @@ namespace RealEstate.Web.Controllers
         {
             var model = await _itemService.ItemRemoveAsync(id).ConfigureAwait(false);
             return RedirectToPage(typeof(Pages.Manage.Item.IndexModel).Page(), new
-            {
-                status = model.GetDisplayName()
-            });
-        }
-
-        [Route("property/remove")]
-        public async Task<IActionResult> PropertyAsync(string id)
-        {
-            var model = await _propertyService.PropertyRemoveAsync(id).ConfigureAwait(false);
-            return RedirectToPage(typeof(Pages.Manage.Property.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
             });

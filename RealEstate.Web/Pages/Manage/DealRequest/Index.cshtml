@@ -16,9 +16,9 @@
                         <div class="col-12 detail">
                             <div class="info">
                                 <span>
-                                    <a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property?.Id" target="_blank">
+                                    @*<a asp-page="@typeof(Property.IndexModel).Page()" class="title" asp-route-id="@item.Property?.Id" target="_blank">
                                         @SharedLocalizer["PropertyDetail"]
-                                    </a>
+                                    </a>*@
                                 </span>
                                 @if (item.Property?.CurrentPropertyOwnership?.Ownerships?.Any() == true)
                                 {

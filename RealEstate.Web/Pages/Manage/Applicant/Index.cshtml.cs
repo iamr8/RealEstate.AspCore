@@ -58,7 +58,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public async Task<IActionResult> OnPostTransAsync()
         {
             var (status, message) = await ModelState.IsValidAsync(
-                () => _customerService.TransApplicantAsync(TransInput),
+                () => _customerService.ShiftApplicantAsync(TransInput),
                 nameof(TransInput));
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
         }

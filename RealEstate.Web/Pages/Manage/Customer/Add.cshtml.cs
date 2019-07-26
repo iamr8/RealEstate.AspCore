@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Customer
 {
@@ -30,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             var result = await this.OnGetHandlerAsync(id, status,
-                identifier => _customerService.CustomerInputAsync(identifier),
+                identifier => _customerService.CustomerAsync(identifier),
                 typeof(IndexModel).Page(),
                 true);
             return result;
@@ -39,7 +39,7 @@ namespace RealEstate.Web.Pages.Manage.Customer
         public async Task<IActionResult> OnPostAsync()
         {
             var result = await this.OnPostHandlerAsync(
-                () => _customerService.CustomerAddOrUpdateAsync(NewCustomer, !NewCustomer.IsNew, true),
+                () => _customerService.CustomerAsync(NewCustomer),
                 typeof(IndexModel).Page(),
                 typeof(AddModel).Page());
             return result;

@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
-using RealEstate.Services.Extensions;
 
 namespace RealEstate.Web.Controllers
 {
@@ -33,18 +32,6 @@ namespace RealEstate.Web.Controllers
             _localizer = localizer;
         }
 
-        [Route("customer/addItem"), HttpPost]
-        public async Task<IActionResult> CustomerAsync([FromForm] CustomerInputViewModel model)
-        {
-            var (status, newCustomer) = await _customerService.CustomerAddAsync(model, false, true).ConfigureAwait(false);
-            return new JsonResult(new JsonStatusViewModel
-            {
-                StatusCode = (int)status,
-                Id = newCustomer?.Id,
-                Message = status.GetDisplayName()
-            });
-        }
-
         [Route("employee/payment/pay")]
         public async Task<IActionResult> PayAsync(string id, string employeeId)
         {
@@ -53,28 +40,6 @@ namespace RealEstate.Web.Controllers
             {
                 status,
                 id = employeeId
-            });
-        }
-        [Route("item/addItem"), HttpPost]
-        public async Task<IActionResult> ItemAsync([FromForm] PropertyInputViewModel model)
-        {
-            var (status, newProperty) = await _propertyService.PropertyAddOrUpdateAsync(model, true).ConfigureAwait(false);
-            return new JsonResult(new JsonStatusViewModel
-            {
-                StatusCode = (int)status,
-                Id = newProperty?.Id,
-                Message = status.GetDisplayName()
-            });
-        }
-        [Route("property/addItem"), HttpPost]
-        public async Task<IActionResult> PropertyAsync([FromForm] PropertyInputViewModel model)
-        {
-            var (status, newProperty) = await _propertyService.PropertyAddOrUpdateAsync(model, true).ConfigureAwait(false);
-            return new JsonResult(new JsonStatusViewModel
-            {
-                StatusCode = (int)status,
-                Id = newProperty?.Id,
-                Message = status.GetDisplayName()
             });
         }
     }

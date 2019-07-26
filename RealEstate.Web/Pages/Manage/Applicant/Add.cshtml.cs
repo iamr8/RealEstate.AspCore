@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ViewModels.Input;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Applicant
 {
@@ -30,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public async Task<IActionResult> OnGetAsync(string id, string status)
         {
             var result = await this.OnGetHandlerAsync(id, status,
-                identifier => _customerService.ApplicantInputAsync(identifier),
+                identifier => _customerService.ApplicantAsync(identifier),
                 typeof(Employee.IndexModel).Page(),
                 true);
             return result;
@@ -39,7 +39,7 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public async Task<IActionResult> OnPostAsync()
         {
             var result = await this.OnPostHandlerAsync(
-                () => _customerService.ApplicantAddOrUpdateAsync(NewApplicant, !NewApplicant.IsNew, true),
+                () => _customerService.ApplicantAsync(NewApplicant),
                 typeof(IndexModel).Page(),
                 typeof(AddModel).Page());
             return result;
