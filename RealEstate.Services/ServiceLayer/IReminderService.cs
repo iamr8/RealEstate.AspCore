@@ -1,4 +1,7 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -9,9 +12,6 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -21,11 +21,11 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<bool> HasReminderAsync();
 
-        Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, string currentUserId);
+        Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, string currentUserId, bool loadData = true);
 
         Task<StatusEnum> ReminderRemoveAsync(string id);
 
-        Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel);
+        Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, bool loadData = true);
     }
 
     public class ReminderService : IReminderService
@@ -112,7 +112,7 @@ namespace RealEstate.Services.ServiceLayer
             return new MethodStatus<Reminder>(StatusEnum.Success, addedReminder);
         }
 
-        public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, string currentUserId)
+        public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, string currentUserId, bool loadData = true)
         {
             if (string.IsNullOrEmpty(currentUserId))
                 return default;
@@ -157,12 +157,12 @@ namespace RealEstate.Services.ServiceLayer
                 item => item.Map<ReminderViewModel>(act =>
                 {
                     act.IncludeAs<Reminder, Picture, PictureViewModel>(_unitOfWork, x => x.Pictures);
-                }));
+                }), loadData: loadData);
 
             return result;
         }
 
-        public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel)
+        public async Task<PaginationViewModel<ReminderViewModel>> ReminderListAsync(ReminderSearchViewModel searchModel, bool loadData = true)
         {
             var currentUser = _baseService.CurrentUser();
             if (currentUser == null)

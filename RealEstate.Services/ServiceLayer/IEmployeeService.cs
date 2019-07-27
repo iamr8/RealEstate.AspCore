@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
 using RealEstate.Services.Database;
@@ -10,10 +14,6 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -51,7 +51,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<StatusEnum> EmployeeRemoveAsync(string id);
 
-        Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel);
+        Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel, bool loadData = true);
     }
 
     public class EmployeeService : IEmployeeService
@@ -166,7 +166,7 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel)
+        public async Task<PaginationViewModel<EmployeeViewModel>> ListAsync(EmployeeSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_employees, searchModel, out var currentUser);
             if (query == null)
@@ -218,7 +218,7 @@ namespace RealEstate.Services.ServiceLayer
                     ent.IncludeAs<Employee, User, UserViewModel>(_unitOfWork, x => x.Users);
                     ent.IncludeAs<Employee, EmployeeDivision, EmployeeDivisionViewModel>(_unitOfWork, x => x.EmployeeDivisions,
                         ent2 => ent2.IncludeAs<EmployeeDivision, Division, DivisionViewModel>(_unitOfWork, x => x.Division));
-                }));
+                }), loadData: loadData);
 
             if (result?.Items?.Any() != true)
                 return result;

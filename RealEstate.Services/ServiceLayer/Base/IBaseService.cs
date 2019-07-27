@@ -35,7 +35,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             where TEntity : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, string cacheKeysJson,
-            Func<TQuery, TOutput> viewModel, int pageSize = 10)
+            Func<TQuery, TOutput> viewModel, int pageSize = 10, bool loadData = true)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel;
 
         IQueryable<TSource> CheckDeletedItemsPrevillege<TSource, TSearch>(DbSet<TSource> source, TSearch searchModel, out CurrentUserViewModel currentUser) where TSource : BaseEntity where TSearch : BaseSearchModel;
@@ -63,7 +63,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             Action<CurrentUserViewModel> changes, Role[] allowedRoles, bool save, StatusEnum modelNullStatus) where TSource : BaseEntity;
 
         Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel, Func<TQuery, TOutput> viewModel,
-            int pageSize = 10)
+            int pageSize = 10, bool loadData = true)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel;
 
         Task<StatusEnum> SaveChangesAsync();
@@ -88,7 +88,7 @@ namespace RealEstate.Services.ServiceLayer.Base
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput, TSearch>(IQueryable<TQuery> query, TSearch searchModel,
-            Func<TQuery, TOutput> viewModel, int pageSize = 10)
+            Func<TQuery, TOutput> viewModel, int pageSize = 10, bool loadData = true)
             where TQuery : BaseEntity where TOutput : BaseLogViewModel where TSearch : BaseSearchModel
         {
             var efCacheKey = JsonConvert.SerializeObject(searchModel, new JsonSerializerSettings
@@ -97,12 +97,12 @@ namespace RealEstate.Services.ServiceLayer.Base
             });
             var page = searchModel?.PageNo ?? 1;
 
-            var result = await PaginateAsync(query, page, efCacheKey, viewModel, pageSize);
+            var result = await PaginateAsync(query, page, efCacheKey, viewModel, pageSize, loadData);
             return result;
         }
 
         public async Task<PaginationViewModel<TOutput>> PaginateAsync<TQuery, TOutput>(IQueryable<TQuery> query, int page, string cacheKeysJson,
-          Func<TQuery, TOutput> viewModel, int pageSize = 10)
+          Func<TQuery, TOutput> viewModel, int pageSize = 10, bool loadData = true)
           where TQuery : BaseEntity where TOutput : BaseLogViewModel
         {
             var output = new PaginationViewModel<TOutput>();
@@ -122,23 +122,27 @@ namespace RealEstate.Services.ServiceLayer.Base
             if (page > pageCount)
                 page = 1;
 
-            var pagingQuery = page > 1
-                ? query.Skip(pageSize * (page - 1))
-                : query;
-            pagingQuery = pagingQuery.Take(pageSize);
+            var viewList = new List<TOutput>();
+            if (loadData)
+            {
+                var pagingQuery = page > 1
+                    ? query.Skip(pageSize * (page - 1))
+                    : query;
+                pagingQuery = pagingQuery.Take(pageSize);
 
-            var entities = await pagingQuery
-                .Cacheable(efPolicy, efDebug)
-                .ToListAsync();
-            if (entities?.Any() != true)
-                return output;
+                var entities = await pagingQuery
+                    .Cacheable(efPolicy, efDebug)
+                    .ToListAsync();
+                if (entities?.Any() != true)
+                    return output;
 
-            var viewList = entities
-                .Select(viewModel.Invoke)
-                .ToHasNotNullList();
+                viewList = entities
+                    .Select(viewModel.Invoke)
+                    .ToHasNotNullList();
 
-            if (viewList == null)
-                return output;
+                if (viewList == null)
+                    return output;
+            }
 
             output.Items = viewList;
             output.CurrentPage = page;

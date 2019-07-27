@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using RealEstate.Base.Attributes;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using RealEstate.Base.Attributes;
 
 namespace RealEstate.Base
 {
@@ -16,15 +16,16 @@ namespace RealEstate.Base
         public int PageNo { get; set; }
 
         [JsonIgnore]
-        public Dictionary<string, string> SearchOptions
+        public Dictionary<string, string> Conditions
         {
             get
             {
                 const string jsonTerm = "Json";
                 var type = GetType();
+
                 var properties = type.GetPublicProperties().Where(x =>
-                        x.GetSearchParameterAttribute() != null
-                        && !x.Name.Equals(nameof(PageNo))
+                        x.GetPropertyAttribute<SearchParameterAttribute>() != null
+                        && !x.Name.Equals(nameof(PageNo), StringComparison.CurrentCultureIgnoreCase)
                         && !x.Name.EndsWith("Id", StringComparison.CurrentCultureIgnoreCase))
                     .ToList();
                 if (properties?.Any() != true)
@@ -37,9 +38,9 @@ namespace RealEstate.Base
                     try
                     {
                         key = property.Name.EndsWith(jsonTerm, StringComparison.CurrentCulture)
-                           ? type.GetPublicProperties().FirstOrDefault(x =>
-                               x.Name.Equals(property.Name.Replace(jsonTerm, "", StringComparison.CurrentCulture), StringComparison.CurrentCulture))?.GetDisplayName()
-                           : property.GetDisplayName();
+                            ? type.GetPublicProperties().FirstOrDefault(x =>
+                                x.Name.Equals(property.Name.Replace(jsonTerm, "", StringComparison.CurrentCulture), StringComparison.CurrentCulture))?.GetDisplayName()
+                            : property.GetDisplayName();
                     }
                     catch
                     {
@@ -47,7 +48,7 @@ namespace RealEstate.Base
                     }
 
                     var value = property.GetValue(this);
-                    var searchProperty = property.GetSearchParameterAttribute();
+                    var searchProperty = property.GetPropertyAttribute<SearchParameterAttribute>();
 
                     if (value == null)
                         continue;
@@ -147,42 +148,45 @@ namespace RealEstate.Base
         }
 
         [JsonIgnore]
-        public bool IsTriggered => SearchOptions.Count > 0;
+        public bool IsTriggered => Conditions.Count > 0;
 
-        public Dictionary<string, object> GetSearchParameters()
+        public Dictionary<string, object> RouteDictionary()
         {
-            var routeValues = new Dictionary<string, object>();
-
-            var properties = GetType().GetPublicProperties().Where(x => x.GetValue(this) != null).ToList();
-            if (properties?.Any() != true)
-                return default;
-
-            foreach (var property in properties)
             {
-                var value = property.GetValue(this).ToString();
-                var searchParameterAttribute = property.GetSearchParameterAttribute();
-                if (searchParameterAttribute == null)
-                    continue;
+                var routeValues = new Dictionary<string, object>();
 
-                var searchParameter = searchParameterAttribute.ParameterName;
-                if (string.IsNullOrEmpty(searchParameter))
-                    continue;
+                var properties = GetType().GetPublicProperties().Where(x => x.GetValue(this) != null).ToList();
+                if (properties?.Any() != true)
+                    return default;
 
-                if (searchParameterAttribute.Type != null)
+                foreach (var property in properties)
                 {
-                    if (property.PropertyType != typeof(string))
+                    var value = property.GetValue(this).ToString();
+
+                    var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
+                    if (searchParameterAttribute == null)
                         continue;
 
-                    var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
-                    routeValues.Add(searchParameter, encodeJson);
-                }
-                else
-                {
-                    routeValues.Add(searchParameter, value);
-                }
-            }
+                    var searchParameter = searchParameterAttribute.ParameterName;
+                    if (string.IsNullOrEmpty(searchParameter))
+                        continue;
 
-            return routeValues;
+                    if (searchParameterAttribute.Type != null)
+                    {
+                        if (property.PropertyType != typeof(string))
+                            continue;
+
+                        var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
+                        routeValues.Add(searchParameter, encodeJson);
+                    }
+                    else
+                    {
+                        routeValues.Add(searchParameter, value);
+                    }
+                }
+
+                return routeValues;
+            }
         }
     }
 }

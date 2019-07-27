@@ -57,7 +57,7 @@ namespace RealEstate.Services.TagHelpers
                         .Select(x => x.GetValue(SearchModel.Model)).FirstOrDefault();
                     pageNo = (int?)properties.Where(x => x.Name.Equals(nameof(baseSearch.PageNo), StringComparison.CurrentCulture))
                         .Select(x => x.GetValue(SearchModel.Model)).FirstOrDefault();
-                    searchOptions = properties.Where(x => x.Name.Equals(nameof(baseSearch.SearchOptions), StringComparison.CurrentCulture))
+                    searchOptions = properties.Where(x => x.Name.Equals(nameof(baseSearch.Conditions), StringComparison.CurrentCulture))
                         .Select(x => x.GetValue(SearchModel.Model)).FirstOrDefault() as Dictionary<string, string>;
                 }
             }

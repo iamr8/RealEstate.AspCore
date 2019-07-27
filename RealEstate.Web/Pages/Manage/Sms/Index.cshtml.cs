@@ -46,7 +46,7 @@ namespace RealEstate.Web.Pages.Manage.Sms
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
     }
 }

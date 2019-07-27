@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using RealEstate.Base;
 using RealEstate.Services.BaseLog;
 using RestSharp.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RealEstate.Services.ViewComponents
 {
@@ -85,7 +85,7 @@ namespace RealEstate.Services.ViewComponents
                 {
                     Num = page,
                     IsCurrent = page == currentPage,
-                    Link = currentUrl
+                    Link = currentUrl,
                 });
             }
 

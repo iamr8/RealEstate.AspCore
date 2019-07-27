@@ -2,17 +2,6 @@
 @model IndexModel
 @{
     var features = SelectItemExtensions.ToSelectList<FeatureTypeEnum>().AddNone();
-    var forbidden = new[]
-    {
-        "تعداد واحدهای مجتمع",
-        "مستاجر",
-        "سال ساخت",
-        "وام",
-        "تعداد خواب",
-        "متراژ",
-        "قیمت نهایی",
-        "قیمت هر متر"
-    };
 }
 <div class="col-12">
     <status>
@@ -23,43 +12,12 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewFeature"]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
-            <item-viewer model="@Model.List.Items">
-                @foreach (var item in Model.List.Items)
-                {
-                    var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
-                    <div class="row justify-content-center itemShow @disabledClass">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <ul class="info-breadcrumb">
-                                    <li>@item.Type.GetDisplayName()</li>
-                                </ul>
-                                <span>
-                                    <b class="title">
-                                        @item.Name
-                                    </b>
-                                    @if (item.Type == FeatureTypeEnum.Item || item.Type == FeatureTypeEnum.Property)
-                                    {
-                                        <a class="badge badge-primary" asp-page="@typeof(Item.IndexModel).Page()" target="_blank" asp-route-hasFeature="@item.Id">@SharedLocalizer[SharedResource.AvailableItems]</a>
-                                    }
-                                </span>
-                            </div>
-                            <div class="button">
-                                @if (!forbidden.Any(x => x.Equals(item.Name, StringComparison.CurrentCulture)))
-                                {
-                                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                                    {
-                                        <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
-                                        <a asp-controller="Remove" asp-action="FeatureAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                    }
-                                }
-                            </div>
-                        </div>
-                        <vc:log logs="@item.Logs" cat="Feature" id="@item.Id" />
-                    </div>
-                }
-            </item-viewer>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
+        </section>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" />
+        </section>
+        <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>

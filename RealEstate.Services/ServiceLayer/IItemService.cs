@@ -24,7 +24,7 @@ namespace RealEstate.Services.ServiceLayer
 {
     public interface IItemService
     {
-        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel);
+        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool loadData = true);
 
         Task<ItemOutJsonViewModel> ItemJsonAsync(string id);
 
@@ -32,7 +32,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<StatusEnum> RequestRejectAsync(string itemId, bool save);
 
-        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10);
+        Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10, bool loadData = true);
 
         Task<StatusEnum> ItemRemoveAsync(string id);
 
@@ -386,17 +386,17 @@ namespace RealEstate.Services.ServiceLayer
             return false;
         }
 
-        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel)
+        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, bool loadData = true)
         {
             // TODO: Sort latest items first by UPDATE, then by ADD
             var query = _baseService.CheckDeletedItemsPrevillege(_items, searchModel, out var currentUser);
             if (query == null)
                 return new PaginationViewModel<ItemViewModel>();
 
-            return await ItemListAsync(searchModel, query, currentUser.Id, 12);
+            return await ItemListAsync(searchModel, query, currentUser.Id, 12, loadData);
         }
 
-        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10)
+        public async Task<PaginationViewModel<ItemViewModel>> ItemListAsync(ItemSearchViewModel searchModel, IQueryable<Item> query, string currentUserId, int pageSize = 10, bool loadData = true)
         {
             if (query == null)
                 query = _items.AsQueryable();
@@ -612,7 +612,7 @@ namespace RealEstate.Services.ServiceLayer
                     act.IncludeAs<Item, DealRequest, DealRequestViewModel>(_unitOfWork, x => x.DealRequests);
                     act.IncludeAs<Item, ItemFeature, ItemFeatureViewModel>(_unitOfWork, x => x.ItemFeatures,
                         ent => ent.IncludeAs<ItemFeature, Feature, FeatureViewModel>(_unitOfWork, x => x.Feature));
-                }), pageSize);
+                }), pageSize, loadData);
 
             return result;
         }
@@ -797,8 +797,6 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<MethodStatus<Item>> ItemAsync(ItemInputViewModel model)
         {
-            // manipulate
-
             if (model == null)
                 return new MethodStatus<Item>(StatusEnum.ModelIsNull);
 

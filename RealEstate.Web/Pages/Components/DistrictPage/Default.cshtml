@@ -1,0 +1,30 @@
+﻿@model List<RealEstate.Services.ViewModels.ModelBind.DistrictViewModel>
+
+@if (Model?.Any() == true)
+{
+    foreach (var item in Model)
+    {
+        var disabledClass = item.IsDeleted ? "disabled" : "";
+        var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
+        <div class="row justify-content-center itemShow @disabledClass">
+            <div class="col-12 detail">
+                <div class="info">
+                    <span>
+                        <b class="title">
+                            @item.Name
+                        </b>
+                        <a class="badge badge-primary" asp-page="@typeof(Manage.Item.IndexModel).Page()" target="_blank" asp-route-district="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
+                    </span>
+                </div>
+                <div class="button">
+                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                    {
+                        <a asp-page="/@nameof(Manage)/@nameof(Manage.District)/Add" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
+                        <a asp-controller="Remove" asp-action="DistrictAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[" AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                    }
+                </div>
+            </div>
+            <vc:log logs="@item.Logs" cat="District" id="@item.Id" />
+        </div>
+    }
+}

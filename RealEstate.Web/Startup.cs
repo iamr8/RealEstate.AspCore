@@ -137,6 +137,7 @@ namespace RealEstate.Web
                 {
                     options.Conventions.AuthorizeFolder($"/{nameof(RealEstate.Web.Pages.Manage)}");
                     options.Conventions.AddPageRoute("/manage/owners/edit", "manage/owners/edit/{id}");
+                    options.AllowMappingHeadRequestsToGetHandler = true;
                 })
                 .AddViewLocalization()
                 .AddDataAnnotationsLocalization(options =>

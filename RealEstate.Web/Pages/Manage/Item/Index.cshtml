@@ -56,7 +56,7 @@
         </widget-header>
         <section class="container-fluid">
             <search-nav rows="@Model.List.Rows" searchModel="@Model.SearchInput">
-                <li class="nav-item dropdown">
+                @*<li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">@SharedLocalizer[SharedResource.SortBy] - @SharedLocalizer[SharedResource.Newest]</a>
                     <div class="dropdown-menu">
                         <button type="button" class="dropdown-item sorter active" data-sort-by="creationDate" data-sort-ascending="false">@SharedLocalizer[SharedResource.Newest]</button>
@@ -107,147 +107,18 @@
                         <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="false">@SharedLocalizer[SharedResource.Lowest]</button>
                         <button type="button" class="dropdown-item sorter" data-sort-by="buildYear" data-sort-ascending="true">@SharedLocalizer[SharedResource.Greatest]</button>
                     </div>
-                </li>
+                </li>*@
             </search-nav>
         </section>
-        <section class="container-fluid">
-            <item-viewer model="@Model.List.Items">
-                <div class="row grid">
-                    @foreach (var item in Model.List.Items)
-                    {
-                        var disabledClass = item.IsDeleted ? "disabled" : "";
-                        var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
-                        var category = item.Category;
-                        var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                        var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                        var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                        var bedRooms = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "تعداد خواب")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                        var buildYear = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "سال ساخت")?.Value.Replace(",", "").Replace("/", "") ?? "0";
-                        var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures?.SelectRandom()?.File}");
-                        var hasImage = item.Property?.Pictures?.Any() == true;
-
-                        <div class="col-12 col-sm-6 col-xl-3 items--item-wrapper element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString(" s", new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
-                            <div class="items--item">
-                                <a href="#" data-toggle="modal" data-target="#itemDetailModal" data-item-id="@item.Id">
-                                    <div class="picture @(!hasImage ? " no-img" : "" )" @(Html.Raw(hasImage ? $"style=\"background-image: url('{Url.Content(imgPath)}')\"" : ""))>
-                                        <div class="fadeIn">
-                                            <span>
-                                                <i class="fa fa-map-marker"></i>
-                                                <span>@item.Property.District.Name</span>
-                                            </span>
-                                            <span class="mr-auto">
-                                                @item.Category.Name • @item.Property.Category.Name
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <ul class="features">
-                                        <li>
-                                            @Html.Raw(item.Property.Address)
-                                        </li>
-                                        @{
-                                            var neededFeatures = new List
-                                                <string>
-                                                                                                                                                                                                                    {
-                                                "قیمت نهایی",
-                                                "قیمت هر متر",
-                                                "پیش پرداخت",
-                                                "اجاره"
-                                            };
-                                            var workingFeatures = item.ItemFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures.IndexOf(x.Feature.Name)).ToList();
-                                        }
-                                        @if (workingFeatures?.Any() == true)
-                                        {
-                                            foreach (var wFeature in workingFeatures)
-                                            {
-                                                var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
-                                                var originalValue = wFeature.OriginalValue;
-
-                                                <li class="@(key?.Equals(" قیمت نهایی", StringComparison.CurrentCultureIgnoreCase) == true ? "feature-important" : "" )">
-                                                    @if (!string.IsNullOrEmpty(key))
-                                                    {
-                                                        <b>@key</b>
-                                                    }
-                                                    <span>@Html.Raw(value)</span>
-                                                    @if (hasDate)
-                                                    {
-                                                        <span class="text-black-50">تا تاریخ @wFeature.Logs.Last.DateTime.GregorianToPersian(true)</span>
-                                                    }
-                                                </li>
-                                            }
-                                        }
-                                    </ul>
-                                </a>
-                                <ul class="featureCards mt-auto">
-                                    @{
-                                        var neededFeatures2 = new List<string>(){
-                                        "متراژ",
-                                        "تعداد خواب",
-                                        "سال ساخت"
-                                        };
-                                        var workingFeatures2 = item.Property.PropertyFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures2?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures2.IndexOf(x.Feature.Name)).ToList();
-                                    }
-                                    @if (workingFeatures2?.Any() == true)
-                                    {
-                                        foreach (var wFeature in workingFeatures2)
-                                        {
-                                            var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
-                                            var originalValue = wFeature.OriginalValue;
-
-                                            var icon = string.Empty;
-                                            switch (key)
-                                            {
-                                                case "تعداد خواب":
-                                                    icon = "bed";
-                                                    break;
-                                                case "سال ساخت":
-                                                    icon = "hashtag";
-                                                    value = value.Replace(" ساخت", "");
-                                                    break;
-
-                                                case "متراژ":
-                                                    icon = "ruler";
-                                                    break;
-                                            }
-                                            <li>
-                                                <i class="fa fa-@icon"></i>
-                                                <span>@Html.Raw(value)</span>
-                                            </li>
-                                        }
-                                    }
-                                    @if (item.IsNegotiable)
-                                    {
-                                        <li class="mr-auto">
-                                            <i class="fa fa-check text-green"></i>
-                                            <span>@SharedLocalizer[SharedResource.Negotitable]</span>
-                                        </li>
-                                    }
-                                </ul>
-                                <ul class="row admin-keys mt-auto">
-                                    <li class="col">
-                                        <a asp-page="@typeof(PictureModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
-                                    </li>
-                                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                                    {
-                                        <li class="col">
-                                            <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer["EditItem"]</a>
-                                        </li>
-                                        <li class="col">
-
-                                            <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="col btn-sm text-danger">@disabledTerm</a>
-                                        </li>
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </item-viewer>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" as-row="true"/>
         </section>
         <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>
+
 <search-modal searchModel="@Model.SearchInput">
     <hr subject="@SharedLocalizer[SharedResource.Category]" />
     <div class="row justify-content-center align-items-center">
@@ -377,7 +248,7 @@
             const detailModal = "#itemDetailModal";
 
             $(detailModal).on('show.bs.modal',
-                function (event) {
+                function(event) {
                     const button = $(event.relatedTarget); // Button that triggered the modal
                     const itemId = button.data('item-id'); // Extract info from data-* attributes
                     const modal = $(this);
@@ -686,82 +557,82 @@
 
         });
     </script>
-    <script>
+    @*<script>
         $(document).ready(function() {
 
             const $grid = $(".grid").isotope({
-            itemSelector: '.element-item',
-            layoutMode: 'fitRows',
-            getSortData: {
-                creationDate: function (itemElem) {
-                    const plainDate = $(itemElem).attr('data-creationDate');
-                    const result = Date.parse(plainDate);
-                    return result;
-                },
-                finalPrice: function (itemElem) {
-                    const finalPrice = $(itemElem).attr('data-finalPrice');
-                    const result = parseFloat(finalPrice);
-                    return result;
-                },
-                pricePerMeter: function (itemElem) {
-                    const pricePerMeter = $(itemElem).attr('data-pricePerMeter');
-                    const result = parseFloat(pricePerMeter);
-                    return result;
-                },
-                meters: function (itemElem) {
-                    const meters = $(itemElem).attr('data-meters');
-                    const result = parseFloat(meters);
-                    return result;
-                },
-                bedRooms: function (itemElem) {
-                    const bedRooms = $(itemElem).attr('data-bedRooms');
-                    const result = parseFloat(bedRooms);
-                    return result;
-                },
-                buildYear: function (itemElem) {
-                    const buildYear = $(itemElem).attr('data-buildYear');
-                    const result = parseFloat(buildYear);
-                    return result;
+                itemSelector: '.element-item',
+                layoutMode: 'fitRows',
+                getSortData: {
+                    creationDate: function(itemElem) {
+                        const plainDate = $(itemElem).attr('data-creationDate');
+                        const result = Date.parse(plainDate);
+                        return result;
+                    },
+                    finalPrice: function(itemElem) {
+                        const finalPrice = $(itemElem).attr('data-finalPrice');
+                        const result = parseFloat(finalPrice);
+                        return result;
+                    },
+                    pricePerMeter: function(itemElem) {
+                        const pricePerMeter = $(itemElem).attr('data-pricePerMeter');
+                        const result = parseFloat(pricePerMeter);
+                        return result;
+                    },
+                    meters: function(itemElem) {
+                        const meters = $(itemElem).attr('data-meters');
+                        const result = parseFloat(meters);
+                        return result;
+                    },
+                    bedRooms: function(itemElem) {
+                        const bedRooms = $(itemElem).attr('data-bedRooms');
+                        const result = parseFloat(bedRooms);
+                        return result;
+                    },
+                    buildYear: function(itemElem) {
+                        const buildYear = $(itemElem).attr('data-buildYear');
+                        const result = parseFloat(buildYear);
+                        return result;
+                    }
                 }
-            }
+
+            });
+
+            $grid.isotope({
+                sortBy: "creationDate",
+                sortAscending: "descending"
+            });
+
+            $('.sorter').click(function() {
+                const sortState = $(this).html();
+                const parent = $(this).parent().prev();
+                var parentName = $(parent).html();
+                parentName = parentName.split(' - ').length > 0 ? parentName.split(' - ')[0] : parentName;
+
+                if (sortState === "@Html.Raw(SharedLocalizer[SharedResource.Cancel])") {
+                    $grid.isotope({
+                        sortBy: ""
+                    });
+                    $(parent).html(parentName);
+
+                } else {
+                    const sortValue = $(this).attr('data-sort-by');
+                    const ascDesc = $(this).attr('data-sort-ascending');
+                    const direction = ascDesc === "true" ? true : false;
+                    $grid.isotope({
+                        sortBy: sortValue,
+                        sortAscending: direction
+                    });
+
+                    $(parent).html(`${parentName} - ${sortState}`);
+                }
+
+                const alreadyActivatedState = $(this).parent().children(".dropdown-item.active")[0];
+                $(alreadyActivatedState).toggleClass("active");
+                $(this).toggleClass("active");
+
+            });
 
         });
-
-        $grid.isotope({
-        sortBy: "creationDate",
-            sortAscending: "descending"
-        });
-
-        $('.sorter').click(function () {
-            const sortState = $(this).html();
-            const parent = $(this).parent().prev();
-            var parentName = $(parent).html();
-            parentName = parentName.split(' - ').length > 0 ? parentName.split(' - ')[0] : parentName;
-
-            if (sortState === "@Html.Raw(SharedLocalizer[SharedResource.Cancel])") {
-                $grid.isotope({
-                    sortBy: ""
-                });
-                $(parent).html(parentName);
-
-            } else {
-                const sortValue = $(this).attr('data-sort-by');
-                const ascDesc = $(this).attr('data-sort-ascending');
-                const direction = ascDesc === "true" ? true : false;
-                $grid.isotope({
-                    sortBy: sortValue,
-                    sortAscending: direction
-                });
-
-                $(parent).html(`${parentName} - ${sortState}`);
-            }
-
-            const alreadyActivatedState = $(this).parent().children(".dropdown-item.active")[0];
-            $(alreadyActivatedState).toggleClass("active");
-            $(this).toggleClass("active");
-
-        });
-
-        });
-    </script>
+    </script>*@
 }

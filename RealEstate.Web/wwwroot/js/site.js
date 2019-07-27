@@ -285,3 +285,124 @@ function wordifyfa(num, level) {
   }
   return result;
 }
+
+function showLoadingModal() {
+  const modal = document.createElement("div");
+  $(modal).addClass("modal fade");
+  $(modal).attr("id", "loadingModal");
+  $(modal).attr("data-backdrop", "static");
+  $(modal).attr("data-keyboard", "false");
+  $(modal).attr("tabindex", "-1");
+  const modalDialog = document.createElement("div");
+  $(modalDialog).addClass("modal-dialog").addClass("modal-sm");
+
+  const modalContent = document.createElement("div");
+  $(modalContent).addClass("modal-content justify-content-center flex-row");
+
+  const loadingSpinner = document.createElement("div");
+  $(loadingSpinner).addClass("spinner-grow");
+
+  const loadingTitle = document.createElement("span");
+  $(loadingTitle).addClass("title");
+  $(loadingTitle).html("لطفا کمی صبر کنید");
+
+  $(modalContent).append(loadingSpinner).append(loadingTitle);
+  $(modalDialog).append(modalContent);
+  $(modal).append(modalDialog);
+
+  return $(modal);
+}
+
+$(document).ready(function () {
+  $(".page-link").click(function (e) {
+    e.preventDefault();
+    const pageNo = parseInt($(this).html());
+
+    const splitUrl = location.href.split("?");
+    var [url, queryString] = splitUrl;
+    if (url.endsWith("#"))
+      url = url.split("#")[0];
+
+    var params = [];
+    if (queryString !== undefined && queryString !== "" && queryString !== null)
+      params = queryString.split("&");
+
+    console.log("caughtParams", params);
+    var newParams = [];
+    var indicator = 0;
+
+    var model = new Object();
+    var currentPageNo = 0;
+    var shouldBeAdded = true;
+    $.each(params,
+      (index, param) => {
+        var [key, value] = param.split("=");
+        if (value.endsWith("#"))
+          value = value.split("#")[0];
+
+        if (key === "pageNo") {
+          currentPageNo = parseInt(value);
+          value = pageNo;
+          shouldBeAdded = false;
+        }
+
+        model[key] = value;
+        newParams[indicator] = `${key}=${value}`;
+        indicator++;
+      });
+
+    if (shouldBeAdded)
+      newParams[indicator] = `pageNo=${pageNo}`;
+
+    console.log("currentPageNo", currentPageNo, "nextPageNo", pageNo);
+    console.log("newParams", newParams);
+    const newQueryString = newParams.join("&");
+
+    const newUrl = `${url}?${newQueryString}`;
+    console.log(newUrl);
+
+    if (typeof history.pushState === "undefined") {
+      // unsupported browsers
+      window.location.href = newUrl;
+    } else {
+      // supported browsers
+      console.log("Start to get pageItems");
+
+      const modalLoading = showLoadingModal();
+      $("body").append(modalLoading);
+      $("#loadingModal").modal("show");
+
+      $(".grid").fadeOut("slow",
+        function () {
+          $(".grid").load(`${url}?handler=Page&${newQueryString}`,
+            (response, status, xhr) => {
+              if (xhr.status === 200) {
+                // hide loading
+                const pageItems = $(".pagination").children();
+                $.each(pageItems,
+                  (key, value) => {
+                    const page = parseInt($(".page-link", value).text());
+                    if (page === pageNo) {
+                      $(value).addClass("active");
+                    } else {
+                      if ($(value).hasClass("active")) {
+                        $(value).removeClass("active");
+                      }
+                    }
+                  });
+
+                const top = $("#paginatedList").position().top;
+                $("html,body").animate({ scrollTop: top }, "slow");
+                console.log("Finished pageItems");
+                window.history.pushState({}, "", newUrl);
+                $("#loadingModal").modal("hide");
+                //          $(".grid").isotope("reloadItems").isotope();
+                $(".grid").fadeIn("slow");
+              }
+            });
+        });
+    }
+  });
+
+  $(".page-link", ".page-item.active").trigger("click");
+});

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -6,10 +7,10 @@ using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Applicant
 {
@@ -47,12 +48,12 @@ namespace RealEstate.Web.Pages.Manage.Applicant
             };
 
             Status = !string.IsNullOrEmpty(status) ? status : null;
-            List = await _customerService.ApplicantListAsync(SearchInput).ConfigureAwait(false);
+            List = await _customerService.ApplicantListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
         public async Task<IActionResult> OnPostTransAsync()
@@ -60,7 +61,16 @@ namespace RealEstate.Web.Pages.Manage.Applicant
             var (status, message) = await ModelState.IsValidAsync(
                 () => _customerService.ShiftApplicantAsync(TransInput),
                 nameof(TransInput));
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(ApplicantSearchViewModel models)
+        {
+            var list = await _customerService.ApplicantListAsync(models);
+            return ViewComponent(typeof(ApplicantPageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

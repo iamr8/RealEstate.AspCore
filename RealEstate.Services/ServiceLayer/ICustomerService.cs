@@ -26,13 +26,13 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<CustomerJsonViewModel>> CustomerListAsync(string name, string mobile);
 
-        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel);
+        Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool loadData = true);
 
         Task<MethodStatus<Customer>> CustomerAsync(CustomerInputViewModel model);
 
         Task<MethodStatus<Applicant>> ApplicantAsync(ApplicantInputViewModel model);
 
-        Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel);
+        Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel, bool loadData = true);
 
         Task<ApplicantInputViewModel> ApplicantAsync(string id);
 
@@ -299,7 +299,7 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel)
+        public async Task<PaginationViewModel<ApplicantViewModel>> ApplicantListAsync(ApplicantSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_applicants, searchModel, out var currentUser);
             if (query == null)
@@ -323,12 +323,12 @@ namespace RealEstate.Services.ServiceLayer
                     act2 => act2.IncludeAs<User, Employee, EmployeeViewModel>(_unitOfWork, x => x.Employee));
                 act.IncludeAs<Applicant, ApplicantFeature, ApplicantFeatureViewModel>(_unitOfWork, x => x.ApplicantFeatures,
                     act2 => act2.IncludeAs<ApplicantFeature, Feature, FeatureViewModel>(_unitOfWork, c => c.Feature));
-            }).ShowBasedOn(x => x.Customer));
+            }).ShowBasedOn(x => x.Customer), loadData: loadData);
 
             return result;
         }
 
-        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel)
+        public async Task<PaginationViewModel<CustomerViewModel>> CustomerListAsync(CustomerSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_customers, searchModel, out var currentUser);
             if (query == null)
@@ -355,7 +355,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CustomerViewModel>());
+                item => item.Map<CustomerViewModel>(), loadData: loadData);
 
             return result;
         }

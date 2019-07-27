@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -8,9 +9,9 @@ using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
 using RealEstate.Services.ServiceLayer.Base;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Category
 {
@@ -53,12 +54,21 @@ namespace RealEstate.Web.Pages.Manage.Category
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _featureService.CategoryListAsync(SearchInput).ConfigureAwait(false);
+            List = await _featureService.CategoryListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(CategorySearchViewModel models)
+        {
+            var list = await _featureService.CategoryListAsync(models);
+            return ViewComponent(typeof(CategoryPageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

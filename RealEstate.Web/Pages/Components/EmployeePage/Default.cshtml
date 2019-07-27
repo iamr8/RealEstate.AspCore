@@ -1,0 +1,102 @@
+﻿@model List<RealEstate.Services.ViewModels.ModelBind.EmployeeViewModel>
+
+@if (Model?.Any() == true)
+{
+    foreach (var item in Model)
+    {
+        var disabledClass = item.IsDeleted ? "disabled" : "";
+        var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
+        <div class="row justify-content-center itemShow @disabledClass">
+            <div class="col-12 detail">
+                <div class="info">
+                    <span>
+                        <b class="title">
+                            @item.FirstName @item.LastName
+                        </b>
+                    </span>
+                    <span>
+                        @SharedLocalizer[SharedResource.ContactWay]
+                        <ul class="info-breadcrumb">
+                            @if (!string.IsNullOrEmpty(item.Mobile))
+                            {
+                                <li>
+                                    <a href="tel:@item.Mobile">
+                                        @item.Mobile
+                                    </a>
+                                </li>
+                            }
+                            @if (!string.IsNullOrEmpty(item.Phone))
+                            {
+                                <li>
+                                    <a href="tel:@item.Phone">
+                                        @item.Phone
+                                    </a>
+                                </li>
+                            }
+                            @if (!string.IsNullOrEmpty(item.Address))
+                            {
+                                <li>
+                                    @item.Address
+                                </li>
+                            }
+                        </ul>
+                    </span>
+                    <span>
+                        @SharedLocalizer[SharedResource.Advantages]:
+                        <ul class="info-breadcrumb">
+                            <li>
+                                <b>@SharedLocalizer[SharedResource.Insurance]:</b> @((item.CurrentInsurance?.Price ?? 0).ToString().CurrencyToWords()) تومان
+                            </li>
+                            <li>
+                                <b>@SharedLocalizer[SharedResource.FixedSalary]:</b> @((item.CurrentFixedSalary?.Value ?? 0).ToString().CurrencyToWords()) تومان
+                            </li>
+                        </ul>
+                    </span>
+                    @if (item.EmployeeDivisions?.Any() == true)
+                    {
+                        <span>
+                            @SharedLocalizer[SharedResource.Divisions]:
+                            <ul class="info-breadcrumb">
+                                @foreach (var employeeDivision in item.EmployeeDivisions)
+                                {
+                                    var value = employeeDivision.Division;
+                                    <li>
+                                        <a asp-page="@typeof(Manage.Division.IndexModel).Page()" asp-route-id="@value?.Id" target="_blank">@value?.Name</a>
+                                    </li>
+                                }
+                            </ul>
+                        </span>
+
+                    }
+                    @if (item.Users?.Any() == true)
+                    {
+                        <span>
+                            @SharedLocalizer[SharedResource.Users]:
+                            <ul class="info-breadcrumb">
+                                @foreach (var user in item.Users)
+                                {
+                                    <li>
+                                        <a asp-page="@typeof(Manage.User.IndexModel).Page()" asp-route-userId="@user.Id" target="_blank">@user.Username</a>
+                                    </li>
+                                }
+                            </ul>
+                        </span>
+                    }
+                </div>
+                <div class="button">
+                    @if (User.IsInRole(Role.SuperAdmin.ToString()))
+                    {
+                        <a asp-page="@typeof(Manage.Employee.DetailModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-primary @disabledClass">@SharedLocalizer[SharedResource.Detail]</a>
+                        <a asp-page="@typeof(Manage.Employee.AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
+
+                        if (User.Identity.Name != item.CurrentUser?.Username)
+                        {
+                            <a asp-controller="Remove" asp-action="EmployeeAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                        }
+                    }
+                </div>
+            </div>
+            <vc:log logs="@item.Logs" cat="Employee" id="@item.Id" />
+        </div>
+    }
+}

@@ -14,100 +14,12 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewUser]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
-            <item-viewer model="@Model.List.Items">
-                @foreach (var item in Model.List.Items)
-                {
-                    if (item.Role == Role.SuperAdmin && !User.IsInRole(Role.SuperAdmin.ToString()))
-                    {
-                        continue;
-                    }
-
-                    var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Activate] : SharedLocalizer[SharedResource.Deactivate];
-                    <div class="row justify-content-center itemShow @disabledClass">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <b class="title">
-                                        @item.Username
-                                    </b>
-                                    <span class="badge badge-warning"><b>@SharedLocalizer[SharedResource.Password]:</b> @item.EncryptedPassword.Cipher(CryptologyExtension.CypherMode.Decryption)</span>
-                                    <a asp-page="@typeof(IndexModel).Page()" asp-route-userRole="@item.Role.ToString()" class="badge badge-danger"><b>@SharedLocalizer[SharedResource.Role]:</b> @item.Role.GetDisplayName()</a>
-                                </span>
-                                <span>
-                                    @SharedLocalizer[SharedResource.Employee] :
-                                    <ul class="info-breadcrumb">
-                                        @if (item.Employee != null)
-                                        {
-                                            <li>
-                                                <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id">
-                                                    @item.Employee?.FirstName، @item.Employee?.LastName
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="tel:@item.Employee?.Mobile">
-                                                    @item.Employee?.Mobile
-                                                </a>
-                                            </li>
-                                        }
-                                        else
-                                        {
-                                            <li>
-                                                غیرفعال شده است
-                                            </li>
-                                        }
-                                    </ul>
-                                </span>
-
-                                @if (item.UserItemCategories?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.UserItemCategories] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.UserItemCategories)
-                                            {
-                                                <text>
-                                                    <li>@feature.Category?.Name</li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
-
-                                }
-                                @if (item.UserPropertyCategories?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.UserPropertyCategories] :
-                                        <ul class="info-breadcrumb">
-                                            @foreach (var feature in item.UserPropertyCategories)
-                                            {
-                                                <text>
-                                                    <li>@feature.Category?.Name</li>
-                                                </text>
-                                            }
-                                        </ul>
-                                    </span>
-
-                                }
-                            </div>
-                            <div class="button">
-                                <a asp-page="@typeof(Employee.IndexModel).Page()" asp-route-userId="@item.Id" class="btn btn-sm btn-primary">مشخصات کارمند</a>
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()))
-                                {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
-
-                                    if (User.Identity.Name != item.Username)
-                                    {
-                                        <a asp-controller="Remove" asp-action="UserDeActivateAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                    }
-                                }
-                            </div>
-                        </div>
-                        <vc:log logs="@item.Logs" cat="User" id="@item.Id" />
-                    </div>
-                }
-            </item-viewer>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
+        </section>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" />
+        </section>
+        <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>

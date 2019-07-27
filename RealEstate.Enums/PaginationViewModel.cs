@@ -2,7 +2,7 @@
 
 namespace RealEstate.Base
 {
-    public class PaginationViewModel<TModel> where TModel : class
+    public class PaginationViewModel<TModel> : PaginationViewModel where TModel : class
     {
         public PaginationViewModel()
         {
@@ -12,6 +12,10 @@ namespace RealEstate.Base
         }
 
         public List<TModel> Items { get; set; }
+    }
+
+    public abstract class PaginationViewModel
+    {
         public int CurrentPage { get; set; }
         public int Pages { get; set; }
         public int Rows { get; set; }

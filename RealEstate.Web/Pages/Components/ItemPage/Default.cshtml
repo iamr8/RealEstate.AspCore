@@ -1,0 +1,132 @@
+﻿@model List<RealEstate.Services.ViewModels.ModelBind.ItemViewModel>
+
+@if (Model?.Any() == true)
+{
+    foreach (var item in Model)
+    {
+        var disabledClass = item.IsDeleted ? "disabled" : "";
+        var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
+        var category = item.Category;
+        var finalPrice = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت نهایی")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+        var pricePerMeter = item.ItemFeatures?.FirstOrDefault(x => x.Feature?.Name == "قیمت هر متر")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+        var meters = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "متراژ")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+        var bedRooms = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "تعداد خواب")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+        var buildYear = item.Property.PropertyFeatures?.FirstOrDefault(x => x.Feature?.Name == "سال ساخت")?.Value.Replace(",", "").Replace("/", "") ?? "0";
+        var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{item.Property?.Pictures?.SelectRandom()?.File}");
+        var hasImage = item.Property?.Pictures?.Any() == true;
+
+        <div class="col-12 col-sm-6 col-xl-3 items--item-wrapper element-item @disabledClass" data-creationDate="@item.Logs.Create.DateTime.ToString(" s", new CultureInfo("en-US"))" data-finalPrice="@finalPrice" data-pricePerMeter="@pricePerMeter" data-meters="@meters" data-bedRooms="@bedRooms" data-buildYear="@buildYear">
+            <div class="items--item">
+                <a href="#" data-toggle="modal" data-target="#itemDetailModal" data-item-id="@item.Id">
+                    <div class="picture @(!hasImage ? " no-img" : "" )" @(Html.Raw(hasImage ? $"style=\"background-image: url('{Url.Content(imgPath)}')\"" : ""))>
+                        <div class="fadeIn">
+                            <span>
+                                <i class="fa fa-map-marker"></i>
+                                <span>@item.Property.District.Name</span>
+                            </span>
+                            <span class="mr-auto">
+                                @item.Category.Name • @item.Property.Category.Name
+                            </span>
+                        </div>
+                    </div>
+                    <ul class="features">
+                        <li>
+                            @Html.Raw(item.Property.Address)
+                        </li>
+                        @{
+                            var neededFeatures = new List
+                                <string>
+                                                                                                                                {
+                                                "قیمت نهایی",
+                                                "قیمت هر متر",
+                                                "پیش پرداخت",
+                                                "اجاره"
+                                            };
+                            var workingFeatures = item.ItemFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures.IndexOf(x.Feature.Name)).ToList();
+                        }
+                        @if (workingFeatures?.Any() == true)
+                        {
+                            foreach (var wFeature in workingFeatures)
+                            {
+                                var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
+                                var originalValue = wFeature.OriginalValue;
+
+                                <li class="@(key?.Equals(" قیمت نهایی", StringComparison.CurrentCultureIgnoreCase) == true ? "feature-important" : "" )">
+                                    @if (!string.IsNullOrEmpty(key))
+                                    {
+                                        <b>@key</b>
+                                    }
+                                    <span>@Html.Raw(value)</span>
+                                    @if (hasDate)
+                                    {
+                                        <span class="text-black-50">تا تاریخ @wFeature.Logs.Last.DateTime.GregorianToPersian(true)</span>
+                                    }
+                                </li>
+                            }
+                        }
+                    </ul>
+                </a>
+                <ul class="featureCards mt-auto">
+                    @{
+                        var neededFeatures2 = new List<string>(){
+                                            "متراژ",
+                                            "تعداد خواب",
+                                            "سال ساخت"
+                                        };
+                        var workingFeatures2 = item.Property.PropertyFeatures?.Where(x => x.Feature != null && !string.IsNullOrEmpty(x.Feature.Name) && neededFeatures2?.Any(c => c == x.Feature?.Name) == true).OrderBy(x => neededFeatures2.IndexOf(x.Feature.Name)).ToList();
+                    }
+                    @if (workingFeatures2?.Any() == true)
+                    {
+                        foreach (var wFeature in workingFeatures2)
+                        {
+                            var (key, value, hasDate) = wFeature.Feature.Name.NormalizeUiFeature(wFeature.Value);
+                            var originalValue = wFeature.OriginalValue;
+
+                            var icon = string.Empty;
+                            switch (key)
+                            {
+                                case "تعداد خواب":
+                                    icon = "bed";
+                                    break;
+                                case "سال ساخت":
+                                    icon = "hashtag";
+                                    value = value.Replace(" ساخت", "");
+                                    break;
+
+                                case "متراژ":
+                                    icon = "ruler";
+                                    break;
+                            }
+                            <li>
+                                <i class="fa fa-@icon"></i>
+                                <span>@Html.Raw(value)</span>
+                            </li>
+                        }
+                    }
+                    @if (item.IsNegotiable)
+                    {
+                        <li class="mr-auto">
+                            <i class="fa fa-check text-green"></i>
+                            <span>@SharedLocalizer[SharedResource.Negotitable]</span>
+                        </li>
+                    }
+                </ul>
+                <ul class="row admin-keys mt-auto">
+                    <li class="col">
+                        <a asp-page="@typeof(Manage.Item.PictureModel).Page()" asp-route-id="@item.Property?.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer[SharedResource.UploadPhotos]</a>
+                    </li>
+                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                    {
+                        <li class="col">
+                            <a asp-page="@typeof(Manage.Item.AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="col btn-sm @disabledClass">@SharedLocalizer["EditItem"]</a>
+                        </li>
+                        <li class="col">
+
+                            <a asp-controller="Remove" asp-action="ItemAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="col btn-sm text-danger">@disabledTerm</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    }
+}

@@ -5,52 +5,14 @@
         @Model.Status
     </status>
     <div class="widget">
-        <widget-header title="@Model.PageTitle">
-            @*@if (User.IsInRole(Role.SuperAdmin.ToString()) && Model.List.HasDuplicates)
-                {
-                    <a asp-page="@typeof(IndexModel).Page()" asp-route-removeDuplicates="true">@SharedLocalizer[SharedResource.CleanDuplicateItems]</a>
-                }*@
-        </widget-header>
+        <widget-header title="@Model.PageTitle" />
         <section class="container-fluid">
-            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
-            <item-viewer model="@Model.List.Items">
-                @foreach (var item in Model.List.Items)
-                {
-                    var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-
-                    <div class="row justify-content-center itemShow @disabledClass">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <b class="title">
-                                        @item.Name
-                                    </b>
-                                    <a class="badge badge-primary" asp-page="@typeof(Item.IndexModel).Page()" target="_blank" asp-route-ownerName="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
-                                </span>
-                                <span>
-                                    @SharedLocalizer[SharedResource.Mobile] :
-                                    <ul class="info-breadcrumb">
-                                        <li>
-                                            <a href="tel:@item.Mobile">
-                                                @item.Mobile
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </span>
-                            </div>
-                            <div class="button">
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                                {
-                                    <a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>
-                                    <a asp-controller="Remove" asp-action="CustomerAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                }
-                            </div>
-                        </div>
-                        <vc:log logs="@item.Logs" cat="Customer" id="@item.Id" />
-                    </div>
-                }
-            </item-viewer>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
+        </section>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" />
+        </section>
+        <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>

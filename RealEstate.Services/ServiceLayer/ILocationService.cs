@@ -32,7 +32,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<District>> DistrictUpdateAsync(DistrictInputViewModel model, bool save);
 
-        Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel);
+        Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel, bool loadData = true);
     }
 
     public class LocationService : ILocationService
@@ -57,7 +57,7 @@ namespace RealEstate.Services.ServiceLayer
             return districts.Map<District, DistrictViewModel>();
         }
 
-        public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel)
+        public async Task<PaginationViewModel<DistrictViewModel>> DistrictListAsync(DistrictSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_districts, searchModel, out var currentUser);
             if (query == null)
@@ -72,7 +72,7 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<DistrictViewModel>());
+                item => item.Map<DistrictViewModel>(), loadData: loadData);
 
             return result;
         }

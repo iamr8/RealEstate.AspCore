@@ -1,0 +1,40 @@
+﻿@model List<RealEstate.Services.ViewModels.ModelBind.CategoryViewModel>
+
+@if (Model?.Any() == true)
+{
+    foreach (var item in Model)
+    {
+        var disabledClass = item.IsDeleted ? "disabled" : "";
+        var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"].ToString() : SharedLocalizer["Delete"].ToString();
+        <div class="row justify-content-center itemShow @disabledClass">
+            <div class="col-12 detail">
+                <div class="info">
+                    <ul class="info-breadcrumb">
+                        <li>@item.Type.GetDisplayName()</li>
+                    </ul>
+                    <span>
+                        <b class="title">
+                            @item.Name
+                        </b>
+                        @if (item.Type == CategoryTypeEnum.Item)
+                        {
+                            <a class="badge badge-primary" asp-page="@typeof(Manage.Item.IndexModel).Page()" target="_blank" asp-route-itemCategory="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
+                        }
+                        else
+                        {
+                            <a class="badge badge-primary" asp-page="@typeof(Manage.Item.IndexModel).Page()" target="_blank" asp-route-propertyCategory="@item.Name">@SharedLocalizer[SharedResource.AvailableItems]</a>
+                        }
+                    </span>
+                </div>
+                <div class="button">
+                    @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
+                    {
+                        @*<a asp-page="@typeof(AddModel).Page()" asp-route-id="@item.Id" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer["Edit"]</a>*@
+                        @*<a asp-controller="Remove" asp-action="CategoryAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>*@
+                    }
+                </div>
+            </div>
+            <vc:log logs="@item.Logs" cat="Category" id="@item.Id" />
+        </div>
+    }
+}

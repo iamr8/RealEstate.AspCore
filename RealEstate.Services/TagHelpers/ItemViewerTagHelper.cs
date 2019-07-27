@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Localization;
+using RealEstate.Base;
 using RealEstate.Resources;
-using RealEstate.Services.BaseLog;
-using System;
-using System.Collections;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.TagHelpers
 {
@@ -24,56 +25,72 @@ namespace RealEstate.Services.TagHelpers
         }
 
         public ModelExpression Model { get; set; }
+        public bool AsRow { get; set; } = false;
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            output.TagName = "div";
+
+            if (AsRow)
+                output.AddClass("row", HtmlEncoder.Default);
+
+            output.TagMode = TagMode.StartTagAndEndTag;
+
             if (Model?.Model == null)
-            {
-                var message = new TagBuilder("h5");
-                message.InnerHtml.AppendHtml(_localizer[SharedResource.NoItemToShow]);
+                goto NO_ITEM;
 
-                output.TagName = "div";
-                output.AddClass("row", HtmlEncoder.Default);
-                output.AddClass("justify-content-center", HtmlEncoder.Default);
-                output.AddClass("align-items-center", HtmlEncoder.Default);
-                output.TagMode = TagMode.StartTagAndEndTag;
-                output.Content.AppendHtml(message);
+            var pagination = Model.Model;
+            var type = pagination.GetType();
+
+            if (!type.IsSubclassOf(typeof(PaginationViewModel)))
+                throw new Exception("Model that given to item-viewer is not typeof PaginationViewModel");
+
+            var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
+            if (properties?.Any() != true)
+                throw new Exception("Model that given to item-viewer is not typeof PaginationViewModel");
+
+            PaginationViewModel pag;
+            var currentPageProp = properties.FirstOrDefault(x => x.Name.Equals(nameof(pag.CurrentPage), StringComparison.CurrentCulture));
+            var rowCountProp = properties.FirstOrDefault(x => x.Name.Equals(nameof(pag.Rows), StringComparison.CurrentCulture));
+            var pagesProp = properties.FirstOrDefault(x => x.Name.Equals(nameof(pag.Pages), StringComparison.CurrentCulture));
+            var itemsProp = properties.FirstOrDefault(x => x.Name.Equals("Items", StringComparison.CurrentCulture));
+
+            if (currentPageProp == null || rowCountProp == null || pagesProp == null || itemsProp == null)
+                throw new Exception("Model that given to item-viewer is not typeof PaginationViewModel");
+
+            int currentPage;
+            int rowCount;
+            int pages;
+            try
+            {
+                currentPage = (int)currentPageProp.GetValue(pagination);
+                rowCount = (int)rowCountProp.GetValue(pagination);
+                pages = (int)pagesProp.GetValue(pagination);
+            }
+            catch
+            {
+                throw new Exception("Model that given to item-viewer is not typeof PaginationViewModel");
+            }
+
+            if (rowCount > 0)
+            {
+                var content = (await output.GetChildContentAsync().ConfigureAwait(false)).GetContent();
+                output.AddClass("grid", HtmlEncoder.Default);
+                output.Content.AppendHtml(content);
                 return;
             }
 
-            var items = Model.Model;
-            var type = items.GetType();
-            var genericTypes = type.GenericTypeArguments;
-            if (genericTypes.Length == 0)
-                throw new Exception("Can't find any generic class");
+            NO_ITEM:
+            var message = new TagBuilder("h5");
+            message.InnerHtml.AppendHtml(_localizer[SharedResource.NoItemToShow]);
 
-            var isBaseTypeOk = genericTypes[0].IsSubclassOf(typeof(BaseLogViewModel));
-            if (!isBaseTypeOk)
-                throw new Exception("Model type should be member of BaseLogViewModel");
-
-            if (items is IList itemList)
+            if (AsRow)
             {
-                if (itemList?.Any() == true)
-                {
-                    var content = (await output.GetChildContentAsync().ConfigureAwait(false)).GetContent();
-                    output.SuppressOutput();
-                    output.PostContent.AppendHtml(content);
-                    return;
-                }
-                var message = new TagBuilder("h5");
-                message.InnerHtml.AppendHtml(_localizer[SharedResource.NoItemToShow]);
-
-                output.TagName = "div";
-                output.AddClass("row", HtmlEncoder.Default);
                 output.AddClass("justify-content-center", HtmlEncoder.Default);
                 output.AddClass("align-items-center", HtmlEncoder.Default);
-                output.TagMode = TagMode.StartTagAndEndTag;
-                output.Content.AppendHtml(message);
-                return;
             }
 
-            output.SuppressOutput();
-            return;
+            output.Content.AppendHtml(message);
         }
     }
 }

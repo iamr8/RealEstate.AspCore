@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -7,9 +8,9 @@ using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Feature
 {
@@ -48,12 +49,21 @@ namespace RealEstate.Web.Pages.Manage.Feature
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _featureService.FeatureListAsync(SearchInput).ConfigureAwait(false);
+            List = await _featureService.FeatureListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(FeatureSearchViewModel models)
+        {
+            var list = await _featureService.FeatureListAsync(models);
+            return ViewComponent(typeof(FeaturePageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

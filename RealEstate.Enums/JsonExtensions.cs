@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,6 +6,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace RealEstate.Base
 {
@@ -71,8 +71,7 @@ namespace RealEstate.Base
 
                     if (oneProperty)
                     {
-                        itemString
-                            .Append(propValue);
+                        itemString.Append(propValue);
                     }
                     else
                     {

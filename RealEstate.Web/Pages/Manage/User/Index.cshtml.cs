@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -7,9 +8,9 @@ using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.User
 {
@@ -49,12 +50,21 @@ namespace RealEstate.Web.Pages.Manage.User
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _userService.ListAsync(SearchInput).ConfigureAwait(false);
+            List = await _userService.ListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(UserSearchViewModel models)
+        {
+            var list = await _userService.ListAsync(models);
+            return ViewComponent(typeof(UserPageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

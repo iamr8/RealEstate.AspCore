@@ -1826,3 +1826,18 @@ label[required]:not(.custom-control-label):after {
     -moz-border-radius: 0;
     -ms-border-radius: 0;
     -o-border-radius: 0; }
+
+.modal#loadingModal .modal-dialog {
+  display: table;
+  position: relative;
+  margin: 0 auto;
+  top: calc(50% - 24px); }
+  .modal#loadingModal .modal-dialog .modal-content {
+    background-color: transparent;
+    border: none;
+    color: white; }
+    .modal#loadingModal .modal-dialog .modal-content .title {
+      display: inline-block;
+      margin-right: 10px;
+      font-size: 18pt;
+      font-weight: bold; }

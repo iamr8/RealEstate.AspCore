@@ -1,6 +1,6 @@
 ﻿@model List<PaginationPassModel>
 
-@if (Model?.Any() == true && Model?.Count > 1)
+@if (Model?.Any() == true)
 {
     <div class="row">
         <div class="col-12">
@@ -8,7 +8,7 @@
                 @foreach (var item in Model)
                 {
                     <li class="page-item @(item.IsCurrent ? "active" : "")">
-                        <a class="page-link" href="@item.Link">@item.Num</a>
+                        <a class="page-link" href="#" fallback-href="@item.Link">@item.Num</a>
                     </li>
                 }
             </ul>

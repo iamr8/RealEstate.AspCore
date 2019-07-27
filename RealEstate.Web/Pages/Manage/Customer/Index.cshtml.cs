@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Customer
 {
@@ -49,12 +50,21 @@ namespace RealEstate.Web.Pages.Manage.Customer
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _customerService.CustomerListAsync(SearchInput);
+            List = await _customerService.CustomerListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(CustomerSearchViewModel models)
+        {
+            var list = await _customerService.CustomerListAsync(models);
+            return ViewComponent(typeof(CustomerPageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

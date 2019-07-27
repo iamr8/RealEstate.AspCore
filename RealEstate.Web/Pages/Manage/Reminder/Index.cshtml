@@ -10,89 +10,20 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer[SharedResource.NewReminder]</a>
         </widget-header>
         <section class="container-fluid">
-            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows"></search-nav>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
+        </section>
+        <div class="container-fluid">
             <div class="row justify-content-center align-items-center text-right margin-bottomed">
                 <div class="col-12">
                     <h6>رنگ زرد: فردا</h6>
                     <h6>رنگ سبز: امروز</h6>
                 </div>
             </div>
-
-            <item-viewer model="@Model.List.Items">
-                @foreach (var item in Model.List.Items)
-                {
-                    var disabledClass = item.IsDeleted ? "disabled" : "";
-                    var disabledTerm = item.IsDeleted ? SharedLocalizer["Undelete"] : SharedLocalizer["Delete"];
-
-                    var isToday = item.Date.Date == DateTime.Today;
-                    var isTomorrow = item.Date.Date == DateTime.Today.AddDays(1);
-
-                    <div class="row justify-content-center itemShow @disabledClass @(isToday ? "today": "") @(isTomorrow ? "tomorrow" : "")">
-                        <div class="col-12 detail">
-                            <div class="info">
-                                <span>
-                                    <b class="title">
-                                        @item.Description
-                                    </b>
-                                    <span class="badge badge-primary">@SharedLocalizer[SharedResource.RememberDeadline]: @item.Date.GregorianToPersian(true)</span>
-                                </span>
-                                @if (item.Price > 0)
-                                {
-                                    var price = Convert.ToDouble(item.Price);
-                                    <span>
-                                        @SharedLocalizer[SharedResource.Price] :
-                                        <ul class="info-breadcrumb">
-                                            <li>@price.ToString(CultureInfo.CurrentCulture).CurrencyToWords() تومان</li>
-                                        </ul>
-                                    </span>
-                                }
-                                @if (item.IsCheck)
-                                {
-                                    <span>
-                                        مشخصات چک:
-                                        <ul class="info-breadcrumb">
-                                            @if (!string.IsNullOrEmpty(item.CheckBank))
-                                            {
-                                                <li>@SharedLocalizer[SharedResource.CheckBank]: @item.CheckBank</li>
-                                            }
-
-                                            @if (!string.IsNullOrEmpty(item.CheckNumber))
-                                            {
-                                                <li>@SharedLocalizer[SharedResource.CheckNumber]: @item.CheckNumber</li>
-                                            }
-                                        </ul>
-                                    </span>
-                                }
-                                @if (item.Pictures?.Any() == true)
-                                {
-                                    <span>
-                                        @SharedLocalizer[SharedResource.Photos]:
-                                        <ul class="info-breadcrumb gallery no-image">
-                                            @for (var index = 0; index < item.Pictures.Count; index++)
-                                            {
-                                                var picture = item.Pictures[index];
-                                                var imgPath = Url.Content($"~/{FileHandler.ImgDirectory}/{picture.File}");
-
-                                                <li>
-                                                    <img class="hidden" src="@imgPath" alt="@picture.Text" />
-                                                    @SharedLocalizer[SharedResource.Picture] @(index + 1)
-                                                </li>
-                                            }
-                                        </ul>
-                                    </span>
-                                }
-                            </div>
-                            <div class="button">
-                                @if (User.IsInRole(Role.SuperAdmin.ToString()) || User.IsInRole(Role.Admin.ToString()))
-                                {
-                                    <a asp-controller="Remove" asp-action="ReminderAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer["AreYouSureToDoThisRequest"]" class="btn btn-sm btn-danger">@disabledTerm</a>
-                                }
-                            </div>
-                        </div>
-                        <vc:log logs="@item.Logs" cat="Reminder" id="@item.Id" />
-                    </div>
-                }
-            </item-viewer>
+        </div>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" />
+        </section>
+        <section class="container-fluid">
             <vc:pagination model="@Model.List" />
         </section>
     </div>

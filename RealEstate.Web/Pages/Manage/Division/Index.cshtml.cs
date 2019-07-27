@@ -52,7 +52,7 @@ namespace RealEstate.Web.Pages.Manage.Division
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
     }
 }

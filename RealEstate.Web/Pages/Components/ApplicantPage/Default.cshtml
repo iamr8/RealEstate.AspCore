@@ -1,0 +1,64 @@
+﻿@model List<RealEstate.Services.ViewModels.ModelBind.ApplicantViewModel>
+
+@if (Model?.Any() == true)
+{
+    foreach (var item in Model)
+    {
+        var disabledClass = item.IsDeleted ? "disabled" : "";
+        var disabledTerm = item.IsDeleted ? SharedLocalizer[SharedResource.Undelete] : SharedLocalizer[SharedResource.Delete];
+
+        <div class="row justify-content-center itemShow @disabledClass">
+            <div class="col-12 detail">
+                <div class="info">
+                    <ul class="info-breadcrumb">
+                        <li>دارنده فعلی: @item.User?.Employee?.FirstName @item.User?.Employee?.LastName</li>
+                    </ul>
+                    <span>
+                        <a class="title" asp-page="@typeof(Manage.Customer.IndexModel).Page()" asp-route-customerId="@item.Customer?.Id" target="_blank">
+                            @item.Customer?.Name
+                        </a>
+                        <span class="badge badge-secondary">@item.Type.GetDisplayName()</span>
+                        <a href="tel:@item.Customer?.Mobile" class="badge badge-primary">@item.Customer?.Mobile</a>
+                        @if (!string.IsNullOrEmpty(item.Customer?.Phone))
+                        {
+                            <span class="badge badge-secondary">@item.Customer.Phone</span>
+                        }
+                        @if (!string.IsNullOrEmpty(item.Customer?.Address))
+                        {
+                            <span class="badge badge-warning">@item.Customer.Address</span>
+                        }
+                        @if (item.Item != null)
+                        {
+                            <a asp-page="@typeof(Manage.Item.IndexModel).Page()" asp-route-id="@item.Item.Id" class="badge badge-danger">مشخصات مورد</a>
+                        }
+                    </span>
+                    @if (item.ApplicantFeatures?.Any() == true)
+                    {
+                        <span>
+                            @foreach (var feature in item.ApplicantFeatures)
+                            {
+                                <span class="badge badge-success">@feature.Feature?.Name &mdash; @feature.Value.FixCurrency()</span>
+                            }
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(item.Description))
+                    {
+                        <span class="text-gray text-justify description">
+                            @item.Description
+                        </span>
+                    }
+                </div>
+                <div class="button">
+                    @if (User.IsInRole(Role.SuperAdmin.ToString()))
+                    {
+                        var owner = $"{item.User?.Employee?.FirstName} {item.User?.Employee?.LastName}";
+                        <a href="#" data-toggle="modal" data-applicant-name="@item.Customer?.Name" data-applicant-mobile="@item.Customer?.Mobile" data-owner="@owner" data-applicant-id="@item.Id" data-target="#transModal" class="btn btn-sm btn-primary">انتقال</a>
+                        <a asp-page="@typeof(Manage.Applicant.AddModel).Page()" asp-route-id="@item.Id" target="_blank" class="btn btn-sm btn-warning @disabledClass">@SharedLocalizer[SharedResource.Edit]</a>
+                        <a asp-controller="Remove" asp-action="ApplicantAsync" asp-route-id="@item.Id" data-confirm="@SharedLocalizer[SharedResource.AreYouSureToDoThisRequest]" class="btn btn-sm btn-danger">@disabledTerm</a>
+                    }
+                </div>
+            </div>
+            <vc:log logs="@item.Logs" cat="Applicant" id="@item.Id" />
+        </div>
+    }
+}

@@ -2318,3 +2318,25 @@ label[required] {
         }
     }
 }
+
+.modal#loadingModal {
+    .modal-dialog {
+        display: table;
+        position: relative;
+        margin: 0 auto;
+        top: calc(50% - 24px);
+
+        .modal-content {
+            background-color: transparent;
+            border: none;
+            color: white;
+
+            .title {
+                display: inline-block;
+                margin-right: 10px;
+                font-size: 18pt;
+                font-weight: bold;
+            }
+        }
+    }
+}

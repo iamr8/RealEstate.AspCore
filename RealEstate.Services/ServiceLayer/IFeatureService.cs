@@ -1,4 +1,7 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -10,15 +13,12 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
     public interface IFeatureService
     {
-        Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel);
+        Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel, bool loadData = true);
 
         Task<List<FacilityViewModel>> FacilityListAsync();
 
@@ -26,7 +26,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<MethodStatus<Feature>> FeatureUpdateAsync(FeatureInputViewModel model, bool save);
 
-        Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel);
+        Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel, bool loadData = true);
 
         Task<Facility> FacilityEntityAsync(string id);
 
@@ -42,7 +42,7 @@ namespace RealEstate.Services.ServiceLayer
 
         Task<List<FeatureViewModel>> FeatureListAsync(params FeatureTypeEnum[] type);
 
-        Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel);
+        Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel, bool loadData = true);
 
         Task<MethodStatus<Feature>> FeatureAddOrUpdateAsync(FeatureInputViewModel model, bool update, bool save);
 
@@ -379,7 +379,7 @@ namespace RealEstate.Services.ServiceLayer
             return addStatus;
         }
 
-        public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel)
+        public async Task<PaginationViewModel<FeatureViewModel>> FeatureListAsync(FeatureSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_features, searchModel, out var currentUser);
             if (query == null)
@@ -399,12 +399,12 @@ namespace RealEstate.Services.ServiceLayer
             }
 
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FeatureViewModel>());
+                item => item.Map<FeatureViewModel>(), loadData: loadData);
 
             return result;
         }
 
-        public async Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel)
+        public async Task<PaginationViewModel<FacilityViewModel>> FacilityListAsync(FacilitySearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_facilities, searchModel, out var currentUser);
             if (query == null)
@@ -420,7 +420,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<FacilityViewModel>());
+                item => item.Map<FacilityViewModel>(), loadData: loadData);
 
             return result;
         }
@@ -459,7 +459,7 @@ namespace RealEstate.Services.ServiceLayer
             return features.Map<Feature, FeatureViewModel>();
         }
 
-        public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel)
+        public async Task<PaginationViewModel<CategoryViewModel>> CategoryListAsync(CategorySearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_categories, searchModel, out var currentUser);
             if (query == null)
@@ -481,7 +481,7 @@ namespace RealEstate.Services.ServiceLayer
                 query = _baseService.AdminSeachConditions(query, searchModel);
             }
             var result = await _baseService.PaginateAsync(query, searchModel,
-                item => item.Map<CategoryViewModel>());
+                item => item.Map<CategoryViewModel>(), loadData: loadData);
 
             return result;
         }

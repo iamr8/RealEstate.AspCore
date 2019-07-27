@@ -1,4 +1,10 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +18,6 @@ using RealEstate.Services.ViewModels.Input;
 using RealEstate.Services.ViewModels.Json;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -31,7 +31,7 @@ namespace RealEstate.Services.ServiceLayer
 
         string BaseUrl { get; }
 
-        Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel);
+        Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel, bool loadData = true);
 
         Task<bool> IsUserValidAsync(List<Claim> claims);
 
@@ -153,7 +153,7 @@ namespace RealEstate.Services.ServiceLayer
             return result;
         }
 
-        public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel)
+        public async Task<PaginationViewModel<UserViewModel>> ListAsync(UserSearchViewModel searchModel, bool loadData = true)
         {
             var query = _baseService.CheckDeletedItemsPrevillege(_users, searchModel, out var currentUser);
             if (query == null)
@@ -188,7 +188,7 @@ namespace RealEstate.Services.ServiceLayer
                         ent2 => ent2.IncludeAs<UserItemCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
                     ent.IncludeAs<User, UserPropertyCategory, UserPropertyCategoryViewModel>(_unitOfWork, x => x.UserPropertyCategories,
                         ent2 => ent2.IncludeAs<UserPropertyCategory, Category, CategoryViewModel>(_unitOfWork, x => x.Category));
-                }));
+                }), loadData: loadData);
             return result;
         }
 

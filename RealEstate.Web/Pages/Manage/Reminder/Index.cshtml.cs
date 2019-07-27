@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.Extensions;
 using RealEstate.Services.ServiceLayer;
+using RealEstate.Services.ViewComponents;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System.Threading.Tasks;
 
 namespace RealEstate.Web.Pages.Manage.Reminder
 {
@@ -50,12 +51,21 @@ namespace RealEstate.Web.Pages.Manage.Reminder
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _reminderService.ReminderListAsync(SearchInput).ConfigureAwait(false);
+            List = await _reminderService.ReminderListAsync(SearchInput, false);
         }
 
         public IActionResult OnPost()
         {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.GetSearchParameters());
+            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
+        }
+
+        public async Task<IActionResult> OnGetPageAsync(ReminderSearchViewModel models)
+        {
+            var list = await _reminderService.ReminderListAsync(models);
+            return ViewComponent(typeof(ReminderPageViewComponent), new
+            {
+                models = list.Items
+            });
         }
     }
 }

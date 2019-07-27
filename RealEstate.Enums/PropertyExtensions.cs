@@ -32,15 +32,6 @@ namespace RealEstate.Base
             return propertyInfo?.GetCustomAttributes(false).OfType<TAttribute>().FirstOrDefault();
         }
 
-        public static SearchParameterAttribute GetSearchParameterAttribute(this PropertyInfo property)
-        {
-            if (property == null)
-                return default;
-
-            var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
-            return searchParameterAttribute;
-        }
-
         public static string GetMemberName<T>(this Expression<T> expression)
         {
             switch (expression.Body)
