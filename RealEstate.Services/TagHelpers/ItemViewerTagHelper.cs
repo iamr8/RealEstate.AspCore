@@ -85,6 +85,8 @@ namespace RealEstate.Services.TagHelpers
             NO_ITEM:
             var message = new TagBuilder("h5");
             message.InnerHtml.AppendHtml(_localizer[SharedResource.NoItemToShow]);
+            if (!AsRow)
+                output.AddClass("row", HtmlEncoder.Default);
             output.AddClass("justify-content-center", HtmlEncoder.Default);
             output.AddClass("align-items-center", HtmlEncoder.Default);
             output.Content.AppendHtml(message);
