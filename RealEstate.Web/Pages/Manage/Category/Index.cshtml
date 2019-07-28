@@ -12,15 +12,13 @@
             <a asp-page="@typeof(AddModel).Page()">@SharedLocalizer["NewCategory"]</a>
         </widget-header>
         <section class="container-fluid">
-            <section class="container-fluid">
-                <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
-            </section>
-            <section class="container-fluid" id="paginatedList">
-                <item-viewer model="@Model.List" />
-            </section>
-            <section class="container-fluid">
-                <vc:pagination model="@Model.List" />
-            </section>
+            <search-nav searchModel="@Model.SearchInput" rows="@Model.List.Rows" />
+        </section>
+        <section class="container-fluid" id="paginatedList">
+            <item-viewer model="@Model.List" />
+        </section>
+        <section class="container-fluid">
+            <vc:pagination model="@Model.List" />
         </section>
     </div>
 </div>
