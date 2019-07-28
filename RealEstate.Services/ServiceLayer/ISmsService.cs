@@ -83,13 +83,13 @@ namespace RealEstate.Services.ServiceLayer
                         Text = smsResult.Message,
                         ReferenceId = smsResult.MessageId.ToString(),
                         StatusJson = JsonConvert.SerializeObject(smsResult)
-                    }, null, false).ConfigureAwait(false);
+                    }, null, false);
 
                 if (smsAddStatus == StatusEnum.Success)
                     finalSmses.Add(newSms);
             }
 
-            await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            await _baseService.SaveChangesAsync();
             return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.Success, finalSmses);
         }
 
@@ -122,13 +122,13 @@ namespace RealEstate.Services.ServiceLayer
                         Text = smsResult.Message,
                         ReferenceId = smsResult.MessageId.ToString(),
                         StatusJson = JsonConvert.SerializeObject(smsResult)
-                    }, null, false).ConfigureAwait(false);
+                    }, null, false);
 
                 if (smsAddStatus == StatusEnum.Success)
                     finalSmses.Add(newSms);
             }
 
-            await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            await _baseService.SaveChangesAsync();
             return new ValueTuple<StatusEnum, List<Sms>>(StatusEnum.Success, finalSmses);
         }
     }

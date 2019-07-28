@@ -35,7 +35,7 @@ namespace RealEstate.Web.Controllers
         [Route("employee/payment/pay")]
         public async Task<IActionResult> PayAsync(string id, string employeeId)
         {
-            var (status, newCustomer) = await _paymentService.PayAsync(id, true).ConfigureAwait(false);
+            var (status, newCustomer) = await _paymentService.PayAsync(id, true);
             return RedirectToPage(typeof(Pages.Manage.Employee.DetailModel).Page(), new
             {
                 status,

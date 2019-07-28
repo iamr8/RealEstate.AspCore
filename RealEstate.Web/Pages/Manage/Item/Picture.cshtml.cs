@@ -45,11 +45,11 @@ namespace RealEstate.Web.Pages.Manage.Item
             if (string.IsNullOrEmpty(id))
                 return RedirectToPage(typeof(IndexModel).Page());
 
-            var isValid = await _propertyService.PropertyValidate(id).ConfigureAwait(false);
+            var isValid = await _propertyService.PropertyValidate(id);
             if (!isValid)
                 return RedirectToPage(typeof(IndexModel).Page());
 
-            Pictures = await _pictureService.PropertyPicturesAsync(id).ConfigureAwait(false);
+            Pictures = await _pictureService.PropertyPicturesAsync(id);
             NewPropertyPicture = new PropertyPictureInputViewModel
             {
                 PropertyId = id
@@ -65,7 +65,7 @@ namespace RealEstate.Web.Pages.Manage.Item
             var (status, message) = await ModelState.IsValidAsync(
                 () => _pictureService.PictureAddAsync(NewPropertyPicture.Pictures, null, NewPropertyPicture.PropertyId, null, null, null, null, true)
                     .ConfigureAwait(false)
-            ).ConfigureAwait(false);
+            );
 
             return RedirectToPage(typeof(PictureModel).Page(), new
             {

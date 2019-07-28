@@ -83,7 +83,7 @@ namespace RealEstate.Services.ServiceLayer.Base
                 var saved = await outputStream.SaveAs(finalFilePath, stream =>
                 {
                     outputStream.Flush();
-                }).ConfigureAwait(false);
+                });
                 return saved ? filePath : null;
             }
             catch
@@ -104,7 +104,7 @@ namespace RealEstate.Services.ServiceLayer.Base
             var list = new List<string>();
             foreach (var validFile in validFiles)
             {
-                var file = await SaveAsync(validFile).ConfigureAwait(false);
+                var file = await SaveAsync(validFile);
                 if (!string.IsNullOrEmpty(file))
                     list.Add(file);
             }

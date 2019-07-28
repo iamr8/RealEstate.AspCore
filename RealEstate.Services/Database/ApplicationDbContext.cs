@@ -220,7 +220,7 @@ namespace RealEstate.Services.Database
             var changedEntityNames = this.GetChangedEntityNames();
 
             this.ChangeTracker.AutoDetectChangesEnabled = false; // for performance reasons, to avoid calling DetectChanges() again.
-            var result = await base.SaveChangesAsync().ConfigureAwait(false);
+            var result = await base.SaveChangesAsync();
             this.ChangeTracker.AutoDetectChangesEnabled = true;
 
             this.GetService<IEFCacheServiceProvider>().InvalidateCacheDependencies(changedEntityNames);

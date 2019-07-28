@@ -14,7 +14,7 @@ namespace RealEstate.Services.Extensions
             {
                 using (var fileStream = new FileStream(path, FileMode.Create))
                 {
-                    await file.CopyToAsync(fileStream).ConfigureAwait(false);
+                    await file.CopyToAsync(fileStream);
                     action(file);
                     fileStream.Flush();
                     return true;

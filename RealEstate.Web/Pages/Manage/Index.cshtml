@@ -5,10 +5,10 @@
     var lastWeek = DateTime.Now.AddDays(-7).Date.GregorianToPersian(true);
     var lastMonth = DateTime.Now.AddMonths(-1).Date.GregorianToPersian(true);
 
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
-    var propertyCategory = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false);
+    var propertyCategory = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false);
 
-    var usersList = await UserService.ListJsonAsync(true, false).ConfigureAwait(false);
+    var usersList = await UserService.ListJsonAsync(true, false);
     var users = (usersList?.Select(x => new SelectListItem
     {
         Value = x.UserId,

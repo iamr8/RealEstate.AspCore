@@ -7,28 +7,28 @@
     const string defaultMetersFeatureId = "15bf9d15-07bc-4f3c-8339-8192c8fd0c18";
     const string defaultMetersFeatureName = "متراژ";
 
-    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districts = await LocationService.DistrictListAsync();
     var districtsSelect = districts?.Select(x => new SelectListItem
     {
         Text = x.Name,
         Value = x.Name
     }).AddNone();
 
-    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item, FeatureTypeEnum.Property).ConfigureAwait(false);
+    var features = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item, FeatureTypeEnum.Property);
     var featuresSelect = features?.Select(x => new SelectListItem
     {
         Text = x.Name,
         Value = x.Id
     }).AddNone();
 
-    var facilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
+    var facilities = await FeatureService.FacilityListAsync();
     var facilitiesSelect = facilities?.Select(x => new SelectListItem
     {
         Text = x.Name,
         Value = x.Name
     }).AddNone();
 
-    var itemCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
+    var itemCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false);
     var itemCategories = (itemCategorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,
@@ -36,7 +36,7 @@
         Selected = Model.SearchInput?.ItemCategory == x.Name
     }).ToList()).AddNone();
 
-    var propertyCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var propertyCategorieslist = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false);
     var propertyCategories = (propertyCategorieslist?.Select(x => new SelectListItem
     {
         Value = x.Name,

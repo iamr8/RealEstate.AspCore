@@ -11,7 +11,7 @@ namespace RealEstate.Services.TagHelpers
     {
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var contentContext = await output.GetChildContentAsync().ConfigureAwait(false);
+            var contentContext = await output.GetChildContentAsync();
             var content = contentContext.GetContent().Replace("\r\n", "").Trim();
 
             var span = new TagBuilder("span");

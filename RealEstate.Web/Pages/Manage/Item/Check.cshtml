@@ -1,14 +1,14 @@
 ﻿@page
 @model RealEstate.Web.Pages.Manage.Item.CheckModel
 @{
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false);
     var propertyCategoriesList = propertyCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districts = await LocationService.DistrictListAsync();
     var districtsList = districts?.Select(x => new SelectListItem
     {
         Value = x.Id,

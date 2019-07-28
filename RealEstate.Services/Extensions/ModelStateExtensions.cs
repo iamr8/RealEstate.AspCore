@@ -61,7 +61,7 @@ namespace RealEstate.Services.Extensions
             StatusEnum state;
             if (isValid)
             {
-                var method = await action().ConfigureAwait(false);
+                var method = await action();
                 message = method.GetDisplayName();
                 state = method;
             }

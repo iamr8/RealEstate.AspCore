@@ -65,7 +65,7 @@ namespace RealEstate.Services.ServiceLayer
                         where requests.Any() && (lastRequest.Status == DealStatusEnum.Requested || lastRequest.Status == DealStatusEnum.Finished)
                         where item.Id == itemId
                         select item;
-            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync();
             if (entity == null)
                 return default;
 
@@ -132,7 +132,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(model.ItemId))
                 return new MethodStatus<Deal>(StatusEnum.ItemIsNull, null);
 
-            var item = await _items.FirstOrDefaultAsync(x => x.Id == model.ItemId).ConfigureAwait(false);
+            var item = await _items.FirstOrDefaultAsync(x => x.Id == model.ItemId);
             if (item == null)
                 return new MethodStatus<Deal>(StatusEnum.ItemIsNull, null);
 
@@ -150,17 +150,17 @@ namespace RealEstate.Services.ServiceLayer
                 CommissionPrice = model.Commission,
             },
                 null,
-                false).ConfigureAwait(false);
+                false);
 
             var newRequest = await _baseService.AddAsync(_ => new DealRequest
             {
                 DealId = newDeal.Id,
                 ItemId = item.Id,
                 Status = DealStatusEnum.Finished
-            }, null, false).ConfigureAwait(false);
-            await SyncAsync(newDeal, model, true).ConfigureAwait(false);
+            }, null, false);
+            await SyncAsync(newDeal, model, true);
 
-            return await _baseService.SaveChangesAsync(newDeal).ConfigureAwait(false);
+            return await _baseService.SaveChangesAsync(newDeal);
         }
 
         public async Task<StatusEnum> SyncAsync(Deal deal, DealInputViewModel model, bool save)
@@ -178,7 +178,7 @@ namespace RealEstate.Services.ServiceLayer
             //        UserId = currentUser.Id,
             //    },
             //    (inDb, inModel) => inDb.DealId == deal.Id && inDb.Date == inModel.Date.PersianToGregorian(),
-            //    null, false).ConfigureAwait(false);
+            //    null, false);
 
             //await _baseService.SyncAsync(
             //    deal.Beneficiaries,
@@ -191,8 +191,8 @@ namespace RealEstate.Services.ServiceLayer
             //        DealId = deal.Id
             //    },
             //    (inDb, inModel) => inDb.UserId == inModel.UserId,
-            //    null, false).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync().ConfigureAwait(false);
+            //    null, false);
+            return await _baseService.SaveChangesAsync();
         }
 
         private async Task<MethodStatus<Deal>> UpdateAsync(DealInputViewModel model, bool save)
@@ -203,7 +203,7 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Deal>(StatusEnum.IdIsNull, null);
 
-            var entity = await _deals.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _deals.FirstOrDefaultAsync(x => x.Id == model.Id);
             var (updateStatus, updatedDeal) = await _baseService.UpdateAsync(entity,
                 _ =>
                 {
@@ -212,13 +212,13 @@ namespace RealEstate.Services.ServiceLayer
                     entity.CommissionPrice = model.Commission;
                 },
                 null,
-                false, StatusEnum.PropertyIsNull).ConfigureAwait(false);
+                false, StatusEnum.PropertyIsNull);
 
             if (updatedDeal == null)
                 return new MethodStatus<Deal>(StatusEnum.DealIsNull, null);
 
-            await SyncAsync(updatedDeal, model, true).ConfigureAwait(false);
-            return await _baseService.SaveChangesAsync(updatedDeal).ConfigureAwait(false);
+            await SyncAsync(updatedDeal, model, true);
+            return await _baseService.SaveChangesAsync(updatedDeal);
         }
 
         public Task<MethodStatus<Deal>> AddOrUpdateAsync(DealInputViewModel model, bool update, bool save)

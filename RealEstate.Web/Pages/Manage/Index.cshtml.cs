@@ -47,7 +47,7 @@ namespace RealEstate.Web.Pages.Manage
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            Statistics = await _globalService.StatisticsAsync(SearchInput).ConfigureAwait(false);
+            Statistics = await _globalService.StatisticsAsync(SearchInput);
             return Page();
         }
 

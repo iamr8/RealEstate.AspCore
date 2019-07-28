@@ -47,7 +47,7 @@ namespace RealEstate.Services.TagHelpers
                 ViewContext.HttpContext.Items.Add(TagHelperCutPaste.ItemsStorageKey, deferedScripts);
             }
 
-            var result = await output.GetChildContentAsync().ConfigureAwait(false);
+            var result = await output.GetChildContentAsync();
             deferedScripts.Add(new TagHelperCutPaste
             {
                 CutPasteKey = this.CutKey,
@@ -79,7 +79,7 @@ namespace RealEstate.Services.TagHelpers
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            await base.ProcessAsync(context, output).ConfigureAwait(false);
+            await base.ProcessAsync(context, output);
 
             if (!this.ViewContext.HttpContext.Items.ContainsKey(TagHelperCutPaste.ItemsStorageKey))
                 return;

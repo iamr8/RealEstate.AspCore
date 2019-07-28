@@ -2,9 +2,9 @@
 @model AddModel
 @{
     var roles = SelectItemExtensions.ToSelectList(Role.User, role => role != Role.SuperAdmin);
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
-    var employees = await EmployeeService.ListAsync(true).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false);
+    var employees = await EmployeeService.ListAsync(true);
 
     var propertyCategorySelect = propertyCategories?.Select(x => new SelectListItem
     {

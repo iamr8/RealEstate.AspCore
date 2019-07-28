@@ -1,6 +1,6 @@
 ﻿@model AdminSearchConditionWrapperViewModel
 @{
-    var usersList = await UserService.ListJsonAsync(true, false).ConfigureAwait(false);
+    var usersList = await UserService.ListJsonAsync(true, false);
     var users = (usersList?.Select(x => new SelectListItem
     {
         Value = x.UserId,

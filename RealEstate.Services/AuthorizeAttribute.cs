@@ -32,7 +32,7 @@ namespace RealEstate.Services
         public OS UserOs { get; private set; }
         public Device Device { get; private set; }
 
-        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous, OsNames os = OsNames.Everything, params string[] allowedOsVersions)
+        public AuthorizeAttribute(double minAppVersion, bool allowAnonymous = false, OsNames os = OsNames.Everything, params string[] allowedOsVersions)
         {
             AllowAnonymous = allowAnonymous;
             MinimumAppVersion = minAppVersion;

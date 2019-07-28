@@ -36,7 +36,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("config"), HttpGet]
-        [MapToApiVersion("1"), Authorize(1.0, false)]
+        [MapToApiVersion("1"), Authorize(1.0)]
         public async Task<IActionResult> ConfigAsync()
         {
             var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
@@ -45,7 +45,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("items"), HttpPost]
-        [MapToApiVersion("1"), Authorize(1.0, false)]
+        [MapToApiVersion("1"), Authorize(1.0)]
         public async Task<IActionResult> ItemsAsync([FromForm] ItemRequest model)
         {
             var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
@@ -54,7 +54,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("reminders"), HttpPost]
-        [MapToApiVersion("1"), Authorize(1.0, false)]
+        [MapToApiVersion("1"), Authorize(1.0)]
         public async Task<IActionResult> RemindersAsync([FromForm] ReminderRequest model)
         {
             var headers = ControllerContext.ActionDescriptor.EndpointMetadata.GetIdentifierHeaders();
@@ -63,7 +63,7 @@ namespace RealEstate.Web.Controllers
         }
 
         [Route("zoonkans"), HttpGet]
-        [MapToApiVersion("1"), Authorize(1.0, false)]
+        [MapToApiVersion("1"), Authorize(1.0)]
         public async Task<IActionResult> ZoonkansAsync()
         {
             var response = await _appService.ZoonkansAsync();

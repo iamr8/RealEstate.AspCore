@@ -45,7 +45,7 @@ namespace RealEstate.Web.Pages.Manage.Deal
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _dealService.ListAsync(SearchInput).ConfigureAwait(false);
+            List = await _dealService.ListAsync(SearchInput);
         }
 
         public IActionResult OnPost()

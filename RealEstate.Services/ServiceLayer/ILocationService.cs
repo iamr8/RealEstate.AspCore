@@ -53,7 +53,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<List<DistrictViewModel>> DistrictListAsync()
         {
-            var districts = await _districts.Cacheable().ToListAsync().ConfigureAwait(false);
+            var districts = await _districts.Cacheable().ToListAsync();
             return districts.Map<District, DistrictViewModel>();
         }
 
@@ -89,7 +89,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _districts.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _districts.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -101,13 +101,13 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<District>(StatusEnum.IdIsNull, null);
 
-            var entity = await DistrictEntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await DistrictEntityAsync(model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ => entity.Name = model.Name,
                 new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
@@ -116,13 +116,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _districts.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _districts.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -138,7 +138,7 @@ namespace RealEstate.Services.ServiceLayer
             }, new[]
             {
                 Role.SuperAdmin, Role.Admin
-            }, save).ConfigureAwait(false);
+            }, save);
             return addStatus;
         }
 
@@ -150,7 +150,7 @@ namespace RealEstate.Services.ServiceLayer
             var query = _districts.Where(x => x.Id == id)
                 .Include(x => x.Properties);
 
-            var model = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var model = await query.FirstOrDefaultAsync();
             var viewModel = model.Map<DistrictViewModel>();
             if (viewModel == null)
                 return default;

@@ -1,7 +1,7 @@
 ﻿@page
 @model AddModel
 @{
-    var users = await UserService.ListJsonAsync().ConfigureAwait(false);
+    var users = await UserService.ListJsonAsync();
     var usersselect = users?.Select(x => new SelectListItem
     {
         Text = x.UserFullName,

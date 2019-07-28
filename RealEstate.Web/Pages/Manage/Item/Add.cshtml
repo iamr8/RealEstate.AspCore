@@ -1,42 +1,42 @@
 ﻿@page
 @model AddModel
 @{
-    var propertyFacilities = await FeatureService.FacilityListAsync().ConfigureAwait(false);
+    var propertyFacilities = await FeatureService.FacilityListAsync();
     var propertyFacilitiesList = propertyFacilities?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false).ConfigureAwait(false);
+    var itemCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Item, false);
     var itemCategoriesList = itemCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item).ConfigureAwait(false);
+    var itemFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Item);
     var itemFeaturesSelect = itemFeatures?.Select(x => new SelectListItem
     {
         Text = x.Name,
         Value = x.Id,
     }).SelectFirstItem();
 
-    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property).ConfigureAwait(false);
+    var propertyFeatures = await FeatureService.FeatureListAsync(FeatureTypeEnum.Property);
     var propertyFeaturesList = propertyFeatures?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var districts = await LocationService.DistrictListAsync().ConfigureAwait(false);
+    var districts = await LocationService.DistrictListAsync();
     var districtsList = districts?.Select(x => new SelectListItem
     {
         Value = x.Id,
         Text = x.Name,
     }).SelectFirstItem();
 
-    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false).ConfigureAwait(false);
+    var propertyCategories = await FeatureService.CategoryListAsync(CategoryTypeEnum.Property, false);
     var propertyCategoriesList = propertyCategories?.Select(x => new SelectListItem
     {
         Value = x.Id,

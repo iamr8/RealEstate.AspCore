@@ -1,7 +1,7 @@
 ﻿@page
 @model AddModel
 @{
-    var divisions = await DivisionService.ListAsync().ConfigureAwait(false);
+    var divisions = await DivisionService.ListAsync();
     var divisionsSelect = divisions?.Select(x => new SelectListItem
     {
         Text = x.Name,

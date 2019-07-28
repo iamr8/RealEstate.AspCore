@@ -1,7 +1,7 @@
 ﻿@page
 @model RequestModel
 @{
-    var contactsList = await CustomerService.ListJsonAsync(Model.NewDealRequest.Id).ConfigureAwait(false);
+    var contactsList = await CustomerService.ListJsonAsync(Model.NewDealRequest.Id);
 }
 @*<div class="col-12">
     <div class="widget">

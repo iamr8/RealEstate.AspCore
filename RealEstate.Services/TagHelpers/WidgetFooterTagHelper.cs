@@ -20,7 +20,7 @@ namespace RealEstate.Services.TagHelpers
             var parentContext = new ParentChildContext();
             context.Items.Add(typeof(ParentChildContext), parentContext);
 
-            await output.GetChildContentAsync().ConfigureAwait(false);
+            await output.GetChildContentAsync();
             output.TagName = "footer";
 
             output.Content.AppendHtml(parentContext.TextContext ?? new WidgetFooterTextTagHelper().Div);

@@ -1,15 +1,14 @@
-﻿using Newtonsoft.Json;
-using RealEstate.Services.KavenNegarProvider.Enums;
-using RealEstate.Services.KavenNegarProvider.Response;
-using RealEstate.Services.KavenNegarProvider.Response.ResultModels;
-using RestSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
+using Newtonsoft.Json;
 using RealEstate.Base;
-using RealEstate.Services.Extensions;
+using RealEstate.Services.KavenNegarProvider.Enums;
+using RealEstate.Services.KavenNegarProvider.Response;
+using RealEstate.Services.KavenNegarProvider.Response.ResultModels;
+using RestSharp;
 
 namespace RealEstate.Services.KavenNegarProvider
 {
@@ -35,8 +34,8 @@ namespace RealEstate.Services.KavenNegarProvider
 
     public class KavehNegarProvider : IKavehNegarProvider
     {
-        private const string SmsNumber = "10002020505050";
-        private const string ApiKey = "7759476A5352684A4D653867304B4E61376A393851534F46567375506445366B";
+        private const string SmsNumber = "xxx";
+        private const string ApiKey = "XXX";
 
         private static string GetApiPath(string _base, string method)
         {

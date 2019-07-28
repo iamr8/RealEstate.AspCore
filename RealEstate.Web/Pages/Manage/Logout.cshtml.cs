@@ -21,7 +21,7 @@ namespace RealEstate.Web.Pages.Manage
 
         public async Task<IActionResult> OnGetAsync()
         {
-            await _userService.SignOutAsync().ConfigureAwait(false);
+            await _userService.SignOutAsync();
             return RedirectToPage("/Index");
         }
     }

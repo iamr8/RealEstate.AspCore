@@ -655,7 +655,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var query = _applicationDbContext.AsQueryable(entityName);
             var type = query.ElementType;
-            var model = await query.ToListAsync().ConfigureAwait(false);
+            var model = await query.ToListAsync();
             var result = GetAudits(type, entityId, model);
             if (result?.Any() != true)
                 return default;

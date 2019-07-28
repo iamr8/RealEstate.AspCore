@@ -47,7 +47,7 @@ namespace RealEstate.Web.Pages.Manage.Division
             Status = !string.IsNullOrEmpty(status)
                 ? status
                 : null;
-            List = await _divisionService.ListAsync(SearchInput).ConfigureAwait(false);
+            List = await _divisionService.ListAsync(SearchInput);
         }
 
         public IActionResult OnPost()

@@ -62,7 +62,7 @@ namespace RealEstate.Services.TagHelpers
         {
             var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContextAccessor.ActionContext);
 
-            var contentContext = await output.GetChildContentAsync().ConfigureAwait(false);
+            var contentContext = await output.GetChildContentAsync();
             var content = contentContext.GetContent();
 
             var classes = new List<string>();

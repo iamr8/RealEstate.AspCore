@@ -70,7 +70,7 @@ namespace RealEstate.Services.ServiceLayer
         public async Task<(double, List<Payment>)> PaymentLastStateAsync(string employeeId)
         {
             var employee = await _employees.IgnoreQueryFilters().OrderDescendingByCreationDateTime().Where(x => x.Id == employeeId).FirstOrDefaultAsync()
-                .ConfigureAwait(false);
+                ;
             return await PaymentLastStateAsync(employee);
         }
 
@@ -83,11 +83,11 @@ namespace RealEstate.Services.ServiceLayer
             if (payments?.Any() != true)
                 return default;
 
-            var syncSalary = await SyncFixedSalaryToPaymentsAsync(employee).ConfigureAwait(false);
+            var syncSalary = await SyncFixedSalaryToPaymentsAsync(employee);
             if (syncSalary != StatusEnum.Success)
                 return default;
 
-            payments = await _payments.IgnoreQueryFilters().Where(x => x.EmployeeId == employee.Id).OrderByCreationDateTime().ToListAsync().ConfigureAwait(false);
+            payments = await _payments.IgnoreQueryFilters().Where(x => x.EmployeeId == employee.Id).OrderByCreationDateTime().ToListAsync();
             if (payments?.Any() != true)
                 return default;
             // bad az mohasebeye pardakht va bedehi o bestani, ba tavajoh be mablagh, item ha ra bycot konad, va bad yek satre mande hesab besazad
@@ -112,7 +112,7 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     Value = 0,
                     EmployeeId = employee.Id,
-                }, null, true).ConfigureAwait(false);
+                }, null, true);
                 if (addFixedSalaryStatus == StatusEnum.Success)
                     lastFixedSalary = fixedSalaryEntity;
                 else
@@ -139,7 +139,7 @@ namespace RealEstate.Services.ServiceLayer
                     Value = lastFixedSalary.Value,
                     EmployeeId = employee.Id,
                     Type = PaymentTypeEnum.FixedSalary,
-                }, null, true).ConfigureAwait(false);
+                }, null, true);
             }
             return StatusEnum.Success;
         }
@@ -149,7 +149,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(paymentId))
                 return new MethodStatus<Payment>(StatusEnum.ParamIsNull, null);
 
-            var payment = await _payments.FirstOrDefaultAsync(x => x.Id == paymentId).ConfigureAwait(false);
+            var payment = await _payments.FirstOrDefaultAsync(x => x.Id == paymentId);
             if (payment == null)
                 return new MethodStatus<Payment>(StatusEnum.PaymentIsNull, null);
 
@@ -161,7 +161,7 @@ namespace RealEstate.Services.ServiceLayer
                 Value = payment.Value,
                 EmployeeId = payment.EmployeeId,
                 Type = PaymentTypeEnum.Pay
-            }, null, true).ConfigureAwait(false);
+            }, null, true);
             if (checkStatus != StatusEnum.Success)
                 return new MethodStatus<Payment>(StatusEnum.CheckoutIsNull, null);
 
@@ -169,7 +169,7 @@ namespace RealEstate.Services.ServiceLayer
                 currentUser =>
                 {
                     payment.CheckoutId = newCheckout.Id;
-                }, null, save, StatusEnum.PaymentIsNull).ConfigureAwait(false);
+                }, null, save, StatusEnum.PaymentIsNull);
             return updateStatus;
         }
 
@@ -191,7 +191,7 @@ namespace RealEstate.Services.ServiceLayer
                 var moneyToPay = model.Value;
                 // bayad bege che itemaei shamele in ragham mishan, va chi nesfe nime'as
 
-                //var (currentMoney, pays) = await PaymentLastStateAsync(model.EmployeeId).ConfigureAwait(false);
+                //var (currentMoney, pays) = await PaymentLastStateAsync(model.EmployeeId);
                 //if (currentMoney <= 0)
                 //    return new MethodStatus<Payment>(StatusEnum.PaymentsAreEmpty, null);
 
@@ -201,18 +201,18 @@ namespace RealEstate.Services.ServiceLayer
                     EmployeeId = model.EmployeeId,
                     Text = model.Text,
                     Type = PaymentTypeEnum.Pay
-                }, null, true).ConfigureAwait(false);
+                }, null, true);
                 if (checkStatus != StatusEnum.Success)
                     return new MethodStatus<Payment>(StatusEnum.CheckoutIsNull, null);
 
                 //foreach (var pay in pays)
                 //{
-                //    var payment = await _payments.FirstOrDefaultAsync(x => x.Id == pay.Id).ConfigureAwait(false);
+                //    var payment = await _payments.FirstOrDefaultAsync(x => x.Id == pay.Id);
                 //    var updateStatus = await _baseService.UpdateAsync(payment,
                 //        currentUser =>
                 //        {
                 //            payment.CheckoutId = newCheckout.Id;
-                //        }, null, true, StatusEnum.PaymentIsNull).ConfigureAwait(false);
+                //        }, null, true, StatusEnum.PaymentIsNull);
                 //    result.Add(updateStatus.Status);
                 //}
                 finalPayment = newCheckout;
@@ -228,14 +228,14 @@ namespace RealEstate.Services.ServiceLayer
                 }, new[]
                 {
                         Role.SuperAdmin, Role.Admin
-                    }, save).ConfigureAwait(false);
+                    }, save);
                 result.Add(addStatus);
                 finalPayment = newPayment;
             }
 
             var finalResult = result.Populate();
             if (finalResult == StatusEnum.Success)
-                await _pictureService.PictureAddAsync(model.Pictures, null, null, null, null, finalPayment.Id, null, true).ConfigureAwait(false);
+                await _pictureService.PictureAddAsync(model.Pictures, null, null, null, null, finalPayment.Id, null, true);
 
             return finalResult == StatusEnum.Success
                 ? new MethodStatus<Payment>(StatusEnum.Success, finalPayment)
@@ -247,13 +247,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var employee = await _payments.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id && x.EmployeeId == employeeId).ConfigureAwait(false);
+            var employee = await _payments.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id && x.EmployeeId == employeeId);
             var result = await _baseService.RemoveAsync(employee,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -263,13 +263,13 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var user = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var user = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(user,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
@@ -292,11 +292,11 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(model.EmployeeId))
                 return new MethodStatus<ManagementPercent>(StatusEnum.EmployeeIsNull, null);
 
-            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId).ConfigureAwait(false);
+            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId);
             if (employee == null)
                 return new MethodStatus<ManagementPercent>(StatusEnum.EmployeeIsNull, null);
 
-            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == model.Id).ConfigureAwait(false);
+            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == model.Id);
             if (entity == null)
                 return new MethodStatus<ManagementPercent>(StatusEnum.ManagemenetPercentIsNull, null);
 
@@ -305,7 +305,7 @@ namespace RealEstate.Services.ServiceLayer
                 {
                     entity.EmployeeId = model.EmployeeId;
                     entity.Percent = model.Percent;
-                }, null, save, StatusEnum.ManagemenetPercentIsNull).ConfigureAwait(false);
+                }, null, save, StatusEnum.ManagemenetPercentIsNull);
             return updateStatus;
         }
 
@@ -313,7 +313,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             if (string.IsNullOrEmpty(id)) return default;
 
-            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _managementPercents.FirstOrDefaultAsync(x => x.Id == id);
             var viewModel = entity.Map<ManagementPercentViewModel>();
             if (viewModel == null)
                 return default;
@@ -358,7 +358,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(model.EmployeeId))
                 return new MethodStatus<ManagementPercent>(StatusEnum.EmployeeIsNull, null);
 
-            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId).ConfigureAwait(false);
+            var employee = await _employees.FirstOrDefaultAsync(x => x.Id == model.EmployeeId);
             if (employee == null)
                 return new MethodStatus<ManagementPercent>(StatusEnum.EmployeeIsNull, null);
 
@@ -366,7 +366,7 @@ namespace RealEstate.Services.ServiceLayer
             {
                 EmployeeId = model.EmployeeId,
                 Percent = model.Percent
-            }, null, save).ConfigureAwait(false);
+            }, null, save);
             return addStatus;
         }
 
@@ -377,7 +377,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var findSalary = await _fixedSalaries.OrderDescendingByCreationDateTime()
                 .FirstOrDefaultAsync(x => x.EmployeeId == employeeId && x.Value.Equals(value))
-                .ConfigureAwait(false);
+                ;
             if (findSalary != null)
                 return new MethodStatus<FixedSalary>(StatusEnum.AlreadyExists, findSalary);
 
@@ -385,7 +385,7 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Value = value,
                 EmployeeId = employeeId
-            }, null, save).ConfigureAwait(false);
+            }, null, save);
             return addStatus;
         }
 
@@ -400,7 +400,7 @@ namespace RealEstate.Services.ServiceLayer
         //        Type = model.Type,
         //        Value = model.Value,
         //        UserId = model.UserId
-        //    }, null, save).ConfigureAwait(false);
+        //    }, null, save);
         //    return newPayment;
         //}
     }

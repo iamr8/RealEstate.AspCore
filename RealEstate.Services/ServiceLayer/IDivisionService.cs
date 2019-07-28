@@ -54,20 +54,20 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return StatusEnum.ParamIsNull;
 
-            var entity = await _divisions.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var entity = await _divisions.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == id);
             var result = await _baseService.RemoveAsync(entity,
                     new[]
                     {
                         Role.SuperAdmin, Role.Admin
                     })
-                .ConfigureAwait(false);
+                ;
 
             return result;
         }
 
         public async Task<List<DivisionViewModel>> ListAsync()
         {
-            var divisions = await _divisions.ToListAsync().ConfigureAwait(false);
+            var divisions = await _divisions.ToListAsync();
             return divisions.Map<Division, DivisionViewModel>();
         }
 
@@ -98,7 +98,7 @@ namespace RealEstate.Services.ServiceLayer
             if (string.IsNullOrEmpty(id))
                 return default;
 
-            var result = await _divisions.FirstOrDefaultAsync(x => x.Id == id).ConfigureAwait(false);
+            var result = await _divisions.FirstOrDefaultAsync(x => x.Id == id);
             return result;
         }
 
@@ -117,13 +117,13 @@ namespace RealEstate.Services.ServiceLayer
             if (model.IsNew)
                 return new MethodStatus<Division>(StatusEnum.IdIsNull, null);
 
-            var entity = await EntityAsync(model.Id).ConfigureAwait(false);
+            var entity = await EntityAsync(model.Id);
             var updateStatus = await _baseService.UpdateAsync(entity,
                 _ => entity.Name = model.Name,
                 new[]
                 {
                     Role.SuperAdmin
-                }, save, StatusEnum.UserIsNull).ConfigureAwait(false);
+                }, save, StatusEnum.UserIsNull);
             return updateStatus;
         }
 
@@ -133,7 +133,7 @@ namespace RealEstate.Services.ServiceLayer
 
             var query = _divisions.Where(x => x.Id == id);
 
-            var entity = await query.FirstOrDefaultAsync().ConfigureAwait(false);
+            var entity = await query.FirstOrDefaultAsync();
             var viewModel = entity.Map<DivisionViewModel>();
             if (viewModel == null)
                 return default;
@@ -158,7 +158,7 @@ namespace RealEstate.Services.ServiceLayer
             var add = await _baseService.AddAsync(new Division
             {
                 Name = model.Name
-            }, null, save).ConfigureAwait(false);
+            }, null, save);
             return add;
         }
     }

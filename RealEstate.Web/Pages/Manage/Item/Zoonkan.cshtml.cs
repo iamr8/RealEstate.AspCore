@@ -30,7 +30,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public async Task<IActionResult> OnGetAsync()
         {
-            Zoonkans = await _itemService.ZoonkansAsync().ConfigureAwait(false);
+            Zoonkans = await _itemService.ZoonkansAsync();
             return Page();
         }
     }

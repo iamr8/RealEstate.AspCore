@@ -34,7 +34,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public async Task<IActionResult> OnGetAsync(string id)
         {
-            var model = await _itemService.ItemAsync(id, DealStatusEnum.Rejected).ConfigureAwait(false);
+            var model = await _itemService.ItemAsync(id, DealStatusEnum.Rejected);
             if (model?.LastState != DealStatusEnum.Rejected)
                 return RedirectToPage(typeof(IndexModel).Page());
 

@@ -21,11 +21,11 @@ namespace RealEstate.Services.Tracker
             var claims = context.Principal.Claims.ToList();
             if (claims.Count == 0) return;
 
-            var isUserValid = await _userService.IsUserValidAsync(claims).ConfigureAwait(false);
+            var isUserValid = await _userService.IsUserValidAsync(claims);
             if (!isUserValid)
             {
                 context.RejectPrincipal();
-                await _userService.SignOutAsync().ConfigureAwait(false);
+                await _userService.SignOutAsync();
             }
         }
     }

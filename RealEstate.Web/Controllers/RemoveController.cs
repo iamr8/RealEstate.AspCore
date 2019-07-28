@@ -56,7 +56,7 @@ namespace RealEstate.Web.Controllers
         [Route("facility/remove")]
         public async Task<IActionResult> FacilityAsync(string id)
         {
-            var model = await _featureService.FacilityRemoveAsync(id).ConfigureAwait(false);
+            var model = await _featureService.FacilityRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Facility.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -66,7 +66,7 @@ namespace RealEstate.Web.Controllers
         [Route("property/picture/remove")]
         public async Task<IActionResult> PropertyPictureAsync(string id, string propertyId)
         {
-            var model = await _pictureService.PictureRemoveAsync(id).ConfigureAwait(false);
+            var model = await _pictureService.PictureRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Item.PictureModel).Page(), new
             {
                 status = model.GetDisplayName(),
@@ -77,7 +77,7 @@ namespace RealEstate.Web.Controllers
         [Route("dealRequest/reject")]
         public async Task<IActionResult> DealRequestAsync(string id)
         {
-            var model = await _itemService.RequestRejectAsync(id, true).ConfigureAwait(false);
+            var model = await _itemService.RequestRejectAsync(id, true);
             return RedirectToPage(typeof(Pages.Manage.DealRequest.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -87,7 +87,7 @@ namespace RealEstate.Web.Controllers
         [Route("employee/payment/remove")]
         public async Task<IActionResult> PaymentAsync(string id, string employeeId)
         {
-            var model = await _paymentService.PaymentRemoveAsync(id, employeeId).ConfigureAwait(false);
+            var model = await _paymentService.PaymentRemoveAsync(id, employeeId);
             return RedirectToPage(typeof(Pages.Manage.Employee.DetailModel).Page(), new
             {
                 status = model.GetDisplayName(),
@@ -98,7 +98,7 @@ namespace RealEstate.Web.Controllers
         [Route("division/remove")]
         public async Task<IActionResult> DivisionAsync(string id)
         {
-            var model = await _divisionService.RemoveAsync(id).ConfigureAwait(false);
+            var model = await _divisionService.RemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Division.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -108,7 +108,7 @@ namespace RealEstate.Web.Controllers
         [Route("item/remove")]
         public async Task<IActionResult> ItemAsync(string id)
         {
-            var model = await _itemService.ItemRemoveAsync(id).ConfigureAwait(false);
+            var model = await _itemService.ItemRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Item.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -118,7 +118,7 @@ namespace RealEstate.Web.Controllers
         //[Route("presence/remove")]
         //public async Task<IActionResult> PresenceAsync(string id)
         //{
-        //    var model = await _employeeService.PresenceRemoveAsync(id).ConfigureAwait(false);
+        //    var model = await _employeeService.PresenceRemoveAsync(id);
         //    return RedirectToPage(typeof(Pages.Manage.Presence.IndexModel).Page(), new
         //    {
         //        status = model
@@ -128,7 +128,7 @@ namespace RealEstate.Web.Controllers
         //[Route("leave/remove")]
         //public async Task<IActionResult> LeaveAsync(string id)
         //{
-        //    var model = await _employeeService.LeaveRemoveAsync(id).ConfigureAwait(false);
+        //    var model = await _employeeService.LeaveRemoveAsync(id);
         //    return RedirectToPage(typeof(Pages.Manage.Leave.IndexModel).Page(), new
         //    {
         //        status = model
@@ -138,7 +138,7 @@ namespace RealEstate.Web.Controllers
         [Route("employee/remove")]
         public async Task<IActionResult> EmployeeAsync(string id)
         {
-            var model = await _employeeService.EmployeeRemoveAsync(id).ConfigureAwait(false);
+            var model = await _employeeService.EmployeeRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Employee.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -148,7 +148,7 @@ namespace RealEstate.Web.Controllers
         //[Route("managementpercent/remove")]
         //public async Task<IActionResult> ManagementPercentAsync(string id)
         //{
-        //    var model = await _paymentService.ManagementPercentRemoveAsync(id).ConfigureAwait(false);
+        //    var model = await _paymentService.ManagementPercentRemoveAsync(id);
         //    return RedirectToPage(typeof(Pages.Manage.ManagementPercent.IndexModel).Page(), new
         //    {
         //        status = model
@@ -158,7 +158,7 @@ namespace RealEstate.Web.Controllers
         [Route("reminder/remove")]
         public async Task<IActionResult> ReminderAsync(string id)
         {
-            var model = await _reminderService.ReminderRemoveAsync(id).ConfigureAwait(false);
+            var model = await _reminderService.ReminderRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Reminder.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -168,7 +168,7 @@ namespace RealEstate.Web.Controllers
         [Route("feature/remove")]
         public async Task<IActionResult> FeatureAsync(string id)
         {
-            var model = await _featureService.FeatureRemoveAsync(id).ConfigureAwait(false);
+            var model = await _featureService.FeatureRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Feature.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -178,7 +178,7 @@ namespace RealEstate.Web.Controllers
         [Route("customer/remove")]
         public async Task<IActionResult> CustomerAsync(string id)
         {
-            var model = await _customerService.CustomerRemoveAsync(id).ConfigureAwait(false);
+            var model = await _customerService.CustomerRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Customer.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -188,7 +188,7 @@ namespace RealEstate.Web.Controllers
         [Route("applicant/remove")]
         public async Task<IActionResult> ApplicantAsync(string id)
         {
-            var model = await _customerService.ApplicantRemoveAsync(id).ConfigureAwait(false);
+            var model = await _customerService.ApplicantRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Applicant.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -198,7 +198,7 @@ namespace RealEstate.Web.Controllers
         [Route("district/remove")]
         public async Task<IActionResult> DistrictAsync(string id)
         {
-            var model = await _locationService.DistrictRemoveAsync(id).ConfigureAwait(false);
+            var model = await _locationService.DistrictRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.District.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -208,7 +208,7 @@ namespace RealEstate.Web.Controllers
         [Route("category/remove")]
         public async Task<IActionResult> CategoryAsync(string id)
         {
-            var model = await _featureService.CategoryRemoveAsync(id).ConfigureAwait(false);
+            var model = await _featureService.CategoryRemoveAsync(id);
             return RedirectToPage(typeof(Pages.Manage.Category.IndexModel).Page(), new
             {
                 status = model.GetDisplayName()
@@ -219,7 +219,7 @@ namespace RealEstate.Web.Controllers
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> UserDeActivateAsync(string id)
         {
-            var model = await _userService.RemoveAsync(id).ConfigureAwait(false);
+            var model = await _userService.RemoveAsync(id);
             return RedirectToPage(typeof(IndexModel).Page(), new
             {
                 status = model.GetDisplayName()

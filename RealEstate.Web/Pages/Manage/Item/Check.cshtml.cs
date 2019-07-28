@@ -32,7 +32,7 @@ namespace RealEstate.Web.Pages.Manage.Item
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var model = await _itemService.ItemCheckAsync(PropertyCheck).ConfigureAwait(false);
+            var model = await _itemService.ItemCheckAsync(PropertyCheck);
             if (!model)
                 return RedirectToPage(typeof(CheckModel).Page());
 

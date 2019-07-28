@@ -41,7 +41,7 @@ namespace RealEstate.Web.Pages.Manage.Sms
                 PageNo = pageNo.FixPageNumber(),
             };
 
-            List = await _smsService.ListAsync(SearchInput).ConfigureAwait(false);
+            List = await _smsService.ListAsync(SearchInput);
         }
 
         public IActionResult OnPost()
