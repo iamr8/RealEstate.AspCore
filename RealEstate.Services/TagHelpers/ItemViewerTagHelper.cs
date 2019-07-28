@@ -34,6 +34,7 @@ namespace RealEstate.Services.TagHelpers
             if (AsRow)
                 output.AddClass("row", HtmlEncoder.Default);
 
+            output.AddClass("grid", HtmlEncoder.Default);
             output.TagMode = TagMode.StartTagAndEndTag;
 
             if (Model?.Model == null)
@@ -72,10 +73,11 @@ namespace RealEstate.Services.TagHelpers
                 throw new Exception("Model that given to item-viewer is not typeof PaginationViewModel");
             }
 
+            output.Attributes.Add("data-rows", rowCount);
+
             if (rowCount > 0)
             {
-                var content = (await output.GetChildContentAsync().ConfigureAwait(false)).GetContent();
-                output.AddClass("grid", HtmlEncoder.Default);
+                var content = (await output.GetChildContentAsync()).GetContent();
                 output.Content.AppendHtml(content);
                 return;
             }
@@ -83,13 +85,8 @@ namespace RealEstate.Services.TagHelpers
             NO_ITEM:
             var message = new TagBuilder("h5");
             message.InnerHtml.AppendHtml(_localizer[SharedResource.NoItemToShow]);
-
-            if (AsRow)
-            {
-                output.AddClass("justify-content-center", HtmlEncoder.Default);
-                output.AddClass("align-items-center", HtmlEncoder.Default);
-            }
-
+            output.AddClass("justify-content-center", HtmlEncoder.Default);
+            output.AddClass("align-items-center", HtmlEncoder.Default);
             output.Content.AppendHtml(message);
         }
     }

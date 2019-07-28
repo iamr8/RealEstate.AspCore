@@ -376,9 +376,12 @@ $(document).ready(function () {
         function () {
           $(".grid").load(`${url}?handler=Page&${newQueryString}`,
             (response, status, xhr) => {
+              console.log("requestStatus", status);
               if (xhr.status === 200) {
                 // hide loading
                 const pageItems = $(".pagination").children();
+
+                console.log("start to select correct pageLink");
                 $.each(pageItems,
                   (key, value) => {
                     const page = parseInt($(".page-link", value).text());
@@ -404,5 +407,13 @@ $(document).ready(function () {
     }
   });
 
-  $(".page-link", ".page-item.active").trigger("click");
+  const rowsAttr = $(".grid").attr("data-rows");
+  console.log("Row Attribute:", rowsAttr);
+  if (rowsAttr !== undefined) {
+    const rows = parseInt(rowsAttr);
+    console.log("Rows Count:", rows);
+    if (rows > 0) {
+      $(".page-link", ".page-item.active").trigger("click");
+    }
+  }
 });
