@@ -57,13 +57,9 @@ namespace RealEstate.Web.Pages.Manage.Feature
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(FeatureSearchViewModel models)
-        {
-            var list = await _featureService.FeatureListAsync(models);
-            return ViewComponent(typeof(FeaturePageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<FeatureSearchViewModel, FeatureViewModel>(json,
+                model => _featureService.FeatureListAsync(model),
+                typeof(FeaturePageViewComponent));
     }
 }

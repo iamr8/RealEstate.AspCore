@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -56,13 +56,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string PropertyFeaturesJson
         {
             get => _propertyFeaturesJson;
-            set => _propertyFeaturesJson = value.JsonSetAccessor();
+            set => _propertyFeaturesJson = JsonExtensions.InitJson(value);
         }
 
         public List<FeatureJsonValueViewModel> PropertyFeatures
         {
-            get => PropertyFeaturesJson.JsonGetAccessor<FeatureJsonValueViewModel>();
-            set => PropertyFeaturesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<FeatureJsonValueViewModel>>(PropertyFeaturesJson);
+            set => PropertyFeaturesJson = value.Serialize();
         }
 
         [Display(ResourceType = typeof(SharedResource), Name = "PropertyFacilities")]
@@ -70,13 +70,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string PropertyFacilitiesJson
         {
             get => _propertyFacilitiesJson;
-            set => _propertyFacilitiesJson = value.JsonSetAccessor();
+            set => _propertyFacilitiesJson = JsonExtensions.InitJson(value);
         }
 
         public List<FacilityJsonViewModel> PropertyFacilities
         {
-            get => PropertyFacilitiesJson.JsonGetAccessor<FacilityJsonViewModel>();
-            set => PropertyFacilitiesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<FacilityJsonViewModel>>(PropertyFacilitiesJson);
+            set => PropertyFacilitiesJson = value.Serialize();
         }
     }
 }

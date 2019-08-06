@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -47,13 +47,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string DivisionsJson
         {
             get => _divisionsJson;
-            set => _divisionsJson = value.JsonSetAccessor();
+            set => _divisionsJson = JsonExtensions.InitJson(value);
         }
 
         public List<DivisionJsonViewModel> Divisions
         {
-            get => DivisionsJson.JsonGetAccessor<DivisionJsonViewModel>();
-            set => DivisionsJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<DivisionJsonViewModel>>(DivisionsJson);
+            set => DivisionsJson = value.Serialize();
         }
     }
 }

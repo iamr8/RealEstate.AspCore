@@ -123,6 +123,9 @@ ul {
     padding: 10px 20px;
     background-color: #ccc;
     margin: 0 -15px; }
+    .widget > header.app {
+      background-color: transparent !important;
+      border-bottom: 1px solid lightgray; }
     .widget > header > h2 {
       font-size: 12pt;
       margin-top: auto;
@@ -1643,6 +1646,10 @@ label[required]:not(.custom-control-label):after {
   position: relative; }
   .notification:focus, .notification:hover {
     color: lightgray; }
+  .notification.dark {
+    color: black !important; }
+    .notification.dark:focus, .notification.dark:hover {
+      color: gray; }
   .notification.hasBadge:after {
     position: absolute;
     bottom: 3px;

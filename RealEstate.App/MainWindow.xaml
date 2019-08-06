@@ -1,0 +1,132 @@
+﻿<Window x:Class="RealEstate.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cefSharp="clr-namespace:CefSharp.Wpf;assembly=CefSharp.Wpf"
+        xmlns:local="clr-namespace:RealEstate.App"
+        xmlns:controls="clr-namespace:RealEstate.App.Controls"
+        xmlns:blur="clr-namespace:RealEstate.App.Library.Blur"
+        mc:Ignorable="d"
+        Background="Transparent"
+        SizeChanged="MainWindow_OnSizeChanged"
+        StateChanged="MainWindow_OnStateChanged"
+        FontFamily="IRANSansWeb"
+        Loaded="MainWindow_OnLoaded"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        AllowsTransparency="True"
+MinHeight="424" MinWidth="800"
+        Title="MainWindow" Width="800" Height="424">
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="10" CaptionHeight="1" GlassFrameThickness="0" CornerRadius="0" />
+    </WindowChrome.WindowChrome>
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="TaskBarItemInfo" />
+    </Window.TaskbarItemInfo>
+    <Grid>
+        <Border CornerRadius="7,7,0,0" BorderThickness="2" BorderBrush="Gray" Opacity="0.5" Background="White" />
+        <Grid Margin="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Padding="10" x:Name="TitleWrapper">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid FlowDirection="RightToLeft">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Margin="4" Width="70" HorizontalAlignment="Left">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Tag="{DynamicResource TrafficLightsExitColor}" Style="{DynamicResource TitleButton}" Content="{DynamicResource ExitIcon}" x:Name="ButtonExit" Click="ExitBtn_OnClick"></Button>
+                            <Button Grid.Column="1" Tag="{DynamicResource TrafficLightsMinimizeColor}"  Style="{DynamicResource TitleButton}" Content="{DynamicResource MinimizeIcon}" x:Name="ButtonMinimized" Click="ButtonMinimized_OnClick" ></Button>
+                            <Button Grid.Column="2" Tag="{DynamicResource TrafficLightsMaximizeColor}" Style="{DynamicResource TitleButton}" Content="{DynamicResource MaximizeIcon}" x:Name="ButtonMaximized" Click="ButtonMaximized_OnClick" ></Button>
+                        </Grid>
+                        <TextBlock Grid.Column="1" MouseDown="LabelTitle_OnMouseDown">
+                        <Grid HorizontalAlignment="Stretch">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Label FontWeight="Bold" x:Name="LabelTitle" FontSize="15pt" Content="مدیریت مشاورین املاک" HorizontalAlignment="Right"></Label>
+                            <Label Grid.Column="1" x:Name="VersionName" Content="" VerticalAlignment="Center" Margin="10,0,0,0" HorizontalAlignment="Right"></Label>
+                        </Grid>
+                        </TextBlock>
+                        <TextBox Grid.Column="2" Background="Transparent" BorderThickness="0" BorderBrush="Transparent" x:Name="ServerUrl" HorizontalAlignment="Right" IsReadOnly="True" VerticalAlignment="Center" FontWeight="Bold" FontSize="18pt" FontFamily="Consolas"></TextBox>
+                    </Grid>
+                    <Grid Grid.Row="1" x:Name="NavButtons" Height="30" Margin="0,10,0,0" Visibility="Visible">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="50" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="{DynamicResource NavBack}" Style="{DynamicResource NavButton}" x:Name="ButtonNavBack" Click="ButtonNavBack_OnClick"></Button>
+                        <Button Grid.Column="1" Content="{DynamicResource NavForward}" Style="{DynamicResource NavButton}" Margin="2,0,0,0" x:Name="ButtonNavForward" Click="ButtonNavForward_OnClick"></Button>
+                        <Button Grid.Column="2" Content="{DynamicResource NavRefresh}" Style="{DynamicResource NavButton}" Margin="10,0,0,0" x:Name="ButtonNavRefresh" Click="ButtonNavRefresh_OnClick"></Button>
+                        <Button Grid.Column="4" Content="{DynamicResource DevTools}" Style="{DynamicResource NavButton}" x:Name="ButtonDevTools" Click="ButtonDevTools_OnClick"></Button>
+                        <Button Grid.Column="5" Content="{DynamicResource Log}" Style="{DynamicResource NavButton}" Margin="5,0,0,0" x:Name="ButtonElmah" Click="ButtonElmah_OnClick"></Button>
+                        <Button Grid.Column="6" Content="{DynamicResource Disconnect}" Style="{DynamicResource NavButton}" Margin="5,0,0,0" Background="DarkRed" x:Name="ButtonDisconnect" Click="ButtonDisconnect_OnClick"></Button>
+                    </Grid>
+                </Grid>
+            </Border>
+            <Border Grid.Row="1" x:Name="ContentBackdrop" Background="White">
+                <Grid x:Name="BrowserWrapper" Visibility="Hidden">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <ProgressBar Height="2px" x:Name="Bar" BorderThickness="0" BorderBrush="Transparent" />
+                    <cefSharp:ChromiumWebBrowser LoadingStateChanged="Browser_OnLoadingStateChanged" Grid.Row="1"  BorderThickness="0" BorderBrush="Transparent" Background="Transparent" PreviewMouseRightButtonDown="Browser_OnPreviewMouseRightButtonDown" PreviewMouseRightButtonUp="Browser_OnPreviewMouseRightButtonDown" x:Name="Browser" Address="" />
+                </Grid>
+            </Border>
+            <Border Grid.Row="1" x:Name="ContentWrapper" Padding="10" BorderThickness="0">
+                <Grid x:Name="InitCheckList" Visibility="Visible">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Label FontWeight="Bold" FontSize="12pt"  Content="چک لیست" HorizontalAlignment="Right" Margin="0,0,10,10"></Label>
+                    <controls:CheckItem x:Name="DllFiles" Grid.Row="1" Title="فایلهای ضروری برنامه" Success="False" Value="" />
+                    <controls:CheckItem x:Name="DbPath" Grid.Row="2" Title="محل قرارگیری بانک داده" Success="False" Value="" />
+                    <controls:CheckItem x:Name="FirewallApproval" Grid.Row="3" Title="تائید توسط فایروال" Success="False" Value="" />
+                    <controls:CheckItem x:Name="CheckIp" Grid.Row="4" Title="آدرس سرور" Success="False" Value="" />
+                    <controls:CheckItem x:Name="PortCheck" Grid.Row="5" Title="بررسی آماده بودن پورت" Success="False" Value="" />
+                    <controls:CheckItem x:Name="CheckSqlLocalDb" Grid.Row="6" Title="بررسی نصب SqlLocalDb" Success="False" Value="" />
+                    <controls:CheckItem x:Name="CheckNetCoreRuntime" Grid.Row="7" Title="بررسی نصب .Net Core Runtime" Success="False" Value="" />
+                    <controls:CheckItem x:Name="CheckDbInstance" Grid.Row="8" Title="ایجاد DbInstance" Success="False" Value="" />
+                    <Grid Grid.Row="9" Margin="0,10,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="ButtonStart" Height="30px" MouseDown="ButtonStart_OnMouseDown" VerticalAlignment="Bottom" Click="ButtonStart_OnClick" Content="بررسی مجدد" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

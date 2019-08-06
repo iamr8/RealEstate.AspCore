@@ -1,0 +1,32 @@
+﻿@model bool
+
+<nav class="navbar navbar-expand @(!Model ? "navbar-dark" : "")" id="mainNavBar">
+    <button class="navbar-toggler" type="button" aria-controls="navbarNavDropdown" data-target="#navbarNavDropdown" data-toggle="collapse" aria-expanded="true">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    @if (!Model)
+    {
+        <a class="navbar-brand" asp-page="/Index">
+            @SharedLocalizer[SharedResource.AppName]
+        </a>
+    }
+    @if (User.Identity.IsAuthenticated)
+    {
+        var hasNotification = await ReminderService.HasReminderAsync();
+
+        <a asp-page="@typeof(Manage.Reminder.IndexModel).Page()" class="mr-auto notification @(Model ? "dark" : "") @(hasNotification ? "hasBadge" : "")">
+            <i class="fa fa-bell"></i>
+        </a>
+    }
+</nav>
+<div id="navbarNavDropdown" class="sidenav">
+    <partial name="Shared/Config/_MenuHeader" />
+    <div class="nav-items">
+        <partial name="Shared/Config/_MenuItems" />
+    </div>
+    @if (!Model)
+    {
+        <partial name="Shared/Config/_MenuVersion" />
+    }
+</div>
+<div class="backdrop"></div>

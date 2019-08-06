@@ -579,8 +579,10 @@ namespace RealEstate.Services.ServiceLayer
                     }
                 }
                 if (searchModel.IsNegotiable)
-                    query = query.Where(x => x.Description.Contains(_localizer[SharedResource.Negotitable]));
-
+                {
+                    var negoText = _localizer[SharedResource.Negotitable].ToString();
+                    query = query.Where(x => x.Description.Contains(negoText));
+                }
                 if (searchModel.HasPicture)
                     query = query.Where(x => x.Property.Pictures.Any());
 
@@ -804,7 +806,7 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Item>(StatusEnum.PropertyIsNull);
 
             var (propertyStatus, property, isPropertySuccess) = await _propertyService.PropertyAsync(model.Property);
-            if (isPropertySuccess)
+            if (!isPropertySuccess)
                 return new MethodStatus<Item>(propertyStatus);
 
             StatusEnum status;

@@ -62,13 +62,9 @@ namespace RealEstate.Web.Pages.Manage.Category
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(CategorySearchViewModel models)
-        {
-            var list = await _featureService.CategoryListAsync(models);
-            return ViewComponent(typeof(CategoryPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<CategorySearchViewModel, CategoryViewModel>(json,
+                model => _featureService.CategoryListAsync(model),
+                typeof(CategoryPageViewComponent));
     }
 }

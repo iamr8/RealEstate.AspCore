@@ -59,13 +59,9 @@ namespace RealEstate.Web.Pages.Manage.Reminder
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(ReminderSearchViewModel models)
-        {
-            var list = await _reminderService.ReminderListAsync(models);
-            return ViewComponent(typeof(ReminderPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<ReminderSearchViewModel, ReminderViewModel>(json,
+                model => _reminderService.ReminderListAsync(model),
+                typeof(ReminderPageViewComponent));
     }
 }

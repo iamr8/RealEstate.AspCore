@@ -1,0 +1,21 @@
+﻿<Application x:Class="RealEstate.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:RealEstate.App"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Theme/MacButton.xaml" />
+                <ResourceDictionary Source="Theme/TitleButton.xaml" />
+                <ResourceDictionary Source="Theme/NavButton.xaml" />
+
+                <ResourceDictionary Source="Resources/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Fonts.xaml" />
+                <ResourceDictionary Source="Resources/Dimensions.xaml" />
+                <ResourceDictionary Source="Resources/Values.xaml" />
+                <ResourceDictionary Source="Resources/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

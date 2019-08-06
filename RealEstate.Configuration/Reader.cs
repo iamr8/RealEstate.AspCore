@@ -15,9 +15,17 @@ namespace RealEstate.Configuration
             var dir = Path.GetDirectoryName(assembly.Location);
             const string cfgFile = "config.inf";
 
-            var cfg = File.ReadAllLines($"{dir}\\{cfgFile}");
-            if (cfg?.Any() != true)
+            string[] cfg;
+            try
+            {
+                cfg = File.ReadAllLines($"{dir}\\{cfgFile}");
+                if (cfg?.Any() != true)
+                    return default;
+            }
+            catch (Exception ex)
+            {
                 return default;
+            }
 
             var model = new R8Config();
             var properties = model.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();

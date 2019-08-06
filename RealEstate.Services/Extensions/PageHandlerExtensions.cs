@@ -1,17 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Localization;
-using Newtonsoft.Json;
-using RealEstate.Base;
-using RealEstate.Base.Enums;
-using RealEstate.Resources;
-using RealEstate.Services.Database.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Localization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using RealEstate.Base;
+using RealEstate.Base.Attributes;
+using RealEstate.Base.Enums;
+using RealEstate.Resources;
+using RealEstate.Services.BaseLog;
+using RealEstate.Services.Database.Base;
+using RestSharp.Extensions;
 
 namespace RealEstate.Services.Extensions
 {
@@ -158,6 +163,41 @@ namespace RealEstate.Services.Extensions
                 throw new NullReferenceException($"{nameof(IStringLocalizer<SharedResource>)} must be inject into PageModel");
 
             return localizer;
+        }
+
+        public static async Task<IActionResult> OnGetPageHandlerAsync<TSearch, TModel>(this IndexPageModel page, string json, Func<TSearch, Task<PaginationViewModel<TModel>>> getList, Type pageComponent) where TSearch : BaseSearchModel where TModel : BaseLogViewModel
+        {
+            var model = Activator.CreateInstance<TSearch>();
+            try
+            {
+                foreach (var (key, valueToken) in JObject.Parse(json))
+                {
+                    var propertyInfo = model
+                        .GetType()
+                        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                        .FirstOrDefault(x => x.GetCustomAttribute<SearchParameterAttribute>()?.ParameterName == key);
+                    if (propertyInfo == null)
+                        continue;
+
+                    var value = valueToken.Value<object>().ChangeType(propertyInfo.PropertyType.GetTypeInfo());
+                    model[propertyInfo.Name] = value;
+                }
+
+                var list = await getList.Invoke(model);
+                return new ViewComponentResult
+                {
+                    ViewComponentType = pageComponent,
+                    Arguments = new
+                    {
+                        models = list.Items
+                    }
+                };
+            }
+            catch
+            {
+                page.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                return new EmptyResult();
+            }
         }
 
         public static async Task<IActionResult> OnGetHandlerAsync<TPage, TInputModel>(this TPage page,

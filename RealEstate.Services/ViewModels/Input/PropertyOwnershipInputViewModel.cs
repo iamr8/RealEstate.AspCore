@@ -1,5 +1,5 @@
-﻿using RealEstate.Base;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using RealEstate.Base;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -11,13 +11,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string OwnersJson
         {
             get => _ownersJson;
-            set => _ownersJson = value.JsonSetAccessor();
+            set => _ownersJson = JsonExtensions.InitJson(value);
         }
 
         public List<OwnershipInputViewModel> Owners
         {
-            get => OwnersJson.JsonGetAccessor<OwnershipInputViewModel>();
-            set => OwnersJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<OwnershipInputViewModel>>(OwnersJson);
+            set => OwnersJson = value.Serialize();
         }
     }
 }

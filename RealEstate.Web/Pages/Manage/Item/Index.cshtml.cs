@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
@@ -62,18 +61,12 @@ namespace RealEstate.Web.Pages.Manage.Item
             List = await _itemService.ItemListAsync(SearchInput, false);
         }
 
-        public IActionResult OnPost()
-        {
-            return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
-        }
+        public IActionResult OnPost() =>
+            RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
 
-        public async Task<IActionResult> OnGetPageAsync(ItemSearchViewModel models)
-        {
-            var list = await _itemService.ItemListAsync(models);
-            return ViewComponent(typeof(ItemPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<ItemSearchViewModel, ItemViewModel>(json,
+                model => _itemService.ItemListAsync(model),
+                typeof(ItemPageViewComponent));
     }
 }

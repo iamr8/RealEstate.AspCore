@@ -58,13 +58,9 @@ namespace RealEstate.Web.Pages.Manage.User
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(UserSearchViewModel models)
-        {
-            var list = await _userService.ListAsync(models);
-            return ViewComponent(typeof(UserPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<UserSearchViewModel, UserViewModel>(json,
+                model => _userService.ListAsync(model),
+                typeof(UserPageViewComponent));
     }
 }

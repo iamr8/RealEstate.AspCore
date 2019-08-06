@@ -351,11 +351,14 @@ $(document).ready(function () {
         indicator++;
       });
 
-    if (shouldBeAdded)
+    if (shouldBeAdded) {
+      model["pageNo"] = pageNo;
       newParams[indicator] = `pageNo=${pageNo}`;
+    }
 
     console.log("currentPageNo", currentPageNo, "nextPageNo", pageNo);
     console.log("newParams", newParams);
+    console.log("payLoad object:", model);
     const newQueryString = newParams.join("&");
 
     const newUrl = `${url}?${newQueryString}`;
@@ -374,35 +377,40 @@ $(document).ready(function () {
 
       $(".grid").fadeOut("slow",
         function () {
-          $(".grid").load(`${url}?handler=Page&${newQueryString}`,
-            (response, status, xhr) => {
-              console.log("requestStatus", status);
-              if (xhr.status === 200) {
-                // hide loading
-                const pageItems = $(".pagination").children();
+          $.ajax({
+            type: "GET",
+            contentType: "application/json; charset=utf-8",
+            url: `${url}?handler=Page`,
+            data: { json: JSON.stringify(model) }
+          }).done(function (response, status, xhr) {
+            console.log("requestStatus", status);
+            if (xhr.status === 200) {
+              // hide loading
+              const pageItems = $(".pagination").children();
 
-                console.log("start to select correct pageLink");
-                $.each(pageItems,
-                  (key, value) => {
-                    const page = parseInt($(".page-link", value).text());
-                    if (page === pageNo) {
-                      $(value).addClass("active");
-                    } else {
-                      if ($(value).hasClass("active")) {
-                        $(value).removeClass("active");
-                      }
+              console.log("start to select correct pageLink");
+              $.each(pageItems,
+                (key, value) => {
+                  const page = parseInt($(".page-link", value).text());
+                  if (page === pageNo) {
+                    $(value).addClass("active");
+                  } else {
+                    if ($(value).hasClass("active")) {
+                      $(value).removeClass("active");
                     }
-                  });
+                  }
+                });
 
-                const top = $("#paginatedList").position().top;
-                $("html,body").animate({ scrollTop: top }, "slow");
-                console.log("Finished pageItems");
-                window.history.pushState({}, "", newUrl);
-                $("#loadingModal").modal("hide");
-                //          $(".grid").isotope("reloadItems").isotope();
-                $(".grid").fadeIn("slow");
-              }
-            });
+              const top = $("#paginatedList").position().top;
+              $("html,body").animate({ scrollTop: top }, "slow");
+              console.log("Finished pageItems");
+              window.history.pushState({}, "", newUrl);
+              $(".grid").html(response);
+              //          $(".grid").isotope("reloadItems").isotope();
+            }
+            $("#loadingModal").modal("hide");
+            $(".grid").fadeIn("slow");
+          });
         });
     }
   });

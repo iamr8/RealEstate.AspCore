@@ -87,6 +87,11 @@ ul {
         background-color: #ccc;
         margin: 0 -15px;
 
+        &.app {
+            background-color: transparent !important;
+            border-bottom: 1px solid lightgray;
+        }
+
         > h2 {
             font-size: 12pt;
             margin-top: auto;
@@ -1981,6 +1986,14 @@ label[required] {
 
     &:focus, &:hover {
         color: lightgray;
+    }
+
+    &.dark {
+        color: black !important;
+
+        &:focus, &:hover {
+            color: gray;
+        }
     }
 
     &.hasBadge {

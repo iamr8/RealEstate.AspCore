@@ -11,6 +11,7 @@
     <FileVersion>1.4.1.0</FileVersion>
     <SignAssembly>false</SignAssembly>
     <Version>1.4.1</Version>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -20,7 +21,20 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -73,7 +87,6 @@
   <ItemGroup>
     <ProjectReference Include="..\RealEstate.Configuration\RealEstate.Configuration.csproj" />
     <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
-    <ProjectReference Include="..\RealEstate.Runner\RealEstate.Runner.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
   </ItemGroup>
 

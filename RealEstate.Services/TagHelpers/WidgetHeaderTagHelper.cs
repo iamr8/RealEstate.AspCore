@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using RealEstate.Services.Extensions;
 
 namespace RealEstate.Services.TagHelpers
 {
@@ -8,6 +12,9 @@ namespace RealEstate.Services.TagHelpers
     {
         [HtmlAttributeName("title")]
         public string Title { get; set; }
+
+        [ViewContext, HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
@@ -18,6 +25,9 @@ namespace RealEstate.Services.TagHelpers
 
             title.InnerHtml.AppendHtml(Title);
             output.Content.AppendHtml(title);
+
+            if (ViewContext.HttpContext.Request.IsFromApp())
+                output.AddClass("app", HtmlEncoder.Default);
 
             var content = output.GetChildContentAsync().Result.GetContent();
             if (!string.IsNullOrEmpty(content))

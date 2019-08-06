@@ -29,7 +29,7 @@ namespace RealEstate.Base
             return json;
         }
 
-        public static string JsonSetAccessor(this string json)
+        public static string InitJson(string json)
         {
             if (string.IsNullOrEmpty(json) || json == "null")
                 return "[]";
@@ -41,7 +41,7 @@ namespace RealEstate.Base
         private const string JsonPropertyDivider = "|";
         private const string JsonPropertyMemberDivider = "..";
 
-        public static string EncodeJson(this string json, Type modelType)
+        public static string EncodeJson(string json, Type modelType)
         {
             var listType = typeof(List<>).MakeGenericType(modelType);
 
@@ -117,14 +117,14 @@ namespace RealEstate.Base
             return result;
         }
 
-        public static List<TModel> JsonGetAccessor<TModel>(this string json)
+        public static TModel Deserialize<TModel>(string json)
         {
             return string.IsNullOrEmpty(json)
                 ? default
-                : JsonConvert.DeserializeObject<List<TModel>>(json);
+                : JsonConvert.DeserializeObject<TModel>(json, JsonNetSetting);
         }
 
-        public static string DecodeJson<TModel>(this string json)
+        public static string DecodeJson<TModel>(string json)
         {
             // f..ert|t..ert|nm..متراژ|id..15bf9d15-07bc-4f3c-8339-8192c8fd0c18
             var modelType = typeof(TModel);
@@ -169,7 +169,7 @@ namespace RealEstate.Base
             return array;
         }
 
-        public static string JsonSetAccessor<TModel>(this List<TModel> obj) where TModel : class
+        public static string Serialize<TModel>(this List<TModel> obj) where TModel : class
         {
             return JsonConvert.SerializeObject(obj);
         }
@@ -200,15 +200,6 @@ namespace RealEstate.Base
                 : "[]";
 
             return json;
-        }
-
-        public static TEntity JsonConversion<TEntity>(this string json)
-        {
-            if (string.IsNullOrEmpty(json))
-                return default;
-
-            var obj = JsonConvert.DeserializeObject<TEntity>(json, JsonNetSetting);
-            return obj;
         }
 
         public class NullToEmptyContractResolver : DefaultContractResolver

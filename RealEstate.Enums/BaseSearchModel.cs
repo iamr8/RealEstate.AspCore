@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -11,6 +12,28 @@ namespace RealEstate.Base
 {
     public abstract class BaseSearchModel : AdminSearchConditionViewModel
     {
+        public object this[string key]
+        {
+            get
+            {
+                var property = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name.Equals(key, StringComparison.CurrentCulture));
+                if (property == null)
+                    throw new NullReferenceException($"{GetType().Name} haven't {nameof(key)} property.");
+
+                return property.GetValue(this);
+            }
+            set
+            {
+                var property = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(x => x.Name.Equals(key, StringComparison.CurrentCulture));
+                if (property == null)
+                    throw new NullReferenceException($"{GetType().Name} haven't {nameof(key)} property.");
+
+                property.SetValue(this, value);
+            }
+        }
+
         [SearchParameter("pageNo")]
         [HiddenInput]
         public int PageNo { get; set; }
@@ -155,14 +178,12 @@ namespace RealEstate.Base
             {
                 var routeValues = new Dictionary<string, object>();
 
-                var properties = GetType().GetPublicProperties().Where(x => x.GetValue(this) != null).ToList();
-                if (properties?.Any() != true)
+                var properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
+                if (properties.Any() != true)
                     return default;
 
                 foreach (var property in properties)
                 {
-                    var value = property.GetValue(this).ToString();
-
                     var searchParameterAttribute = property.GetPropertyAttribute<SearchParameterAttribute>();
                     if (searchParameterAttribute == null)
                         continue;
@@ -171,12 +192,20 @@ namespace RealEstate.Base
                     if (string.IsNullOrEmpty(searchParameter))
                         continue;
 
+                    var value = property.GetValue(this);
+                    if (value == null)
+                        continue;
+
+                    var defaultValue = Activator.CreateInstance(property.PropertyType);
+                    if (value.Equals(defaultValue))
+                        continue;
+
                     if (searchParameterAttribute.Type != null)
                     {
                         if (property.PropertyType != typeof(string))
                             continue;
 
-                        var encodeJson = value.EncodeJson(searchParameterAttribute.Type);
+                        var encodeJson = JsonExtensions.EncodeJson(value.ToString(), searchParameterAttribute.Type);
                         routeValues.Add(searchParameter, encodeJson);
                     }
                     else

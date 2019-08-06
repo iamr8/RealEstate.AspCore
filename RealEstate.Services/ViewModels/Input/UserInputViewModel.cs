@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Base.Enums;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -38,26 +38,26 @@ namespace RealEstate.Services.ViewModels.Input
         public string UserPropertyCategoriesJson
         {
             get => _userPropertyCategoriesJson;
-            set => _userPropertyCategoriesJson = value.JsonSetAccessor();
+            set => _userPropertyCategoriesJson = JsonExtensions.InitJson(value);
         }
 
         public List<UserPropertyCategoryJsonViewModel> UserPropertyCategories
         {
-            get => UserPropertyCategoriesJson.JsonGetAccessor<UserPropertyCategoryJsonViewModel>();
-            set => UserPropertyCategoriesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<UserPropertyCategoryJsonViewModel>>(UserPropertyCategoriesJson);
+            set => UserPropertyCategoriesJson = value.Serialize();
         }
 
         [HiddenInput]
         public string UserItemCategoriesJson
         {
             get => _userItemCategoriesJson;
-            set => _userItemCategoriesJson = value.JsonSetAccessor();
+            set => _userItemCategoriesJson = JsonExtensions.InitJson(value);
         }
 
         public List<UserItemCategoryJsonViewModel> UserItemCategories
         {
-            get => UserItemCategoriesJson.JsonGetAccessor<UserItemCategoryJsonViewModel>();
-            set => UserItemCategoriesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<UserItemCategoryJsonViewModel>>(UserItemCategoriesJson);
+            set => UserItemCategoriesJson = value.Serialize();
         }
     }
 }

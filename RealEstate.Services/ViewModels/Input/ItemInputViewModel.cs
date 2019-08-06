@@ -47,13 +47,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string ItemFeaturesJson
         {
             get => _itemFeaturesJson;
-            set => _itemFeaturesJson = value.JsonSetAccessor();
+            set => _itemFeaturesJson = JsonExtensions.InitJson(value);
         }
 
         public List<FeatureJsonValueViewModel> ItemFeatures
         {
-            get => ItemFeaturesJson.JsonGetAccessor<FeatureJsonValueViewModel>();
-            set => ItemFeaturesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<FeatureJsonValueViewModel>>(ItemFeaturesJson);
+            set => ItemFeaturesJson = value.Serialize();
         }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Description")]

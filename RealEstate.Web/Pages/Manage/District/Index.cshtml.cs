@@ -55,13 +55,9 @@ namespace RealEstate.Web.Pages.Manage.District
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(DistrictSearchViewModel models)
-        {
-            var list = await _locationService.DistrictListAsync(models);
-            return ViewComponent(typeof(DistrictPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<DistrictSearchViewModel, DistrictViewModel>(json,
+                model => _locationService.DistrictListAsync(model),
+                typeof(DistrictPageViewComponent));
     }
 }

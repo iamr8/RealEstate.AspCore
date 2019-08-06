@@ -1,0 +1,69 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="PageViewersBackgroundColor">#212836</SolidColorBrush>
+
+    <SolidColorBrush x:Key="BottomNavBarBackgroundColor">#141820</SolidColorBrush>
+    <SolidColorBrush x:Key="BottomNavBarForegroundColor">White</SolidColorBrush>
+
+    <SolidColorBrush x:Key="TitlebarTextColor">#818ca6</SolidColorBrush>
+    <SolidColorBrush x:Key="AppBackgroundColor">#1c212e</SolidColorBrush>
+
+    <SolidColorBrush x:Key="SideNavForegroundColor">White</SolidColorBrush>
+    <SolidColorBrush x:Key="SideNavNonImportantForegroundColor">Gray</SolidColorBrush>
+    <SolidColorBrush x:Key="SideNavUserPicturePlaceHolderBackgroundColor">White</SolidColorBrush>
+    <SolidColorBrush x:Key="SideNavItemMouseOverBackgroundColor" Color="{Binding Color, Source={StaticResource PageViewersBackgroundColor}}" />
+    <SolidColorBrush x:Key="SideNavItemMouseDownBackgroundColor">#171C26</SolidColorBrush>
+
+    <SolidColorBrush x:Key="PageLabelForegroundColor">White</SolidColorBrush>
+
+    <SolidColorBrush x:Key="SeparatorBackgroundColor">#283040</SolidColorBrush>
+
+    <SolidColorBrush x:Key="TrafficLightsExitColor">#fe5f59</SolidColorBrush>
+    <SolidColorBrush x:Key="TrafficLightsMinimizeColor">#febd2d</SolidColorBrush>
+    <SolidColorBrush x:Key="TrafficLightsMaximizeColor">#34c749</SolidColorBrush>
+
+    <SolidColorBrush x:Key="ButtonDisabledForegroundColor">#959595</SolidColorBrush>
+    <SolidColorBrush x:Key="ButtonDisabledBackgroundColor">#D7D7D7</SolidColorBrush>
+    <SolidColorBrush x:Key="ButtonForegroundColor">White</SolidColorBrush>
+    <LinearGradientBrush x:Key="ButtonNavBackgroundColor" StartPoint="0.5,0" EndPoint="0.5,1">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#747474" Offset="0.4" />
+            <GradientStop Color="#595959" Offset="1" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ButtonNavMouseOverBackgroundColor" StartPoint="0.5,0" EndPoint="0.5,1">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#999999" Offset="0.4" />
+            <GradientStop Color="#727272" Offset="1" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ButtonBackgroundColor" StartPoint="0.5,0" EndPoint="0.5,1">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#434D60" Offset="0.4" />
+            <GradientStop Color="#363F51" Offset="1" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ButtonMouseOverBackgroundColor" StartPoint="0.5,0" EndPoint="0.5,1">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#535D70" Offset="0.4" />
+            <GradientStop Color="#414A5D" Offset="1" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ButtonPressedBackgroundColor" StartPoint="0.5,0" EndPoint="0.5,1">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#374050" Offset="0.4" />
+            <GradientStop Color="#262D3A" Offset="1" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="CheckBoxBorderColor">#B7B7B7</SolidColorBrush>
+
+    <SolidColorBrush x:Key="TextFieldForegroundColor">Black</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldDisabledBackgroundColor">#DEDEDE</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldReadOnlyBackgroundColor">#D4D4D4</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldFocusedBackgroundColor">#E0E0E0</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldDisabledBorderColor">#CDCDCD</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldDisabledForegroundColor">#888888</SolidColorBrush>
+    <SolidColorBrush x:Key="TextFieldBackgroundColor">#EEEEEE</SolidColorBrush>
+</ResourceDictionary>

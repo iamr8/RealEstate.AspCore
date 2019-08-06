@@ -471,7 +471,6 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Customer>(StatusEnum.ModelIsNull);
 
             StatusEnum status;
-            bool isSuccess;
             Customer customer;
             var needUpdate = false;
 
@@ -480,7 +479,6 @@ namespace RealEstate.Services.ServiceLayer
                 customer = await _customers.FirstOrDefaultAsync(x => x.Id == model.Id);
                 needUpdate = true;
                 status = StatusEnum.Success;
-                isSuccess = true;
             }
             else
             {
@@ -489,7 +487,7 @@ namespace RealEstate.Services.ServiceLayer
                     .FirstOrDefaultAsync(x => x.MobileNumber == model.Mobile);
                 if (existingCustomer == null)
                 {
-                    (status, customer, isSuccess) = await _baseService.AddAsync(new Customer
+                    (status, customer, _) = await _baseService.AddAsync(new Customer
                     {
                         Name = model.Name,
                         MobileNumber = model.Mobile,
@@ -500,21 +498,17 @@ namespace RealEstate.Services.ServiceLayer
                     customer = existingCustomer;
                     needUpdate = true;
                     status = StatusEnum.Success;
-                    isSuccess = true;
                 }
             }
 
             if (needUpdate)
             {
-                (status, customer, isSuccess) = await _baseService.UpdateAsync(customer,
+                (status, customer, _) = await _baseService.UpdateAsync(customer,
                 _ => customer.Name = model.Name,
                 null,
                 true, StatusEnum.CustomerIsNull);
             }
-            if (!isSuccess)
-                return new MethodStatus<Customer>(status);
-
-            return await _baseService.SaveChangesAsync(customer);
+            return new MethodStatus<Customer>(status, customer);
         }
     }
 }

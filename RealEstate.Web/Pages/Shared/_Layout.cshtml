@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@{
+}
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 
@@ -15,7 +17,7 @@
 </head>
 <body>
     <mini-profiler />
-    <partial name="Config/_NavBar" />
+    <vc:nav-bar />
     <main class="container-fluid" role="main">
         <div class="row justify-content-center">
             @RenderBody()
@@ -24,6 +26,5 @@
     <partial name="Config/_Scripts" />
 
     @RenderSection("Scripts", false)
-    <script asp-paste-key="notification"></script>
 </body>
 </html>

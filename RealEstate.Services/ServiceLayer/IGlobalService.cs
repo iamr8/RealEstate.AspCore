@@ -1,4 +1,10 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.EntityFrameworkCore;
 using RealEstate.Base;
 using RealEstate.Base.Enums;
@@ -10,12 +16,6 @@ using RealEstate.Services.ServiceLayer.Base;
 using RealEstate.Services.ViewModels;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -321,7 +321,7 @@ namespace RealEstate.Services.ServiceLayer
                 if (string.IsNullOrEmpty(audit))
                     continue;
 
-                var audits = audit.JsonGetAccessor<LogJsonEntity>();
+                var audits = JsonExtensions.Deserialize<List<LogJsonEntity>>(audit);
                 if (audits?.Any() != true)
                     continue;
 

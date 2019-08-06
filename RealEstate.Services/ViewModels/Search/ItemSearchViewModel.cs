@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Search
 {
@@ -61,15 +61,15 @@ namespace RealEstate.Services.ViewModels.Search
         [JsonIgnore]
         public string FeaturesJson
         {
-            get => _featuresJson.DecodeJson<ItemFeatureJsonValueViewModel>();
-            set => _featuresJson = value.JsonSetAccessor();
+            get => JsonExtensions.DecodeJson<ItemFeatureJsonValueViewModel>(_featuresJson);
+            set => _featuresJson = JsonExtensions.InitJson(value);
         }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Features")]
         public List<ItemFeatureJsonValueViewModel> Features
         {
-            get => FeaturesJson.JsonGetAccessor<ItemFeatureJsonValueViewModel>().AddNoneToLast();
-            set => FeaturesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<ItemFeatureJsonValueViewModel>>(FeaturesJson).AddNoneToLast();
+            set => FeaturesJson = value.Serialize();
         }
 
         [HiddenInput]
@@ -78,15 +78,15 @@ namespace RealEstate.Services.ViewModels.Search
         [SearchParameter("facilities", typeof(ItemFacilityJsonViewModel))]
         public string FacilitiesJson
         {
-            get => _facilitiesJson.DecodeJson<ItemFacilityJsonViewModel>();
-            set => _facilitiesJson = value.JsonSetAccessor();
+            get => JsonExtensions.DecodeJson<ItemFacilityJsonViewModel>(_facilitiesJson);
+            set => _facilitiesJson = JsonExtensions.InitJson(value);
         }
 
         [Display(ResourceType = typeof(SharedResource), Name = "Facilities")]
         public List<ItemFacilityJsonViewModel> Facilities
         {
-            get => FacilitiesJson.JsonGetAccessor<ItemFacilityJsonViewModel>().AddNoneToLast();
-            set => FacilitiesJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<ItemFacilityJsonViewModel>>(FacilitiesJson).AddNoneToLast();
+            set => FacilitiesJson = value.Serialize();
         }
     }
 }

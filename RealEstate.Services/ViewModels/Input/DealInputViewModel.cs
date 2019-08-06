@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -34,13 +34,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string ChecksJson
         {
             get => _checksJson;
-            set => _checksJson = value.JsonSetAccessor();
+            set => _checksJson = JsonExtensions.InitJson(value);
         }
 
         public List<CheckJsonViewModel> Checks
         {
-            get => ChecksJson.JsonGetAccessor<CheckJsonViewModel>();
-            set => ChecksJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<CheckJsonViewModel>>(ChecksJson);
+            set => ChecksJson = value.Serialize();
         }
 
         [HiddenInput]
@@ -48,13 +48,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string BeneficiaryJson
         {
             get => _beneficiaryJson;
-            set => _beneficiaryJson = value.JsonSetAccessor();
+            set => _beneficiaryJson = JsonExtensions.InitJson(value);
         }
 
         public List<BeneficiaryJsonViewModel> Beneficiaries
         {
-            get => BeneficiaryJson.JsonGetAccessor<BeneficiaryJsonViewModel>();
-            set => BeneficiaryJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<BeneficiaryJsonViewModel>>(BeneficiaryJson);
+            set => BeneficiaryJson = value.Serialize();
         }
     }
 }

@@ -287,7 +287,6 @@ namespace RealEstate.Services.ServiceLayer
                         existingProperty.Number = model.Number;
                     }, null, true, StatusEnum.PropertyIsNull);
             }
-
             if (!isPropertySuccess)
                 return new MethodStatus<Property>(propertyStatus);
 
@@ -310,7 +309,7 @@ namespace RealEstate.Services.ServiceLayer
                 return new MethodStatus<Property>(ownershipStatus);
 
             await PropertySyncAsync(property, model, propertyOwnership, ownership.Customer);
-            return await _baseService.SaveChangesAsync(existingProperty);
+            return new MethodStatus<Property>(propertyStatus, existingProperty);
         }
     }
 }

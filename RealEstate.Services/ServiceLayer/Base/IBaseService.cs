@@ -427,9 +427,9 @@ namespace RealEstate.Services.ServiceLayer.Base
                 FirstName = claims.Find(x => x.Type == "FirstName")?.Value,
                 LastName = claims.Find(x => x.Type == "LastName")?.Value,
                 EmployeeId = claims.Find(x => x.Type == "EmployeeId")?.Value,
-                UserPropertyCategories = claims.Find(x => x.Type == "PropertyCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
-                UserItemCategories = claims.Find(x => x.Type == "ItemCategories")?.Value.JsonConversion<List<CategoryJsonViewModel>>(),
-                EmployeeDivisions = claims.Find(x => x.Type == "EmployeeDivisions")?.Value.JsonConversion<List<DivisionJsonViewModel>>(),
+                UserPropertyCategories = JsonExtensions.Deserialize<List<CategoryJsonViewModel>>(claims.Find(x => x.Type == "PropertyCategories")?.Value),
+                UserItemCategories = JsonExtensions.Deserialize<List<CategoryJsonViewModel>>(claims.Find(x => x.Type == "ItemCategories")?.Value),
+                EmployeeDivisions = JsonExtensions.Deserialize<List<DivisionJsonViewModel>>(claims.Find(x => x.Type == "EmployeeDivisions")?.Value),
             };
             return result;
         }

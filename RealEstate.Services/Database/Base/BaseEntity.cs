@@ -17,8 +17,8 @@ namespace RealEstate.Services.Database.Base
         [NotMapped]
         public List<LogJsonEntity> Audits
         {
-            get => Audit.JsonGetAccessor<LogJsonEntity>();
-            set => Audit = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<LogJsonEntity>>(Audit);
+            set => Audit = value.Serialize();
         }
 
         [NotMapped]

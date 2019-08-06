@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Localization;
 using RealEstate.Base;
 using RealEstate.Base.Attributes;
@@ -15,7 +14,7 @@ using RealEstate.Services.ViewModels.Search;
 namespace RealEstate.Web.Pages.Manage.Applicant
 {
     [NavBarHelper(typeof(IndexModel))]
-    public class IndexModel : PageModel
+    public class IndexModel : IndexPageModel
     {
         private readonly ICustomerService _customerService;
         private readonly IStringLocalizer<SharedResource> _localizer;
@@ -35,10 +34,6 @@ namespace RealEstate.Web.Pages.Manage.Applicant
         public TransApplicantViewModel TransInput { get; set; }
 
         public PaginationViewModel<ApplicantViewModel> List { get; set; }
-
-        public string Status { get; set; }
-
-        public string PageTitle => _localizer[SharedResource.Applicants];
 
         public async Task OnGetAsync(string pageNo, string status)
         {
@@ -64,13 +59,9 @@ namespace RealEstate.Web.Pages.Manage.Applicant
             return RedirectToPage(typeof(IndexModel).Page(), SearchInput.RouteDictionary());
         }
 
-        public async Task<IActionResult> OnGetPageAsync(ApplicantSearchViewModel models)
-        {
-            var list = await _customerService.ApplicantListAsync(models);
-            return ViewComponent(typeof(ApplicantPageViewComponent), new
-            {
-                models = list.Items
-            });
-        }
+        public async Task<IActionResult> OnGetPageAsync([FromQuery] string json) =>
+            await this.OnGetPageHandlerAsync<ApplicantSearchViewModel, ApplicantViewModel>(json,
+                model => _customerService.ApplicantListAsync(model),
+                typeof(ApplicantPageViewComponent));
     }
 }

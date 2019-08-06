@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using RealEstate.Base;
 using RealEstate.Resources;
 using RealEstate.Services.ViewModels.Json;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace RealEstate.Services.ViewModels.Input
 {
@@ -20,13 +20,13 @@ namespace RealEstate.Services.ViewModels.Input
         public string CustomerJson
         {
             get => _customerJson;
-            set => _customerJson = value.JsonSetAccessor();
+            set => _customerJson = JsonExtensions.InitJson(value);
         }
 
         public List<ItemCustomerJsonViewModel> Customers
         {
-            get => CustomerJson.JsonGetAccessor<ItemCustomerJsonViewModel>();
-            set => CustomerJson = value.JsonSetAccessor();
+            get => JsonExtensions.Deserialize<List<ItemCustomerJsonViewModel>>(CustomerJson);
+            set => CustomerJson = value.Serialize();
         }
     }
 }
