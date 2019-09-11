@@ -36,7 +36,7 @@ namespace RealEstate.Web.Pages.Manage.Item
             SearchInput = new ItemSearchViewModel
             {
                 PageNo = pageNo.FixPageNumber(),
-                Street = street,
+                Address = street,
                 ItemCategory = itemCategory,
                 Owner = ownerName,
                 ItemId = id,

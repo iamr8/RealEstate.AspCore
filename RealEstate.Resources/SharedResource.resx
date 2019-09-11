@@ -1095,4 +1095,7 @@
   <data name="NoNeedToSave" xml:space="preserve">
     <value>برای ذخیره در بانک، تغییری ثبت نشده است</value>
   </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>خطا ناشناخته</value>
+  </data>
 </root>

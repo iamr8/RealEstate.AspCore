@@ -1,12 +1,11 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using RealEstate.Base.Enums;
 using RealEstate.Services.BaseLog;
 using RealEstate.Services.Database.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace RealEstate.Services.Extensions
 {
@@ -23,11 +22,6 @@ namespace RealEstate.Services.Extensions
         public static string Like(this string searchString)
         {
             return $"%{string.Join("%", searchString.Split(' ').ToArray())}%";
-        }
-
-        public static string ToSql<TSource>(this IQueryable<TSource> query)
-        {
-            return query.ToSql(query.Expression, new EFCacheKeyHashProvider())?.Sql;
         }
 
         public static IOrderedQueryable<TSource> OrderByCreationDateTime<TSource>(this IQueryable<TSource> entities) where TSource : BaseEntity

@@ -444,9 +444,9 @@ namespace RealEstate.Services.ServiceLayer
                        x.Property.PropertyOwnerships.Any(c => c.Ownerships.Any(v => EF.Functions.Like(v.Customer.MobileNumber, searchModel.OwnerMobile.Like()))));
                 }
 
-                if (!string.IsNullOrEmpty(searchModel.Street))
+                if (!string.IsNullOrEmpty(searchModel.Address))
                 {
-                    query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Street.Like()));
+                    query = query.Where(x => EF.Functions.Like(x.Property.Street, searchModel.Address.Like()));
                 }
 
                 if (!string.IsNullOrEmpty(searchModel.ItemId))

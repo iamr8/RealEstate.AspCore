@@ -16,7 +16,7 @@ namespace RealEstate.Services.ViewModels.Search
 
         [Display(ResourceType = typeof(SharedResource), Name = "Street")]
         [SearchParameter("street")]
-        public string Street { get; set; }
+        public string Address { get; set; }
 
         [Display(ResourceType = typeof(SharedResource), Name = "ItemCategory")]
         [SearchParameter("itemCategory")]

@@ -1,11 +1,8 @@
-﻿using RealEstate.Base.Api;
+﻿using RealEstate.Services.ViewModels.Search;
 
 namespace RealEstate.Services.ViewModels.Api.Request
 {
-    public class ItemRequest : PaginatedRequest
+    public class ItemRequest : ItemSearchViewModel
     {
-        public string ItemCategory { get; set; }
-
-        public string PropertyCategory { get; set; }
     }
 }

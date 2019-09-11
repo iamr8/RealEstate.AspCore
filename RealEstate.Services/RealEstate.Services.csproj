@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -29,19 +29,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EFSecondLevelCache.Core" Version="2.4.1" />
+    <PackageReference Include="EFSecondLevelCache.Core" Version="2.6.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="2.2.6" />
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.3" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="MiniProfiler.AspNetCore" Version="4.0.180" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.180" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.0.180" />
     <PackageReference Include="RestSharp" Version="106.6.10" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.18" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.19" />
   </ItemGroup>
 
   <ItemGroup>

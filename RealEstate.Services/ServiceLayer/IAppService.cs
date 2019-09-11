@@ -1,4 +1,12 @@
-﻿using EFSecondLevelCache.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+using EFSecondLevelCache.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -15,14 +23,6 @@ using RealEstate.Services.ViewModels.Api.Request;
 using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.ModelBind;
 using RealEstate.Services.ViewModels.Search;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.IO;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -118,7 +118,7 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Items = result,
                 Pages = paginatedResult.Pages,
-                PageNumber = paginatedResult.CurrentPage
+                CurrentPage = paginatedResult.CurrentPage
             };
             return new ResponseWrapper<PaginatedResponse<ReminderResponse>>
             {
@@ -130,11 +130,7 @@ namespace RealEstate.Services.ServiceLayer
 
         public async Task<ResponseWrapper<PaginatedResponse<ItemResponse>>> ItemListAsync(ItemRequest model, string userId)
         {
-            var searchModel = new ItemSearchViewModel
-            {
-                PageNo = model.Page
-            };
-            var paginatedResult = await _itemService.ItemListAsync(searchModel, null, userId);
+            var paginatedResult = await _itemService.ItemListAsync(model, null, userId);
             if (paginatedResult?.Items?.Any() != true)
                 return new ResponseWrapper<PaginatedResponse<ItemResponse>>
                 {
@@ -183,7 +179,7 @@ namespace RealEstate.Services.ServiceLayer
             {
                 Items = result,
                 Pages = paginatedResult.Pages,
-                PageNumber = paginatedResult.CurrentPage
+                CurrentPage = paginatedResult.CurrentPage
             };
             return new ResponseWrapper<PaginatedResponse<ItemResponse>>
             {
@@ -296,7 +292,6 @@ namespace RealEstate.Services.ServiceLayer
                     x.Audits,
                 });
 
-            var sql = query.ToSql();
             var userDb = await query.Cacheable().FirstOrDefaultAsync();
             if (userDb == null)
                 return new ResponseWrapper<SignInResponse>

@@ -66,11 +66,14 @@
     <PackageReference Include="CacheManager.Serialization.Json" Version="1.2.0" />
     <PackageReference Include="ElmahCore" Version="1.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="3.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="3.1.6" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
-    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.3" />
+    <PackageReference Include="Microsoft.NetCore.Analyzers" Version="2.9.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
     <PackageReference Include="MiniProfiler.AspNetCore" Version="4.0.180" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.0.180" />
@@ -80,11 +83,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WebMarkupMin.AspNetCore2" Version="2.5.0" />
+    <PackageReference Include="WebMarkupMin.AspNetCore2" Version="2.6.1" />
   </ItemGroup>
 
 
   <ItemGroup>
+    <ProjectReference Include="..\RealEstate.App\RealEstate.App.csproj" />
     <ProjectReference Include="..\RealEstate.Configuration\RealEstate.Configuration.csproj" />
     <ProjectReference Include="..\RealEstate.Enums\RealEstate.Base.csproj" />
     <ProjectReference Include="..\RealEstate.Services\RealEstate.Services.csproj" />
