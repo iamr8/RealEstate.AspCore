@@ -12,12 +12,12 @@ namespace RealEstate.Base.Api
     public class PaginatedResponse : PaginationViewModel
     {
         [JsonProperty("p")]
-        public new int CurrentPage { get; set; }
+        public int CurrentPage { get; set; }
 
         [JsonProperty("pgs")]
-        public new int Pages { get; set; }
+        public int Pages { get; set; }
 
         [JsonProperty("rs")]
-        public new int Rows { get; set; }
+        public int Rows { get; set; }
     }
 }

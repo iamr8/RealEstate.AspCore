@@ -22,7 +22,6 @@ using RealEstate.Services.Extensions;
 using RealEstate.Services.ViewModels.Api.Request;
 using RealEstate.Services.ViewModels.Api.Response;
 using RealEstate.Services.ViewModels.ModelBind;
-using RealEstate.Services.ViewModels.Search;
 
 namespace RealEstate.Services.ServiceLayer
 {
@@ -74,11 +73,7 @@ namespace RealEstate.Services.ServiceLayer
         {
             var zoos = await _itemService.ZoonkansAsync();
             if (zoos?.Any() != true)
-                return new ResponsesWrapper<ZoonkanResponse>
-                {
-                    Success = true,
-                    Message = _localizer[SharedResource.NoItemToShow],
-                };
+                return NoItem<ZoonkanResponse>();
 
             var result = zoos.Select(x => new ZoonkanResponse
             {
@@ -87,22 +82,15 @@ namespace RealEstate.Services.ServiceLayer
                 Count = x.Count,
                 ItemCategory = x.ItemCategory
             }).ToList();
-            return new ResponsesWrapper<ZoonkanResponse>
-            {
-                Message = StatusEnum.Success.GetDisplayName(),
-                Success = true,
-                Result = result.ToList(),
-            };
+            return Success(result);
         }
 
         public async Task<ResponseWrapper<PaginatedResponse<ReminderResponse>>> RemindersAsync(ReminderRequest model, string userId)
         {
-            var searchModel = new ReminderSearchViewModel
-            {
-                PageNo = model.Page,
-            };
+            var paginatedResult = await _reminderService.ReminderListAsync(model, userId);
+            if (paginatedResult?.Items?.Any() != true)
+                return NoItems<ReminderResponse>();
 
-            var paginatedResult = await _reminderService.ReminderListAsync(searchModel, userId);
             var result = (from reminder in paginatedResult.Items
                           select new ReminderResponse
                           {
@@ -114,29 +102,14 @@ namespace RealEstate.Services.ServiceLayer
                               Pictures = reminder.Pictures?.Select(x => Path.Combine(_baseUrl, $"img/{x.File}")).ToList()
                           }).ToList();
 
-            var response = new PaginatedResponse<ReminderResponse>
-            {
-                Items = result,
-                Pages = paginatedResult.Pages,
-                CurrentPage = paginatedResult.CurrentPage
-            };
-            return new ResponseWrapper<PaginatedResponse<ReminderResponse>>
-            {
-                Message = StatusEnum.Success.GetDisplayName(),
-                Success = true,
-                Result = response,
-            };
+            return Success(result, paginatedResult);
         }
 
         public async Task<ResponseWrapper<PaginatedResponse<ItemResponse>>> ItemListAsync(ItemRequest model, string userId)
         {
             var paginatedResult = await _itemService.ItemListAsync(model, null, userId);
             if (paginatedResult?.Items?.Any() != true)
-                return new ResponseWrapper<PaginatedResponse<ItemResponse>>
-                {
-                    Message = _localizer[SharedResource.NoItemToShow],
-                    Success = true,
-                };
+                return NoItems<ItemResponse>();
 
             var result = (from item in paginatedResult.Items
                           let property = item.Property
@@ -175,17 +148,70 @@ namespace RealEstate.Services.ServiceLayer
                               IsNegotiable = item.IsNegotiable
                           }).ToList();
 
-            var response = new PaginatedResponse<ItemResponse>
+            return Success(result, paginatedResult);
+        }
+
+        private ResponsesWrapper<TModel> NoItem<TModel>() where TModel : class
+        {
+            return new ResponsesWrapper<TModel>
             {
-                Items = result,
-                Pages = paginatedResult.Pages,
-                CurrentPage = paginatedResult.CurrentPage
+                Success = true,
+                Message = _localizer[SharedResource.NoItemToShow],
             };
-            return new ResponseWrapper<PaginatedResponse<ItemResponse>>
+        }
+
+        private ResponseWrapper<PaginatedResponse<TModel>> NoItems<TModel>() where TModel : class
+        {
+            return new ResponseWrapper<PaginatedResponse<TModel>>
+            {
+                Message = _localizer[SharedResource.NoItemToShow],
+                Success = true,
+            };
+        }
+
+        private ResponsesWrapper<TModel> Success<TModel>(List<TModel> result) where TModel : class
+        {
+            return new ResponsesWrapper<TModel>
             {
                 Message = StatusEnum.Success.GetDisplayName(),
                 Success = true,
-                Result = response,
+                Result = result,
+            };
+        }
+
+        private ResponseWrapper<TModel> Success<TModel>(TModel result, StatusEnum status) where TModel : class
+        {
+            return new ResponseWrapper<TModel>
+            {
+                Message = status.GetDisplayName(),
+                Success = true,
+                Result = result,
+            };
+        }
+
+        private ResponseWrapper<TModel> Success<TModel>(TModel result) where TModel : class
+        {
+            return new ResponseWrapper<TModel>
+            {
+                Message = StatusEnum.Success.GetDisplayName(),
+                Success = true,
+                Result = result,
+            };
+        }
+
+        private ResponseWrapper<PaginatedResponse<TModel>> Success<TModel>(List<TModel> result, PaginationViewModel paginatedResult) where TModel : class
+        {
+            return new ResponseWrapper<PaginatedResponse<TModel>>
+            {
+                Message = StatusEnum.Success.GetDisplayName(),
+                Success = true,
+                Result = new PaginatedResponse<TModel>
+                {
+                    Items = result,
+                    Pages = paginatedResult.Pages,
+                    CurrentPage = paginatedResult.CurrentPage,
+                    Rows = paginatedResult.Rows
+                },
             };
         }
 
@@ -218,23 +244,19 @@ namespace RealEstate.Services.ServiceLayer
                     }).ToList()
                 }).FirstOrDefaultAsync();
 
-            return new ResponseWrapper<ConfigResponse>
+            var result = new ConfigResponse
             {
-                Success = true,
-                Message = StatusEnum.Success.GetDisplayName(),
-                Result = new ConfigResponse
-                {
-                    Role = user.Role.GetDisplayName(),
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    MobileNumber = user.Mobile,
-                    UserId = userId,
-                    Username = user.Username,
-                    UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
-                    UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
-                    EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()
-                }
+                Role = user.Role.GetDisplayName(),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                MobileNumber = user.Mobile,
+                UserId = userId,
+                Username = user.Username,
+                UserItemCategories = user.UserItemCategories.Select(x => x.Name).ToList(),
+                UserPropertyCategories = user.UserPropertyCategories.Select(x => x.Name).ToList(),
+                EmployeeDivisions = user.EmployeeDivisions.Select(x => x.Name).ToList()
             };
+            return Success(result);
         }
 
         public async Task<UserResponse> FindUserAsync(string id, string userName, string password)
@@ -273,6 +295,15 @@ namespace RealEstate.Services.ServiceLayer
             return userModel;
         }
 
+        private ResponseWrapper<TModel> Failure<TModel>(StatusEnum status) where TModel : class
+        {
+            return new ResponseWrapper<TModel>
+            {
+                Success = false,
+                Message = status.GetDisplayName(),
+            };
+        }
+
         public async Task<ResponseWrapper<SignInResponse>> SignInAsync(SignInRequest model)
         {
             var query = _users.IgnoreQueryFilters()
@@ -294,36 +325,21 @@ namespace RealEstate.Services.ServiceLayer
 
             var userDb = await query.Cacheable().FirstOrDefaultAsync();
             if (userDb == null)
-                return new ResponseWrapper<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.UserNotFound.GetDisplayName(),
-                };
+                return Failure<SignInResponse>(StatusEnum.UserNotFound);
+
             try
             {
                 var decryptedPasswordInDb = userDb.Password.Cipher(CryptologyExtension.CypherMode.Decryption);
                 if (decryptedPasswordInDb != model.Password)
-                    return new ResponseWrapper<SignInResponse>
-                    {
-                        Success = false,
-                        Message = StatusEnum.WrongPassword.GetDisplayName(),
-                    };
+                    return Failure<SignInResponse>(StatusEnum.WrongPassword);
             }
             catch
             {
-                return new ResponseWrapper<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.WrongPassword.GetDisplayName(),
-                };
+                return Failure<SignInResponse>(StatusEnum.WrongPassword);
             }
 
             if (userDb.Audits.LastOrDefault()?.Type == LogTypeEnum.Delete)
-                return new ResponseWrapper<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.Deactivated.GetDisplayName(),
-                };
+                return Failure<SignInResponse>(StatusEnum.Deactivated);
 
             var id = userDb.Id;
             var encryptedPassword = userDb.Password;
@@ -354,31 +370,19 @@ namespace RealEstate.Services.ServiceLayer
             var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
 
             if (string.IsNullOrEmpty(token))
-                return new ResponseWrapper<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.TokenIsNull.GetDisplayName(),
-                };
+                return Failure<SignInResponse>(StatusEnum.TokenIsNull);
 
             try
             {
-                return new ResponseWrapper<SignInResponse>
+                var result = new SignInResponse
                 {
-                    Success = true,
-                    Message = StatusEnum.SignedIn.GetDisplayName(),
-                    Result = new SignInResponse
-                    {
-                        Token = token
-                    }
+                    Token = token
                 };
+                return Success(result, StatusEnum.SignedIn);
             }
             catch
             {
-                return new ResponseWrapper<SignInResponse>
-                {
-                    Success = false,
-                    Message = StatusEnum.Failed.GetDisplayName()
-                };
+                return Failure<SignInResponse>(StatusEnum.Failed);
             }
         }
     }
